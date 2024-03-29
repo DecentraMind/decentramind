@@ -8,10 +8,10 @@ const links = [
     label: "Discovery",
     to: "/discovery",
   },
-  {
-    label: "Docs",
-    to: "/docs",
-  },
+  // {
+  //   label: "Docs",
+  //   to: "/docs",
+  // },
   {
     label: "Pricing",
     to: "/pricing",
