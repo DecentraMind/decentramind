@@ -5,6 +5,10 @@ const navigation = inject<Ref<NavItem[]>>("navigation", ref([]));
 
 const links = [
   {
+    label: "Discovery",
+    to: "/discovery",
+  },
+  {
     label: "Docs",
     to: "/docs",
   },
@@ -12,10 +16,10 @@ const links = [
     label: "Pricing",
     to: "/pricing",
   },
-  {
-    label: "Blog",
-    to: "/blog",
-  },
+  // {
+  //   label: "Blog",
+  //   to: "/blog",
+  // },
 ];
 </script>
 

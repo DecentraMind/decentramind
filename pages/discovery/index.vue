@@ -1,28 +1,27 @@
 <script setup lang="ts">
-import type { BlogPost } from '~/types'
+import type { BlogPost } from "~/types";
 
-const { data: page } = await useAsyncData('blog', () => queryContent('/blog').findOne())
+const { data: page } = await useAsyncData("discovery", () => queryContent("/discovery").findOne());
 if (!page.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: "Page not found", fatal: true });
 }
 
-const { data: posts } = await useAsyncData('posts', () => queryContent<BlogPost>('/blog')
-  .where({ _extension: 'md' })
-  .sort({ date: -1 })
-  .find())
+const { data: posts } = await useAsyncData("discovery", () =>
+  queryContent<BlogPost>("/discovery").where({ _extension: "md" }).sort({ date: -1 }).find()
+);
 
 useSeoMeta({
   title: page.value.title,
   ogTitle: page.value.title,
   description: page.value.description,
-  ogDescription: page.value.description
-})
+  ogDescription: page.value.description,
+});
 
 defineOgImage({
-  component: 'Saas',
+  component: "Saas",
   title: page.value.title,
-  description: page.value.description
-})
+  description: page.value.description,
+});
 </script>
 
 <template>
@@ -44,7 +43,7 @@ defineOgImage({
           :orientation="index === 0 ? 'horizontal' : 'vertical'"
           :class="[index === 0 && 'col-span-full']"
           :ui="{
-            description: 'line-clamp-2'
+            description: 'line-clamp-2',
           }"
         />
       </UBlogList>
