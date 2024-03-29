@@ -12,8 +12,8 @@ dependencies:
     specifier: ^1.3.5
     version: 1.3.5(@unovis/ts@1.3.5)(vue@3.4.21)
   '@web3-fullstack/layer':
-    specifier: ^0.0.4
-    version: 0.0.4(@lezer/common@1.2.1)(@nuxt/devtools@1.1.5)(@vue-macros/reactivity-transform@0.4.3)(@vue/compiler-core@3.4.21)(nuxt@3.11.1)(postcss@8.4.38)(typescript@5.4.3)(vite@5.2.7)(vue-tsc@2.0.7)(vue@3.4.21)(webpack@5.91.0)
+    specifier: ^0.0.5
+    version: 0.0.5(@lezer/common@1.2.1)(@nuxt/devtools@1.1.5)(@vue-macros/reactivity-transform@0.4.3)(@vue/compiler-core@3.4.21)(nuxt@3.11.1)(postcss@8.4.38)(typescript@5.4.3)(vite@5.2.7)(vue-tsc@2.0.7)(vue@3.4.21)(webpack@5.91.0)
   date-fns:
     specifier: ^3.6.0
     version: 3.6.0
@@ -4411,8 +4411,8 @@ packages:
       - '@vue/composition-api'
       - vue
 
-  /@web3-fullstack/layer@0.0.4(@lezer/common@1.2.1)(@nuxt/devtools@1.1.5)(@vue-macros/reactivity-transform@0.4.3)(@vue/compiler-core@3.4.21)(nuxt@3.11.1)(postcss@8.4.38)(typescript@5.4.3)(vite@5.2.7)(vue-tsc@2.0.7)(vue@3.4.21)(webpack@5.91.0):
-    resolution: {integrity: sha512-Bt0E6uJ2iBFMVGWGVmOhjXRFZw9/k6tmvGHXzQevys9PBuuAqaS/UU9DQWtp262LgRPoWLk3+v7uc6LYMVfbZw==}
+  /@web3-fullstack/layer@0.0.5(@lezer/common@1.2.1)(@nuxt/devtools@1.1.5)(@vue-macros/reactivity-transform@0.4.3)(@vue/compiler-core@3.4.21)(nuxt@3.11.1)(postcss@8.4.38)(typescript@5.4.3)(vite@5.2.7)(vue-tsc@2.0.7)(vue@3.4.21)(webpack@5.91.0):
+    resolution: {integrity: sha512-dYlODfAnP2/9nuMw1IlOG1MIpJHBR0FQUBN/dkMYnk9YAKKMO5xFWkM0AMUa5lj3F4ogVTeuuAhFk2pXBrW1sQ==}
     dependencies:
       '@nuxt/content': 2.12.1(nuxt@3.11.1)(vue@3.4.21)
       '@nuxt/fonts': 0.5.1(nuxt@3.11.1)(vite@5.2.7)
