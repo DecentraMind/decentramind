@@ -5,5 +5,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="bg-red-400">create task</div>
+  <div class="bg-red-400">
+    create task
+  </div>
 </template>
