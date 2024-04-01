@@ -211,12 +211,8 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
       <div class="py-8 text-2xl">经济模型</div>
 
 
-      <UButton type="submit">
-        Submit
-      </UButton>
-
-      <UButton variant="outline" class="ml-2" @click="form.clear()">
-        Clear
+      <UButton type="submit" class="ml-20">
+        保存修改
       </UButton>
     </UForm>
   </div>
