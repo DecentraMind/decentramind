@@ -68,6 +68,7 @@ function selectRange(duration: Duration) {
 </script>
 
 <template>
+
   <!-- <div class="bg-red-400">create task</div> -->
   <UForm ref="form" :state="state" class="space-y-4" @submit="onSubmit">
     <UFormGroup name="input" label="任务封面">
@@ -140,4 +141,5 @@ function selectRange(duration: Duration) {
       Clear
     </UButton>
   </UForm>
+
 </template>
