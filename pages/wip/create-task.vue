@@ -68,6 +68,7 @@ function selectRange(duration: Duration) {
 </script>
 
 <template>
+
   <!-- <div class="bg-red-400">create task</div> -->
   <UForm ref="form" :state="state" class="space-y-4" @submit="onSubmit">
     <UFormGroup name="input" label="任务封面">
@@ -94,24 +95,17 @@ function selectRange(duration: Duration) {
 
         <UInputMenu placeholder="链" :options="chainOptions" />
       </div>
-
-
-
     </UFormGroup>
     <UFormGroup name="input" label="总奖励任务数">
       <UInput placeholder="指奖励多少场space" />
     </UFormGroup>
-
     <UFormGroup name="textarea" label="任务周期">
       <div class="flex justify-between items-center">
         <USelect placeholder="时区" :options="timeZoneOptions" />
-
-
         <UPopover :popper="{ placement: 'bottom-start' }">
           <UButton icon="i-heroicons-calendar-days-20-solid">
             {{ format(selected.start, 'd MMM, yyy') }} - {{ format(selected.end, 'd MMM, yyy') }}
           </UButton>
-
           <template #panel="{ close }">
             <div class="flex items-center sm:divide-x divide-gray-200 dark:divide-gray-800">
               <div class="hidden sm:flex flex-col py-4">
@@ -126,18 +120,15 @@ function selectRange(duration: Duration) {
           </template>
         </UPopover>
       </div>
-
-
-
-
     </UFormGroup>
-
     <UButton type="submit">
       Submit
     </UButton>
-
     <UButton variant="outline" class="ml-2" @click="form.clear()">
       Clear
     </UButton>
   </UForm>
+  <div class="bg-red-400">
+    create task
+  </div>
 </template>
