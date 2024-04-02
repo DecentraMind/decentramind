@@ -2,69 +2,6 @@
 definePageMeta({
   layout: "wip",
 });
-
-
-import type { FormSubmitEvent } from '#ui/types'
-import { sub, format, isSameDay, type Duration } from 'date-fns'
-
-const tokenOptions = [
-  { label: 'Eth', value: 'Eth' },
-  { label: 'USDT', value: 'USDT' },
-  { label: 'AR', value: 'AR' }
-]
-
-const chainOptions = [
-  { label: 'Ethereum Mainnet', value: 'Ethereum Mainnet' },
-  { label: 'Linea Mainnet', value: 'Linea Mainnet' },
-  { label: 'Arweave Mainnet', value: 'Arweave Mainnet' }
-]
-
-const timeZoneOptions = [
-  { label: 'ACDT', value: 'ACDT'},
-  { label: 'AT', value: 'AT'},
-]
-
-const state = reactive({
-  input: undefined,
-  inputMenu: undefined,
-  textarea: undefined,
-  select: undefined,
-  selectMenu: undefined,
-  checkbox: undefined,
-  toggle: undefined,
-  radio: undefined,
-  radioGroup: undefined,
-  switch: undefined,
-  range: undefined
-})
-
-
-
-
-const form = ref()
-
-async function onSubmit(event: FormSubmitEvent<Schema>) {
-  // Do something with event.data
-  console.log(event.data)
-}
-
-const ranges = [
-  { label: 'Last 7 days', duration: { days: 7 } },
-  { label: 'Last 14 days', duration: { days: 14 } },
-  { label: 'Last 30 days', duration: { days: 30 } },
-  { label: 'Last 3 months', duration: { months: 3 } },
-  { label: 'Last 6 months', duration: { months: 6 } },
-  { label: 'Last year', duration: { years: 1 } }
-]
-const selected = ref({ start: sub(new Date(), { days: 14 }), end: new Date() })
-
-function isRangeSelected(duration: Duration) {
-  return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
-}
-
-function selectRange(duration: Duration) {
-  selected.value = { start: sub(new Date(), duration), end: new Date() }
-}
 </script>
 
 <template>
