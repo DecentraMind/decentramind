@@ -73,7 +73,6 @@ const pending = ref(true)
 
 <template>
   <div class="bg-green-400">
-    community-details
     <div>
       <UColorModeImage :light="light" :dark="dark" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
       <UPage>
