@@ -24,7 +24,7 @@ const blogPost = {
     "任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则",
   builderNum: 100,
   status: "进行中",
-  isJoin: "未参与",
+  isJoin: "已参与",
 };
 
 const columns = [
@@ -117,6 +117,9 @@ const people = [
 
 const q = ref("");
 
+function switchDisable() {
+  return blogPost.status == '进行中' && blogPost.isJoin == '已参与'
+}
 const filteredRows = computed(() => {
   if (!q.value) {
     return people;
@@ -183,10 +186,12 @@ const filteredRows = computed(() => {
       <div>
         <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
         <Text class=" mr-8 text-blue-300">任务提交排名:</Text>
-          <UInput v-model="q" placeholder="Filter people..." />
+          <UInput v-model="q" placeholder="Filter..." />
         </div>
-
         <UTable :rows="filteredRows" :columns="columns" />
+      </div>
+      <div class="flex justify-center ..." v-if="switchDisable()">
+        <UButton label="结算任务" />
       </div>
     </template>
   </UBlogPost>
