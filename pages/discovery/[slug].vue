@@ -79,7 +79,7 @@ if (post.value.image?.src) {
         </UButton>
       </div>
       <template #links>
-        <UButton size="xl" icon="i-heroicons-arrow-right-20-solid">Go to Space</UButton>
+        <UButton size="xl" icon="i-heroicons-arrow-right-20-solid" to="/dmind/">Go to Space</UButton>
       </template>
     </UPageHeader>
 
