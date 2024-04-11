@@ -18,6 +18,17 @@ const links = $computed(() => {
       },
     },
     {
+      id: "tasks",
+      label: "Tasks",
+      icon: "i-arcticons-x-twitter",
+      to: `/${slug}/tasks`,
+      badge: "4",
+      tooltip: {
+        text: "Inbox",
+        shortcuts: ["G", "I"],
+      },
+    },
+    {
       id: "inbox",
       label: "Inbox",
       icon: "i-heroicons-inbox",
