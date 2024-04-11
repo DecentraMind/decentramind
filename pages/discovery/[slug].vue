@@ -22,6 +22,7 @@ const { data: surround } = await useAsyncData(
 
 const title = post.value.head?.title || post.value.title;
 const description = post.value.head?.description || post.value.description;
+const logo = post.value.head?.logo || post.value.logo;
 
 useSeoMeta({
   title,
@@ -49,7 +50,11 @@ if (post.value.image?.src) {
 
 <template>
   <UContainer v-if="post">
-    <UPageHeader :title="post.title" :description="post.description">
+    <UPageHeader class="mt-10" :title="post.title" :description="post.description">
+      <template #icon>
+        <img :src="logo" class="rounded-full h-40 w-40 inline-flex" />
+      </template>
+
       <template #headline>
         <UBadge v-bind="post.badge" variant="subtle" />
         <span class="text-gray-500 dark:text-gray-400">&middot;</span>
@@ -59,12 +64,23 @@ if (post.value.image?.src) {
       </template>
 
       <div class="flex flex-wrap mt-4 gap-3 items-center">
-        <UButton v-for="(author, index) in post.authors" :key="index" :to="author.to" color="white" target="_blank" size="sm">
-          <UAvatar v-bind="author.avatar" :alt="author.name" size="2xs" />
-
-          {{ author.name }}
+        <UButton to="https://dmind.space" target="_blank" icon="i-mdi-web" aria-label="X" color="gray" variant="ghost"> Website </UButton>
+        <UButton to="https://twitter.com/decentramindio" target="_blank" icon="i-simple-icons-twitter" aria-label="X" color="gray" variant="ghost">
+          Decentralmindio
+        </UButton>
+        <UButton to="https://twitter.com/decentramindio" target="_blank" icon="i-simple-icons-github" aria-label="X" color="gray" variant="ghost">
+          Github
+        </UButton>
+        <UButton to="https://twitter.com/decentramindio" target="_blank" icon="i-simple-icons-discord" aria-label="X" color="gray" variant="ghost">
+          Discord
+        </UButton>
+        <UButton to="https://twitter.com/decentramindio" target="_blank" icon="i-simple-icons-telegram" aria-label="X" color="gray" variant="ghost">
+          Telegram
         </UButton>
       </div>
+      <template #links>
+        <UButton size="xl" icon="i-heroicons-arrow-right-20-solid">Go to Space</UButton>
+      </template>
     </UPageHeader>
 
     <UPage>
