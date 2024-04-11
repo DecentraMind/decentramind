@@ -11,13 +11,17 @@ const ranges = [
   { label: 'Last year', duration: { years: 1 } }
 ]
 
-const selected = defineModel({
-  type: Object as PropType<Range>,
-  required: true
-})
+// const selected = defineModel({
+//   type: Object as PropType<Range>,
+//   required: true
+// })
+
+let { modelValue: selected } = $defineModels<{
+  modelValue: Range
+}>()
 
 function isRangeSelected (duration: Duration) {
-  return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
+  return isSameDay(selected.value?.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
 }
 
 function selectRange (duration: Duration) {
@@ -29,13 +33,13 @@ function selectRange (duration: Duration) {
   <UPopover :popper="{ placement: 'bottom-start' }">
     <template #default="{ open }">
       <UButton color="gray" variant="ghost" :class="[open && 'bg-gray-50 dark:bg-gray-800']" trailing-icon="i-heroicons-chevron-down-20-solid">
-        {{ format(selected.start, 'd MMM, yyy') }} - {{ format(selected.end, 'd MMM, yyy') }}
+        {{ format(selected?.start, "d MMM, yyy") }} - {{ format(selected.end, "d MMM, yyy") }}
       </UButton>
     </template>
 
     <template #panel="{ close }">
-      <div class="flex items-center sm:divide-x divide-gray-200 dark:divide-gray-800">
-        <div class="hidden sm:flex flex-col py-4">
+      <div class="flex divide-gray-200 items-center sm:divide-x dark:divide-gray-800">
+        <div class="flex-col py-4 hidden sm:flex">
           <UButton
             v-for="(range, index) in ranges"
             :key="index"
