@@ -34,6 +34,11 @@ const state = reactive({
   showTokenName: undefined,
   isTradable: undefined,
   TradePlatform: undefined,
+  showAlltoken: undefined,
+  Alltoken: undefined,
+  Communitytoken: undefined,
+  Teamtoken: undefined,
+  Flowtoken: undefined,
 })
 
 const schema = z.object({
@@ -211,12 +216,45 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
       <div class="py-8 text-2xl">经济模型</div>
 
 
-      <UButton type="submit">
-        Submit
-      </UButton>
+      <div class="ml-10 space-y-3">
+        <UFormGroup name="range" class="flex flex-row items-center space-x-10">
+          <template #label>
+            <div class="text-sky-400 min-w-[100px]">token总量</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <Text>隐藏</Text>
+            <UToggle v-model="state.showAlltoken" />
+            <Text>显示</Text>
+          </div>
+        </UFormGroup>
 
-      <UButton variant="outline" class="ml-2" @click="form.clear()">
-        Clear
+        <UFormGroup name="range">
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Alltoken" placeholder="" />
+          </div>
+        </UFormGroup>
+
+        <UFormGroup name="range">
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Communitytoken" placeholder="社区（自定义）" />%
+          </div>
+        </UFormGroup>
+
+        <UFormGroup name="range">
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Teamtoken" placeholder="团队" />%
+          </div>
+        </UFormGroup>
+
+        <UFormGroup name="range">
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Flowtoken" placeholder="流动性" />%
+          </div>
+        </UFormGroup>
+      </div>
+
+      <UButton type="submit" class="ml-20">
+        保存修改
       </UButton>
     </UForm>
   </div>
