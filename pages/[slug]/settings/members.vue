@@ -11,28 +11,56 @@ const filteredMembers = computed(() => {
     return member.name.search(new RegExp(q.value, 'i')) !== -1 || member.username.search(new RegExp(q.value, 'i')) !== -1
   })
 })
+
+
+const communityForm = reactive({ 
+    showAll: true, 
+    communityName: '',
+    showCommunitynum: true,
+})
+function onSubmitPassword () {
+  console.log('Submitted form:', communityForm)
+}
 </script>
 
 <template>
   <UDashboardPanelContent class="pb-24">
-    <UDashboardSection title="Manage access" description="Invite new members by email address." orientation="horizontal" :ui="{ container: 'lg:sticky top-2' }">
-      <template #links>
-        <UButton label="Invite people" color="black" @click="isInviteModalOpen = true" />
+    <UCard @submit.prevent="onSubmitPassword">
+      <template #header>
+        <div class="flex justify-between">
+          <h3 class="text-2xl font-semibold leading-6 text-gray-900 dark:text-white">
+            社区列表
+          </h3>
+          <div>
+            全部隐藏<UToggle v-model="communityForm.showAll" />全部显示
+          </div>
+        </div>
       </template>
-
-      <UCard :ui="{ header: { padding: 'p-4 sm:px-6' }, body: { padding: '' } }" class="min-w-0">
-        <template #header>
-          <UInput v-model="q" icon="i-heroicons-magnifying-glass" placeholder="Search members" autofocus />
+      <div class="flex flex-wrap">
+        <div class="w-1/2" v-for="(item, index) in formItems" :key="index">
+          <div class="flex items-center">
+            <UColorModeImage :light="item.light" :dark="item.dark" class="h-[70px]" />
+            <UFormGroup :label="item.label" :name="item.name" class="ml-5">
+              <UInput v-model="item.value" />
+            </UFormGroup>
+            <UToggle v-model="item.show" class="ml-10" />显示
+          </div>
+        </div>
+      </div>
+      <UFormGroup name="new">
+        <template #label>
+          <div class="mt-10">
+            已加入社区数量： 50
+            <UToggle v-model="communityForm.showCommunitynum" class="ml-10" />显示
+          </div>
         </template>
+      </UFormGroup>
 
-        <!-- ~/components/settings/MembersList.vue -->
-        <SettingsMembersList :members="filteredMembers" />
-      </UCard>
-    </UDashboardSection>
-
-    <UDashboardModal v-model="isInviteModalOpen" title="Invite people" description="Invite new members by email address" :ui="{ width: 'sm:max-w-md' }">
-      <!-- ~/components/settings/MembersForm.vue -->
-      <SettingsMembersForm @close="isInviteModalOpen = false" />
-    </UDashboardModal>
+      <template #footer>
+        <UButton type="submit" color="black">
+          Save password
+        </UButton>
+      </template>
+    </UCard>
   </UDashboardPanelContent>
 </template>

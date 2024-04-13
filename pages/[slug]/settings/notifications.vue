@@ -41,31 +41,24 @@ async function onChange () {
   // Do something with data
   console.log(state)
 }
+
+
+
+
+const taskForm = reactive({ 
+    showTasknum: true, 
+})
+function onSubmitPassword () {
+  console.log('Submitted form:', taskForm)
+}
+
 </script>
 
 <template>
   <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
-    <UDashboardSection
-      v-for="(section, index) in sections"
-      :key="index"
-      :title="section.title"
-      :description="section.description"
-      orientation="horizontal"
-      class="px-4 py-6"
-    >
-      <UCard :ui="{ body: { base: 'divide-y divide-gray-200 dark:divide-gray-800 gap-4 flex flex-col' } }">
-        <UFormGroup
-          v-for="field in section.fields"
-          :key="field.name"
-          :name="field.name"
-          :label="field.label"
-          :description="field.description"
-          class="flex items-center justify-between pt-4 first:pt-0 gap-2"
-          :ui="{ container: 'flex' }"
-        >
-          <UToggle v-model="state[field.name]" size="md" @update:model-value="onChange" />
-        </UFormGroup>
-      </UCard>
-    </UDashboardSection>
+    <UCard @submit.prevent="onSubmitPassword">
+      已完成任务数量： 50
+      <UToggle v-model="taskForm.showTasknum" class="ml-10" />显示
+    </UCard>
   </udashboardpanelcontent>
 </template>

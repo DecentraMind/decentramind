@@ -50,23 +50,47 @@ const links = $computed(() => {
       },
     },
     {
+      id: "community-discovery",
+      label: "Cmmunity-discovery",
+      icon: "i-heroicons-user-group",
+      to: `/${slug}/discovery`,
+      tooltip: {
+        text: "Community-discovery",
+        shortcuts: ["G", "U"],
+      },
+    },
+    {
+      id: "set",
+      label: "set",
+      icon: "i-heroicons-user-group",
+      to: `/${slug}/personal`,
+      tooltip: {
+        text: "set",
+        shortcuts: ["G", "U"],
+      },
+    },
+    {
       id: "settings",
       label: "Settings",
       to: `/${slug}/settings`,
       icon: "i-heroicons-cog-8-tooth",
       children: [
         {
-          label: "General",
+          label: "Personal Info",
           to: `/${slug}/settings`,
           exact: true,
         },
         {
-          label: "Members",
+          label: "Community Info",
           to: `/${slug}/settings/members`,
         },
         {
-          label: "Notifications",
+          label: "Task Info",
           to: `/${slug}/settings/notifications`,
+        },
+        {
+          label: "Invitie Info",
+          to: `/${slug}/settings/myinvite`,
         },
       ],
       tooltip: {

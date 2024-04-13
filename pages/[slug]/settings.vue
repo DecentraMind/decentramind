@@ -1,17 +1,25 @@
 <script setup lang="ts">
+
+const route = useRoute()
+const slug = $computed(() => route.params.slug)
+
 const links = [[{
-    label: 'General',
+    label: '个人信息设置',
     icon: 'i-heroicons-user-circle',
-    to: '/settings',
+    to: `/${slug}/settings`,
     exact: true
   }, {
-    label: 'Members',
+    label: '社区信息设置',
     icon: 'i-heroicons-user-group',
-    to: '/settings/members'
+    to: `/${slug}/settings/members`
   }, {
-    label: 'Notifications',
+    label: '任务信息设置',
     icon: 'i-heroicons-bell',
-    to: '/settings/notifications'
+    to: `/${slug}/settings/notifications`
+  }, {
+    label: '我的邀请',
+    icon: 'i-heroicons-bell',
+    to: `/${slug}/settings/myinvite`
   }], [{
     label: 'Documentation',
     icon: 'i-heroicons-book-open',
