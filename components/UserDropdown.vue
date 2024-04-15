@@ -3,8 +3,8 @@ const { isHelpSlideoverOpen } = useDashboard()
 const { isDashboardSearchModalOpen } = useUIState()
 const { metaSymbol } = useShortcuts()
 
-const route = useRoute();
-const slug = $computed(() => route.params.slug);
+const route = useRoute()
+const slug = $computed(() => route.params.slug)
 
 const items = computed(() => [
   [{

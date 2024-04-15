@@ -59,45 +59,8 @@ const links = $computed(() => {
         shortcuts: ["G", "U"],
       },
     },
-    {
-      id: "set",
-      label: "set",
-      icon: "i-heroicons-user-group",
-      to: `/${slug}/personal`,
-      tooltip: {
-        text: "set",
-        shortcuts: ["G", "U"],
-      },
-    },
-    {
-      id: "settings",
-      label: "Settings",
-      to: `/${slug}/settings`,
-      icon: "i-heroicons-cog-8-tooth",
-      children: [
-        {
-          label: "Personal Info",
-          to: `/${slug}/settings`,
-          exact: true,
-        },
-        {
-          label: "Community Info",
-          to: `/${slug}/settings/members`,
-        },
-        {
-          label: "Task Info",
-          to: `/${slug}/settings/notifications`,
-        },
-        {
-          label: "Invitie Info",
-          to: `/${slug}/settings/myinvite`,
-        },
-      ],
-      tooltip: {
-        text: "Settings",
-        shortcuts: ["G", "S"],
-      },
-    },
+    
+    
   ];
 });
 const footerLinks = $computed(() => {

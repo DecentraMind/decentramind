@@ -56,9 +56,11 @@ function onSubmitPassword () {
 
 <template>
   <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
-    <UCard @submit.prevent="onSubmitPassword">
-      已完成任务数量： 50
-      <UToggle v-model="taskForm.showTasknum" class="ml-10" />显示
+    <UCard class="pl-10 pt-10 text-xl" @submit.prevent="onSubmitPassword">
+      <div class="flex items-center">
+        已完成任务数量： 50
+        <UToggle v-model="taskForm.showTasknum" class="ml-10 mr-3" size="xl" />显示
+      </div>
     </UCard>
   </udashboardpanelcontent>
 </template>

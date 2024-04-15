@@ -109,11 +109,15 @@ const formItems = ref([
 <template>
   <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
     <UCard @submit.prevent="onSubmitPassword">
-      <div class="flex items-center justify-between" v-for="(item, index) in formItems" :key="index">
+      <div 
+        v-for="(item, index) in formItems" 
+        :key="index"
+        class="flex items-center justify-between pr-[120px]" 
+      >
         <div class="flex items-center mt-5">
-          <UColorModeImage :light="item.light" :dark="item.dark" class="h-[70px]" />
-          <div class="ml-3">{{ item.label }}</div>
-          <div class="ml-10">已邀请xx位好友</div>
+          <UColorModeImage :light="item.light" :dark="item.dark" class="h-[100px]" />
+          <div class="ml-3 text-xl">{{ item.label }}</div>
+          <div class="ml-10 text-xl">已邀请xx位好友</div>
           <UAvatarGroup size="sm" :max="2" class="ml-10">
             <UAvatar
               src="https://avatars.githubusercontent.com/u/739984?v=4"
@@ -129,7 +133,7 @@ const formItems = ref([
             />
           </UAvatarGroup>
         </div>
-        <UButton class="flex-end">查看所有好友</UButton>
+        <UButton class="flex-end text-xl text-center">查看所有好友</UButton>
       </div>
     </UCard>
   </udashboardpanelcontent>

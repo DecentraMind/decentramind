@@ -70,19 +70,19 @@ const pending = ref(true)
 
 <template>
   <UDashboardPage>
-    <div class="w-full">
+    <div class="w-full px-50">
       <UColorModeImage :light="light" :dark="dark" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
-      <UPage>
+      <UPage class="pl-5 pr-20">
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
           color="primary"
           :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]"
         >
           <template #title>
-            <div class="text-3xl mb-12 mt-3">PermaDAO</div>
+            <div class="text-3xl mb-12 mt-3 px-12">PermaDAO</div>
           </template>
           <template #description>
-            <div class="flex flex-col w-5/6">
+            <div class="flex flex-col w-5/6 px-12">
               <Text class="mb-3">社区详情</Text>
               <Text>
                 对于网页开发或平台设计来说，在工作时可能经常会需要使用一些文字或图片来填充空白区域，
@@ -96,7 +96,11 @@ const pending = ref(true)
         <UPageBody prose>
           <ULandingGrid>
             <ULandingCard class="col-span-4 row-span-2">
-              <div v-for="(item, index) in itemsbadge" :key="index" class="flex justify-between">
+              <div 
+                v-for="(item, index) in itemsbadge" 
+                :key="index" 
+                class="flex justify-between px-12"
+              >
                 <div>{{ item.label }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge v-for="(badge, badgeIndex) in item.badges" :key="badgeIndex">{{ badge }}</UBadge>
@@ -104,7 +108,11 @@ const pending = ref(true)
               </div>
             </ULandingCard>
             <ULandingCard class="col-span-4 row-span-2">
-              <div v-for="(item, index) in itemsbadge2" :key="index" class="flex justify-between">
+              <div 
+                v-for="(item, index) in itemsbadge2" 
+                :key="index" 
+                class="flex justify-between px-12"
+              >
                 <div>{{ item.label }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge v-for="(badge, badgeIndex) in item.badges" :key="badgeIndex">{{ badge }}</UBadge>
@@ -112,7 +120,12 @@ const pending = ref(true)
               </div>
             </ULandingCard>
             <ULandingCard class="col-span-4 row-span-4">
-              <UTable :columns="columns" :rows="ranks" :loading="pending">
+              <UTable 
+                :columns="columns" 
+                :rows="ranks" 
+                :loading="pending"
+                class="pl-12"
+              >
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
                     <UAvatar v-bind="row.avatar" :alt="row.name" size="xs" />
@@ -127,8 +140,10 @@ const pending = ref(true)
               </UTable>
             </ULandingCard>
             <ULandingCard class="col-span-8 row-span-2">
-              经济模型<br>
-              token总量 2100000
+              <div class="px-12">
+                经济模型<br>
+                token总量 2100000
+              </div>
             </ULandingCard>
           </ULandingGrid>
         </UPageBody>

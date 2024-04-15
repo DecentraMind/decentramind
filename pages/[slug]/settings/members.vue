@@ -21,45 +21,111 @@ const communityForm = reactive({
 function onSubmitPassword () {
   console.log('Submitted form:', communityForm)
 }
+
+
+const light = 'https://source.unsplash.com/random/200x200?sky'
+const dark = 'https://source.unsplash.com/random/200x200?stars'
+
+const formItems = ref([
+  { 
+    light: light, 
+    dark: dark, 
+    label: '社区A', 
+    name: 'current', 
+    value: communityForm.communityName,
+    show: true 
+  }, { 
+    light: light, 
+    dark: dark, 
+    label: '社区A', 
+    name: 'current', 
+    value: communityForm.communityName,
+    show: true 
+  }, { 
+    light: light, 
+    dark: dark, 
+    label: '社区A', 
+    name: 'current', 
+    value: communityForm.communityName,
+    show: true 
+  }, { 
+    light: light, 
+    dark: dark, 
+    label: '社区A', 
+    name: 'current', 
+    value: communityForm.communityName,
+    show: true 
+  }, { 
+    light: light, 
+    dark: dark, 
+    label: '社区A', 
+    name: 'current', 
+    value: communityForm.communityName,
+    show: true 
+  }, { 
+    light: light, 
+    dark: dark, 
+    label: '社区A', 
+    name: 'current', 
+    value: communityForm.communityName,
+    show: true 
+  }, 
+  // 其他表单项
+])
+
 </script>
 
 <template>
   <UDashboardPanelContent class="pb-24">
     <UCard @submit.prevent="onSubmitPassword">
       <template #header>
-        <div class="flex justify-between">
-          <h3 class="text-2xl font-semibold leading-6 text-gray-900 dark:text-white">
+        <div class="flex justify-between pl-10 pr-20 items-center">
+          <h3 class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white">
             社区列表
           </h3>
-          <div>
-            全部隐藏<UToggle v-model="communityForm.showAll" />全部显示
+          <div class="flex items-center text-xl space-x-5">
+            <div>全部隐藏</div>
+            <UToggle v-model="communityForm.showAll" size="xl" />
+            <div>全部显示</div>
           </div>
         </div>
       </template>
       <div class="flex flex-wrap">
-        <div class="w-1/2" v-for="(item, index) in formItems" :key="index">
-          <div class="flex items-center">
-            <UColorModeImage :light="item.light" :dark="item.dark" class="h-[70px]" />
-            <UFormGroup :label="item.label" :name="item.name" class="ml-5">
+        <div 
+          v-for="(item, index) in formItems" 
+          :key="index"
+          class="w-1/2 pl-5" 
+        >
+          <div class="flex items-center mb-5">
+            <UColorModeImage :light="item.light" :dark="item.dark" class="h-[100px]" />
+            <UFormGroup :label="item.label" :name="item.name" class="ml-5 w-[300px]">
+              <template #label>
+                <div class="text-xl">
+                  {{ item.label }}
+                </div>
+              </template>
               <UInput v-model="item.value" />
             </UFormGroup>
-            <UToggle v-model="item.show" class="ml-10" />显示
+            <UToggle v-model="item.show" class="ml-10" size="xl" />显示
           </div>
         </div>
       </div>
       <UFormGroup name="new">
         <template #label>
-          <div class="mt-10">
+          <div class="mt-10 text-xl flex items-center pl-10">
             已加入社区数量： 50
-            <UToggle v-model="communityForm.showCommunitynum" class="ml-10" />显示
+            <UToggle v-model="communityForm.showCommunitynum" class="ml-10" size="xl" />
+            <div class="ml-3">显示</div>
           </div>
         </template>
       </UFormGroup>
 
       <template #footer>
-        <UButton type="submit" color="black">
-          Save password
-        </UButton>
+        <div class="flex justify-center">
+          <UButton type="submit" color="black">
+            保存修改
+          </UButton>
+        </div>
       </template>
     </UCard>
   </UDashboardPanelContent>

@@ -58,8 +58,7 @@ const blogPosts = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full">
-    discovery
+  <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-20">
     <UBlogList orientation="horizontal">
       <UBlogPost 
         v-for="blogPost in blogPosts" 
@@ -67,6 +66,7 @@ const blogPosts = [
         :image="blogPost.image" 
         :description="blogPost.description"
         :to="`/${slug}/community-details`"
+        class="w-5/6"
       >
         <template #title>
           <div class="flex items-center">

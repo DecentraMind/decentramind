@@ -76,9 +76,10 @@ function onSubmitAccount () {
           <UAvatar
             src="https://avatars.githubusercontent.com/u/739984?v=4"
             alt="Avatar"
+            class="ml-5"
             size="3xl"
           />
-          <div class="flex items-center p-3 ml-2">
+          <div class="flex items-center p-3 ml-5">
             <UFormGroup
               label="修改用户名"
               name="name" 
@@ -90,20 +91,20 @@ function onSubmitAccount () {
         </div>
       </template>
 
-      <div class="text-2xl">社交信息</div>
-      <UFormGroup label="twitter" name="twitter" class="mb-3">
+      <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">社交信息</div>
+      <UFormGroup label="twitter" name="twitter" class="mb-5 pl-10">
         <div class="flex items-center space-x-3">
           <UInput v-model="accountForm.twitter" />
           <UToggle v-model="accountForm.showtwitter" />显示
         </div>
       </UFormGroup>
-      <UFormGroup label="mail" name="mail">
+      <UFormGroup label="mail" name="mail" class="mb-5 pl-10">
         <div class="flex items-center space-x-3">
           <UInput v-model="accountForm.mail" />
           <UToggle v-model="accountForm.showmail" />显示
         </div>
       </UFormGroup>
-      <UFormGroup label="mail" name="mail">
+      <UFormGroup label="mail" name="mail" class="mb-5 pl-10">
         <div class="flex items-center space-x-3">
           <UInput v-model="accountForm.telegram" />
           <UToggle v-model="accountForm.showtelegram" />显示
@@ -111,9 +112,11 @@ function onSubmitAccount () {
       </UFormGroup>
 
       <template #footer>
-        <UButton type="submit" color="black">
-          Save account
-        </UButton>
+        <div class="flex justify-center">
+          <UButton type="submit" color="black">
+            保存修改
+          </UButton>
+        </div>
       </template>
     </UCard>
   </UDashboardPanelContent>
