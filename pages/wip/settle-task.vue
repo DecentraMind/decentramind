@@ -8,14 +8,14 @@ definePageMeta({
 const toast = useToast()
 const modal = useModal()
 
-const blogpost = {
+const userinfo = {
   userId: 1,
   userName: "gqz",
   userTwitter: "xx",
 };
 const error_msg = "感谢你对社区的支持~经系统检测，你还没有绑定twitter账号哦！"
 function openModal () {
-  if(isNullOrEmpty(blogpost.userTwitter)){
+  if(isNullOrEmpty(userinfo.userTwitter)){
     modal.open(CommonAlert, {message: error_msg})
   }else{
     modal.open(RuleModal)
