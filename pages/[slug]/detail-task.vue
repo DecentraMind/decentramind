@@ -140,15 +140,25 @@ const userinfo = {
   userTwitter: "xx",
 };
 const error_msg = "感谢你对社区的支持~经系统检测，你还没有绑定twitter账号哦！"
+let isOpen = $ref(false)
 function openModal () {
   if(isNullOrEmpty(userinfo.userTwitter)){
     modal.open(CommonAlert, {message: error_msg})
   }else{
-    modal.open(RuleModal)
+    isOpen = true
   }
 }
 function isNullOrEmpty(str: string | null | undefined): boolean {
   return !str || str.length === 0 || str.length == undefined;
+}
+
+
+const emit = defineEmits(['success'])
+const singles = ['单人', '多人']
+const isSingle = ref(singles[0])
+let isSettlementOpen = $ref(false)
+function onClick() {
+  isSettlementOpen = true
 }
 </script>
 
@@ -222,7 +232,41 @@ function isNullOrEmpty(str: string | null | undefined): boolean {
         </UBlogPost>
       </div>
     </UPage>
-
+    <UModal v-model="isOpen">
+    <UCard>
+      <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+            任务结算
+          </h3>
+          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+            @click="isOpen = false" />
+        </div>
+      </template>
+      <div v-if="!isSettlementOpen" class="space-y-2">
+        <p>感谢你对社区的支持~请你按照任务规则完成任务，并且将任务URL提交至表格的加号处哦！如果没有遵循任何一条任务规则那么你可能会白费力气喔~</p>
+        <UButton @click="onClick">
+          I know!
+        </UButton>
+      </div>
+      <div v-if="isSettlementOpen">
+        <div class="my-8 flex flex-row">
+          <div class="mr-4 basis-2/3">
+            <UInput color="primary" variant="outline" placeholder="钱包地址2" />
+          </div>
+          <div class="ml-4 basis-1/3">
+            <UInput color="primary" variant="outline" placeholder="奖励占比" />
+          </div>
+        </div>
+        <div class="my-8">
+          <UInput color="primary" variant="outline" placeholder="URL" />
+        </div>
+        <div class="flex justify-center my-8">
+          <UButton>确认提交</UButton>
+        </div>
+      </div>
+    </UCard>
+  </UModal>
   </UDashboardPage>
 
 </template>
