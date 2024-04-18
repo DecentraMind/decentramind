@@ -132,67 +132,76 @@ const filteredRows = computed(() => {
 </script>
 
 <template>
-  <div class="w-full overflow-y-auto h-full  ">
-    <UBlogPost
-      :key="blogPost.id"
-      :image="blogPost.image"
-      :description="blogPost.description"
-      class="m-8"
-    >
-      <template #title>
-        <div class="flex justify-start...">
-          <Text class="mx-3">{{ blogPost.name }}</Text>
-          <div class="mx-8"><UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge></div>
-          <div class="mx-8"><UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge></div>
-          <!-- <UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge>
-          <UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge> -->
+  <UDashboardPage>
+    <UPage>
+      <div class="w-full overflow-y-auto h-full ">
+        <div class="mx-10">
+          <UColorModeImage :light="blogPost.image" :dark="blogPost.image" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
-      </template>
-      <template #description>
-        <div class="flex flex-col space-y-2">
-          <Text class="text-blue-900">{{ blogPost.description }}</Text>
-          <div class="flex justify-start ...">
-            <div><Text class=" mr-20 text-blue-300">任务时间:</Text></div>
+
+        <UBlogPost
+          :key="blogPost.id"
+          :description="blogPost.description"
+          class="p-10"
+        >
+          <template #title>
+            <div class="flex justify-start...">
+              <Text class="mx-3">{{ blogPost.name }}</Text>
+              <div class="mx-8"><UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge></div>
+              <div class="mx-8"><UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge></div>
+              <!-- <UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge>
+              <UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge> -->
+            </div>
+          </template>
+          <template #description>
+            <div class="flex flex-col space-y-2">
+              <Text class="text-blue-900">{{ blogPost.description }}</Text>
+              <div class="flex justify-start ...">
+                <div><Text class=" mr-20 text-blue-300">任务时间:</Text></div>
+                <div>
+                  <Text class="text-blue-300">{{ blogPost.taskTime }}</Text>
+                </div>
+              </div>
+              <div class="flex justify-start ...">
+                <div><Text class=" mr-20 text-blue-300">任务奖励:</Text></div>
+                <div>
+                  <Text class="text-blue-300">{{ blogPost.reward }}</Text>
+                </div>
+              </div>
+              <div class="flex justify-start ...">
+                <div><Text class=" mr-20 text-blue-300">奖励场次:</Text></div>
+                <div>
+                  <Text class="text-blue-300">{{ blogPost.rewardSessions }}</Text>
+                </div>
+              </div>
+              <div class="flex justify-start ...">
+                <div><Text class=" mr-16 text-blue-300">已提交场次:</Text></div>
+                <div>
+                  <Text class="text-blue-300">{{ blogPost.submittedSessions }}</Text>
+                </div>
+              </div>
+              <div class="w-full grid grid-rows-2 grid-flow-col gap-4">
+                <div class="mr-16 row-span-2"><Text class="text-blue-300">任务规则:</Text></div>
+                <div class="col-span-2">
+                  <Text class="text-blue-300">{{ blogPost.taskRule }}</Text>
+                </div>
+              </div>
+            </div>
             <div>
-              <Text class="text-blue-300">{{ blogPost.taskTime }}</Text>
+              <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
+                <Text class=" mr-8 text-blue-300">任务提交排名:</Text>
+                <UInput v-model="q" placeholder="Filter..." />
+              </div>
+              <UTable :rows="filteredRows" :columns="columns" />
             </div>
-          </div>
-          <div class="flex justify-start ...">
-            <div><Text class=" mr-20 text-blue-300">任务奖励:</Text></div>
-            <div>
-              <Text class="text-blue-300">{{ blogPost.reward }}</Text>
+            <div class="flex justify-center my-8" v-if="switchDisable()">
+              <UButton label="结算任务" />
             </div>
-          </div>
-          <div class="flex justify-start ...">
-            <div><Text class=" mr-20 text-blue-300">奖励场次:</Text></div>
-            <div>
-              <Text class="text-blue-300">{{ blogPost.rewardSessions }}</Text>
-            </div>
-          </div>
-          <div class="flex justify-start ...">
-            <div><Text class=" mr-16 text-blue-300">已提交场次:</Text></div>
-            <div>
-              <Text class="text-blue-300">{{ blogPost.submittedSessions }}</Text>
-            </div>
-          </div>
-          <div class="grid grid-rows-2 grid-flow-col gap-4">
-            <div class="mr-16 row-span-2"><Text class="text-blue-300">任务规则:</Text></div>
-            <div class="col-span-2 ...">
-              <Text class="text-blue-300">{{ blogPost.taskRule }}</Text>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-            <Text class=" mr-8 text-blue-300">任务提交排名:</Text>
-            <UInput v-model="q" placeholder="Filter..." />
-          </div>
-          <UTable :rows="filteredRows" :columns="columns" />
-        </div>
-        <div class="flex justify-center my-8" v-if="switchDisable()">
-          <UButton label="结算任务" />
-        </div>
-      </template>
-    </UBlogPost>
-  </div>
+          </template>
+        </UBlogPost>
+      </div>
+    </UPage>
+
+  </UDashboardPage>
+
 </template>
