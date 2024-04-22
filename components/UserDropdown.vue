@@ -16,6 +16,10 @@ const items = computed(() => [
     icon: 'i-heroicons-cog-8-tooth',
     to: `/${slug}/settings`
   }, {
+    label: 'Mywallet',
+    icon: 'i-heroicons-cog-8-tooth',
+    to: `/${slug}/mytask`
+  }, {
     label: 'Command menu',
     icon: 'i-heroicons-command-line',
     shortcuts: [metaSymbol.value, 'K'],

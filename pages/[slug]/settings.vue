@@ -14,7 +14,7 @@ const links = [[{
     to: `/${slug}/settings/members`
   }, {
     label: '任务信息设置',
-    icon: 'i-heroicons-bell',
+    icon: 'eos-icons:abstract-instance-outlined',
     to: `/${slug}/settings/notifications`
   }, {
     label: '我的邀请',
