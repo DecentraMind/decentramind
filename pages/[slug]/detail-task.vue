@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import RuleModal from '~/components/RuleModal.vue'
+
 import CommonAlert from '~/components/CommonAlert.vue'
 
 const blogPost = {
