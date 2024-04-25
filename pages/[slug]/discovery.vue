@@ -54,11 +54,29 @@ const blogPosts = [
     description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5'
   }
 ]
+const {
+  // currentChain, selectedWallet,
+  address,
+  credBalance,
+  init, doLogout, doLogin } = $(aoStore())
 
+onMounted(init)
+
+const { getCommunity } = $(aocommunity())
+let cList = $ref('')
+const getCommunitylist = async() => {
+  
+  cList = await getCommunity()
+  console.log("goods")
+  console.log(cList)
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-20">
+    <UButton color="white" @click="doLogin">Arconnect</UButton>
+    <UButton color="white" @click="getCommunitylist">test</UButton>
+    <p>123{{ cList }}</p>
     <UBlogList orientation="horizontal">
       <UBlogPost 
         v-for="blogPost in blogPosts" 
