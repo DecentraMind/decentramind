@@ -60,6 +60,17 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
   // Do something with event.data
   console.log(event.data)
 }
+
+
+const { addCommunity, getCommunity, getCommunities } = $(aocommunity())
+let cList = $ref('')
+let cListj = $ref({})
+const addCommunitylist = async () => { 
+  cListj = await addCommunity()
+  console.log("goods")
+  console.log(cListj)
+}
+
 </script>
 
 <template>
@@ -251,8 +262,8 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
         </UFormGroup>
       </div>
 
-      <UButton type="submit" class="ml-20">
-        保存修改
+      <UButton type="submit" class="ml-20" @click="addCommunitylist">
+        添加
       </UButton>
     </UForm>
   </UDashboardPage>
