@@ -21,12 +21,13 @@ export const aocommunity = defineStore('aocommunity', () => {
 
 
 
-    const addCommunity = async () => {
+    const addCommunity = async (dataT) => {
         
         let add = await message({
             process: processID,
             tags: [{ name: 'Action', value: 'add'}],
             signer: createDataItemSigner(window.arweaveWallet),
+            data: dataT,
         });
         console.log("goood2")
         console.log(add)

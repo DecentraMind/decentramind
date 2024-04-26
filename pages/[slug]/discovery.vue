@@ -100,13 +100,13 @@ getCommunitylist()
               alt="Avatar"
               size="md"
             />
-            <Text class="mx-3">{{ blogPost.communityName }}</Text>
+            <Text class="mx-3">{{ blogPost.name }}</Text>
           </div>
         </template>
         <template #description>
           <div class="flex flex-col space-y-2">
             <Text class="text-blue-300">builder: 100</Text>
-            <Text class="text-blue-900">{{ blogPost.decs }}</Text>
+            <Text class="text-blue-900">{{ blogPost.desc }}</Text>
           </div>
         </template>
         <UButton class="absolute right-0" color="primary" variant="outline" >加入社区</UButton>

@@ -9,7 +9,9 @@ const options = [
   { label: 'Binance', value: 'Binance' },
 ]
 
-const state = reactive({
+let isAdded = $ref(false)
+
+let state = $ref({
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
@@ -40,13 +42,13 @@ const state = reactive({
 })
 
 const schema = z.object({
-  Name: z.string().min(3),
-  Inbro: z.string().min(5),
+  Name: z.string().min(2),
+  Inbro: z.string().min(3),
   
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
   }),
-  Buildernum: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
+  Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
     return !isNaN(num) && num <= 100
   }, { message: 'Must be a valid number less than or equal to 20' }),
@@ -64,19 +66,31 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
 
 const { addCommunity, getCommunity, getCommunities } = $(aocommunity())
 let cList = $ref('')
-let cListj = $ref({})
+
 const addCommunitylist = async () => { 
-  cListj = await addCommunity()
   console.log("goods")
-  console.log(cListj)
+  let cSubmitL = [
+    {
+      "name": state.Name,
+      "desc": state.Inbro,
+      "website": state.Website,
+      "whitebook": state.Whitebook,
+      "allreward": state.Allreward,
+    }
+  ]
+  const jsonString = JSON.stringify(cSubmitL);
+  console.log(cSubmitL)
+  
+  cList = await addCommunity(jsonString)
+  console.log(cList)
+  isAdded = true
 }
 
 </script>
 
 <template>
   <UDashboardPage>
-    create-community
-    <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5" @submit="onSubmit">
+    <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
       <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
         <template #label>
           <div class="text-sky-400 min-w-[100px]">logo</div>
@@ -266,5 +280,19 @@ const addCommunitylist = async () => {
         添加
       </UButton>
     </UForm>
+    <UModal v-model="isAdded" prevent-close>
+      <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+              Modal
+            </h3>
+            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isAdded = false" />
+          </div>
+        </template>
+
+        <Placeholder class="h-32" >添加成功</Placeholder>
+      </UCard>
+    </UModal>
   </UDashboardPage>
 </template>
