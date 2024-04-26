@@ -28,7 +28,7 @@ const state = reactive({
   switch: undefined,
   range: undefined
 })
-const form = ref()
+const form = $ref()
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   // Do something with event.data
   console.log(event.data)
@@ -47,6 +47,13 @@ function isRangeSelected(duration: Duration) {
 }
 function selectRange(duration: Duration) {
   selected.value = { start: sub(new Date(), duration), end: new Date() }
+}
+
+const { createTask, getAllTasks } = $(taskStore())
+
+const createNewTask = async() => {
+
+  createTask(form, "CreateTask")
 }
 </script>
 
@@ -105,7 +112,7 @@ function selectRange(duration: Duration) {
             </UPopover>
           </div>
         </UFormGroup>
-        <UButton type="submit">
+        <UButton type="submit" @click="createTask">
           Submit
         </UButton>
         <UButton variant="outline" class="ml-2" @click="form.clear()">
