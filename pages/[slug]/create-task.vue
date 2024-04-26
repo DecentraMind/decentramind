@@ -52,7 +52,8 @@ function selectRange(duration: Duration) {
 const { createTask, getAllTasks } = $(taskStore())
 
 const createNewTask = async() => {
-
+  console.log("get in method")
+  console.log("form = " + form)
   createTask(form, "CreateTask")
 }
 </script>
@@ -112,7 +113,7 @@ const createNewTask = async() => {
             </UPopover>
           </div>
         </UFormGroup>
-        <UButton type="submit" @click="createTask">
+        <UButton type="submit" @click="createNewTask">
           Submit
         </UButton>
         <UButton variant="outline" class="ml-2" @click="form.clear()">
