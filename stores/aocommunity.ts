@@ -20,7 +20,7 @@ export const aocommunity = defineStore('aocommunity', () => {
 
 
 
-
+    //创建社区方法
     const addCommunity = async (dataT) => {
         
         let add = await message({
@@ -33,20 +33,32 @@ export const aocommunity = defineStore('aocommunity', () => {
         console.log(add)
     }
 
-    const getCommunities = async () => {
-        console.log("no goods")
-    }
-
+    //获取社区列表方法
     const getCommunity = async () => {
         let result = await dryrun({
             process: processID,
-            tags: [{ name: 'Action', value: 'communitylist' }],
+            tags: [
+                { name: 'Action', value: 'communitylist' },
+            ],
         });
+        console.log(result)
         console.log("goood2")
         return result
     }
 
-    return $$({ getCommunity, getCommunities, addCommunity })
+    //加入社区方法
+    const joinCommunity = async( community ) => {
+        let join = await message({
+            process: processID,
+            tags: [{ name: 'Action', value: 'join'}],
+            signer: createDataItemSigner(window.arweaveWallet),
+            data: community,
+        });
+        console.log("goood2")
+        console.log(join)
+    }
+
+    return $$({ getCommunity, addCommunity, joinCommunity })
 })
 
 

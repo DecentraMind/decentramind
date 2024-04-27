@@ -64,7 +64,7 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
 }
 
 
-const { addCommunity, getCommunity, getCommunities } = $(aocommunity())
+const { addCommunity, getCommunity } = $(aocommunity())
 let cList = $ref('')
 
 const addCommunitylist = async () => { 

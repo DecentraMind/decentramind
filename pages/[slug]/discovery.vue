@@ -62,13 +62,14 @@ const {
 
 onMounted(init)
 
-const { getCommunity } = $(aocommunity())
-let cList = $ref('')
+const { getCommunity, joinCommunity } = $(aocommunity())
+let cList = $ref({})
 let cListj = $ref({})
 const getCommunitylist = async() => {
   
   cList = await getCommunity()
-
+  console.log("nogoods")
+  console.log(cList.Messages)
   const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串
   const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
   cListj = jsonObjects.map(item => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
@@ -77,13 +78,17 @@ const getCommunitylist = async() => {
   console.log("goods")
   console.log(cListj)
 }
-getCommunitylist()
+
+const joinC = async(cName) => {
+  await joinCommunity(cName)
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-20">
     <UButton color="white" @click="doLogin">Arconnect</UButton>
     <UButton color="white" @click="getCommunitylist">test</UButton>
+    <p>{{cList}}</p>
     <UBlogList orientation="horizontal">
       <UBlogPost 
         v-for="blogPost in cListj" 
@@ -109,7 +114,14 @@ getCommunitylist()
             <Text class="text-blue-900">{{ blogPost.desc }}</Text>
           </div>
         </template>
-        <UButton class="absolute right-0" color="primary" variant="outline" >加入社区</UButton>
+        <UButton 
+          class="absolute right-0" 
+          color="primary" 
+          variant="outline" 
+          @click="() => joinC(blogPost.name)"
+        >
+          {{ blogPost.isJoined ? '已加入' : '加入社区' }}
+        </UButton>
       </UBlogPost>
     </UBlogList>
   </div>
