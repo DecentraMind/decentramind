@@ -83,7 +83,7 @@ const addCommunitylist = async () => {
   ]
   const jsonString = JSON.stringify(cSubmitL);
   
-  cList = await addCommunity(state.Name, state.Inbro, state.Website, state.Whitebook, state.Allreward)
+  cList = await addCommunity(state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
   console.log(cList)
   isAdded = true
   isLoading = false

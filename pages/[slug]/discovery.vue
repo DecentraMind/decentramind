@@ -56,20 +56,15 @@ const blogPosts = [
     description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5'
   }
 ]
-const {
-  // currentChain, selectedWallet,
-  address,
-  credBalance,
-  init, doLogout, doLogin } = $(aoStore())
 
-onMounted(init)
-
-const { getCommunity, joinCommunity } = $(aocommunity())
+const { getCommunitylist, joinCommunity } = $(aocommunity())
 let cList = $ref({})
 let cListj = $ref({})
-const getCommunitylist = async() => {
+
+
+const getCommunity = async() => {
   
-  cList = await getCommunity()
+  cList = await getCommunitylist()
   console.log("nogoods")
   console.log(cList.Messages)
   const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串
@@ -90,9 +85,18 @@ const joinC = async(cName) => {
   toast.add({ title: 'joined success' })
   isLoading = false
 }
+
+const {
+  // currentChain, selectedWallet,
+  address,
+  credBalance,
+  init, doLogout, doLogin } = $(aoStore())
+
+onMounted(init)
+
 onMounted(async () => {
   try {
-    await getCommunitylist()
+    await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -100,7 +104,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-20">
+  <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-10">
+    <UAlert>
+      <template #title>
+        <div class="text-3xl p-2">社 区 列 表</div>
+      </template>
+    </UAlert>
     <UButton color="white" @click="doLogin">Arconnect</UButton>
     <UButton color="white" @click="getCommunitylist">test</UButton>
     <UButton color="white" @click="joinC">test2</UButton>

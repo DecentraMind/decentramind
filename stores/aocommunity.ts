@@ -19,7 +19,7 @@ export const aocommunity = defineStore('aocommunity', () => {
     console.log("goood1")
 
     //创建社区方法
-    const addCommunity = async (Name, Inbro, Website, Whitebook, Allreward) => {
+    const addCommunity = async (Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
         
         const uuid = uuidtest()
 
@@ -27,6 +27,8 @@ export const aocommunity = defineStore('aocommunity', () => {
             {
               "name": Name,
               "desc": Inbro,
+              "creater": address,
+              "twitter": Twitter,
               "website": Website,
               "whitebook": Whitebook,
               "allreward": Allreward,
@@ -48,7 +50,7 @@ export const aocommunity = defineStore('aocommunity', () => {
     }
 
     //获取社区列表方法
-    const getCommunity = async () => {
+    const getCommunitylist = async () => {
         let result = await dryrun({
             process: processID,
             tags: [
@@ -58,6 +60,18 @@ export const aocommunity = defineStore('aocommunity', () => {
         });
         console.log(result)
         console.log("goood2")
+        return result
+    }
+
+    //获取指定社区信息
+    const getCommunityInfo = async ( uuid ) => {
+        let result = await dryrun({
+            process: processID,
+            tags: [
+                { name: 'Action', value: 'communityInfo' },
+                { name: 'uuid', value: uuid}
+            ]
+        })
         return result
     }
 
@@ -110,7 +124,7 @@ export const aocommunity = defineStore('aocommunity', () => {
         return Info
     }
 
-    return $$({ getCommunity, addCommunity, joinCommunity, personalInfo, getInfo })
+    return $$({ getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityInfo })
 })
 
 

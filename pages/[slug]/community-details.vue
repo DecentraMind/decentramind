@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+const { getCommunityInfo } = $(aocommunity())
+
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
@@ -67,6 +69,10 @@ const ranks = [{
 const pending = ref(true)
 
 const route = useRoute()
+let cList = $ref({})
+let cListj = $ref({})
+
+
 watchEffect(() => {
   if (!route.params.pid) return
 
@@ -76,7 +82,12 @@ watchEffect(() => {
 
 onMounted(async () => {
   try {
-    console.log(route.params.pid)
+    cList = await getCommunityInfo(route.params.pid)
+    const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串
+    const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
+    cListj = jsonObjects.map(item => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
+    console.log("---nogoods")
+    console.log(cListj)
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -85,25 +96,26 @@ onMounted(async () => {
 
 <template>
   <UDashboardPage>
-    <div class="w-full px-50">
+    <div 
+      v-for="cInfo in cListj" 
+      :key="cInfo.uuid" 
+      class="w-full px-50"
+    >
       <UColorModeImage :light="light" :dark="dark" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
-      <UPage class="pl-5 pr-20">
+      <UPage class="pl-36 pr-80">
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
           color="primary"
           :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]"
         >
           <template #title>
-            <div class="text-3xl mb-12 mt-3 px-12">PermaDAO</div>
+            <div class="text-3xl mb-12 mt-3 px-12">{{ cInfo.name }}</div>
           </template>
           <template #description>
             <div class="flex flex-col w-5/6 px-12">
               <Text class="mb-3">社区详情</Text>
               <Text>
-                对于网页开发或平台设计来说，在工作时可能经常会需要使用一些文字或图片来填充空白区域，
-                以设计排版，让他看起来更接近完成时的样貌，也能写作其他人谅解你的构想。这是这样的<br>
-                通常测试文字被称为[Lorem Ipsum]，是一篇常用于排版设计领域的拉丁文文章，主要目的是测试文章，
-                或是文字在不同排版下看起来的效果，中文则被称为[乱教假文]，因为英文排版跟中文不一样，阅读的感觉也跟中文完全不同
+                {{ cInfo.desc }}
               </Text>
             </div>
           </template>
@@ -111,14 +123,34 @@ onMounted(async () => {
         <UPageBody prose>
           <ULandingGrid>
             <ULandingCard class="col-span-4 row-span-2">
-              <div 
-                v-for="(item, index) in itemsbadge" 
-                :key="index" 
-                class="flex justify-between px-12"
-              >
-                <div>{{ item.label }}</div>
+              <div class="flex justify-between px-12">
+                <div>网站</div>
                 <div class="w-32 flex justify-around items-center">
-                  <UBadge v-for="(badge, badgeIndex) in item.badges" :key="badgeIndex">{{ badge }}</UBadge>
+                  <UBadge>{{ cInfo.website }}</UBadge>
+                </div>
+              </div>
+              <div class="flex justify-between px-12">
+                <div>社交媒体</div>
+                <div class="w-32 flex justify-around items-center">
+                  <UBadge>{{ cInfo.website }}</UBadge>
+                </div>
+              </div>
+              <div class="flex justify-between px-12">
+                <div>社区代币</div>
+                <div class="w-32 flex justify-around items-center">
+                  <UBadge>{{ cInfo.website }}</UBadge>
+                </div>
+              </div>
+              <div class="flex justify-between px-12">
+                <div>交易平台</div>
+                <div class="w-32 flex justify-around items-center">
+                  <UBadge>{{ cInfo.website }}</UBadge>
+                </div>
+              </div>
+              <div class="flex justify-between px-12">
+                <div>贡献社区代币类型</div>
+                <div class="w-32 flex justify-around items-center">
+                  <UBadge>{{ cInfo.website }}</UBadge>
                 </div>
               </div>
             </ULandingCard>

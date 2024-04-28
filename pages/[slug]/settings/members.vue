@@ -73,13 +73,13 @@ const formItems = ref([
   // 其他表单项
 ])
 
-const { getCommunity, joinCommunity } = $(aocommunity())
+const { getCommunitylist, joinCommunity } = $(aocommunity())
 
 let cList = $ref({})
 let cListj = $ref({})
-const getCommunitylist = async() => {
+const getCommunity = async() => {
   
-  cList = await getCommunity()
+  cList = await getCommunitylist()
   console.log("nogoods")
   console.log(cList.Messages)
   const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串
@@ -93,7 +93,7 @@ const getCommunitylist = async() => {
 
 onMounted(async () => {
   try {
-    await getCommunitylist()
+    await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error);
   }
