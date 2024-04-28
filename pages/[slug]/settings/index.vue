@@ -4,16 +4,6 @@ import type { FormError, FormSubmitEvent } from '#ui/types'
 const fileRef = ref<HTMLInputElement>()
 const isDeleteAccountModalOpen = ref(false)
 
-const state = reactive({
-  name: 'Benjamin Canac',
-  email: 'ben@nuxtlabs.com',
-  username: 'benjamincanac',
-  avatar: '',
-  bio: '',
-  password_current: '',
-  password_new: ''
-})
-
 const toast = useToast()
 
 function validate (state: any): FormError[] {
@@ -34,10 +24,6 @@ function onFileChange (e: Event) {
   state.avatar = URL.createObjectURL(input.files[0])
 }
 
-function onFileClick () {
-  fileRef.value?.click()
-}
-
 async function onSubmit (event: FormSubmitEvent<any>) {
   // Do something with data
   console.log(event.data)
@@ -48,24 +34,49 @@ async function onSubmit (event: FormSubmitEvent<any>) {
 
 
 
-
-const accountForm = reactive({ 
-    name: 'tim', 
-    twitter: 'Benjamin', 
+let info = $ref({})
+let infoJ = $ref({})
+let accountForm = $ref({ 
+    name: '', 
+    twitter: '', 
     showtwitter: true, 
-    mail: 'benjamincanac',
+    mail: '',
     showmail: true,
-    telegram: '+12',
+    phone: '',
     showtelegram: true,
 })
+let isLoading = $ref(false)
 
 function onSubmitAccount () {
   console.log('Submitted form:', accountForm)
 }
 
+const { getInfo, personalInfo } = $(aocommunity())
 
+const saveInfo = async () => {
+  if (isLoading) return
+  isLoading = true
 
+  await personalInfo(accountForm.name, accountForm.twitter, accountForm.mail, accountForm.phone)
+  toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
+  isLoading = false
+}
 
+onMounted(async () => {
+  try {
+    info = await getInfo();
+    console.log('---');
+    const jsonData = info.Messages[0].Data;
+    const jsonObjects = jsonData.match(/\{.*?\}/g);
+    infoJ = jsonObjects.map(item => JSON.parse(item));
+    accountForm.name = infoJ[0].username;
+    accountForm.twitter = infoJ[0].twitter;
+    accountForm.mail = infoJ[0].mail;
+    accountForm.phone = infoJ[0].phone;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
 </script>
 
 <template>
@@ -104,16 +115,16 @@ function onSubmitAccount () {
           <UToggle v-model="accountForm.showmail" />显示
         </div>
       </UFormGroup>
-      <UFormGroup label="mail" name="mail" class="mb-5 pl-10">
+      <UFormGroup label="phone" name="phone" class="mb-5 pl-10">
         <div class="flex items-center space-x-3">
-          <UInput v-model="accountForm.telegram" />
+          <UInput v-model="accountForm.phone" />
           <UToggle v-model="accountForm.showtelegram" />显示
         </div>
       </UFormGroup>
 
       <template #footer>
         <div class="flex justify-center">
-          <UButton type="submit" color="black">
+          <UButton type="submit" color="black" @click="saveInfo">
             保存修改
           </UButton>
         </div>

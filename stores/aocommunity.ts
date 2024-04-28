@@ -10,7 +10,7 @@ import {
 } from '@permaweb/aoconnect'
 
 
-
+const { address, getActiveAddress } = $(arweaveWalletStore())
 
 export const aocommunity = defineStore('aocommunity', () => {
     const cCache = $ref({})
@@ -18,16 +18,30 @@ export const aocommunity = defineStore('aocommunity', () => {
     const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
     console.log("goood1")
 
-
-
     //创建社区方法
-    const addCommunity = async (dataT) => {
+    const addCommunity = async (Name, Inbro, Website, Whitebook, Allreward) => {
         
+        const uuid = uuidtest()
+
+        let cSubmitL = [
+            {
+              "name": Name,
+              "desc": Inbro,
+              "website": Website,
+              "whitebook": Whitebook,
+              "allreward": Allreward,
+              "uuid": uuid,
+            }
+        ]
+        const jsonString = JSON.stringify(cSubmitL);
+
         let add = await message({
             process: processID,
-            tags: [{ name: 'Action', value: 'add'}],
+            tags: [
+                { name: 'Action', value: 'add'}
+            ],
             signer: createDataItemSigner(window.arweaveWallet),
-            data: dataT,
+            data: jsonString,
         });
         console.log("goood2")
         console.log(add)
@@ -39,6 +53,7 @@ export const aocommunity = defineStore('aocommunity', () => {
             process: processID,
             tags: [
                 { name: 'Action', value: 'communitylist' },
+                { name: 'userAddress', value: address}
             ],
         });
         console.log(result)
@@ -47,10 +62,14 @@ export const aocommunity = defineStore('aocommunity', () => {
     }
 
     //加入社区方法
-    const joinCommunity = async( community ) => {
+    const joinCommunity = async ( community ) => {
+        await getActiveAddress()
         let join = await message({
             process: processID,
-            tags: [{ name: 'Action', value: 'join'}],
+            tags: [
+                { name: 'Action', value: 'join'},
+                { name: 'userAddress', value: address}
+            ],
             signer: createDataItemSigner(window.arweaveWallet),
             data: community,
         });
@@ -58,7 +77,40 @@ export const aocommunity = defineStore('aocommunity', () => {
         console.log(join)
     }
 
-    return $$({ getCommunity, addCommunity, joinCommunity })
+    const personalInfo = async ( username, twitter, mail, phone ) => {
+        await getActiveAddress()
+        let Info = await message({
+            process: processID,
+            tags: [
+                { name: 'Action', value: 'personalInfo' },
+                { name: 'userAddress', value: address },
+                { name: 'username', value: username },
+                { name: 'twitter', value: twitter },
+                { name: 'mail', value: mail },
+                { name: 'phone', value: phone }
+            ],
+            signer: createDataItemSigner(window.arweaveWallet),
+        })
+        console.log("goods")
+        console.log(Info)
+        return Info
+    }
+
+    const getInfo = async () => {
+        await getActiveAddress()
+        let Info = await dryrun({
+            process: processID,
+            tags: [
+                { name: 'Action', value: 'getInfo' },
+                { name: 'userAddress', value: address }
+            ]
+        })
+        console.log("goods")
+        console.log(Info)
+        return Info
+    }
+
+    return $$({ getCommunity, addCommunity, joinCommunity, personalInfo, getInfo })
 })
 
 

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 
-
+const toast = useToast()
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
+let isLoading = $ref(false)
+
 
 const blogPosts = [
   {
@@ -80,22 +82,35 @@ const getCommunitylist = async() => {
 }
 
 const joinC = async(cName) => {
+  if (isLoading) return
+  isLoading = true
+  
   await joinCommunity(cName)
+
+  toast.add({ title: 'joined success' })
+  isLoading = false
 }
+onMounted(async () => {
+  try {
+    await getCommunitylist()
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
 </script>
 
 <template>
   <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-20">
     <UButton color="white" @click="doLogin">Arconnect</UButton>
     <UButton color="white" @click="getCommunitylist">test</UButton>
-    <p>{{cList}}</p>
+    <UButton color="white" @click="joinC">test2</UButton>
     <UBlogList orientation="horizontal">
       <UBlogPost 
         v-for="blogPost in cListj" 
-        :key="blogPost.id" 
-        image="https://picsum.photos/id/10/640/360" 
+        :key="blogPost.uuid" 
+        image="https://picsum.photos/640/360" 
         :description="blogPost.decs"
-        :to="`/${slug}/community-details`"
+        :to="`/${slug}/community-details/${blogPost.uuid}`"
         class="w-5/6"
       >
         <template #title>

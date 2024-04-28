@@ -66,9 +66,12 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
 
 const { addCommunity, getCommunity } = $(aocommunity())
 let cList = $ref('')
+let isLoading = $ref(false)
 
 const addCommunitylist = async () => { 
-  console.log("goods")
+  if (isLoading) return
+  isLoading = true
+  
   let cSubmitL = [
     {
       "name": state.Name,
@@ -79,11 +82,11 @@ const addCommunitylist = async () => {
     }
   ]
   const jsonString = JSON.stringify(cSubmitL);
-  console.log(cSubmitL)
   
-  cList = await addCommunity(jsonString)
+  cList = await addCommunity(state.Name, state.Inbro, state.Website, state.Whitebook, state.Allreward)
   console.log(cList)
   isAdded = true
+  isLoading = false
 }
 
 </script>

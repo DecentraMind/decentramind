@@ -73,6 +73,31 @@ const formItems = ref([
   // 其他表单项
 ])
 
+const { getCommunity, joinCommunity } = $(aocommunity())
+
+let cList = $ref({})
+let cListj = $ref({})
+const getCommunitylist = async() => {
+  
+  cList = await getCommunity()
+  console.log("nogoods")
+  console.log(cList.Messages)
+  const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串
+  const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
+  cListj = jsonObjects.map(item => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
+
+  console.log(cListj)
+  console.log("goods")
+  console.log(cListj)
+}
+
+onMounted(async () => {
+  try {
+    await getCommunitylist()
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
 </script>
 
 <template>
@@ -91,17 +116,17 @@ const formItems = ref([
         </div>
       </template>
       <div class="flex flex-wrap">
-        <div 
-          v-for="(item, index) in formItems" 
+        <div
+          v-for="(item, index) in cListj" 
           :key="index"
           class="w-1/2 pl-5" 
         >
-          <div class="flex items-center mb-5">
-            <UColorModeImage :light="item.light" :dark="item.dark" class="h-[100px]" />
+          <div class="flex items-center mb-5" v-if="item.isJoined">
+            <UColorModeImage :light="light" :dark="dark" class="h-[100px]" />
             <UFormGroup :label="item.label" :name="item.name" class="ml-5 w-[300px]">
               <template #label>
                 <div class="text-xl">
-                  {{ item.label }}
+                  {{ item.name }}
                 </div>
               </template>
               <UInput v-model="item.value" />

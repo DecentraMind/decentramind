@@ -10,13 +10,13 @@ const itemsbadge = [
   { label: '社区代币', badges: ['PERMA', 'USDT'] },
   { label: '交易平台', badges: ['Twitter'] },
   { label: '贡献社区代币类型', badges: ['PERMA'] }
-];
+]
 
 const itemsbadge2 = [
   { label: 'GitHub', badges: ['ethereum.org'] },
   { label: 'Builder数量', badges: ['514'] },
   { label: '项目已发放激励', badges: ['5000', 'USDT'] }
-];
+]
 
 
 const columns = [{
@@ -66,6 +66,21 @@ const ranks = [{
 }]
 const pending = ref(true)
 
+const route = useRoute()
+watchEffect(() => {
+  if (!route.params.pid) return
+
+  console.log(route.params.pid)
+})
+
+
+onMounted(async () => {
+  try {
+    console.log(route.params.pid)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
 </script>
 
 <template>
