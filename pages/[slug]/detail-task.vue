@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import CommonAlert from '~/components/CommonAlert.vue'
-
+const { createTask, getAllTasks, joinSpaceTask } = $(taskStore())
 const blogPost = {
   id: 1,
   name: "Task 1",
@@ -160,6 +160,12 @@ let isSettlementOpen = $ref(false)
 function onClick() {
   isSettlementOpen = true
 }
+const addr = $ref('')
+const url = $ref('')
+function joinTask() {
+  joinSpaceTask("20c1f625-9fcf-4113-83f6-19e63b2a9d6c", addr, url)
+  isOpen = false
+}
 </script>
 
 <template>
@@ -226,7 +232,7 @@ function onClick() {
               <UTable :rows="filteredRows" :columns="columns" />
             </div>
             <div class="flex justify-center my-8" v-if="switchDisable()">
-              <UButton label="结算任务" @click="openModal" />
+              <UButton label="提交任务" @click="openModal" />
             </div>
           </template>
         </UBlogPost>
@@ -237,7 +243,7 @@ function onClick() {
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-            任务结算
+            提交任务
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click="isOpen = false" />
@@ -250,19 +256,14 @@ function onClick() {
         </UButton>
       </div>
       <div v-if="isSettlementOpen">
-        <div class="my-8 flex flex-row">
-          <div class="mr-4 basis-2/3">
-            <UInput color="primary" variant="outline" placeholder="钱包地址2" />
-          </div>
-          <div class="ml-4 basis-1/3">
-            <UInput color="primary" variant="outline" placeholder="奖励占比" />
-          </div>
-        </div>
         <div class="my-8">
-          <UInput color="primary" variant="outline" placeholder="URL" />
+            <UInput v-model="addr" color="primary" variant="outline" placeholder="钱包地址" />
+          </div>
+        <div class="my-8">
+          <UInput v-model="url" color="primary" variant="outline" placeholder="URL" />
         </div>
         <div class="flex justify-center my-8">
-          <UButton>确认提交</UButton>
+          <UButton @click="joinTask">确认提交</UButton>
         </div>
       </div>
     </UCard>
