@@ -51,15 +51,29 @@ export const aocommunity = defineStore('aocommunity', () => {
 
     //获取社区列表方法
     const getCommunitylist = async () => {
+        await getActiveAddress()
         let result = await dryrun({
             process: processID,
             tags: [
                 { name: 'Action', value: 'communitylist' },
-                { name: 'userAddress', value: address}
+                { name: 'userAddress', value: address }
             ],
         });
         console.log(result)
         console.log("goood2")
+        return result
+    }
+
+    //获取已加入得社区列表
+    const getCommunityjoined = async () => {
+        await getActiveAddress()
+        let result = await dryrun({
+            process: processID,
+            tags: [
+                { name: 'Action', value: 'communitylistjoined' },
+                { name: 'userAddress', value: address }
+            ],
+        })
         return result
     }
 
@@ -76,7 +90,7 @@ export const aocommunity = defineStore('aocommunity', () => {
     }
 
     //加入社区方法
-    const joinCommunity = async ( community ) => {
+    const joinCommunity = async ( uuid ) => {
         await getActiveAddress()
         let join = await message({
             process: processID,
@@ -85,12 +99,13 @@ export const aocommunity = defineStore('aocommunity', () => {
                 { name: 'userAddress', value: address}
             ],
             signer: createDataItemSigner(window.arweaveWallet),
-            data: community,
+            data: uuid,
         });
         console.log("goood2")
         console.log(join)
     }
 
+    //修改个人信息
     const personalInfo = async ( username, twitter, mail, phone ) => {
         await getActiveAddress()
         let Info = await message({
@@ -110,6 +125,7 @@ export const aocommunity = defineStore('aocommunity', () => {
         return Info
     }
 
+    //获取个人信息
     const getInfo = async () => {
         await getActiveAddress()
         let Info = await dryrun({
@@ -124,7 +140,7 @@ export const aocommunity = defineStore('aocommunity', () => {
         return Info
     }
 
-    return $$({ getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityInfo })
+    return $$({ getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityjoined, getCommunityInfo })
 })
 
 

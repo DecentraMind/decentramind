@@ -76,11 +76,11 @@ const getCommunity = async() => {
   console.log(cListj)
 }
 
-const joinC = async(cName) => {
+const joinC = async(cuuid) => {
   if (isLoading) return
   isLoading = true
   
-  await joinCommunity(cName)
+  await joinCommunity(cuuid)
 
   toast.add({ title: 'joined success' })
   isLoading = false
@@ -138,14 +138,28 @@ onMounted(async () => {
             <Text class="text-blue-900">{{ blogPost.desc }}</Text>
           </div>
         </template>
-        <UButton 
-          class="absolute right-0" 
-          color="primary" 
-          variant="outline" 
-          @click="() => joinC(blogPost.name)"
-        >
-          {{ blogPost.isJoined ? '已加入' : '加入社区' }}
-        </UButton>
+        <template v-if="blogPost.isJoined">
+          <!-- 显示文本“已加入” -->
+          <UButton
+            class="absolute right-0" 
+            color="primary" 
+            variant="outline" 
+            disabled
+          >
+            已加入
+          </UButton>
+        </template>
+        <template v-else>
+          <!-- 显示 UButton 组件 -->
+          <UButton
+            class="absolute right-0" 
+            color="primary" 
+            variant="outline" 
+            @click="() => joinC(blogPost.uuid)"
+          >
+            加入社区
+          </UButton>
+        </template>
       </UBlogPost>
     </UBlogList>
   </div>
