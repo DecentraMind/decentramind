@@ -1,88 +1,71 @@
-local json    = require("json")
-local sqlite3 = require("lsqlite3")
-
-DB            = DB or sqlite3.open_memory()
-
-DB:exec [[
-  CREATE TABLE IF NOT EXISTS tasks (
-    "task_id" numeric(18,0) NOT NULL,
-    "task_logo" varchar(1000) COLLATE "pg_catalog"."default" NOT NULL,
-    "task_name" varchar(32) COLLATE "pg_catalog"."default" NOT NULL,
-    "task_desc" varchar(255) COLLATE "pg_catalog"."default",
-    "task_rule" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
-    "task_reward" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
-    "reward_total" numeric(30,8) NOT NULL,
-    "time_zone" varchar(10) COLLATE "pg_catalog"."default" NOT NULL,
-    "task_start_time" timestamp(6) NOT NULL,
-    "task_end_time" timestamp(6) NOT NULL,
-    "community_id" numeric(18,0) NOT NULL,
-    "task_status" int4 NOT NULL,
-    "task_status_name" varchar(30) COLLATE "pg_catalog"."default",
-  );
-]]
-
-local function query(stmt)
-    local rows = {}
-    for row in stmt:nrows() do
-        table.insert(rows, row)
-    end
-    stmt:reset()
-    return rows
-end
+local json = require("json")
+TasksForTable = TasksForTable or {}
+SpaceTaskJoinedTable = SpaceTaskJoinedTable or {}
 
 Handlers.add(
     "CreateTask",
     Handlers.utils.hasMatchingTag("Action", "CreateTask"),
-    function(msg)
-        local data = json.decode(msg.Data)
-
-        local stmt = DB:prepare [[
-      REPLACE INTO tasks (task_id, task_logo, task_name, task_desc, task_rule, task_reward, reward_total, time_zone, task_start_time, task_end_time, community_id, task_status, task_status_name)
-      VALUES (:task_id, :task_logo, :task_name, :task_desc, :task_rule, :task_reward, :reward_total, :time_zone, :task_start_time, :task_end_time, :community_id, :task_status, :task_status_name)
-    ]]
-
-        if not stmt then
-            error("Failed to prepare SQL statement: " .. DB:errmsg())
-        end
-
-        stmt:bind_names({
-            task_id          = data.task_id,
-            task_logo        = data.task_logo,
-            task_name        = data.task_name,
-            task_desc        = data.task_desc,
-            task_rule        = data.task_rule,
-            task_reward      = data.task_reward,
-            reward_total     = data.reward_total,
-            time_zone        = data.time_zone,
-            task_start_time  = data.task_start_time,
-            task_end_time    = data.task_end_time,
-            community_id     = data.community_id,
-            task_status      = data.task_status,
-            task_status_name = data.task_status_name
-        })
-
-        stmt:step()
-        stmt:reset()
-        print('Create new task done!')
+    function (msg)
+        table.insert(TasksForTable, msg.Data)
+        Handlers.utils.reply("created task by new method.")(msg)
     end
 )
 
 Handlers.add(
-  "GetAllTasks",
-  Handlers.utils.hasMatchingTag("Action", "GetAllTasks"),
-  function (msg)
-    local stmt_all = [[
-      SELECT t.*
-      FROM tasks t
-    ]]
-
-    local stmt = DB:prepare(stmt_all)
-
-    if not stmt then
-      error("Failed to prepare SQL statement: " .. DB:errmsg())
+    "GetAllTasks",
+    Handlers.utils.hasMatchingTag("Action", "GetAllTasks"),
+    function (msg)
+        Handlers.utils.reply(table.concat(TasksForTable, ";"))(msg)
     end
+)
 
-    local rows = query(stmt)
-    Handlers.utils.reply(json.encode(rows))(msg)
-  end
+Handlers.add(
+    "DeleteLastTask",
+    Handlers.utils.hasMatchingTag("Action", "DeleteLastTask"),
+    function (msg)
+        table.remove(TasksForTable)
+        Handlers.utils.reply("The last task has been deleted.")(msg)
+    end
+)
+
+Handlers.add(
+    "JoinSpaceTask",
+    Handlers.utils.hasMatchingTag("Action", "JoinSpaceTask"),
+    function (msg)
+        -- 解析传过来的参数，找到对应任务，修改任务已提交场次参数
+        local req = json.decode(msg.Data)
+        
+        local taskId = req.taskId
+        for key, value in pairs(TasksForTable) do
+            local v = json.decode(value)
+            if(v.taskId == taskId) then
+                local tmp = v.joined
+                tmp = tmp + 1
+                v.joined = tmp
+                print(tmp)
+                TasksForTable[key] = json.encode(v)
+                break
+            end
+        end
+        -- 将参与任务信息保存在表中
+        table.insert(SpaceTaskJoinedTable, msg.Data)
+        Handlers.utils.reply("Joined in space task.")(msg)
+    end
+)
+
+Handlers.add(
+    "GetJoinInfoByTaskId",
+    Handlers.utils.hasMatchingTag("Action", "GetJoinInfoByTaskId"),
+    function (msg)
+        -- 通过id获取该任务对应参与信息
+        local resp = {}
+        local taskId = msg.Data
+        for key, value in pairs(SpaceTaskJoinedTable) do
+            local v = json.decode(value)
+            if(v.taskId == taskId) then
+                table.insert(resp, value)
+            end
+        end
+        Handlers.utils.reply(table.concat(resp, ";"))(msg)
+    end
 )

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const blogPosts = [
+const { createTask, getAllTasks } = $(taskStore())
+const blogPosts = await getAllTasks("GetAllTasks")
+const blogPosts1 = [
   {
     id: 1,
     name: "Task 1",
@@ -66,7 +68,7 @@ const blogPosts = [
     status: "未开始",
   },
 ];
-
+console.log("blogPosts = " + blogPosts)
 const items = [
   {
     label: "开放任务区",
