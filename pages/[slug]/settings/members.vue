@@ -73,13 +73,13 @@ const formItems = ref([
   // 其他表单项
 ])
 
-const { getCommunitylist, joinCommunity } = $(aocommunity())
+const { getCommunityjoined, joinCommunity } = $(aocommunity())
 
 let cList = $ref({})
 let cListj = $ref({})
 const getCommunity = async() => {
   
-  cList = await getCommunitylist()
+  cList = await getCommunityjoined()
   console.log("nogoods")
   console.log(cList.Messages)
   const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串

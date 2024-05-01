@@ -103,6 +103,7 @@ export const aocommunity = defineStore('aocommunity', () => {
         });
         console.log("goood2")
         console.log(join)
+        return join
     }
 
     //修改个人信息
