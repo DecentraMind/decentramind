@@ -194,11 +194,18 @@ end)
 
 -- handlers方法测试功能，用来测试这里得方法以及查看表内容等等。。
 Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTest"), function(msg)
+    -- 将communtiy的table列的值置为空
     for k, _ in pairs(community) do
         community[k] = nil
     end
 
+    -- 将usercommunity的table列的值置为空
     for k, _ in pairs(usercommunity) do
         usercommunity[k] = nil
+    end
+    for k, _ in pairs(community) do
+        local n = json.decode(k)
+        print("列的值：",n)
+    end
     end
 end)

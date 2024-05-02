@@ -72,6 +72,7 @@ const route = useRoute()
 let cList = $ref({})
 let cListj = $ref({})
 
+let cLoading = $ref(true)
 
 watchEffect(() => {
   if (!route.params.pid) return
@@ -88,6 +89,7 @@ onMounted(async () => {
     cListj = jsonObjects.map(item => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
     console.log("---nogoods")
     console.log(cListj)
+    cLoading = false
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -96,6 +98,9 @@ onMounted(async () => {
 
 <template>
   <UDashboardPage>
+    <div v-if="cLoading" class="w-full flex justify-center">
+      <UIcon name="svg-spinners:blocks-scale" class="mt-0 w-[250px]" size="xl" dynamic v-bind="$attrs" />
+    </div>
     <div 
       v-for="cInfo in cListj" 
       :key="cInfo.uuid" 

@@ -4,7 +4,7 @@ const toast = useToast()
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
 let isLoading = $ref(false)
-
+let cLoading = $ref(true)
 
 const blogPosts = [
   {
@@ -70,7 +70,7 @@ const getCommunity = async() => {
   const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串
   const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
   cListj = jsonObjects.map(item => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
-
+  cLoading = false
   console.log(cListj)
   console.log("goods")
   console.log(cListj)
@@ -113,6 +113,9 @@ onMounted(async () => {
     <UButton color="white" @click="doLogin">Arconnect</UButton>
     <UButton color="white" @click="getCommunitylist">test</UButton>
     <UButton color="white" @click="joinC">test2</UButton>
+    <div v-if="cLoading" class="w-full flex justify-center">
+      <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
+    </div>
     <UBlogList orientation="horizontal">
       <UBlogPost 
         v-for="blogPost in cListj" 

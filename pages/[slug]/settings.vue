@@ -11,11 +11,11 @@ const links = [[{
   }, {
     label: '社区信息设置',
     icon: 'i-heroicons-user-group',
-    to: `/${slug}/settings/members`
+    to: `/${slug}/settings/communityinfo`
   }, {
     label: '任务信息设置',
     icon: 'eos-icons:abstract-instance-outlined',
-    to: `/${slug}/settings/notifications`
+    to: `/${slug}/settings/taskinfo`
   }, {
     label: '我的邀请',
     icon: 'i-heroicons-bell',

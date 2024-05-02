@@ -68,7 +68,7 @@ const footerLinks = $computed(() => {
     {
       label: "Invite people",
       icon: "i-heroicons-plus",
-      to: `/${slug}/settings/members`,
+      to: `/${slug}/settings/communityinfo`,
     },
     {
       label: "Help & Support",

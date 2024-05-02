@@ -34,46 +34,12 @@ const formItems = ref([
     name: 'current', 
     value: communityForm.communityName,
     show: true 
-  }, { 
-    light: light, 
-    dark: dark, 
-    label: '社区A', 
-    name: 'current', 
-    value: communityForm.communityName,
-    show: true 
-  }, { 
-    light: light, 
-    dark: dark, 
-    label: '社区A', 
-    name: 'current', 
-    value: communityForm.communityName,
-    show: true 
-  }, { 
-    light: light, 
-    dark: dark, 
-    label: '社区A', 
-    name: 'current', 
-    value: communityForm.communityName,
-    show: true 
-  }, { 
-    light: light, 
-    dark: dark, 
-    label: '社区A', 
-    name: 'current', 
-    value: communityForm.communityName,
-    show: true 
-  }, { 
-    light: light, 
-    dark: dark, 
-    label: '社区A', 
-    name: 'current', 
-    value: communityForm.communityName,
-    show: true 
-  }, 
-  // 其他表单项
+  }
 ])
 
-const { getCommunityjoined, joinCommunity } = $(aocommunity())
+const { getCommunityjoined } = $(aocommunity())
+
+let cLoading = $ref(true)
 
 let cList = $ref({})
 let cListj = $ref({})
@@ -89,6 +55,7 @@ const getCommunity = async() => {
   console.log(cListj)
   console.log("goods")
   console.log(cListj)
+  cLoading = false
 }
 
 onMounted(async () => {
@@ -115,13 +82,16 @@ onMounted(async () => {
           </div>
         </div>
       </template>
+      <div v-if="cLoading" class="w-full flex justify-center">
+        <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
+      </div>
       <div class="flex flex-wrap">
         <div
           v-for="(item, index) in cListj" 
           :key="index"
           class="w-1/2 pl-5" 
         >
-          <div class="flex items-center mb-5" v-if="item.isJoined">
+          <div class="flex items-center mb-5">
             <UColorModeImage :light="light" :dark="dark" class="h-[100px]" />
             <UFormGroup :label="item.label" :name="item.name" class="ml-5 w-[300px]">
               <template #label>

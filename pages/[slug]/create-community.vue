@@ -9,7 +9,7 @@ const options = [
   { label: 'Binance', value: 'Binance' },
 ]
 
-let isAdded = $ref(true)
+let isAdded = $ref(false)
 
 let state = $ref({
   input: undefined,
