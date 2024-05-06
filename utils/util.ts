@@ -1,4 +1,4 @@
-export function uuidtest() {
+export function createuuid() {
     let str = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
     return str.replace(/[xy]/g, function (c) {
         let r = (Math.random() * 16) | 0,

@@ -19,7 +19,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     //创建社区方法
     const addCommunity = async (Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
         
-        const uuid = uuidtest()
+        const uuid = createuuid()
 
         let cSubmitL = [
             {
