@@ -13,14 +13,15 @@ import {
 const { address, getActiveAddress } = $(arweaveWalletStore())
 
 export const aocommunityStore = defineStore('aocommunityStore', () => {
-    const cCache = $ref({})
     const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
-
+    let isLoading = $ref(false)
     //创建社区方法
     const addCommunity = async (Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
-        
-        const uuid = createuuid()
+        if (isLoading) return
+            isLoading = true
 
+        const uuid = createuuid()
+        
         let communitySubmitList = [
             {
               "name": Name,
@@ -43,6 +44,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
             signer: createDataItemSigner(window.arweaveWallet),
             data: jsonString,
         });
+        isLoading = false
     }
 
     //获取社区列表方法
