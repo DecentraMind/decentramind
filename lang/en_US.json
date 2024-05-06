@@ -2,5 +2,21 @@
   "Welcome": "Welcome",
   "By signing up, you agree to our {0}": "By signing up, you agree to our {0}",
   "Terms of Service": "Terms of Service",
-  "All": "All EN"
+  "All": "All EN",
+  "Task Logo": "Task Logo",
+  "Task Name": "Task Name",
+  "Task Introduction": "Task Introduction",
+  "Task Rule": "Task Rule",
+  "Task Reward": "Task Reward",
+  "Token Number": "Token Number",
+  "Token Type": "Token Type",
+  "Chain Type": "Chain Type",
+  "Total Reward": "Total Reward",
+  "Time Zone": "Time Zone",
+  "Task Period": "Task Period",
+  "Open Mission Area": "Open Mission Area",
+  "Unopened mission area": "Unopened mission area",
+  "Create Task": "Create Task",
+  "Number participated": "Number of participants",
+  "Explore Detail": "Explore Detail"
 }

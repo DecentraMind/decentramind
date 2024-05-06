@@ -93,37 +93,37 @@ const ranges = [
     <UDashboardPanel>
       <UDashboardNavbar/>
       <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
-        <UFormGroup name="taskLogo" label="任务封面">
+        <UFormGroup name="taskLogo" :label="$t('Task Logo')">
           <UInput v-model="state.taskLogo" type="file" size="sm" />
         </UFormGroup>
 
-        <UFormGroup name="taskName" label="任务名称">
+        <UFormGroup name="taskName" :label="$t('Task Name')">
           <UInput v-model="state.taskName" placeholder="name" />
         </UFormGroup>
 
-        <UFormGroup name="taskInfo" label="任务简介">
+        <UFormGroup name="taskInfo" :label="$t('Task Introduction')">
           <UTextarea v-model="state.taskInfo" />
         </UFormGroup>
 
-        <UFormGroup name="taskRule" label="任务规则">
+        <UFormGroup name="taskRule" :label="$t('Task Rule')">
           <UTextarea v-model="state.taskRule" placeholder="已自动生成任务规则" />
         </UFormGroup>
 
-        <UFormGroup name="textarea" label="任务奖励">
+        <UFormGroup name="textarea" :label="$t('Task Reward')">
           <div class="flex justify-between items-center">
-            <UInput v-model="state.tokenNumber" placeholder="数量" />
+            <UInput v-model="state.tokenNumber" :placeholder="$t('Token Number')" />
 
-            <UInputMenu v-model="state.tokenType" placeholder="Token" :options="tokenOptions" />
+            <UInputMenu v-model="state.tokenType" :placeholder="$t('Token Type')" :options="tokenOptions" />
 
-            <UInputMenu v-model="state.tokenChain" placeholder="链" :options="chainOptions" />
+            <UInputMenu v-model="state.tokenChain" :placeholder="$t('Chain Type')" :options="chainOptions" />
           </div>
         </UFormGroup>
-        <UFormGroup name="rewardTotal" label="总奖励任务数">
-          <UInput v-model="state.rewardTotal" placeholder="指奖励多少场space" />
+        <UFormGroup name="rewardTotal" :label="$t('Total Reward')">
+          <UInput v-model="state.rewardTotal" :placeholder="$t('Task Introduction')" />
         </UFormGroup>
-        <UFormGroup name="textarea" label="任务周期">
+        <UFormGroup name="textarea" :label="$t('Task Period')">
           <div class="flex justify-between items-center">
-            <USelect v-model="state.zone" placeholder="时区" :options="timeZoneOptions" />
+            <USelect v-model="state.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
             <UPopover :popper="{ placement: 'bottom-start' }">
               <UButton icon="i-heroicons-calendar-days-20-solid">
                 {{ format(selected.start, 'd MMM, yyy') }} - {{ format(selected.end, 'd MMM, yyy') }}

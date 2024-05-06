@@ -2,5 +2,21 @@
   "Welcome": "欢迎",
   "By signing up, you agree to our {0}": "注册即表示您同意我们的{0}。",
   "Terms of Service": "服务条款",
-  "All": "全部"
+  "All": "全部",
+  "Task Logo": "任务封面",
+  "Task Name": "任务名称",
+  "Task Introduction": "任务简介",
+  "Task Rule": "任务规则",
+  "Task Reward": "任务奖励",
+  "Token Number": "Token 数量",
+  "Token Type": "Token 类型",
+  "Chain Type": "链",
+  "Total Reward": "总奖励场次数",
+  "Time Zone": "时区",
+  "Task Period": "任务周期",
+  "Open Mission Area": "开放任务区",
+  "Unopened mission area": "未开放协作区",
+  "Create Task": "创建任务",
+  "Number participated": "已参与人数",
+  "Explore Detail": "查看详情"
 }

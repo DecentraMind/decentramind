@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const {t} = useI18n()
 const { createTask, getAllTasks } = $(taskStore())
 const blogPosts = await getAllTasks("GetAllTasks")
 const blogPosts1 = [
@@ -71,11 +72,11 @@ const blogPosts1 = [
 console.log("blogPosts = " + blogPosts)
 const items = [
   {
-    label: "开放任务区",
+    label: t('Open Mission Area'),
     content: "",
   },
   {
-    label: "未开放协作区",
+    label: t('Unopened mission area'),
     content: "",
   },
 ];
@@ -96,7 +97,7 @@ function onChange(index) {
             <UTabs :items="items" @change="onChange" />
           </div>
           <div class="flex justify-end ...">
-            <UButton to="/${slug}/create-task/" color="black" variant="solid" size="2xs" >Create Task</UButton>
+            <UButton to="/${slug}/create-task/" color="black" variant="solid" size="2xs" >{{ $t("Create Task") }}</UButton>
           </div>
         </div>
         <UBlogList orientation="horizontal">
@@ -108,7 +109,7 @@ function onChange(index) {
           >
             <template #title>
               <div class="flex justify-between ...">
-                <Text class="mx-3">{{ blogPost.name }}</Text>
+                <Text >{{ blogPost.name }}</Text>
                 <UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge>
               </div>
             </template>
@@ -116,16 +117,16 @@ function onChange(index) {
               <div class="flex flex-col space-y-2">
                 <Text class="text-blue-900">{{ blogPost.description }}</Text>
                 <div class="flex justify-between ...">
-                  <div><Text class="text-blue-300">任务奖励:</Text></div>
+                  <div><Text class="text-blue-300">{{ $t("Task Reward") }}:</Text></div>
                   <div><Text class="text-blue-300">{{ blogPost.reward }}</Text></div>
                 </div>
                 <div class="flex justify-between ...">
-                  <div><Text class="text-blue-300">已参与人数:</Text></div>
+                  <div><Text class="text-blue-300">{{ $t("Number participated") }}:</Text></div>
                   <div><Text class="text-blue-300">{{ blogPost.builderNum }}</Text></div>
                 </div>
               </div>
             </template>
-            <UButton to="/signup/detail-task/" class="absolute right-0" color="primary" variant="outline">查看详情</UButton>
+            <UButton to="/signup/detail-task/" class="absolute right-0" color="primary" variant="outline">{{ $t("Explore Detail") }}</UButton>
           </UBlogPost>
         </UBlogList>
       </div>
