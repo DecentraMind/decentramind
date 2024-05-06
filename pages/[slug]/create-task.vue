@@ -24,7 +24,7 @@ function isRangeSelected(duration: Duration) {
 function selectRange(duration: Duration) {
   selected.value = { start: sub(new Date(), duration), end: new Date() }
 }
-const state = reactive({
+const state = $ref({
   taskLogo: undefined,
   taskName: undefined,
   taskInfo: undefined,
