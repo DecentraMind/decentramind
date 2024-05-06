@@ -89,6 +89,26 @@ const addCommunitylist = async () => {
   isLoading = false
 }
 
+
+const handleUp = async (value: any) => {
+  console.log("gooooooooods")
+}
+
+const logoupload = () => {
+  const input = document.querySelector('#logoupload') as any
+  console.log(state.input)
+  input.click()
+  console.log(state.input)
+}
+const bannerupload = () => {
+  const input = document.querySelector('#bannerupload') as any
+  input.click()
+}
+const test2 = () => {
+  console.log(state.input)
+}
+
+
 </script>
 
 <template>
@@ -97,6 +117,7 @@ const addCommunitylist = async () => {
       <UAlert>
         <template #title>
           <div class="text-3xl p-2">创 建 社 区</div>
+          <UButton @click="test2">testUp2</UButton>
         </template>
       </UAlert>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
@@ -104,14 +125,44 @@ const addCommunitylist = async () => {
           <template #label>
             <div class="text-sky-400 min-w-[100px]">logo</div>
           </template>
-          <UInput v-model="state.input" type="file" size="sm" />
+          <UButton 
+            label="LOGO"
+            size="xl"
+            square
+            variant="outline" 
+            class="flex justify-center w-[150px] h-[120px]"
+            @click="logoupload" 
+          />
+          <UInput 
+            id="logoupload" 
+            v-model="state.input" 
+            type="file" 
+            size="sm" 
+            class="opacity-0" 
+            @change="handleUp"
+          />
         </UFormGroup>
 
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="text-sky-400 min-w-[100px]">banner</div>
           </template>
-          <UInput v-model="state.inputMenu" type="file" size="sm" />
+          <UButton 
+            label="点击上传banner（建议尺寸xxx）"
+            size="xl"
+            square
+            variant="outline" 
+            class="flex justify-center w-[420px] h-[80px]"
+            @click="bannerupload" 
+          />
+          <UInput 
+            id="bannerupload" 
+            v-model="state.inputMenu" 
+            type="file" 
+            size="sm" 
+            class="opacity-0" 
+            @change="handleUp"
+          />
         </UFormGroup>
 
         <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
