@@ -9,7 +9,7 @@ const options = [
   { label: 'Binance', value: 'Binance' },
 ]
 
-let isAdded = $ref(false)
+let isCreateed = $ref(false)
 
 let state = $ref({
   input: undefined,
@@ -64,15 +64,15 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
 }
 
 
-const { addCommunity, getCommunity } = $(aocommunity())
-let cList = $ref('')
+const { addCommunity } = $(aocommunityStore())
+let createCommunity = $ref('')
 let isLoading = $ref(false)
 
-const addCommunitylist = async () => { 
+const CreateCommunity = async () => { 
   if (isLoading) return
   isLoading = true
-  
-  let cSubmitL = [
+
+  let communitySubmit = [
     {
       "name": state.Name,
       "desc": state.Inbro,
@@ -81,17 +81,16 @@ const addCommunitylist = async () => {
       "allreward": state.Allreward,
     }
   ]
-  const jsonString = JSON.stringify(cSubmitL);
+  const jsonString = JSON.stringify(communitySubmit);
   
-  cList = await addCommunity(state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
-  console.log(cList)
-  isAdded = true
+  createCommunity = await addCommunity(state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
+  isCreateed = true
   isLoading = false
 }
 
 
 const handleUp = async (value: any) => {
-  console.log("gooooooooods")
+  console.log("goods")
 }
 
 const logoupload = () => {
@@ -103,9 +102,6 @@ const logoupload = () => {
 const bannerupload = () => {
   const input = document.querySelector('#bannerupload') as any
   input.click()
-}
-const test2 = () => {
-  console.log(state.input)
 }
 
 
@@ -335,18 +331,18 @@ const test2 = () => {
           </UFormGroup>
         </div>
 
-        <UButton type="submit" class="ml-20" @click="addCommunitylist">
+        <UButton type="submit" class="ml-20" @click="CreateCommunity">
           添加
         </UButton>
       </UForm>
-      <UModal v-model="isAdded" prevent-close>
+      <UModal v-model="isCreateed" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                 Modal
               </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isAdded = false" />
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreateed = false" />
             </div>
           </template>
           <UContainer class="w-full flex justify-around">

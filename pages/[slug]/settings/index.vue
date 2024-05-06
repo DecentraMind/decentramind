@@ -1,41 +1,11 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '#ui/types'
 
-const fileRef = ref<HTMLInputElement>()
-const isDeleteAccountModalOpen = ref(false)
-
 const toast = useToast()
-
-function validate (state: any): FormError[] {
-  const errors = []
-  if (!state.name) errors.push({ path: 'name', message: 'Please enter your name.' })
-  if (!state.email) errors.push({ path: 'email', message: 'Please enter your email.' })
-  if ((state.password_current && !state.password_new) || (!state.password_current && state.password_new)) errors.push({ path: 'password', message: 'Please enter a valid password.' })
-  return errors
-}
-
-function onFileChange (e: Event) {
-  const input = e.target as HTMLInputElement
-
-  if (!input.files?.length) {
-    return
-  }
-
-  state.avatar = URL.createObjectURL(input.files[0])
-}
-
-async function onSubmit (event: FormSubmitEvent<any>) {
-  // Do something with data
-  console.log(event.data)
-
-  toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
-}
-
-
 
 
 let info = $ref({})
-let infoJ = $ref({})
+let infoJson = $ref({})
 let accountForm = $ref({ 
     name: '', 
     twitter: '', 
@@ -51,7 +21,7 @@ function onSubmitAccount () {
   console.log('Submitted form:', accountForm)
 }
 
-const { getInfo, personalInfo } = $(aocommunity())
+const { getInfo, personalInfo } = $(aocommunityStore())
 
 const saveInfo = async () => {
   if (isLoading) return
@@ -65,14 +35,13 @@ const saveInfo = async () => {
 onMounted(async () => {
   try {
     info = await getInfo();
-    console.log('---');
     const jsonData = info.Messages[0].Data;
     const jsonObjects = jsonData.match(/\{.*?\}/g);
-    infoJ = jsonObjects.map(item => JSON.parse(item));
-    accountForm.name = infoJ[0].username;
-    accountForm.twitter = infoJ[0].twitter;
-    accountForm.mail = infoJ[0].mail;
-    accountForm.phone = infoJ[0].phone;
+    infoJson = jsonObjects.map(item => JSON.parse(item));
+    accountForm.name = infoJson[0].username;
+    accountForm.twitter = infoJson[0].twitter;
+    accountForm.mail = infoJson[0].mail;
+    accountForm.phone = infoJson[0].phone;
   } catch (error) {
     console.error('Error fetching data:', error);
   }

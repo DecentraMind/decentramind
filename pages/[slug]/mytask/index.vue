@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { FormError, FormSubmitEvent } from '#ui/types'
 
 const defaultColumns = [{
   key: 'token',
@@ -13,15 +12,15 @@ const defaultColumns = [{
 }]
 
 const q = ref('')
-const selectedColumns = ref(defaultColumns)
-const selectedStatuses = ref([])
-const selectedLocations = ref([])
-const sort = ref({ column: 'id', direction: 'asc' as const })
+const selectedColumns = $ref(defaultColumns)
+const selectedStatuses = $ref([])
+const selectedLocations = $ref([])
+const sort = $ref({ column: 'id', direction: 'asc' as const })
 
 
-const columns = computed(() => defaultColumns.filter((column) => selectedColumns.value.includes(column)))
+const columns = computed(() => defaultColumns.filter((column) => selectedColumns.includes(column)))
 
-const query = computed(() => ({ q: q.value, statuses: selectedStatuses.value, locations: selectedLocations.value, sort: sort.value.column, order: sort.value.direction }))
+const query = computed(() => ({ q: q.value, statuses: selectedStatuses, locations: selectedLocations, sort: sort.column, order: sort.direction }))
 
 const { data: Wallettoken, pending } = await useFetch<Wallettoken[]>('/api/wallettoken', { query, default: () => [] })
 

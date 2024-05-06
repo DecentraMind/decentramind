@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import type { FormError, FormSubmitEvent } from '#ui/types'
-
-
 
 const items = [{
   slot: 'join',
@@ -11,18 +8,11 @@ const items = [{
   label: '已获取奖励'
 }]
 
-const accountForm = reactive({ name: 'Benjamin', username: 'benjamincanac' })
-const passwordForm = reactive({ currentPassword: '', newPassword: '' })
+const communityForm = $ref({ name: 'Benjamin', username: 'benjamincanac' })
 
 function onSubmitAccount () {
-  console.log('Submitted form:', accountForm)
+  console.log('Submitted form:', communityForm)
 }
-
-function onSubmitPassword () {
-  console.log('Submitted form:', passwordForm)
-}
-
-
 
 
 const defaultColumns = [{
@@ -50,16 +40,16 @@ const rewardColumns = [{
   label: '来自社区'
 }]
 
-const q = ref('')
-const selectedColumns = ref(defaultColumns)
-const selectedStatuses = ref([])
-const selectedLocations = ref([])
-const sort = ref({ column: 'id', direction: 'asc' as const })
+const q = $ref('')
+const selectedColumns = $ref(defaultColumns)
+const selectedStatuses = $ref([])
+const selectedLocations = $ref([])
+const sort = $ref({ column: 'id', direction: 'asc' as const })
 
 
-const columns = computed(() => defaultColumns.filter((column) => selectedColumns.value.includes(column)))
+const columns = computed(() => defaultColumns.filter((column) => selectedColumns.includes(column)))
 
-const query = computed(() => ({ q: q.value, statuses: selectedStatuses.value, locations: selectedLocations.value, sort: sort.value.column, order: sort.value.direction }))
+const query = computed(() => ({ q: q, statuses: selectedStatuses, locations: selectedLocations, sort: sort.column, order: sort.direction }))
 
 const { data: Wallettoken, pending } = await useFetch<Tasks[]>('/api/task', { query, default: () => [] })
 
@@ -74,7 +64,7 @@ const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedre
 
 <template>
   <UDashboardPanelContent class="pb-24">
-    <UCard @submit.prevent="onSubmitAccount">
+    <UCard>
       <template #header>
         <UBadge>
           公开任务区
@@ -83,7 +73,7 @@ const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedre
 
       <UTabs :items="items" class="w-1/2">
         <template #join>
-          <UCard @submit.prevent="onSubmitAccount">
+          <UCard>
             <UTable
               v-model:sort="sort"
               :rows="Wallettoken"
@@ -97,7 +87,7 @@ const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedre
         </template>
 
         <template #reward>
-          <UCard @submit.prevent="onSubmitPassword">
+          <UCard>
             <UTable
               v-model:sort="sort"
               :rows="Wallettoken"

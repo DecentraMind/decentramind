@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const { getCommunityInfo } = $(aocommunity())
+const { getCommunityInfo } = $(aocommunityStore())
 
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
@@ -66,13 +66,13 @@ const ranks = [{
     src: 'https://i.pravatar.cc/128?u=20'
   },
 }]
-const pending = ref(true)
+const pending = $ref(true)
 
 const route = useRoute()
-let cList = $ref({})
-let cListj = $ref({})
+let communityInfo = $ref({})
+let communityInfoJson = $ref({})
 
-let cLoading = $ref(true)
+let communityLoading = $ref(true)
 
 watchEffect(() => {
   if (!route.params.pid) return
@@ -83,13 +83,12 @@ watchEffect(() => {
 
 onMounted(async () => {
   try {
-    cList = await getCommunityInfo(route.params.pid)
-    const jsonData = cList.Messages[0].Data; // 获取原始的 JSON 字符串
+    communityInfo = await getCommunityInfo(route.params.pid)
+    const jsonData = communityInfo.Messages[0].Data; // 获取原始的 JSON 字符串
     const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
-    cListj = jsonObjects.map(item => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
-    console.log("---nogoods")
-    console.log(cListj)
-    cLoading = false
+    communityInfoJson = jsonObjects.map((item: any) => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
+
+    communityLoading = false
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -98,12 +97,12 @@ onMounted(async () => {
 
 <template>
   <UDashboardPage>
-    <div v-if="cLoading" class="w-full flex justify-center">
+    <div v-if="communityLoading" class="w-full flex justify-center">
       <UIcon name="svg-spinners:blocks-scale" class="mt-0 w-[250px]" size="xl" dynamic v-bind="$attrs" />
     </div>
     <div 
-      v-for="cInfo in cListj" 
-      :key="cInfo.uuid" 
+      v-for="Info in communityInfoJson" 
+      :key="Info.uuid" 
       class="w-full px-50"
     >
       <UColorModeImage :light="light" :dark="dark" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
@@ -114,13 +113,13 @@ onMounted(async () => {
           :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]"
         >
           <template #title>
-            <div class="text-3xl mb-12 mt-3 px-12">{{ cInfo.name }}</div>
+            <div class="text-3xl mb-12 mt-3 px-12">{{ Info.name }}</div>
           </template>
           <template #description>
             <div class="flex flex-col w-5/6 px-12">
               <Text class="mb-3">社区详情</Text>
               <Text>
-                {{ cInfo.desc }}
+                {{ Info.desc }}
               </Text>
             </div>
           </template>
@@ -131,31 +130,31 @@ onMounted(async () => {
               <div class="flex justify-between px-12">
                 <div>网站</div>
                 <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ cInfo.website }}</UBadge>
+                  <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
                 <div>社交媒体</div>
                 <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ cInfo.website }}</UBadge>
+                  <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
                 <div>社区代币</div>
                 <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ cInfo.website }}</UBadge>
+                  <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
                 <div>交易平台</div>
                 <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ cInfo.website }}</UBadge>
+                  <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
                 <div>贡献社区代币类型</div>
                 <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ cInfo.website }}</UBadge>
+                  <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
             </ULandingCard>

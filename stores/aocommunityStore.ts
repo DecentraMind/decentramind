@@ -12,11 +12,9 @@ import {
 
 const { address, getActiveAddress } = $(arweaveWalletStore())
 
-export const aocommunity = defineStore('aocommunity', () => {
+export const aocommunityStore = defineStore('aocommunityStore', () => {
     const cCache = $ref({})
-    let iscLoading = $ref(false)
     const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
-    console.log("goood1")
 
     //创建社区方法
     const addCommunity = async (Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
@@ -37,7 +35,7 @@ export const aocommunity = defineStore('aocommunity', () => {
         ]
         const jsonString = JSON.stringify(cSubmitL);
 
-        let add = await message({
+        let createCommunity = await message({
             process: processID,
             tags: [
                 { name: 'Action', value: 'add'}
@@ -45,8 +43,6 @@ export const aocommunity = defineStore('aocommunity', () => {
             signer: createDataItemSigner(window.arweaveWallet),
             data: jsonString,
         });
-        console.log("goood2")
-        console.log(add)
     }
 
     //获取社区列表方法
@@ -59,8 +55,6 @@ export const aocommunity = defineStore('aocommunity', () => {
                 { name: 'userAddress', value: address }
             ],
         });
-        console.log(result)
-        console.log("goood2")
         return result
     }
 
@@ -101,8 +95,6 @@ export const aocommunity = defineStore('aocommunity', () => {
             signer: createDataItemSigner(window.arweaveWallet),
             data: uuid,
         });
-        console.log("goood2")
-        console.log(join)
         return join
     }
 
@@ -121,8 +113,6 @@ export const aocommunity = defineStore('aocommunity', () => {
             ],
             signer: createDataItemSigner(window.arweaveWallet),
         })
-        console.log("goods")
-        console.log(Info)
         return Info
     }
 
@@ -136,8 +126,6 @@ export const aocommunity = defineStore('aocommunity', () => {
                 { name: 'userAddress', value: address }
             ]
         })
-        console.log("goods")
-        console.log(Info)
         return Info
     }
 
@@ -146,4 +134,4 @@ export const aocommunity = defineStore('aocommunity', () => {
 
 
 if (import.meta.hot)
-    import.meta.hot.accept(acceptHMRUpdate(aocommunity, import.meta.hot))
+    import.meta.hot.accept(acceptHMRUpdate(aocommunityStore, import.meta.hot))

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const state = reactive<{ [key: string]: boolean }>({
+const state = $ref<{ [key: string]: boolean }>({
   email: true,
   desktop: false,
   product_updates: true,
@@ -7,58 +7,29 @@ const state = reactive<{ [key: string]: boolean }>({
   important_updates: true
 })
 
-const sections = [{
-  title: 'Notification channels',
-  description: 'Where can we notify you?',
-  fields: [{
-    name: 'email',
-    label: 'Email',
-    description: 'Receive a daily email digest.'
-  }, {
-    name: 'desktop',
-    label: 'Desktop',
-    description: 'Receive desktop notifications.'
-  }]
-}, {
-  title: 'Account updates',
-  description: 'Receive updates about Nuxt UI.',
-  fields: [{
-    name: 'weekly_digest',
-    label: 'Weekly digest',
-    description: 'Receive a weekly digest of news.'
-  }, {
-    name: 'product_updates',
-    label: 'Product updates',
-    description: 'Receive a monthly email with all new features and updates.'
-  }, {
-    name: 'important_updates',
-    label: 'Important updates',
-    description: 'Receive emails about important updates like security fixes, maintenance, etc.'
-  }]
-}]
 
 async function onChange () {
   // Do something with data
   console.log(state)
 }
 
-const communityForm = reactive({ 
+const communityForm = $ref({ 
     showAll: true, 
     communityName: '',
     showCommunitynum: true,
 })
 
 
-const taskForm = reactive({ 
+const taskForm = $ref({ 
     showTasknum: true, 
 })
-function onSubmitPassword () {
+function onSubmit () {
   console.log('Submitted form:', taskForm)
 }
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
-const formItems = ref([
+const formItems = $ref([
   { 
     light: light, 
     dark: dark, 
@@ -108,7 +79,7 @@ const formItems = ref([
 
 <template>
   <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
-    <UCard @submit.prevent="onSubmitPassword">
+    <UCard @submit.prevent="onSubmit">
       <div 
         v-for="(item, index) in formItems" 
         :key="index"

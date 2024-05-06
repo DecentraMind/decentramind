@@ -20,7 +20,7 @@ const items = [{
   label: '我的邀请'
 }]
 
-const accountForm = reactive({ 
+const accountForm = $ref({ 
     name: 'tim', 
     twitter: 'Benjamin', 
     showtwitter: true, 
@@ -29,12 +29,12 @@ const accountForm = reactive({
     telegram: '+12',
     showtelegram: true,
 })
-const communityForm = reactive({ 
+const communityForm = $ref({ 
     showAll: true, 
     communityName: '',
     showCommunitynum: true,
 })
-const taskForm = reactive({ 
+const taskForm = $ref({ 
     showTasknum: true, 
 })
 
@@ -49,7 +49,7 @@ function onSubmitPassword () {
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
-const formItems = ref([
+const formItems = $ref([
   { 
     light: light, 
     dark: dark, 
