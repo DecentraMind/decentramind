@@ -110,9 +110,12 @@ onMounted(async () => {
         <div class="text-3xl p-2">社 区 列 表</div>
       </template>
     </UAlert>
-    <UButton color="white" @click="doLogin">Arconnect</UButton>
-    <UButton color="white" @click="getCommunitylist">test</UButton>
-    <UButton color="white" @click="joinC">test2</UButton>
+    <!--
+      测试按钮
+      <UButton color="white" @click="doLogin">Arconnect</UButton>
+      <UButton color="white" @click="getCommunitylist">test</UButton>
+      <UButton color="white" @click="joinC">test2</UButton>
+    -->
     <div v-if="cLoading" class="w-full flex justify-center">
       <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
     </div>
