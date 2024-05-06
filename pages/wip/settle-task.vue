@@ -3,7 +3,7 @@ import RuleModal from '~/components/RuleModal.vue'
 import CommonAlert from '~/components/CommonAlert.vue'
 
 definePageMeta({
-  layout: "wip",
+  layout: "wipd",
 });
 const toast = useToast()
 const modal = useModal()
