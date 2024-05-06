@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import CommonAlert from '~/components/CommonAlert.vue'
+const {t} = useI18n()
 const { createTask, getAllTasks, joinSpaceTask } = $(taskStore())
 const blogPost = {
   id: 1,
@@ -33,27 +34,27 @@ const columns = [
   },
   {
     key: "wallet",
-    label: "钱包地址",
+    label: t('Wallet Address'),
   },
   {
     key: "brandEffect",
-    label: "品牌效应",
+    label: t('Brand Effect'),
   },
   {
     key: "inviteFriends",
-    label: "呼朋引伴",
+    label: t('Invite Friends'),
   },
   {
     key: "audience",
-    label: "听众",
+    label: t('Audience'),
   },
   {
     key: "url",
-    label: "url",
+    label: t('Space Url'),
   },
   {
     key: "score",
-    label: "分数",
+    label: t('Score'),
   },
 ];
 
@@ -183,7 +184,7 @@ function joinTask() {
         >
           <template #title>
             <div class="flex justify-start...">
-              <Text class="mx-3">{{ blogPost.name }}</Text>
+              <Text >{{ blogPost.name }}</Text>
               <div class="mx-8"><UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge></div>
               <div class="mx-8"><UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge></div>
               <!-- <UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge>
@@ -194,31 +195,31 @@ function joinTask() {
             <div class="flex flex-col space-y-2">
               <Text class="text-blue-900">{{ blogPost.description }}</Text>
               <div class="flex justify-start ...">
-                <div><Text class=" mr-20 text-blue-300">任务时间:</Text></div>
+                <div><Text class=" mr-20 text-blue-300">{{ $t("Task Period") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.taskTime }}</Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
-                <div><Text class=" mr-20 text-blue-300">任务奖励:</Text></div>
+                <div><Text class=" mr-20 text-blue-300">{{ $t("Task Reward") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.reward }}</Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
-                <div><Text class=" mr-20 text-blue-300">奖励场次:</Text></div>
+                <div><Text class=" mr-20 text-blue-300">{{ $t("Total Reward") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.rewardSessions }}</Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
-                <div><Text class=" mr-16 text-blue-300">已提交场次:</Text></div>
+                <div><Text class=" mr-16 text-blue-300">{{ $t("Number participated") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.submittedSessions }}</Text>
                 </div>
               </div>
               <div class="w-full grid grid-rows-2 grid-flow-col gap-4">
-                <div class="mr-16 row-span-2"><Text class="text-blue-300">任务规则:</Text></div>
+                <div class="mr-16 row-span-2"><Text class="text-blue-300">{{ $t("Task Rule") }}:</Text></div>
                 <div class="col-span-2">
                   <Text class="text-blue-300">{{ blogPost.taskRule }}</Text>
                 </div>
@@ -232,7 +233,7 @@ function joinTask() {
               <UTable :rows="filteredRows" :columns="columns" />
             </div>
             <div class="flex justify-center my-8" v-if="switchDisable()">
-              <UButton label="提交任务" @click="openModal" />
+              <UButton :label="$t('Join Task')" @click="openModal" />
             </div>
           </template>
         </UBlogPost>
