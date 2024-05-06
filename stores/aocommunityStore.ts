@@ -21,7 +21,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         
         const uuid = createuuid()
 
-        let cSubmitL = [
+        let communitySubmitList = [
             {
               "name": Name,
               "desc": Inbro,
@@ -33,7 +33,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
               "uuid": uuid,
             }
         ]
-        const jsonString = JSON.stringify(cSubmitL);
+        const jsonString = JSON.stringify(communitySubmitList);
 
         let createCommunity = await message({
             process: processID,
