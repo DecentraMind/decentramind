@@ -117,7 +117,6 @@ const test2 = () => {
       <UAlert>
         <template #title>
           <div class="text-3xl p-2">创 建 社 区</div>
-          <UButton @click="test2">testUp2</UButton>
         </template>
       </UAlert>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
