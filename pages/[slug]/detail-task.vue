@@ -249,7 +249,7 @@ function joinTask() {
           </div>
         </template>
         <div v-if="!isSettlementOpen" class="space-y-2">
-          <p>{{ $t("Task Hint") }}</p>
+          <p>{{ $t("Thank u for your support.Please follow the rules of the quest and fill the URL of your space to the firm") }}</p>
           <UButton @click="onClick">
             I know!
           </UButton>
