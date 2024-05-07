@@ -1,17 +1,27 @@
 <script setup lang="ts">
+
+const route = useRoute()
+const slug = $computed(() => route.params.slug)
+
+const {t} = useI18n()
+
 const links = [[{
-    label: 'General',
+    label: t('setting.person'),
     icon: 'i-heroicons-user-circle',
-    to: '/settings',
+    to: `/${slug}/settings`,
     exact: true
   }, {
-    label: 'Members',
+    label: t('setting.community'),
     icon: 'i-heroicons-user-group',
-    to: '/settings/members'
+    to: `/${slug}/settings/communityinfo`
   }, {
-    label: 'Notifications',
+    label: t('setting.task'),
+    icon: 'eos-icons:abstract-instance-outlined',
+    to: `/${slug}/settings/taskinfo`
+  }, {
+    label: t('setting.invite'),
     icon: 'i-heroicons-bell',
-    to: '/settings/notifications'
+    to: `/${slug}/settings/myinvite`
   }], [{
     label: 'Documentation',
     icon: 'i-heroicons-book-open',

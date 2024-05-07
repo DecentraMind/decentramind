@@ -35,6 +35,26 @@ export interface Notification {
   date: string
 }
 
+export interface Wallettoken {
+  id: number
+  token: string
+  chain: string
+  balance: string
+  balance_u: string
+  avatar?: Avatar
+  status: UserStatus
+  location: string
+}
+
+export interface Tasks {
+  id: number
+  name: string
+  from: string
+  balance: string
+  status: UserStatus
+  location: string
+}
+
 export type Period = 'daily' | 'weekly' | 'monthly'
 
 export interface Range {

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+
+const route = useRoute()
+const slug = $computed(() => route.params.slug)
+
 const teams = [
   {
     label: "DMind",
@@ -24,6 +28,7 @@ const actions = [
   {
     label: "Create team",
     icon: "i-heroicons-plus-circle",
+    to: `/${slug}/create-community`,
   },
   {
     label: "Manage teams",

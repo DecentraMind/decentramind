@@ -11,7 +11,7 @@ const options = [
   { label: 'Binance', value: 'Binance' },
 ]
 
-const state = reactive({
+const state = $ref({
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
