@@ -155,8 +155,7 @@ function isNullOrEmpty(str: string | null | undefined): boolean {
 
 
 const emit = defineEmits(['success'])
-const singles = ['单人', '多人']
-const isSingle = ref(singles[0])
+
 let isSettlementOpen = $ref(false)
 function onClick() {
   isSettlementOpen = true
@@ -240,35 +239,33 @@ function joinTask() {
       </div>
     </UPage>
     <UModal v-model="isOpen">
-    <UCard>
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-            {{ $t("Join Task") }}
-          </h3>
-          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-            @click="isOpen = false" />
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+              {{ $t("Join Task") }}
+            </h3>
+            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
+          </div>
+        </template>
+        <div v-if="!isSettlementOpen" class="space-y-2">
+          <p>{{ $t("Task Hint") }}</p>
+          <UButton @click="onClick">
+            I know!
+          </UButton>
         </div>
-      </template>
-      <div v-if="!isSettlementOpen" class="space-y-2">
-        <p>{{ $t("Task Hint") }}</p>
-        <UButton @click="onClick">
-          I know!
-        </UButton>
-      </div>
-      <div v-if="isSettlementOpen">
-        <div class="my-8">
+        <div v-if="isSettlementOpen">
+          <div class="my-8">
             <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />
           </div>
-        <div class="my-8">
-          <UInput v-model="url" color="primary" variant="outline" :placeholder="$t('Space Url')" />
+          <div class="my-8">
+            <UInput v-model="url" color="primary" variant="outline" :placeholder="$t('Space Url')" />
+          </div>
+          <div class="flex justify-center my-8">
+            <UButton @click="joinTask">{{ $t("Submit") }}</UButton>
+          </div>
         </div>
-        <div class="flex justify-center my-8">
-          <UButton @click="joinTask">{{ $t("Submit") }}</UButton>
-        </div>
-      </div>
-    </UCard>
-  </UModal>
+      </UCard>
+    </UModal>
   </UDashboardPage>
-
 </template>
