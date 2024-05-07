@@ -50,30 +50,17 @@ const links = $computed(() => {
       },
     },
     {
-      id: "settings",
-      label: "Settings",
-      to: `/${slug}/settings`,
-      icon: "i-heroicons-cog-8-tooth",
-      children: [
-        {
-          label: "General",
-          to: `/${slug}/settings`,
-          exact: true,
-        },
-        {
-          label: "Members",
-          to: `/${slug}/settings/members`,
-        },
-        {
-          label: "Notifications",
-          to: `/${slug}/settings/notifications`,
-        },
-      ],
+      id: "community-discovery",
+      label: "Cmmunity-discovery",
+      icon: "i-heroicons-user-group",
+      to: `/${slug}/discovery`,
       tooltip: {
-        text: "Settings",
-        shortcuts: ["G", "S"],
+        text: "Community-discovery",
+        shortcuts: ["G", "U"],
       },
     },
+    
+    
   ];
 });
 const footerLinks = $computed(() => {
@@ -81,7 +68,7 @@ const footerLinks = $computed(() => {
     {
       label: "Invite people",
       icon: "i-heroicons-plus",
-      to: `/${slug}/settings/members`,
+      to: `/${slug}/settings/communityinfo`,
     },
     {
       label: "Help & Support",

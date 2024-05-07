@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { NavItem } from "@nuxt/content/dist/runtime/types";
 
+const {
+  // currentChain, selectedWallet,
+  address,
+  credBalance,
+  init, doLogout, doLogin } = $(aoStore())
+
 const navigation = inject<Ref<NavItem[]>>("navigation", ref([]));
 
 const links = [
@@ -21,6 +27,18 @@ const links = [
   //   to: "/blog",
   // },
 ];
+
+const wallet = [
+  [{
+    label: 'Disconnect',
+    click: () => {
+      doLogout()
+    }
+  }]
+]
+
+onMounted(init)
+
 </script>
 
 <template>
@@ -28,8 +46,19 @@ const links = [
     <template #logo>Decentral Mind <UBadge label="Beta" variant="subtle" class="mb-0.5" /> </template>
 
     <template #right>
-      <UButton label="Sign in" color="gray" to="/login" />
-      <UButton label="Sign up" icon="i-heroicons-arrow-right-20-solid" trailing color="black" to="/signup" class="hidden lg:flex" />
+      <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
+        <UButton color="white" block>
+          {{ shortAddress(address) }}
+        </UButton>
+        <template #panel>
+          <UButton color="red" @click="doLogout">
+            Disconnect
+          </UButton>
+        </template>
+      </UPopover>
+      <UButton v-else color="white" @click="doLogin">
+        Connect Wallet
+      </UButton>
     </template>
 
     <template #panel>

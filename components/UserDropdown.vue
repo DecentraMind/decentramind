@@ -3,6 +3,9 @@ const { isHelpSlideoverOpen } = useDashboard()
 const { isDashboardSearchModalOpen } = useUIState()
 const { metaSymbol } = useShortcuts()
 
+const route = useRoute()
+const slug = $computed(() => route.params.slug)
+
 const items = computed(() => [
   [{
     slot: 'account',
@@ -11,7 +14,11 @@ const items = computed(() => [
   }], [{
     label: 'Settings',
     icon: 'i-heroicons-cog-8-tooth',
-    to: '/settings'
+    to: `/${slug}/settings`
+  }, {
+    label: 'Mywallet',
+    icon: 'i-heroicons-cog-8-tooth',
+    to: `/${slug}/mytask`
   }, {
     label: 'Command menu',
     icon: 'i-heroicons-command-line',
