@@ -44,12 +44,12 @@ onMounted(async () => {
       <template #header>
         <div class="flex justify-between pl-10 pr-20 items-center">
           <h3 class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white">
-            社区列表
+            {{ $t('setting.community.list')}}
           </h3>
           <div class="flex items-center text-xl space-x-5">
-            <div>全部隐藏</div>
+            <div>{{ $t('hideall')}}</div>
             <UToggle v-model="communityForm.showAll" size="xl" />
-            <div>全部显示</div>
+            <div>{{ $t('showall')}}</div>
           </div>
         </div>
       </template>
@@ -72,16 +72,16 @@ onMounted(async () => {
               </template>
               <UInput v-model="item.value" />
             </UFormGroup>
-            <UToggle v-model="item.show" class="ml-10" size="xl" />显示
+            <UToggle v-model="item.show" class="ml-10" size="xl" />{{ $t('show')}}
           </div>
         </div>
       </div>
       <UFormGroup name="new">
         <template #label>
           <div class="mt-10 text-xl flex items-center pl-10">
-            已加入社区数量： 50
+            {{ $t('setting.community.isjoin')}}： 50
             <UToggle v-model="communityForm.showCommunitynum" class="ml-10" size="xl" />
-            <div class="ml-3">显示</div>
+            <div class="ml-3">{{ $t('show')}}</div>
           </div>
         </template>
       </UFormGroup>
@@ -89,7 +89,7 @@ onMounted(async () => {
       <template #footer>
         <div class="flex justify-center">
           <UButton type="submit" color="black">
-            保存修改
+            {{ $t('setting.save')}}
           </UButton>
         </div>
       </template>

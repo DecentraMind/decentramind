@@ -75,20 +75,47 @@ const formItems = $ref([
   }, 
   // 其他表单项
 ]);
+
+const { getCommunityjoined } = $(aocommunityStore())
+
+let communityLoading = $ref(true)
+
+let communityList = $ref({})
+let communityListJson = $ref({})
+const getCommunity = async() => {
+  
+  communityList = await getCommunityjoined()
+  const jsonData = communityList.Messages[0].Data; // 获取原始的 JSON 字符串
+  const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
+  communityListJson = jsonObjects.map((item: any) => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
+
+  communityLoading = false
+}
+
+onMounted(async () => {
+  try {
+    await getCommunity()
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
 </script>
 
 <template>
   <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
     <UCard @submit.prevent="onSubmit">
+      <div v-if="communityLoading" class="w-full flex justify-center">
+        <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
+      </div>
       <div 
-        v-for="(item, index) in formItems" 
+        v-for="(item, index) in communityListJson" 
         :key="index"
         class="flex items-center justify-between pr-[120px]" 
       >
         <div class="flex items-center mt-5">
-          <UColorModeImage :light="item.light" :dark="item.dark" class="h-[100px]" />
-          <div class="ml-3 text-xl">{{ item.label }}</div>
-          <div class="ml-10 text-xl">已邀请xx位好友</div>
+          <UColorModeImage :light="light" :dark="dark" class="h-[100px]" />
+          <div class="ml-3 text-xl">{{ item.name }}</div>
+          <div class="ml-10 text-xl">{{ $t('setting.invited')}}</div>
           <UAvatarGroup size="sm" :max="2" class="ml-10">
             <UAvatar
               src="https://avatars.githubusercontent.com/u/739984?v=4"
@@ -104,7 +131,7 @@ const formItems = $ref([
             />
           </UAvatarGroup>
         </div>
-        <UButton class="flex-end text-xl text-center">查看所有好友</UButton>
+        <UButton class="flex-end text-xl text-center">{{ $t('setting.invite.check')}}</UButton>
       </div>
     </UCard>
   </udashboardpanelcontent>

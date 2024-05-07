@@ -2,6 +2,8 @@
 
 const { getCommunityInfo } = $(aocommunityStore())
 
+const {t} = useI18n()
+
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
@@ -23,7 +25,7 @@ const itemsbadge2 = [
 
 const columns = [{
   key: 'name',
-  label: '社区贡献排行榜',
+  label: t('community.detail.contribute.rank'),
   class: 'text-xl'
 }, {
   key: 'rank',
@@ -117,7 +119,7 @@ onMounted(async () => {
           </template>
           <template #description>
             <div class="flex flex-col w-5/6 px-12">
-              <Text class="mb-3">社区详情</Text>
+              <Text class="mb-3">{{ $t('community.detail')}}</Text>
               <Text>
                 {{ Info.desc }}
               </Text>
@@ -128,45 +130,53 @@ onMounted(async () => {
           <ULandingGrid>
             <ULandingCard class="col-span-4 row-span-2">
               <div class="flex justify-between px-12">
-                <div>网站</div>
+                <div>{{ $t('community.website')}}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>社交媒体</div>
+                <div>{{ $t('community.detail.social')}}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>社区代币</div>
+                <div>{{ $t('community.detail.token')}}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>交易平台</div>
+                <div>{{ $t('community.token.platforms')}}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>贡献社区代币类型</div>
+                <div>{{ $t('community.detail.contribute')}}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
             </ULandingCard>
             <ULandingCard class="col-span-4 row-span-2">
-              <div 
-                v-for="(item, index) in itemsbadge2" 
-                :key="index" 
-                class="flex justify-between px-12"
-              >
-                <div>{{ item.label }}</div>
+              <div class="flex justify-between px-12">
+                <div>Github</div>
                 <div class="w-32 flex justify-around items-center">
-                  <UBadge v-for="(badge, badgeIndex) in item.badges" :key="badgeIndex">{{ badge }}</UBadge>
+                  <UBadge>{{ Info.website }}</UBadge>
+                </div>
+              </div>
+              <div class="flex justify-between px-12">
+                <div>{{ $t('community.buildnum')}}</div>
+                <div class="w-32 flex justify-around items-center">
+                  <UBadge>{{ Info.website }}</UBadge>
+                </div>
+              </div>
+              <div class="flex justify-between px-12">
+                <div>{{ $t('community.detail.reward.issued')}}</div>
+                <div class="w-32 flex justify-around items-center">
+                  <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
             </ULandingCard>
@@ -192,8 +202,8 @@ onMounted(async () => {
             </ULandingCard>
             <ULandingCard class="col-span-8 row-span-2">
               <div class="px-12">
-                经济模型<br>
-                token总量 2100000
+                {{ $t('community.economics')}}<br>
+                {{ $t('community.token.all')}} 2100000
               </div>
             </ULandingCard>
           </ULandingGrid>

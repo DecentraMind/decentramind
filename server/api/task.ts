@@ -2,21 +2,21 @@ import type { Tasks, UserStatus } from '~/types'
 
 const tasks: Tasks[] = [{
   id: 1,
-  name: '卖辣椒',
+  name: 'tim',
   from: 'xDAO',
   balance: '11U',
   status: 'subscribed',
   location: 'Berlin, Germany'
 }, {
   id: 2,
-  name: '卖辣椒',
+  name: 'zoom',
   from: 'xDAO',
   balance: '11U',
   status: 'subscribed',
   location: 'Berlin, Germany'
 }, {
   id: 3,
-  name: '卖辣椒',
+  name: 'ainm',
   from: 'xDAO',
   balance: '11U',
   status: 'subscribed',

@@ -44,8 +44,6 @@ const JoinCommunity = async( uuid: any ) => {
   isLoading = false
 }
 
-onMounted(init)
-
 onMounted(async () => {
   try {
     await getCommunity()
@@ -59,7 +57,7 @@ onMounted(async () => {
   <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-10">
     <UAlert>
       <template #title>
-        <div class="text-3xl p-2">社 区 列 表</div>
+        <div class="text-3xl p-2">{{ $t('community.list')}}</div>
       </template>
     </UAlert>
     <!--
@@ -104,7 +102,7 @@ onMounted(async () => {
             variant="outline" 
             disabled
           >
-            已加入
+            {{ $t('community.list.isjoin')}}
           </UButton>
         </template>
         <template v-else>
@@ -115,7 +113,7 @@ onMounted(async () => {
             variant="outline" 
             @click="() => JoinCommunity(community.uuid)"
           >
-            加入社区
+            {{ $t('community.list.join')}}
           </UButton>
         </template>
       </UBlogPost>

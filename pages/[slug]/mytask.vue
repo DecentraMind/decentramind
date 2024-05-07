@@ -3,13 +3,15 @@
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
 
+const {t} = useI18n()
+
 const links = [[{
-    label: '我的钱包',
+    label: t('wallet'),
     icon: 'i-heroicons-user-circle',
     to: `/${slug}/mytask`,
     exact: true
   }, {
-    label: '任务管理',
+    label: t('task'),
     icon: 'eos-icons:abstract-instance-outlined',
     to: `/${slug}/mytask/task`
   }]]

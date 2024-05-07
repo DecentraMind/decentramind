@@ -3,21 +3,23 @@
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
 
+const {t} = useI18n()
+
 const links = [[{
-    label: '个人信息设置',
+    label: t('setting.person'),
     icon: 'i-heroicons-user-circle',
     to: `/${slug}/settings`,
     exact: true
   }, {
-    label: '社区信息设置',
+    label: t('setting.community'),
     icon: 'i-heroicons-user-group',
     to: `/${slug}/settings/communityinfo`
   }, {
-    label: '任务信息设置',
+    label: t('setting.task'),
     icon: 'eos-icons:abstract-instance-outlined',
     to: `/${slug}/settings/taskinfo`
   }, {
-    label: '我的邀请',
+    label: t('setting.invite'),
     icon: 'i-heroicons-bell',
     to: `/${slug}/settings/myinvite`
   }], [{

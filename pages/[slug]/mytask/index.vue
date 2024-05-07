@@ -1,11 +1,13 @@
 <script setup lang="ts">
 
+const {t} = useI18n()
+
 const defaultColumns = [{
   key: 'token',
-  label: '总资产折合'
+  label: t('wallet.all')
 }, {
   key: 'balance',
-  label: '钱包余额'
+  label: t('wallet.balance')
 }, {
   key: 'withdraw',
   label: ''
@@ -44,7 +46,7 @@ function onSubmitAccount () {
           class="w-[600px]"
         >
           <template #title>
-            <div class="text-2xl">总资产折合</div>
+            <div class="text-2xl">{{ $t('wallet.all')}}</div>
           </template>
           <template #description>
             <div class="flex items-center mt-5">
@@ -80,14 +82,14 @@ function onSubmitAccount () {
           </div>
         </template>
         <template #withdraw-data>
-          <UButton>提现</UButton>
+          <UButton>{{ $t('wallet.withdraw')}}</UButton>
         </template>
       </UTable>
 
       <template #footer>
         <div class="flex pl-10">
           <UButton type="submit" color="black">
-            token上架申请
+            {{ $t('wallet.token')}}
           </UButton>
         </div>
       </template>

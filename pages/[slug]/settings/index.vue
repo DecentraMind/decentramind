@@ -61,40 +61,51 @@ onMounted(async () => {
           />
           <div class="flex items-center p-3 ml-5">
             <UFormGroup
-              label="修改用户名"
               name="name" 
               class="mb-3"
             >
+              <template #label>
+                {{ $t('setting.person.name')}}
+              </template>
               <UInput v-model="accountForm.name" />
             </UFormGroup>
           </div>
         </div>
       </template>
 
-      <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">社交信息</div>
+      <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">{{ $t('setting.person.social')}}</div>
       <UFormGroup label="twitter" name="twitter" class="mb-5 pl-10">
+        <template #label>
+          {{ $t('setting.person.twitter')}}
+        </template>
         <div class="flex items-center space-x-3">
           <UInput v-model="accountForm.twitter" />
-          <UToggle v-model="accountForm.showtwitter" />显示
+          <UToggle v-model="accountForm.showtwitter" /><div>{{ $t('show')}}</div>
         </div>
       </UFormGroup>
       <UFormGroup label="mail" name="mail" class="mb-5 pl-10">
+        <template #label>
+          {{ $t('setting.person.mail')}}
+        </template>
         <div class="flex items-center space-x-3">
           <UInput v-model="accountForm.mail" />
-          <UToggle v-model="accountForm.showmail" />显示
+          <UToggle v-model="accountForm.showmail" /><div>{{ $t('show')}}</div>
         </div>
       </UFormGroup>
       <UFormGroup label="phone" name="phone" class="mb-5 pl-10">
+        <template #label>
+          {{ $t('setting.person.phone')}}
+        </template>
         <div class="flex items-center space-x-3">
           <UInput v-model="accountForm.phone" />
-          <UToggle v-model="accountForm.showtelegram" />显示
+          <UToggle v-model="accountForm.showtelegram" /><div>{{ $t('show')}}</div>
         </div>
       </UFormGroup>
 
       <template #footer>
         <div class="flex justify-center">
           <UButton type="submit" color="black" @click="saveInfo">
-            保存修改
+            {{ $t('setting.save')}}
           </UButton>
         </div>
       </template>

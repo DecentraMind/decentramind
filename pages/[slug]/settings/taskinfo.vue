@@ -28,8 +28,8 @@ function onSubmitTask () {
   <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
     <UCard class="pl-10 pt-10 text-xl" @submit.prevent="onSubmitTask">
       <div class="flex items-center">
-        已完成任务数量： 50
-        <UToggle v-model="taskForm.showTasknum" class="ml-10 mr-3" size="xl" />显示
+        {{ $t('setting.task.completed')}}： 50
+        <UToggle v-model="taskForm.showTasknum" class="ml-10 mr-3" size="xl" />{{ $t('show')}}
       </div>
     </UCard>
   </udashboardpanelcontent>

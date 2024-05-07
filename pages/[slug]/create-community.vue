@@ -28,7 +28,7 @@ let state = $ref({
   showAllreward: undefined,
   Typereward: undefined,
   showTypereward: undefined,
-  showDetail: true,
+  showDetail: false,
   isPublished: undefined,
   TokenName: undefined,
   showTokenName: undefined,
@@ -112,13 +112,13 @@ const bannerupload = () => {
     <DashboardPanelContent class="w-full overflow-y-auto pl-20 pt-10">
       <UAlert>
         <template #title>
-          <div class="text-3xl p-2">创 建 社 区</div>
+          <div class="text-3xl p-2">{{ $t('community.create')}}</div>
         </template>
       </UAlert>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
         <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">logo</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.logo')}}</div>
           </template>
           <UButton 
             label="LOGO"
@@ -140,10 +140,10 @@ const bannerupload = () => {
 
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">banner</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.banner')}}</div>
           </template>
-          <UButton 
-            label="点击上传banner（建议尺寸xxx）"
+          <UButton
+            :label="`${$t('community.banner.submit')}`"
             size="xl"
             square
             variant="outline" 
@@ -162,177 +162,178 @@ const bannerupload = () => {
 
         <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">社区名称</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.name')}}</div>
           </template>
           <UInput v-model="state.Name" placeholder="Name" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Inbro" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">简介</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.intro')}}</div>
           </template>
-          <UTextarea v-model="state.Inbro" placeholder="多行输入" class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">官网</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.website')}}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Website" placeholder="URL" />
             <UToggle v-model="state.showWebsite" />
-            <Text>显示</Text>
+            <Text>{{ $t('show')}}</Text>
           </div>
         </UFormGroup>
 
         <UFormGroup name="Twitter" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">Twitter</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.twitter')}}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Twitter" placeholder="URL" />
             <UToggle v-model="state.showTwitter" />
-            <Text>显示</Text>
+            <Text>{{ $t('show')}}</Text>
           </div>
         </UFormGroup>
 
         <UFormGroup name="Whitebook" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">白皮书</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.whitebook')}}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Whitebook" placeholder="URL" />
             <UToggle v-model="state.showWhitebook" />
-            <Text>显示</Text>
+            <Text>{{ $t('show')}}</Text>
           </div>
         </UFormGroup>
 
         <UFormGroup name="Buildernum" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">Builder数量</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.buildnum')}}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Buildernum" placeholder="150（无法编辑，自动生成）" />
+            <UInput v-model="state.Buildernum" :placeholder="`${$t('community.buildnum.label')}`" />
             <UToggle v-model="state.showBuildernum" />
-            <Text>显示</Text>
+            <Text>{{ $t('show')}}</Text>
           </div>
         </UFormGroup>
 
         <UFormGroup name="Allreward" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">奖励发放总量</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.allreward')}}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Allreward" placeholder="200U （无法编辑，自动生成—）" />
+            <UInput v-model="state.Allreward" :placeholder="`${$t('community.buildnum.label')}`" />
             <UToggle v-model="state.showAllreward" />
-            <Text>显示</Text>
+            <Text>{{ $t('show')}}</Text>
           </div>
         </UFormGroup>
 
         <UFormGroup name="Typereward" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">奖励发放类型</div>
+            <div class="text-sky-400 w-[300px]">{{ $t('community.typereward')}}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Typereward" placeholder="USDT PSN 多填" />
+            <UInput v-model="state.Typereward" :placeholder="`${$t('community.buildnum.label')}`" />
             <UToggle v-model="state.showTypereward" />
-            <Text>显示</Text>
+            <Text>{{ $t('show')}}</Text>
           </div>
         </UFormGroup>
 
-        <div class="py-8 text-2xl">项目细节</div>
+        <div class="py-8 text-2xl">{{ $t('community.project')}}</div>
 
         <UFormGroup name="range" class="flex flex-row items-center space-x-10">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">以下内容可以创建后填写</div>
+            <div class="text-sky-400 min-w-[100px]">{{ $t('community.after')}}</div>
           </template>
-          全部隐藏
+          {{ $t('hideall')}}
           <UToggle v-model="state.showDetail" />
-          全部显示
+          {{ $t('showall')}}
         </UFormGroup>
 
         <div v-show="state.showDetail" class="ml-10 space-y-3">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[150px]">Token是否已发行</div>
+              <div class="text-sky-400 min-w-[150px]">{{ $t('community.token.release')}}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isPublished" />
-              <Text>是</Text>
+              <Text>{{ $t('yes')}}</Text>
             </div>
           </UFormGroup>
 
           <UFormGroup name="range" label="Range">
             <template #label>
-              <div class="text-sky-400 min-w-[100px]">token 1 名称</div>
+              <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.name')}}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UInput v-model="state.TokenName" placeholder="" />
               <UToggle v-model="state.showTokenName" />
-              <Text>显示</Text>
+              <Text>{{ $t('show')}}</Text>
             </div>
           </UFormGroup>
 
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[150px]">Token是否可以交易</div>
+              <div class="text-sky-400 min-w-[150px]">{{ $t('community.token.trade')}}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isTradable" />
-              <Text>是</Text>
+              <Text>{{ $t('yes')}}</Text>
             </div>
           </UFormGroup>
 
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[100px]">交易平台</div>
+              <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.platforms')}}</div>
             </template>
             <USelect v-model="state.TradePlatform" placeholder="OKE" :options="options" />
           </UFormGroup>
         </div>
 
-        <div class="py-8 text-2xl">经济模型</div>
+        <div class="py-8 text-2xl">{{ $t('community.economics')}}</div>
 
 
         <div class="ml-10 space-y-3">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[100px]">token总量</div>
+              <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.all')}}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
-              <Text>隐藏</Text>
+              <Text>{{ $t('hide')}}</Text>
               <UToggle v-model="state.showAlltoken" />
-              <Text>显示</Text>
+              <Text>{{ $t('show')}}</Text>
             </div>
           </UFormGroup>
+          <div v-show="state.showAlltoken">
+            <UFormGroup name="range" class="mb-2">
+              <div class="flex flex-row items-center space-x-3">
+                <UInput v-model="state.Alltoken" placeholder="" />
+              </div>
+            </UFormGroup>
 
-          <UFormGroup name="range">
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Alltoken" placeholder="" />
-            </div>
-          </UFormGroup>
+            <UFormGroup name="range" class="mb-2">
+              <div class="flex flex-row items-center space-x-3">
+                <UInput v-model="state.Communitytoken" placeholder="community" />%
+              </div>
+            </UFormGroup>
 
-          <UFormGroup name="range">
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Communitytoken" placeholder="社区（自定义）" />%
-            </div>
-          </UFormGroup>
+            <UFormGroup name="range" class="mb-2">
+              <div class="flex flex-row items-center space-x-3">
+                <UInput v-model="state.Teamtoken" placeholder="team" />%
+              </div>
+            </UFormGroup>
 
-          <UFormGroup name="range">
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Teamtoken" placeholder="团队" />%
-            </div>
-          </UFormGroup>
-
-          <UFormGroup name="range">
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Flowtoken" placeholder="流动性" />%
-            </div>
-          </UFormGroup>
+            <UFormGroup name="range">
+              <div class="flex flex-row items-center space-x-3">
+                <UInput v-model="state.Flowtoken" placeholder="liquidity" />%
+              </div>
+            </UFormGroup>
+          </div>
         </div>
 
         <UButton type="submit" class="ml-20" @click="CreateCommunity">
-          添加
+          {{ $t('add')}}
         </UButton>
       </UForm>
       <UModal v-model="isCreateed" prevent-close>
@@ -346,8 +347,8 @@ const bannerupload = () => {
             </div>
           </template>
           <UContainer class="w-full flex justify-around">
-            <UButton :to="`/${slug}/create-community`">继续创建</UButton>
-            <UButton :to="`/${slug}/discovery`">查看社区</UButton>
+            <UButton :to="`/${slug}/create-community`">{{ $t('community.continue')}}</UButton>
+            <UButton :to="`/${slug}/discovery`">{{ $t('community.look')}}</UButton>
           </UContainer>
         </UCard>
       </UModal>

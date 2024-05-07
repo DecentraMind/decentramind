@@ -1,11 +1,13 @@
 <script setup lang="ts">
 
+const {t} = useI18n()
+
 const items = [{
   slot: 'join',
-  label: '已参与 40'
+  label: `${t('task.isjoin')} 40`
 }, {
   slot: 'reward',
-  label: '已获取奖励'
+  label: t('task.reward')
 }]
 
 const communityForm = $ref({ name: 'Benjamin', username: 'benjamincanac' })
@@ -20,10 +22,10 @@ const defaultColumns = [{
   label: '',
 }, {
   key: 'name',
-  label: '名称'
+  label: t('task.name')
 }, {
   key: 'from',
-  label: '来自社区'
+  label: t('task.from')
 }]
 
 const rewardColumns = [{
@@ -31,13 +33,13 @@ const rewardColumns = [{
   label: '',
 }, {
   key: 'name',
-  label: '名称'
+  label: t('task.name')
 }, {
   key: 'balance',
-  label: '金额',
+  label: t('task.sum'),
 }, {
   key: 'from',
-  label: '来自社区'
+  label: t('task.from')
 }]
 
 const q = $ref('')
@@ -67,7 +69,7 @@ const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedre
     <UCard>
       <template #header>
         <UBadge>
-          公开任务区
+          {{ $t('task.public')}}
         </UBadge>
       </template>
 
@@ -103,7 +105,7 @@ const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedre
 
       <template #footer>
         <div class="flex pl-10">
-          总金额：111U
+          {{ $t('task.allsum')}}：111U
         </div>
       </template>
     </UCard>
