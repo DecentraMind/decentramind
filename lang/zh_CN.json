@@ -25,5 +25,8 @@
   "Invite Friends": "呼朋引伴",
   "Audience": "听众",
   "Space Url": "Space 链接",
-  "Score": "分数"
+  "Score": "分数",
+  "Submission Rank": "任务提交排名",
+  "Task Hint":"感谢你对社区的支持~请你按照任务规则完成任务，并且将任务URL提交至表格的加号处哦！如果没有遵循任何一条任务规则那么你可能会白费力气喔~",
+  "Submit": "确认提交"
 }

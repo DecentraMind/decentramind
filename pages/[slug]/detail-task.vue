@@ -194,40 +194,40 @@ function joinTask() {
           <template #description>
             <div class="flex flex-col space-y-2">
               <Text class="text-blue-900">{{ blogPost.description }}</Text>
-              <div class="flex justify-start ...">
-                <div><Text class=" mr-20 text-blue-300">{{ $t("Task Period") }}:</Text></div>
+              <div class="flex ...">
+                <div class="flex-none w-60"><Text class=" text-blue-300">{{ $t("Task Period") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.taskTime }}</Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
-                <div><Text class=" mr-20 text-blue-300">{{ $t("Task Reward") }}:</Text></div>
+                <div class="flex-none w-60"><Text class="text-blue-300">{{ $t("Task Reward") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.reward }}</Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
-                <div><Text class=" mr-20 text-blue-300">{{ $t("Total Reward") }}:</Text></div>
+                <div class="flex-none w-60"><Text class=" text-blue-300">{{ $t("Total Reward") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.rewardSessions }}</Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
-                <div><Text class=" mr-16 text-blue-300">{{ $t("Number participated") }}:</Text></div>
+                <div class="flex-none w-60"><Text class="text-blue-300">{{ $t("Number participated") }}:</Text></div>
                 <div>
                   <Text class="text-blue-300">{{ blogPost.submittedSessions }}</Text>
                 </div>
               </div>
-              <div class="w-full grid grid-rows-2 grid-flow-col gap-4">
-                <div class="mr-16 row-span-2"><Text class="text-blue-300">{{ $t("Task Rule") }}:</Text></div>
-                <div class="col-span-2">
+              <div class="flex justify-start">
+                <div class="flex-none w-60 "><Text class="text-blue-300">{{ $t("Task Rule") }}:</Text></div>
+                <div>
                   <Text class="text-blue-300">{{ blogPost.taskRule }}</Text>
                 </div>
               </div>
             </div>
             <div>
               <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-                <Text class=" mr-8 text-blue-300">任务提交排名:</Text>
+                <Text class=" mr-8 text-blue-300">{{ $t("Submission Rank") }}:</Text>
                 <UInput v-model="q" placeholder="Filter..." />
               </div>
               <UTable :rows="filteredRows" :columns="columns" />
@@ -244,27 +244,27 @@ function joinTask() {
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-            提交任务
+            {{ $t("Join Task") }}
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click="isOpen = false" />
         </div>
       </template>
       <div v-if="!isSettlementOpen" class="space-y-2">
-        <p>感谢你对社区的支持~请你按照任务规则完成任务，并且将任务URL提交至表格的加号处哦！如果没有遵循任何一条任务规则那么你可能会白费力气喔~</p>
+        <p>{{ $t("Task Hint") }}</p>
         <UButton @click="onClick">
           I know!
         </UButton>
       </div>
       <div v-if="isSettlementOpen">
         <div class="my-8">
-            <UInput v-model="addr" color="primary" variant="outline" placeholder="钱包地址" />
+            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />
           </div>
         <div class="my-8">
-          <UInput v-model="url" color="primary" variant="outline" placeholder="URL" />
+          <UInput v-model="url" color="primary" variant="outline" :placeholder="$t('Space Url')" />
         </div>
         <div class="flex justify-center my-8">
-          <UButton @click="joinTask">确认提交</UButton>
+          <UButton @click="joinTask">{{ $t("Submit") }}</UButton>
         </div>
       </div>
     </UCard>
