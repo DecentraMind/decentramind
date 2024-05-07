@@ -27,7 +27,7 @@
   "Space Url": "Space 链接",
   "Score": "分数",
   "Submission Rank": "任务提交排名",
-  "Task Hint":"感谢你对社区的支持~请你按照任务规则完成任务，并且将任务URL提交至表格的加号处哦！如果没有遵循任何一条任务规则那么你可能会白费力气喔~",
+  "Task Hint": "感谢你对社区的支持~请你按照任务规则完成任务，并且将任务URL提交至表格的加号处哦！如果没有遵循任何一条任务规则那么你可能会白费力气喔~",
   "Submit": "确认提交",
   "showall": "全部显示",
   "hideall": "全部隐藏",
@@ -36,7 +36,6 @@
   "yes": "是",
   "no": "否",
   "add": "添加",
-
   "community.create": "创建社区",
   "community.continue": "继续添加",
   "community.look": "查看社区",
@@ -63,18 +62,15 @@
   "community.token.platforms": "交易平台",
   "community.economics": "经济模型",
   "community.token.all": "Token总量",
-
   "community.list": "社区列表",
   "community.list.isjoin": "已加入",
   "community.list.join": "点击加入",
-
   "community.detail": "社区详情",
   "community.detail.social": "社交媒体",
   "community.detail.token": "社区代币",
   "community.detail.contribute": "贡献社区",
   "community.detail.contribute.rank": "社区贡献排行榜",
   "community.detail.reward.issued": "项目已发放激励",
-
   "setting.save": "保存修改",
   "setting.person": "个人信息设置",
   "setting.person.name": "修改用户名",
@@ -82,24 +78,19 @@
   "setting.person.twitter": "推特",
   "setting.person.mail": "邮箱",
   "setting.person.phone": "电话号码",
-
   "setting.community": "社区信息设置",
   "setting.community.list": "社区列表",
   "setting.community.isjoin": "已加入社区数量",
-
   "setting.task": "任务信息设置",
   "setting.task.completed": "已完成任务数量",
-
   "setting.invite": "我的邀请",
   "setting.invited": "已邀请xx位好友",
   "setting.invite.check": "查看所有好友",
-
   "wallet": "我的钱包",
   "wallet.all": "总资产折合",
   "wallet.balance": "钱包余额",
   "wallet.withdraw": "提现",
   "wallet.token": "Token上架申请",
-
   "task": "任务管理",
   "task.public": "公开任务区",
   "task.isjoin": "已参与",

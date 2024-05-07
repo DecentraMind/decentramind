@@ -6,7 +6,6 @@
   "yes": "yes",
   "no": "no",
   "add": "add",
-
   "community.create": "Create Community",
   "community.continue": "Continue Add",
   "community.look": "View Community",
@@ -33,18 +32,15 @@
   "community.token.platforms": "Trading Platform",
   "community.economics": "Economic Models",
   "community.token.all": "Total Token",
-
   "community.list": "Community List",
   "community.list.isjoin": "Joined",
   "community.list.join": "Join",
-
   "community.detail": "Community Details",
   "community.detail.social": "Social Media",
   "community.detail.token": "Community Token",
   "community.detail.contribute": "Contributing Community",
   "community.detail.contribute.rank": "Contribution Leaderboard",
   "community.detail.reward.issued": "Incentives granted",
-
   "setting.save": "Save",
   "setting.person": "Personal Info",
   "setting.person.name": "Name",
@@ -52,24 +48,19 @@
   "setting.person.twitter": "Twitter",
   "setting.person.mail": "Mail",
   "setting.person.phone": "Phone",
-
   "setting.community": "Community Info",
   "setting.community.list": "Community List",
   "setting.community.isjoin": "Communities joined",
-
   "setting.task": "Task Info",
   "setting.task.completed": "Tasks completed",
-
   "setting.invite": "My Invite",
   "setting.invited": "Invited xx friends",
   "setting.invite.check": "View all friends",
-
   "wallet": "My Wallet",
   "wallet.all": "Total Assets",
   "wallet.balance": "Balance",
   "wallet.withdraw": "withdraw ",
   "wallet.token": "Token Application",
-
   "task": "Task",
   "task.public": "Open Mission Area",
   "task.isjoin": "Participated",
@@ -77,8 +68,7 @@
   "task.name": "Name",
   "task.from": "From Community",
   "task.sum": "Amount",
-  "task.allsum": "Total Amount"
-  "Welcome": "Welcome",
+  "task.allsum": "Total Amount",
   "By signing up, you agree to our {0}": "By signing up, you agree to our {0}",
   "Terms of Service": "Terms of Service",
   "All": "All EN",
