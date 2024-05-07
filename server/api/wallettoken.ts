@@ -2,7 +2,7 @@ import type { Wallettoken, UserStatus } from '~/types'
 
 const Wallettoken: Wallettoken[] = [{
   id: 1,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -13,7 +13,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'New York, USA'
 }, {
   id: 2,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -24,7 +24,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'London, UK'
 }, {
   id: 3,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -35,7 +35,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'Paris, France'
 }, {
   id: 4,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -46,7 +46,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'Berlin, Germany'
 }, {
   id: 5,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -57,7 +57,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'Tokyo, Japan'
 }, {
   id: 6,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -68,7 +68,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'Sydney, Australia'
 }, {
   id: 7,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -79,7 +79,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'New York, USA'
 }, {
   id: 8,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -90,7 +90,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'London, UK'
 }, {
   id: 9,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
@@ -101,7 +101,7 @@ const Wallettoken: Wallettoken[] = [{
   location: 'Paris, France'
 }, {
   id: 10,
-  token: 'USDC币名字',
+  token: 'USDC',
   chain: 'Ethereum',
   balance: '11.111',
   balance_u: '$11.111',
