@@ -1,6 +1,4 @@
 {
-  "welcome": "Welcome",
-
   "showall": "Display All",
   "hideall": "Hide All",
   "show": "display",
@@ -80,5 +78,8 @@
   "task.from": "From Community",
   "task.sum": "Amount",
   "task.allsum": "Total Amount"
-
+  "Welcome": "Welcome",
+  "By signing up, you agree to our {0}": "By signing up, you agree to our {0}",
+  "Terms of Service": "Terms of Service",
+  "All": "All"
 }

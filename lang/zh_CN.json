@@ -1,8 +1,7 @@
 {
-  "welcome": "欢迎",
+  "Welcome": "欢迎",
   "By signing up, you agree to our {0}": "注册即表示您同意我们的{0}。",
   "Terms of Service": "服务条款",
-
   "showall": "全部显示",
   "hideall": "全部隐藏",
   "show": "显示",
@@ -81,6 +80,6 @@
   "task.name": "名称",
   "task.from": "来自社区",
   "task.sum": "金额",
-  "task.allsum": "总金额"
-
+  "task.allsum": "总金额",
+  "All": "全部"
 }
