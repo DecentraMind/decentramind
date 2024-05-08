@@ -27,18 +27,28 @@ export const aoStore = defineStore('aoStore', () => {
     Arena: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
     DepositService: 'kzcVZhdcZOpM90eeKb-JRX3AG7TGH__S7p5I6PsqA3g'
   })
-  
+  const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
   let address = $(lsItemRef('address', ''))
   let credBalance = $(lsItemRef('credBalance', 0))
   let aoCoinBalance = $(lsItemRef('aoCoinBalance', 0))
-  const {showError} = $(notificationStore())
+  const { showError } = $(notificationStore())
 
   const doLogin = async () => {
     await window.arweaveWallet.connect(permissions)
     try {
       address = await window.arweaveWallet.getActiveAddress()
+
+      let result = await message({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'registInfo' },
+          { name: 'userAddress', value: address }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+      });
+
       await init()
-    } catch(error) {
+    } catch (error) {
       console.error(error)
     }
   }
@@ -49,17 +59,17 @@ export const aoStore = defineStore('aoStore', () => {
     credBalance = 0
     aoCoinBalance = 0
   }
-  
+
   const getBalance = async (process: string) => {
     if (tokenMap[process]) {
       process = tokenMap[process]
     }
     let rz = await message({
-        process,
-        tags: [
-            { name: 'Action', value: 'Balance' },
-        ],
-        signer: createDataItemSigner(window.arweaveWallet),
+      process,
+      tags: [
+        { name: 'Action', value: 'Balance' },
+      ],
+      signer: createDataItemSigner(window.arweaveWallet),
     })
     try {
       rz = await result({
@@ -71,7 +81,7 @@ export const aoStore = defineStore('aoStore', () => {
     } catch (err) {
       console.log(`====> err :`, err)
     }
-    
+
     return 0
   }
 
@@ -79,12 +89,12 @@ export const aoStore = defineStore('aoStore', () => {
     if (tokenMap[process]) {
       process = tokenMap[process]
     }
-     let rz = await dryrun({
-        process,
-        tags: [
-          { name: 'Action', value: Action},
-        ],
-     })
+    let rz = await dryrun({
+      process,
+      tags: [
+        { name: 'Action', value: Action },
+      ],
+    })
     try {
       rz = rz.Messages.filter(msg => {
         const hasMatchTag = msg.Tags.filter(tag => {
@@ -99,7 +109,7 @@ export const aoStore = defineStore('aoStore', () => {
     } catch (err) {
       console.log(`====> err :`, err, rz)
     }
-      
+
     return rz
   }
 
@@ -118,7 +128,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
 
     amount = (parseFloat(amount) * 1000).toString()
-   
+
     let rz = await message({
       process,
       tags: [
@@ -153,12 +163,12 @@ export const aoStore = defineStore('aoStore', () => {
 
   const init = async () => {
     if (!address) return
-    
+
     credBalance = (await getBalance('CRED')) / 1e3
     aoCoinBalance = (await getBalance('AOCoin')) / 1e3
   }
-  
-  
+
+
   return $$({ tokenMap, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, doLogin })
 })
 

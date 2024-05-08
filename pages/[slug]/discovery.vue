@@ -22,35 +22,28 @@ const blogPosts = [
   }
 ]
 
-const { getCommunitylist, joinCommunity } = $(aocommunityStore())
-let communityList = $ref({})
+const { communityList, getCommunitylist, joinCommunity } = $(aocommunityStore())
+let result = $ref()
 let communityListJson = $ref({})
 
 const handleCustomEvent = inject('updatecommunity'); //加入社区后更新左侧栏得社区列表
-const getCommunity = async() => {
-  
-  communityList = await getCommunitylist()
-  const jsonData = communityList.Messages[0].Data // 获取原始的 JSON 字符串
-  const jsonObjects = jsonData.match(/\{.*?\}/g) // 使用正则表达式匹配字符串中的 JSON 对象
-  communityListJson = jsonObjects.map((item: any) => JSON.parse(item)) // 解析每个 JSON 对象并存储到数组中
+const getCommunity = async () => {
+
+  result = await getCommunitylist()
   communityLoading = false
 }
 
-const JoinCommunity = async( uuid: any ) => {
+const JoinCommunity = async (uuid: any) => {
   if (isLoading) return
   isLoading = true
-  
+
   await joinCommunity(uuid)
 
   toast.add({ title: 'joined success' })
   await getCommunity()
   isLoading = false
-  handleCustomEvent()
 }
 
-const test = () => {
-  handleCustomEvent(); // 调用父组件提供的方法
-}
 
 onMounted(async () => {
   try {
@@ -65,7 +58,7 @@ onMounted(async () => {
   <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-10">
     <UAlert>
       <template #title>
-        <div class="text-3xl p-2">{{ $t('community.list')}}</div>
+        <div class="text-3xl p-2">{{ $t('community.list') }}</div>
       </template>
     </UAlert>
     <!--
@@ -78,21 +71,11 @@ onMounted(async () => {
       <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
     </div>
     <UBlogList orientation="horizontal">
-      <UBlogPost 
-        v-for="community in communityListJson" 
-        :key="community.uuid" 
-        image="https://picsum.photos/640/360" 
-        :description="community.decs"
-        :to="`/${slug}/community-details/${community.uuid}`"
-        class="w-5/6"
-      >
+      <UBlogPost v-for="community in communityList" :key="community.uuid" image="https://picsum.photos/640/360"
+        :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`" class="w-5/6">
         <template #title>
           <div class="flex items-center">
-            <UAvatar
-              src="https://avatars.githubusercontent.com/u/739984?v=4"
-              alt="Avatar"
-              size="md"
-            />
+            <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="md" />
             <Text class="mx-3">{{ community.name }}</Text>
           </div>
         </template>
@@ -104,24 +87,15 @@ onMounted(async () => {
         </template>
         <template v-if="community.isJoined">
           <!-- 显示文本“已加入” -->
-          <UButton
-            class="absolute right-0" 
-            color="primary" 
-            variant="outline" 
-            disabled
-          >
-            {{ $t('community.list.isjoin')}}
+          <UButton class="absolute right-0" color="primary" variant="outline" disabled>
+            {{ $t('community.list.isjoin') }}
           </UButton>
         </template>
         <template v-else>
           <!-- 显示 UButton 组件 -->
-          <UButton
-            class="absolute right-0" 
-            color="primary" 
-            variant="outline" 
-            @click="() => JoinCommunity(community.uuid)"
-          >
-            {{ $t('community.list.join')}}
+          <UButton class="absolute right-0" color="primary" variant="outline"
+            @click="() => JoinCommunity(community.uuid)">
+            {{ $t('community.list.join') }}
           </UButton>
         </template>
       </UBlogPost>

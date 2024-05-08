@@ -2,7 +2,7 @@
 
 const { getCommunityInfo } = $(aocommunityStore())
 
-const {t} = useI18n()
+const { t } = useI18n()
 
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
@@ -84,17 +84,24 @@ watchEffect(() => {
 
 
 onMounted(async () => {
-  try {
-    communityInfo = await getCommunityInfo(route.params.pid)
-    const jsonData = communityInfo.Messages[0].Data; // 获取原始的 JSON 字符串
-    const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
-    communityInfoJson = jsonObjects.map((item: any) => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
+  await loadCommunityInfo(route.params.pid);
+});
 
-    communityLoading = false
+watch(() => route.params.pid, async (newPid) => {
+  await loadCommunityInfo(newPid);
+});
+
+const loadCommunityInfo = async (pid) => {
+  try {
+    communityInfo = await getCommunityInfo(pid);
+    const jsonData = communityInfo.Messages[0].Data;
+    const jsonObjects = jsonData.match(/\{.*?\}/g);
+    communityInfoJson = jsonObjects.map((item) => JSON.parse(item));
+    communityLoading = false;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
-});
+};
 </script>
 
 <template>
@@ -102,24 +109,19 @@ onMounted(async () => {
     <div v-if="communityLoading" class="w-full flex justify-center">
       <UIcon name="svg-spinners:blocks-scale" class="mt-0 w-[250px]" size="xl" dynamic v-bind="$attrs" />
     </div>
-    <div 
-      v-for="Info in communityInfoJson" 
-      :key="Info.uuid" 
-      class="w-full px-50"
-    >
+    <div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">
       <UColorModeImage :light="light" :dark="dark" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
       <UPage class="pl-36 pr-80">
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
           color="primary"
-          :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]"
-        >
+          :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]">
           <template #title>
             <div class="text-3xl mb-12 mt-3 px-12">{{ Info.name }}</div>
           </template>
           <template #description>
             <div class="flex flex-col w-5/6 px-12">
-              <Text class="mb-3">{{ $t('community.detail')}}</Text>
+              <Text class="mb-3">{{ $t('community.detail') }}</Text>
               <Text>
                 {{ Info.desc }}
               </Text>
@@ -130,31 +132,31 @@ onMounted(async () => {
           <ULandingGrid>
             <ULandingCard class="col-span-4 row-span-2">
               <div class="flex justify-between px-12">
-                <div>{{ $t('community.website')}}</div>
+                <div>{{ $t('community.website') }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.social')}}</div>
+                <div>{{ $t('community.detail.social') }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.token')}}</div>
+                <div>{{ $t('community.detail.token') }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>{{ $t('community.token.platforms')}}</div>
+                <div>{{ $t('community.token.platforms') }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.contribute')}}</div>
+                <div>{{ $t('community.detail.contribute') }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
@@ -168,25 +170,20 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>{{ $t('community.buildnum')}}</div>
+                <div>{{ $t('community.buildnum') }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
               <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.reward.issued')}}</div>
+                <div>{{ $t('community.detail.reward.issued') }}</div>
                 <div class="w-32 flex justify-around items-center">
                   <UBadge>{{ Info.website }}</UBadge>
                 </div>
               </div>
             </ULandingCard>
             <ULandingCard class="col-span-4 row-span-4">
-              <UTable 
-                :columns="columns" 
-                :rows="ranks" 
-                :loading="pending"
-                class="pl-12"
-              >
+              <UTable :columns="columns" :rows="ranks" :loading="pending" class="pl-12">
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
                     <UAvatar v-bind="row.avatar" :alt="row.name" size="xs" />
@@ -202,8 +199,8 @@ onMounted(async () => {
             </ULandingCard>
             <ULandingCard class="col-span-8 row-span-2">
               <div class="px-12">
-                {{ $t('community.economics')}}<br>
-                {{ $t('community.token.all')}} 2100000
+                {{ $t('community.economics') }}<br>
+                {{ $t('community.token.all') }} 2100000
               </div>
             </ULandingCard>
           </ULandingGrid>

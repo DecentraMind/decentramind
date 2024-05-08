@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { provide } from 'vue'
 
 const route = useRoute();
 const appConfig = useAppConfig();
@@ -115,20 +114,16 @@ const communityList1 = [
   { title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
 ];
 
-const { getCommunityjoined } = $(aocommunityStore())
+const { joincommunityList, communityCreate, getCommunitylist } = $(aocommunityStore())
 
+let result = $ref()
 let createCommunity = $ref(false)
 
 let communityLoading = $ref(true)
 
-let communityList = $ref({})
-let communityListJson = $ref({})
-const getCommunity = async() => {
-  
-  communityList = await getCommunityjoined()
-  const jsonData = communityList.Messages[0].Data; // 获取原始的 JSON 字符串
-  const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
-  communityListJson = jsonObjects.map((item: any) => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
+const getCommunity = async () => {
+
+  result = await getCommunitylist()
 
   communityLoading = false
 }
@@ -140,12 +135,6 @@ onMounted(async () => {
     console.error('Error fetching data:', error);
   }
 });
-
-const handleCustomEvent = async() => {
-  await getCommunity()
-}
-
-provide('updatecommunity', handleCustomEvent);
 </script>
 
 <template>
@@ -159,12 +148,12 @@ provide('updatecommunity', handleCustomEvent);
         </template>
 
         <UDivider />
-
-        <NuxtLink :to="`/${slug}/community-details/${item.uuid}`" v-for="item in communityListJson" :key="item.uuid">
+        <NuxtLink :to="`/${slug}/community-details/${item.uuid}`" v-for="item in joincommunityList" :key="item.uuid">
           <img src="/logo.png" :title="item.name" class="h-full w-full" />
         </NuxtLink>
-        <UButton @click="createCommunity = true">
-          <UIcon name="ion:add" class="h-full w-full" />
+
+        <UButton @click="communityCreate = true" variant="soft">
+          <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
         <div class="flex-1" />
 
@@ -191,10 +180,8 @@ provide('updatecommunity', handleCustomEvent);
 
         <UDivider />
 
-        <UDashboardSidebarLinks
-          :links="[{ label: 'Colors', draggable: true, children: colors }]"
-          @update:links="(colors) => (defaultColors = colors)"
-        />
+        <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"
+          @update:links="(colors) => (defaultColors = colors)" />
 
         <div class="flex-1" />
 
@@ -220,8 +207,8 @@ provide('updatecommunity', handleCustomEvent);
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
 
-    <UModal v-model="createCommunity" prevent-close :width="1000">
-      <UCard class="w-[1150px]">
+    <UModal v-model="communityCreate">
+      <UCard class=" w-[1150px]">
         <CommunityCreate />
       </UCard>
     </UModal>

@@ -7,6 +7,8 @@ const {
   credBalance,
   init, doLogout, doLogin } = $(aoStore())
 
+const { registInfo } = $(aocommunityStore())
+
 const navigation = inject<Ref<NavItem[]>>("navigation", ref([]));
 
 const links = [
@@ -37,13 +39,16 @@ const wallet = [
   }]
 ]
 
+
 onMounted(init)
 
 </script>
 
 <template>
   <UHeader :links="links">
-    <template #logo>Decentral Mind <UBadge label="Beta" variant="subtle" class="mb-0.5" /> </template>
+    <template #logo>Decentral Mind
+      <UBadge label="Beta" variant="subtle" class="mb-0.5" />
+    </template>
 
     <template #right>
       <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
