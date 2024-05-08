@@ -10,7 +10,7 @@ import {
 } from '@permaweb/aoconnect'
 
 
-const { address, getActiveAddress } = $(arweaveWalletStore())
+const { address } = $(aoStore())
 
 export const aocommunityStore = defineStore('aocommunityStore', () => {
   const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
@@ -24,7 +24,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    await getActiveAddress()
     let result = await message({
       process: processID,
       tags: [
@@ -59,7 +58,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     let createCommunity = await message({
       process: processID,
       tags: [
-        { name: 'Action', value: 'add' }
+        { name: 'Action', value: 'add' },
+        { name: 'userAddress', value: address }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
@@ -75,10 +75,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const getCommunitylist = async () => {
     if (isLoading) return
     isLoading = true
-    console.log("goo1")
-    if (address) {
-      console.log("nogoods")
-      await getActiveAddress()
+    if (address !== '') {
       let result = await dryrun({
         process: processID,
         tags: [
@@ -118,7 +115,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    await getActiveAddress()
     let result = await dryrun({
       process: processID,
       tags: [
@@ -151,7 +147,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    await getActiveAddress()
     let join = await message({
       process: processID,
       tags: [
@@ -170,7 +165,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    await getActiveAddress()
     console.log("goods")
     console.log(address)
     let Info = await message({
@@ -194,7 +188,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    await getActiveAddress()
     let Info = await dryrun({
       process: processID,
       tags: [
