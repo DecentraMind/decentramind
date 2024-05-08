@@ -59,8 +59,6 @@ const links = $computed(() => {
         shortcuts: ["G", "U"],
       },
     },
-    
-    
   ];
 });
 const footerLinks = $computed(() => {
@@ -108,10 +106,36 @@ const defaultColors = ref(
   }))
 );
 const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })));
+
+const communityList = [
+  { title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
+  { title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
+  { title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
+];
 </script>
 
 <template>
   <UDashboardLayout>
+    <UDashboardPanel :width="100" collapsible>
+      <UDashboardSidebar>
+        <template #header>
+          <img src="/logo.png" class="h-full w-full" />
+        </template>
+
+        <UDivider />
+
+        <NuxtLink :to="`/${item.slug}`" v-for="item in communityList" :key="item.slug">
+          <img :src="item.avatar" :title="item.title" class="h-full w-full" />
+        </NuxtLink>
+        <div class="flex-1" />
+
+        <UDivider class="bottom-0 sticky" />
+
+        <template #footer>
+          <UserDropdownMini />
+        </template>
+      </UDashboardSidebar>
+    </UDashboardPanel>
     <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>
       <UDashboardNavbar class="!border-transparent" :ui="{ left: 'flex-1' }">
         <template #left>
