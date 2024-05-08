@@ -47,6 +47,9 @@ const JoinCommunity = async (uuid: any) => {
 
 onMounted(async () => {
   try {
+    if (Array.isArray(communityList) && communityList.length !== 0) {
+      communityLoading = false
+    }
     await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error);

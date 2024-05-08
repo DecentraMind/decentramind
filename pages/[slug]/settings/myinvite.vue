@@ -89,8 +89,9 @@ const getCommunity = async () => {
 
 onMounted(async () => {
   try {
-    if (joincommunityList)
+    if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
       communityLoading = false
+    }
 
     await getCommunity()
   } catch (error) {
