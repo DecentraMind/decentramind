@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { provide } from 'vue'
+
 const route = useRoute();
 const appConfig = useAppConfig();
 const { isHelpSlideoverOpen } = useDashboard();
@@ -107,11 +109,43 @@ const defaultColors = ref(
 );
 const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })));
 
-const communityList = [
+const communityList1 = [
   { title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
   { title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
   { title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
 ];
+
+const { getCommunityjoined } = $(aocommunityStore())
+
+let createCommunity = $ref(false)
+
+let communityLoading = $ref(true)
+
+let communityList = $ref({})
+let communityListJson = $ref({})
+const getCommunity = async() => {
+  
+  communityList = await getCommunityjoined()
+  const jsonData = communityList.Messages[0].Data; // 获取原始的 JSON 字符串
+  const jsonObjects = jsonData.match(/\{.*?\}/g); // 使用正则表达式匹配字符串中的 JSON 对象
+  communityListJson = jsonObjects.map((item: any) => JSON.parse(item)); // 解析每个 JSON 对象并存储到数组中
+
+  communityLoading = false
+}
+
+onMounted(async () => {
+  try {
+    await getCommunity()
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
+
+const handleCustomEvent = async() => {
+  await getCommunity()
+}
+
+provide('updatecommunity', handleCustomEvent);
 </script>
 
 <template>
@@ -119,14 +153,19 @@ const communityList = [
     <UDashboardPanel :width="100" collapsible>
       <UDashboardSidebar>
         <template #header>
-          <img src="/logo.png" class="h-full w-full" />
+          <NuxtLink :to="`/${slug}/discovery`">
+            <img src="/logo.png" class="h-full w-full" />
+          </NuxtLink>
         </template>
 
         <UDivider />
 
-        <NuxtLink :to="`/${item.slug}`" v-for="item in communityList" :key="item.slug">
-          <img :src="item.avatar" :title="item.title" class="h-full w-full" />
+        <NuxtLink :to="`/${slug}/community-details/${item.uuid}`" v-for="item in communityListJson" :key="item.uuid">
+          <img src="/logo.png" :title="item.name" class="h-full w-full" />
         </NuxtLink>
+        <UButton @click="createCommunity = true">
+          <UIcon name="ion:add" class="h-full w-full" />
+        </UButton>
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -180,5 +219,11 @@ const communityList = [
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
+
+    <UModal v-model="createCommunity" prevent-close :width="1000">
+      <UCard class="w-[1150px]">
+        <CommunityCreate />
+      </UCard>
+    </UModal>
   </UDashboardLayout>
 </template>

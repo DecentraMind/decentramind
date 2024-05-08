@@ -5,6 +5,8 @@ const {
   credBalance,
   init, doLogout, doLogin } = $(aoStore())
 
+import { inject } from 'vue'
+
 const toast = useToast()
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
@@ -24,7 +26,7 @@ const { getCommunitylist, joinCommunity } = $(aocommunityStore())
 let communityList = $ref({})
 let communityListJson = $ref({})
 
-
+const handleCustomEvent = inject('updatecommunity'); //加入社区后更新左侧栏得社区列表
 const getCommunity = async() => {
   
   communityList = await getCommunitylist()
@@ -41,7 +43,13 @@ const JoinCommunity = async( uuid: any ) => {
   await joinCommunity(uuid)
 
   toast.add({ title: 'joined success' })
+  await getCommunity()
   isLoading = false
+  handleCustomEvent()
+}
+
+const test = () => {
+  handleCustomEvent(); // 调用父组件提供的方法
 }
 
 onMounted(async () => {

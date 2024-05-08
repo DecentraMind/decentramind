@@ -49,6 +49,9 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
     //获取社区列表方法
     const getCommunitylist = async () => {
+        if (isLoading) return
+            isLoading = true
+
         await getActiveAddress()
         let result = await dryrun({
             process: processID,
@@ -57,11 +60,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
                 { name: 'userAddress', value: address }
             ],
         });
+        isLoading = false
         return result
     }
 
     //获取已加入得社区列表
     const getCommunityjoined = async () => {
+        if (isLoading) return
+            isLoading = true
+
         await getActiveAddress()
         let result = await dryrun({
             process: processID,
@@ -70,11 +77,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
                 { name: 'userAddress', value: address }
             ],
         })
+        isLoading = false
         return result
     }
 
     //获取指定社区信息
     const getCommunityInfo = async ( uuid ) => {
+        if (isLoading) return
+            isLoading = true
+
         let result = await dryrun({
             process: processID,
             tags: [
@@ -82,11 +93,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
                 { name: 'uuid', value: uuid}
             ]
         })
+        isLoading = false
         return result
     }
 
     //加入社区方法
     const joinCommunity = async ( uuid ) => {
+        if (isLoading) return
+            isLoading = true
+
         await getActiveAddress()
         let join = await message({
             process: processID,
@@ -97,11 +112,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
             signer: createDataItemSigner(window.arweaveWallet),
             data: uuid,
         });
+        isLoading = false
         return join
     }
 
     //修改个人信息
     const personalInfo = async ( username, twitter, mail, phone ) => {
+        if (isLoading) return
+            isLoading = true
+
         await getActiveAddress()
         let Info = await message({
             process: processID,
@@ -115,11 +134,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
             ],
             signer: createDataItemSigner(window.arweaveWallet),
         })
+        isLoading = false
         return Info
     }
 
     //获取个人信息
     const getInfo = async () => {
+        if (isLoading) return
+            isLoading = true
+
         await getActiveAddress()
         let Info = await dryrun({
             process: processID,
@@ -128,6 +151,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
                 { name: 'userAddress', value: address }
             ]
         })
+        isLoading = false
         return Info
     }
 
