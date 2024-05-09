@@ -84,9 +84,9 @@
 
   "eslint.validate": [
     // eslint规则对以下几种后缀文件生效. 默认为["javascript", "javascriptreact"]
+    "vue",
     "javascript",
     "javascriptreact",
-    "html",
     "typescript",
     "typescriptreact"
   ],
