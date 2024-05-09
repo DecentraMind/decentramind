@@ -5,12 +5,9 @@ const {
   credBalance,
   init, doLogout, doLogin } = $(aoStore())
 
-import { inject } from 'vue'
-
 const toast = useToast()
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
-let isLoading = $ref(false)
 let communityLoading = $ref(true)
 
 const blogPosts = [
@@ -24,24 +21,18 @@ const blogPosts = [
 
 const { communityList, getCommunitylist, joinCommunity } = $(aocommunityStore())
 let result = $ref()
-let communityListJson = $ref({})
 
-const handleCustomEvent = inject('updatecommunity'); //加入社区后更新左侧栏得社区列表
 const getCommunity = async () => {
 
   result = await getCommunitylist()
   communityLoading = false
 }
 
-const JoinCommunity = async (uuid: any) => {
-  if (isLoading) return
-  isLoading = true
-
+const communityJoin = async (uuid: any) => {
   await joinCommunity(uuid)
 
   toast.add({ title: 'joined success' })
   await getCommunity()
-  isLoading = false
 }
 
 
@@ -97,7 +88,7 @@ onMounted(async () => {
         <template v-else>
           <!-- 显示 UButton 组件 -->
           <UButton class="absolute right-0" color="primary" variant="outline"
-            @click="() => JoinCommunity(community.uuid)">
+            @click="() => communityJoin(community.uuid)">
             {{ $t('community.list.join') }}
           </UButton>
         </template>

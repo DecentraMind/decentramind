@@ -67,10 +67,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
 
-  const closeCreate = () => {
-    communityCreate = false
-  }
-
   //获取社区列表方法
   const getCommunitylist = async () => {
     if (isLoading) return
@@ -199,7 +195,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return Info
   }
 
-  return $$({ communityList, joincommunityList, communityCreate, registInfo, closeCreate, getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityjoined, getCommunityInfo })
+  return $$({ communityList, joincommunityList, communityCreate, registInfo, getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityjoined, getCommunityInfo })
 })
 
 
