@@ -113,11 +113,36 @@ const defaultColors = ref(
 );
 const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })));
 
-const communityList = [
-  { id:"community1", title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
-  { id:"community2", title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
-  { id:"community3", title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
+const communityList1 = [
+  { title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
+  { title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
+  { title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
 ];
+
+const { joincommunityList, communityCreate, getCommunitylist } = $(aocommunityStore())
+
+let result = $ref()
+let createCommunity = $ref(false)
+
+let communityLoading = $ref(true)
+
+const getCommunity = async () => {
+
+  result = await getCommunitylist()
+
+  communityLoading = false
+}
+
+onMounted(async () => {
+  try {
+    if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
+      communityLoading = false
+    }
+    await getCommunity()
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
 </script>
 
 <template>
@@ -130,9 +155,12 @@ const communityList = [
 
         <UDivider />
 
-        <NuxtLink  v-for="item in communityList" :key="item.slug" :to="`/${slug}/tasks/${item.id}`">
-          <img :src="item.avatar" :title="item.title" class="h-full w-full" />
+        <NuxtLink :to="`/${slug}/tasks/${item.uuid}`" v-for="item in joincommunityList" :key="item.uuid">
+          <img src="/logo.png" :title="item.name" class="h-full w-full" />
         </NuxtLink>
+        <UButton @click="communityCreate = true" variant="soft">
+          <UIcon name="ion:add" class="h-full w-full " />
+        </UButton>
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -186,5 +214,10 @@ const communityList = [
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
+    <UModal v-model="communityCreate">
+      <UCard class=" w-[1150px]">
+        <CommunityCreate />
+      </UCard>
+    </UModal>
   </UDashboardLayout>
 </template>
