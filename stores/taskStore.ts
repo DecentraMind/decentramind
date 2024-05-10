@@ -48,22 +48,26 @@ export const taskStore = defineStore('taskStore', () => {
       alertMessage('messageToAo -> error:')
       return ''
     }
+    if(res.Messages[0].Data === 'null'){
+        respArray = []
+        return ''
+    }
     let resp = res.Messages[0].Data.split(';');
-    // console.log("resp.length = " + resp.length)
-    // console.log("resp = " + resp)
+    console.log("resp.length = " + resp.length)
+    console.log("resp = " + resp)
     respArray = []
     for (let index = 0; index < resp.length; index++) {
 
       let element = JSON.parse(resp[index]);
-
+      console.log("builderNumber = " + element.buildNumber)
       let respData = {
         id: element.taskId,
         name: element.taskName,
         image: element.taskLogo,
         description: element.taskInfo,
         reward: element.tokenNumber + " " + element.tokenType,
-        builderNum: element.builderNum,
-        status: "未开始",
+        builderNum: element.buildNumber,
+        status: element.isBegin,
       }
       respArray.push(respData)
     }

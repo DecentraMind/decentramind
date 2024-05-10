@@ -15,6 +15,10 @@ Handlers.add(
     "GetAllTasks",
     Handlers.utils.hasMatchingTag("Action", "GetAllTasks"),
     function (msg)
+        local response = {}
+      if next(TasksForTable) == nil then
+        Handlers.utils.reply("null")(msg)
+      end
         Handlers.utils.reply(table.concat(TasksForTable, ";"))(msg)
     end
 )
@@ -34,7 +38,7 @@ Handlers.add(
     function (msg)
         -- 解析传过来的参数，找到对应任务，修改任务已提交场次参数
         local req = json.decode(msg.Data)
-        
+
         local taskId = req.taskId
         for key, value in pairs(TasksForTable) do
             local v = json.decode(value)

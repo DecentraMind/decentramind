@@ -4,6 +4,9 @@ import type { FormSubmitEvent } from '#ui/types'
 
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray } = $(taskStore())
+const route = useRoute()
+const communityId = $computed(() => route.params.communityId)
+console.log("communityId = " + communityId)
 const blog = await getAllTasks("GetAllTasks")
 let blogPosts = $computed(() => respArray)
 const blogPosts1 = [
@@ -73,7 +76,7 @@ const blogPosts1 = [
     status: "未开始",
   },
 ];
-console.log("blogPosts = " + blogPosts)
+console.log("blogPosts = " + blogPosts.builderNumber)
 const items = [
   {
     label: t('Open Mission Area'),
@@ -128,7 +131,7 @@ const state = $ref({
   zone: undefined,
 })
 const transData = {
-  taskId: "",
+  taskId: '',
   taskLogo: undefined,
   taskName: undefined,
   taskInfo: undefined,
@@ -141,7 +144,11 @@ const transData = {
   startTime: "",
   endTime: "",
   buildNumber: 0,
-  joined: 0
+  joined: 0,
+  ownerId: undefined,
+  communityId: '',
+  isBegin: '',
+  isSettle: t('Not Settle')
 }
 const form = $ref()
 function uuid() {
@@ -166,8 +173,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.zone = event.data.zone
   transData.startTime = selected.value.start.toLocaleString()
   transData.endTime = selected.value.end.toLocaleString()
+  // 根据时间判断 进行中/未开始/已结束
+  const currentDate = new Date()
+  let isBegin = t('Not Begin')
+  if(currentDate <= selected.value.end && currentDate >= selected.value.start){
+    isBegin = t('In Progress')
+  }else if(currentDate > selected.value.end){
+    isBegin = t('End')
+  }
+  transData.isBegin = isBegin
+  transData.communityId = String(communityId)
   console.log(transData)
-  createTask(transData, "CreateTask")
+  await createTask(transData, "CreateTask")
   isOpen = false
 }
 const ranges = [
@@ -180,7 +197,6 @@ const ranges = [
 ]
 
 // sider config
-const route = useRoute();
 const appConfig = useAppConfig();
 const { isHelpSlideoverOpen } = useDashboard();
 

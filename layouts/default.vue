@@ -114,9 +114,9 @@ const defaultColors = ref(
 const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })));
 
 const communityList = [
-  { title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
-  { title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
-  { title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
+  { id:"community1", title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
+  { id:"community2", title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
+  { id:"community3", title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
 ];
 </script>
 
@@ -130,7 +130,7 @@ const communityList = [
 
         <UDivider />
 
-        <NuxtLink :to="`/${slug}/tasks`" v-for="item in communityList" :key="item.slug">
+        <NuxtLink  v-for="item in communityList" :key="item.slug" :to="`/${slug}/tasks/${item.id}`">
           <img :src="item.avatar" :title="item.title" class="h-full w-full" />
         </NuxtLink>
         <div class="flex-1" />
