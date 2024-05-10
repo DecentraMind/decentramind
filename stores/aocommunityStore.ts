@@ -23,16 +23,21 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const registInfo = async () => {
     if (isLoading) return
     isLoading = true
-
-    let result = await message({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'registInfo' },
-        { name: 'userAddress', value: address }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-    });
-    isLoading = false
+    try {
+      let result = await message({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'registInfo' },
+          { name: 'userAddress', value: address }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+      });
+      isLoading = false
+    } catch (error) {
+      console.error('添加社区时出错：', error)
+      isLoading = false
+      return error
+    }
   }
   //创建社区方法
   const addCommunity = async (Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
@@ -54,17 +59,22 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       }
     ]
     const jsonString = JSON.stringify(communitySubmitList);
-
-    let createCommunity = await message({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'add' },
-        { name: 'userAddress', value: address }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-      data: jsonString,
-    });
-    isLoading = false
+    try {
+      let createCommunity = await message({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'add' },
+          { name: 'userAddress', value: address }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+        data: jsonString,
+      });
+      isLoading = false
+    } catch (error) {
+      console.error('添加社区时出错:', error)
+      isLoading = false;
+      return error
+    }
   }
 
   //获取社区列表方法
@@ -103,7 +113,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       isLoading = false
       return result
     }
-
   }
 
   //获取已加入得社区列表
@@ -126,34 +135,44 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const getCommunityInfo = async (uuid) => {
     if (isLoading) return
     isLoading = true
-
-    let result = await dryrun({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'communityInfo' },
-        { name: 'uuid', value: uuid }
-      ]
-    })
-    isLoading = false
-    return result
+    try {
+      let result = await dryrun({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'communityInfo' },
+          { name: 'uuid', value: uuid }
+        ]
+      })
+      isLoading = false
+      return result
+    } catch (error) {
+      console.error('获取社区信息时候报错:', error)
+      isLoading = false
+      return error
+    }
   }
 
   //加入社区方法
   const joinCommunity = async (uuid) => {
     if (isLoading) return
     isLoading = true
-
-    let join = await message({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'join' },
-        { name: 'userAddress', value: address }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-      data: uuid,
-    });
-    isLoading = false
-    return join
+    try {
+      let join = await message({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'join' },
+          { name: 'userAddress', value: address }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+        data: uuid,
+      });
+      isLoading = false
+      return join
+    } catch (error) {
+      console.log('加入社区时候失败：', error)
+      isLoading = false
+      return error
+    }
   }
 
   //修改个人信息
@@ -161,22 +180,26 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    console.log("goods")
-    console.log(address)
-    let Info = await message({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'personalInfo' },
-        { name: 'userAddress', value: address },
-        { name: 'username', value: username },
-        { name: 'twitter', value: twitter },
-        { name: 'mail', value: mail },
-        { name: 'phone', value: phone }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-    isLoading = false
-    return Info
+    try {
+      let Info = await message({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'personalInfo' },
+          { name: 'userAddress', value: address },
+          { name: 'username', value: username },
+          { name: 'twitter', value: twitter },
+          { name: 'mail', value: mail },
+          { name: 'phone', value: phone }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+      })
+      isLoading = false
+      return Info
+    } catch (error) {
+      console.log('修改个人信息时失败：', error)
+      isLoading = false
+      return error
+    }
   }
 
   //获取个人信息
@@ -184,15 +207,21 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    let Info = await dryrun({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'getInfo' },
-        { name: 'userAddress', value: address }
-      ]
-    })
-    isLoading = false
-    return Info
+    try {
+      let Info = await dryrun({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'getInfo' },
+          { name: 'userAddress', value: address }
+        ]
+      })
+      isLoading = false
+      return Info
+    } catch (error) {
+      console.log('获取个人信息时失败：', error)
+      isLoading = false
+      return error
+    }
   }
 
   return $$({ communityList, joincommunityList, communityCreate, registInfo, getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityjoined, getCommunityInfo })
