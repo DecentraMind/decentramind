@@ -150,7 +150,9 @@ onMounted(async () => {
     <UDashboardPanel :width="100" collapsible>
       <UDashboardSidebar>
         <template #header>
-          <img src="/logo.png" class="h-full w-full" />
+          <NuxtLink :to="`/${slug}/discovery`">
+            <img src="/logo.png" class="h-full w-full" />
+          </NuxtLink>
         </template>
 
         <UDivider />
