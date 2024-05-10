@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+const { t } = useI18n()
 const route = useRoute();
 const appConfig = useAppConfig();
 const { isHelpSlideoverOpen } = useDashboard();
@@ -65,6 +65,11 @@ const links = $computed(() => {
 const footerLinks = $computed(() => {
   return [
     {
+      label: t("Task Area"),
+      icon: "i-heroicons-plus",
+      to: `/${slug}/tasks`,
+    },
+    {
       label: "Invite people",
       icon: "i-heroicons-plus",
       to: `/${slug}/settings/communityinfo`,
@@ -108,36 +113,11 @@ const defaultColors = ref(
 );
 const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })));
 
-const communityList1 = [
+const communityList = [
   { title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
   { title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
   { title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
 ];
-
-const { joincommunityList, communityCreate, getCommunitylist } = $(aocommunityStore())
-
-let result = $ref()
-let createCommunity = $ref(false)
-
-let communityLoading = $ref(true)
-
-const getCommunity = async () => {
-
-  result = await getCommunitylist()
-
-  communityLoading = false
-}
-
-onMounted(async () => {
-  try {
-    if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
-      communityLoading = false
-    }
-    await getCommunity()
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-});
 </script>
 
 <template>
@@ -145,19 +125,14 @@ onMounted(async () => {
     <UDashboardPanel :width="100" collapsible>
       <UDashboardSidebar>
         <template #header>
-          <NuxtLink :to="`/${slug}/discovery`">
-            <img src="/logo.png" class="h-full w-full" />
-          </NuxtLink>
+          <img src="/logo.png" class="h-full w-full" />
         </template>
 
         <UDivider />
-        <NuxtLink :to="`/${slug}/community-details/${item.uuid}`" v-for="item in joincommunityList" :key="item.uuid">
-          <img src="/logo.png" :title="item.name" class="h-full w-full" />
-        </NuxtLink>
 
-        <UButton @click="communityCreate = true" variant="soft">
-          <UIcon name="ion:add" class="h-full w-full " />
-        </UButton>
+        <NuxtLink :to="`/${slug}/tasks`" v-for="item in communityList" :key="item.slug">
+          <img :src="item.avatar" :title="item.title" class="h-full w-full" />
+        </NuxtLink>
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -167,37 +142,39 @@ onMounted(async () => {
         </template>
       </UDashboardSidebar>
     </UDashboardPanel>
-    <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>
-      <UDashboardNavbar class="!border-transparent" :ui="{ left: 'flex-1' }">
-        <template #left>
-          <TeamsDropdown />
-        </template>
-      </UDashboardNavbar>
+    <!--    <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>-->
+    <!--      <UDashboardNavbar class="!border-transparent" :ui="{ left: 'flex-1' }">-->
+    <!--        <template #left>-->
+    <!--          <TeamsDropdown />-->
+    <!--        </template>-->
+    <!--      </UDashboardNavbar>-->
 
-      <UDashboardSidebar>
-        <template #header>
-          <UDashboardSearchButton />
-        </template>
+    <!--      <UDashboardSidebar>-->
+    <!--        <template #header>-->
+    <!--          <UDashboardSearchButton />-->
+    <!--        </template>-->
 
-        <UDashboardSidebarLinks :links="links" />
+    <!--        <UDashboardSidebarLinks :links="links" />-->
 
-        <UDivider />
+    <!--        <UDivider />-->
 
-        <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"
-          @update:links="(colors) => (defaultColors = colors)" />
+    <!--        <UDashboardSidebarLinks-->
+    <!--          :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
+    <!--          @update:links="(colors) => (defaultColors = colors)"-->
+    <!--        />-->
 
-        <div class="flex-1" />
+    <!--        <div class="flex-1" />-->
 
-        <UDashboardSidebarLinks :links="footerLinks" />
+    <!--        <UDashboardSidebarLinks :links="footerLinks" />-->
 
-        <UDivider class="bottom-0 sticky" />
+    <!--        <UDivider class="bottom-0 sticky" />-->
 
-        <template #footer>
-          <!-- ~/components/UserDropdown.vue -->
-          <UserDropdown />
-        </template>
-      </UDashboardSidebar>
-    </UDashboardPanel>
+    <!--        <template #footer>-->
+    <!--          &lt;!&ndash; ~/components/UserDropdown.vue &ndash;&gt;-->
+    <!--          <UserDropdown />-->
+    <!--        </template>-->
+    <!--      </UDashboardSidebar>-->
+    <!--    </UDashboardPanel>-->
 
     <slot />
 
@@ -209,11 +186,5 @@ onMounted(async () => {
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
-
-    <UModal v-model="communityCreate">
-      <UCard class=" w-[1150px]">
-        <CommunityCreate />
-      </UCard>
-    </UModal>
   </UDashboardLayout>
 </template>
