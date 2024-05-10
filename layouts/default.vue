@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+const { t } = useI18n()
 const route = useRoute();
 const appConfig = useAppConfig();
 const { isHelpSlideoverOpen } = useDashboard();
@@ -64,6 +64,11 @@ const links = $computed(() => {
 });
 const footerLinks = $computed(() => {
   return [
+    {
+      label: t("Task Area"),
+      icon: "i-heroicons-plus",
+      to: `/${slug}/tasks`,
+    },
     {
       label: "Invite people",
       icon: "i-heroicons-plus",
@@ -151,10 +156,10 @@ onMounted(async () => {
         </template>
 
         <UDivider />
-        <NuxtLink :to="`/${slug}/community-details/${item.uuid}`" v-for="item in joincommunityList" :key="item.uuid">
+
+        <NuxtLink :to="`/${slug}/tasks/${item.uuid}`" v-for="item in joincommunityList" :key="item.uuid">
           <img src="/logo.png" :title="item.name" class="h-full w-full" />
         </NuxtLink>
-
         <UButton @click="communityCreate = true" variant="soft">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
@@ -167,37 +172,39 @@ onMounted(async () => {
         </template>
       </UDashboardSidebar>
     </UDashboardPanel>
-    <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>
-      <UDashboardNavbar class="!border-transparent" :ui="{ left: 'flex-1' }">
-        <template #left>
-          <TeamsDropdown />
-        </template>
-      </UDashboardNavbar>
+    <!--    <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>-->
+    <!--      <UDashboardNavbar class="!border-transparent" :ui="{ left: 'flex-1' }">-->
+    <!--        <template #left>-->
+    <!--          <TeamsDropdown />-->
+    <!--        </template>-->
+    <!--      </UDashboardNavbar>-->
 
-      <UDashboardSidebar>
-        <template #header>
-          <UDashboardSearchButton />
-        </template>
+    <!--      <UDashboardSidebar>-->
+    <!--        <template #header>-->
+    <!--          <UDashboardSearchButton />-->
+    <!--        </template>-->
 
-        <UDashboardSidebarLinks :links="links" />
+    <!--        <UDashboardSidebarLinks :links="links" />-->
 
-        <UDivider />
+    <!--        <UDivider />-->
 
-        <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"
-          @update:links="(colors) => (defaultColors = colors)" />
+    <!--        <UDashboardSidebarLinks-->
+    <!--          :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
+    <!--          @update:links="(colors) => (defaultColors = colors)"-->
+    <!--        />-->
 
-        <div class="flex-1" />
+    <!--        <div class="flex-1" />-->
 
-        <UDashboardSidebarLinks :links="footerLinks" />
+    <!--        <UDashboardSidebarLinks :links="footerLinks" />-->
 
-        <UDivider class="bottom-0 sticky" />
+    <!--        <UDivider class="bottom-0 sticky" />-->
 
-        <template #footer>
-          <!-- ~/components/UserDropdown.vue -->
-          <UserDropdown />
-        </template>
-      </UDashboardSidebar>
-    </UDashboardPanel>
+    <!--        <template #footer>-->
+    <!--          &lt;!&ndash; ~/components/UserDropdown.vue &ndash;&gt;-->
+    <!--          <UserDropdown />-->
+    <!--        </template>-->
+    <!--      </UDashboardSidebar>-->
+    <!--    </UDashboardPanel>-->
 
     <slot />
 
@@ -209,7 +216,6 @@ onMounted(async () => {
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
-
     <UModal v-model="communityCreate">
       <UCard class=" w-[1150px]">
         <CommunityCreate />

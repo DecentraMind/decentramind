@@ -29,6 +29,7 @@
   "Submission Rank": "任务提交排名",
   "Task Hint": "感谢你对社区的支持~请你按照任务规则完成任务，并且将任务URL提交至表格的加号处哦！如果没有遵循任何一条任务规则那么你可能会白费力气喔~",
   "Submit": "确认提交",
+  "Task Area": "任务区",
   "showall": "全部显示",
   "hideall": "全部隐藏",
   "show": "显示",
@@ -98,5 +99,10 @@
   "task.name": "名称",
   "task.from": "来自社区",
   "task.sum": "金额",
-  "task.allsum": "总金额"
+  "task.allsum": "总金额",
+  "Not Settle": "未结算",
+  "Settled": "已结算",
+  "Not Begin": "未开始",
+  "In Progress": "进行中",
+  "End": "已结束"
 }
