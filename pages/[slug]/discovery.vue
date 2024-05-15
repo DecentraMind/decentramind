@@ -87,8 +87,7 @@ onMounted(async () => {
         </template>
         <template v-else>
           <!-- 显示 UButton 组件 -->
-          <UButton class="absolute right-0" color="primary" variant="outline"
-            @click="() => communityJoin(community.uuid)">
+          <UButton class="absolute right-0" color="primary" variant="outline" @click="() => communityJoin(community.uuid)">
             {{ $t('community.list.join') }}
           </UButton>
         </template>
