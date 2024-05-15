@@ -9,6 +9,15 @@ const communityId = $computed(() => route.params.communityId)
 console.log("communityId = " + communityId)
 const blog = await getAllTasks("GetAllTasks")
 let blogPosts = $computed(() => respArray)
+const communityInfo = {
+  communityName: 'permadao',
+  website: 'www.demo.com',
+  socialMedia: 'twitter',
+  token: 'USDT',
+  platform: 'Binance',
+  github: 'www.github.com',
+  builderNumber: 100
+}
 const blogPosts1 = [
   {
     id: 1,
@@ -270,11 +279,6 @@ const footerLinks = $computed(() => {
       icon: "i-heroicons-plus",
       to: `/${slug}/settings/communityinfo`,
     },
-    {
-      label: "Help & Support",
-      icon: "i-heroicons-question-mark-circle",
-      click: () => (isHelpSlideoverOpen.value = true),
-    },
   ];
 });
 
@@ -307,29 +311,65 @@ const defaultColors = ref(
     click: () => (appConfig.ui.primary = color),
   }))
 );
-const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })));
-
+const light = 'https://source.unsplash.com/random/200x200?sky'
+const dark = 'https://source.unsplash.com/random/200x200?stars'
 </script>
 
 <template>
   <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>
-    <UDashboardNavbar class="!border-transparent" :ui="{ left: 'flex-1' }">
-      <template #left>
-        <TeamsDropdown />
-      </template>
-    </UDashboardNavbar>
-    <!--    <div>permadao</div>-->
     <UDashboardSidebar>
-      <template #header>
-        <UDashboardSearchButton />
-      </template>
+      <UColorModeImage :light="light" :dark="dark" />
+      <div>
 
-      <UDashboardSidebarLinks :links="links" />
+        <div class="flex justify-between  my-3">
+          <div>{{ communityInfo.communityName }}</div>
+          <div>
+            <UButton color="black" variant="solid">
+              {{ $t('Explore Detail') }}
+            </UButton>
+          </div>
+        </div>
 
+        <UDivider />
+        <div class="flex justify-between  my-3">
+          <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
+          <div><UBadge color="primary" variant="soft" size="lg"> {{ communityInfo.website }} </UBadge></div>
+        </div>
+        <div class="flex justify-between my-3">
+          <div>{{ $t('SocialOfCommunityDetail') }}</div>
+          <div>
+            <UButton variant="link">
+              <UIcon name="ri:twitter-fill" class="h-full w-full " />
+              Twitter
+            </UButton>
+          </div>
+        </div>
+        <div class="flex justify-between my-3">
+          <div>{{ $t('TokenOfCommunityDetail') }}</div>
+          <div><UBadge color="primary" variant="soft" size="lg"> {{ communityInfo.token }} </UBadge></div>
+        </div>
+        <div class="flex justify-between my-3">
+          <div>{{ $t('TransPlatOfCommunityDetail') }}</div>
+          <div><UBadge color="primary" variant="soft" size="lg">{{ communityInfo.platform }}</UBadge></div>
+        </div>
+        <div class="flex justify-between my-3">
+          <div>{{ $t('GithubOfCommunityDetail') }}</div>
+          <div>
+            <UButton to="www.github.com" variant="link">
+              <UIcon name="ri:github-line" class="h-full w-full " />
+              Github
+            </UButton>
+          </div>
+        </div>
+        <div class="flex justify-between my-3">
+          <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
+          <div>{{ communityInfo.builderNumber }}</div>
+        </div>
+      </div>
       <UDivider />
 
-      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"
-        @update:links="(colors) => (defaultColors = colors)" />
+<!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
+<!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
       <div class="flex-1" />
 
@@ -350,9 +390,15 @@ const colors = computed(() => defaultColors.value.map((color) => ({ ...color, ac
           <div>
             <UTabs :items="items" @change="onChange" />
           </div>
-          <div class="flex justify-end ...">
-            <UButton color="black" variant="solid" size="2xs" @click="openModal">{{ $t("Create Task") }}</UButton>
+          <div class="flex">
+            <div>
+              <UButton color="black" variant="solid" size="lg" @click="openModal">{{ $t("Create Task") }}</UButton>
+            </div>
+            <div class="ml-3">
+              <UButton icon="i-heroicons-x-mark-20-solid" color="black" variant="solid" size="lg"></UButton>
+            </div>
           </div>
+
         </div>
         <UBlogList orientation="horizontal">
           <UBlogPost v-for="blogPost in blogPosts" :key="blogPost.id" :image="blogPost.image"

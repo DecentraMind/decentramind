@@ -103,5 +103,11 @@
   "Settled": "Settled",
   "Not Begin": "Not Begin",
   "In Progress": "In Progress",
-  "End": "End"
+  "End": "End",
+  "WebsiteOfCommunityDetail": "Website",
+  "SocialOfCommunityDetail": "Social Media",
+  "TokenOfCommunityDetail": "Token",
+  "TransPlatOfCommunityDetail": "TransPlat",
+  "GithubOfCommunityDetail": "Github",
+  "BuilderNumberOfCommunityDetail": "BuilderNumber"
 }

@@ -104,5 +104,11 @@
   "Settled": "已结算",
   "Not Begin": "未开始",
   "In Progress": "进行中",
-  "End": "已结束"
+  "End": "已结束",
+  "WebsiteOfCommunityDetail": "网站",
+  "SocialOfCommunityDetail": "社交媒体",
+  "TokenOfCommunityDetail": "社区代币",
+  "TransPlatOfCommunityDetail": "交易平台",
+  "GithubOfCommunityDetail": "Github 地址",
+  "BuilderNumberOfCommunityDetail": "Builder数量"
 }
