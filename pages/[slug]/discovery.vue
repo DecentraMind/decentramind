@@ -43,55 +43,95 @@ onMounted(async () => {
     }
     await getCommunity()
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error)
   }
-});
+})
+
+const translate = [
+  [{
+    label: '中文',
+  }, {
+    label: 'English'
+  }]
+]
 </script>
 
 <template>
-  <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-10">
-    <UAlert>
-      <template #title>
-        <div class="text-3xl p-2">{{ $t('community.list') }}</div>
+  <div class="min-h-screen bg-red-1900 w-full h-full">
+    <UDashboardNavbar title="Home">
+      <template #right>
+        <NuxtLink :to="`/${slug}/mytask`">
+          <UButton color="white">我的任务台</UButton>
+        </NuxtLink>
+        <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
+          <UButton color="white" block>
+            {{ shortAddress(address) }}
+          </UButton>
+          <template #panel>
+            <UButton color="red" @click="doLogout">
+              Disconnect
+            </UButton>
+          </template>
+        </UPopover>
+        <UButton v-else color="white" @click="doLogin">
+          Connect Wallet
+        </UButton>
+        <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
+          <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
+        </UDropdown>
       </template>
-    </UAlert>
-    <!--
+    </UDashboardNavbar>
+    <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-10">
+      <UAlert>
+        <template #title>
+          <div class="text-3xl p-2">
+            {{ $t('community.list') }}
+          </div>
+        </template>
+      </UAlert>
+      <!--
       测试按钮
       <UButton color="white" @click="doLogin">Arconnect</UButton>
       <UButton color="white" @click="getCommunitylist">test</UButton>
       <UButton color="white" @click="joinC">test2</UButton>
     -->
-    <div v-if="communityLoading" class="w-full flex justify-center">
-      <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
+      <div v-if="communityLoading" class="w-full flex justify-center">
+        <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
+      </div>
+      <UBlogList orientation="horizontal">
+        <UBlogPost v-for="community in communityList" :key="community.uuid" image="https://picsum.photos/640/360" :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`" class="w-5/6">
+          <template #title>
+            <div class="flex items-center">
+              <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="md" />
+              <Text class="mx-3">
+                {{ community.name }}
+              </Text>
+            </div>
+          </template>
+          <template #description>
+            <div class="flex flex-col space-y-2">
+              <Text class="text-blue-300">
+                builder: 100
+              </Text>
+              <Text class="text-blue-900">
+                {{ community.desc }}
+              </Text>
+            </div>
+          </template>
+          <template v-if="community.isJoined">
+            <!-- 显示文本“已加入” -->
+            <UButton class="absolute right-0" color="primary" variant="outline" disabled>
+              {{ $t('community.list.isjoin') }}
+            </UButton>
+          </template>
+          <template v-else>
+            <!-- 显示 UButton 组件 -->
+            <UButton class="absolute right-0" color="primary" variant="outline" @click="() => communityJoin(community.uuid)">
+              {{ $t('community.list.join') }}
+            </UButton>
+          </template>
+        </UBlogPost>
+      </UBlogList>
     </div>
-    <UBlogList orientation="horizontal">
-      <UBlogPost v-for="community in communityList" :key="community.uuid" image="https://picsum.photos/640/360"
-        :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`" class="w-5/6">
-        <template #title>
-          <div class="flex items-center">
-            <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="md" />
-            <Text class="mx-3">{{ community.name }}</Text>
-          </div>
-        </template>
-        <template #description>
-          <div class="flex flex-col space-y-2">
-            <Text class="text-blue-300">builder: 100</Text>
-            <Text class="text-blue-900">{{ community.desc }}</Text>
-          </div>
-        </template>
-        <template v-if="community.isJoined">
-          <!-- 显示文本“已加入” -->
-          <UButton class="absolute right-0" color="primary" variant="outline" disabled>
-            {{ $t('community.list.isjoin') }}
-          </UButton>
-        </template>
-        <template v-else>
-          <!-- 显示 UButton 组件 -->
-          <UButton class="absolute right-0" color="primary" variant="outline" @click="() => communityJoin(community.uuid)">
-            {{ $t('community.list.join') }}
-          </UButton>
-        </template>
-      </UBlogPost>
-    </UBlogList>
   </div>
 </template>

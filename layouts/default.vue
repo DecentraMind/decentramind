@@ -1,128 +1,128 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const route = useRoute();
-const appConfig = useAppConfig();
-const { isHelpSlideoverOpen } = useDashboard();
+const route = useRoute()
+const appConfig = useAppConfig()
+const { isHelpSlideoverOpen } = useDashboard()
 
-const slug = $computed(() => route.params.slug);
+const slug = $computed(() => route.params.slug)
 
 const links = $computed(() => {
   return [
     {
-      id: "home",
-      label: "Home",
-      icon: "i-heroicons-home",
+      id: 'home',
+      label: 'Home',
+      icon: 'i-heroicons-home',
       to: `/${slug}/`,
       tooltip: {
-        text: "Home",
-        shortcuts: ["G", "H"],
+        text: 'Home',
+        shortcuts: ['G', 'H'],
       },
     },
     {
-      id: "tasks",
-      label: "Tasks",
-      icon: "i-arcticons-x-twitter",
+      id: 'tasks',
+      label: 'Tasks',
+      icon: 'i-arcticons-x-twitter',
       to: `/${slug}/tasks`,
-      badge: "4",
+      badge: '4',
       tooltip: {
-        text: "Inbox",
-        shortcuts: ["G", "I"],
+        text: 'Inbox',
+        shortcuts: ['G', 'I'],
       },
     },
     {
-      id: "inbox",
-      label: "Inbox",
-      icon: "i-heroicons-inbox",
+      id: 'inbox',
+      label: 'Inbox',
+      icon: 'i-heroicons-inbox',
       to: `/${slug}/inbox`,
-      badge: "4",
+      badge: '4',
       tooltip: {
-        text: "Inbox",
-        shortcuts: ["G", "I"],
+        text: 'Inbox',
+        shortcuts: ['G', 'I'],
       },
     },
     {
-      id: "users",
-      label: "Users",
-      icon: "i-heroicons-user-group",
+      id: 'users',
+      label: 'Users',
+      icon: 'i-heroicons-user-group',
       to: `/${slug}/users`,
       tooltip: {
-        text: "Users",
-        shortcuts: ["G", "U"],
+        text: 'Users',
+        shortcuts: ['G', 'U'],
       },
     },
     {
-      id: "community-discovery",
-      label: "Cmmunity-discovery",
-      icon: "i-heroicons-user-group",
+      id: 'community-discovery',
+      label: 'Cmmunity-discovery',
+      icon: 'i-heroicons-user-group',
       to: `/${slug}/discovery`,
       tooltip: {
-        text: "Community-discovery",
-        shortcuts: ["G", "U"],
+        text: 'Community-discovery',
+        shortcuts: ['G', 'U'],
       },
     },
-  ];
-});
+  ]
+})
 const footerLinks = $computed(() => {
   return [
     {
-      label: t("Task Area"),
-      icon: "i-heroicons-plus",
+      label: t('Task Area'),
+      icon: 'i-heroicons-plus',
       to: `/${slug}/tasks`,
     },
     {
-      label: "Invite people",
-      icon: "i-heroicons-plus",
+      label: 'Invite people',
+      icon: 'i-heroicons-plus',
       to: `/${slug}/settings/communityinfo`,
     },
     {
-      label: "Help & Support",
-      icon: "i-heroicons-question-mark-circle",
+      label: 'Help & Support',
+      icon: 'i-heroicons-question-mark-circle',
       click: () => (isHelpSlideoverOpen.value = true),
     },
-  ];
-});
+  ]
+})
 
 const groups = [
   {
-    key: "links",
-    label: "Go to",
+    key: 'links',
+    label: 'Go to',
     commands: links.map((link) => ({ ...link, shortcuts: link.tooltip?.shortcuts })),
   },
   {
-    key: "code",
-    label: "Code",
+    key: 'code',
+    label: 'Code',
     commands: [
       {
-        id: "source",
-        label: "View page source",
-        icon: "i-simple-icons-github",
+        id: 'source',
+        label: 'View page source',
+        icon: 'i-simple-icons-github',
         click: () => {
-          window.open(`https://github.com/nuxt-ui-pro/dashboard/blob/main/pages${route.path === "/" ? "/index" : route.path}.vue`, "_blank");
+          window.open(`https://github.com/nuxt-ui-pro/dashboard/blob/main/pages${route.path === '/' ? '/index' : route.path}.vue`, '_blank')
         },
       },
     ],
   },
-];
+]
 
 const defaultColors = ref(
-  ["green", "teal", "cyan", "sky", "blue", "indigo", "violet"].map((color) => ({
+  ['green', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet'].map((color) => ({
     label: color,
     chip: color,
     click: () => (appConfig.ui.primary = color),
   }))
-);
-const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })));
+)
+const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })))
 
 const communityList1 = [
-  { title: "HelloRWA1", slug: "hellorwa1", avatar: "/logo.png" },
-  { title: "HelloRWA2", slug: "hellorwa2", avatar: "/logo.png" },
-  { title: "HelloRWA3", slug: "hellorwa3", avatar: "/logo.png" },
-];
+  { title: 'HelloRWA1', slug: 'hellorwa1', avatar: '/logo.png' },
+  { title: 'HelloRWA2', slug: 'hellorwa2', avatar: '/logo.png' },
+  { title: 'HelloRWA3', slug: 'hellorwa3', avatar: '/logo.png' },
+]
 
 const { joincommunityList, communityCreate, getCommunitylist } = $(aocommunityStore())
 
 let result = $ref()
-let createCommunity = $ref(false)
+const createCommunity = $ref(false)
 
 let communityLoading = $ref(true)
 
@@ -135,11 +135,31 @@ const getCommunity = async () => {
 
 onMounted(async () => {
   try {
+    if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
+      communityLoading = false
+    }
     await getCommunity()
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error)
   }
-});
+})
+
+const navigation = inject<Ref<NavItem[]>>('navigation', ref([]))
+
+const links2 = [{
+  label: 'Docs',
+  icon: 'i-heroicons-book-open',
+  to: '/getting-started'
+}, {
+  label: 'Pro',
+  icon: 'i-heroicons-square-3-stack-3d',
+  to: '/pro'
+}, {
+  label: 'Releases',
+  icon: 'i-heroicons-rocket-launch',
+  to: '/releases'
+}]
+
 </script>
 
 <template>
@@ -148,16 +168,16 @@ onMounted(async () => {
       <UDashboardSidebar>
         <template #header>
           <NuxtLink :to="`/${slug}/discovery`">
-            <img src="/logo.png" class="h-full w-full" />
+            <img src="/logo.png" class="h-full w-full">
           </NuxtLink>
         </template>
 
         <UDivider />
 
-        <NuxtLink :to="`/${slug}/tasks/${item.uuid}`" v-for="item in joincommunityList" :key="item.uuid">
-          <img src="/logo.png" :title="item.name" class="h-full w-full" />
+        <NuxtLink v-for="item in joincommunityList" :key="item.uuid" :to="`/${slug}/tasks/${item.uuid}`">
+          <img src="/logo.png" :title="item.name" class="h-full w-full">
         </NuxtLink>
-        <UButton @click="communityCreate = true" variant="soft">
+        <UButton variant="soft" @click="communityCreate = true">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
         <div class="flex-1" />
@@ -165,7 +185,22 @@ onMounted(async () => {
         <UDivider class="bottom-0 sticky" />
 
         <template #footer>
-          <UserDropdownMini />
+          <!-- <UserDropdownMini /> -->
+          <UPopover mode="hover" :to="`/${slug}/settings`">
+            <NuxtLink :to="`/${slug}/settings`">
+              <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+            </NuxtLink>
+            <template #panel>
+              <div class="h-[350px] w-[300px] pt-10 pl-10">
+                <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                <div>
+                  Liam
+                </div>
+                <UDivider />
+                我的社区
+              </div>
+            </template>
+          </UPopover>
         </template>
       </UDashboardSidebar>
     </UDashboardPanel>
@@ -204,6 +239,7 @@ onMounted(async () => {
     <!--    </UDashboardPanel>-->
 
     <slot />
+
 
     <!-- ~/components/HelpSlideover.vue -->
     <HelpSlideover />
