@@ -18,7 +18,6 @@ const blogPosts = [
     description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.'
   }
 ]
-
 const { communityList, getCommunitylist, joinCommunity } = $(aocommunityStore())
 let result = $ref()
 
@@ -34,7 +33,6 @@ const communityJoin = async (uuid: any) => {
   toast.add({ title: 'joined success' })
   await getCommunity()
 }
-
 
 onMounted(async () => {
   try {
@@ -54,10 +52,17 @@ const translate = [
     label: 'English'
   }]
 ]
+const { t, locale , defaultLocale } = useI18n()
+const test = (newLocale) => {
+  console.log(locale.value)
+  locale.value = 'en'
+  console.log(locale.value)
+  console.log(`Language switched to: ${newLocale}`)
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-red-1900 w-full h-full">
+  <div class="min-h-screen bg-red-1900 w-full">
     <UDashboardNavbar title="Home">
       <template #right>
         <NuxtLink :to="`/${slug}/mytask`">
@@ -81,14 +86,7 @@ const translate = [
         </UDropdown>
       </template>
     </UDashboardNavbar>
-    <div class="min-h-screen bg-red-1900 w-full overflow-y-auto h-full pl-20 pt-10">
-      <UAlert>
-        <template #title>
-          <div class="text-3xl p-2">
-            {{ $t('community.list') }}
-          </div>
-        </template>
-      </UAlert>
+    <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">
       <!--
       测试按钮
       <UButton color="white" @click="doLogin">Arconnect</UButton>

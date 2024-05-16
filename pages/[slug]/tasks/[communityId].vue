@@ -4,20 +4,13 @@ import type { FormSubmitEvent } from '#ui/types'
 
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray } = $(taskStore())
+const { getCommunityInfo } = $(aocommunityStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 console.log('communityId = ' + communityId)
 const blog = await getAllTasks('GetAllTasks')
 const blogPosts = $computed(() => respArray)
-const communityInfo = {
-  communityName: 'permadao',
-  website: 'www.demo.com',
-  socialMedia: 'twitter',
-  token: 'USDT',
-  platform: 'Binance',
-  github: 'www.github.com',
-  builderNumber: 100
-}
+
 const blogPosts1 = [
   {
     id: 1,
@@ -281,7 +274,8 @@ const footerLinks = $computed(() => {
     },
     {
       label: 'Chat Room',
-      to: `/${slug}/inbox`,
+      icon: 'i-heroicons-plus',
+      to: `/${slug}/chat`,
     },
   ]
 })
@@ -317,28 +311,47 @@ const defaultColors = ref(
 )
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
+
+let communityInfo = $ref({})
+let communityInfoJson = $ref({})
+const loadCommunityInfo = async (pid) => {
+  try {
+    communityInfo = await getCommunityInfo(pid)
+    const jsonData = communityInfo.Messages[0].Data
+    const jsonObjects = jsonData.match(/\{.*?\}/g)
+    communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
+    console.log("-------------", communityInfoJson)
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+}
+
+onMounted(async () => {
+  await loadCommunityInfo(route.params.communityId)
+})
 </script>
 
 <template>
-  <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>
+  <UDashboardPanel :width="350" collapsible>
     <UDashboardSidebar>
-      <UColorModeImage :light="light" :dark="dark" />
-      <div>
+      <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
+      <div v-for="Info in communityInfoJson" :key="Info.uuid">
         <div class="flex justify-between  my-3">
-          <div>{{ communityInfo.communityName }}</div>
+          <div class="text-3xl">{{ Info.name }}</div>
           <div>
-            <UButton color="black" variant="solid">
+            <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
               {{ $t('Explore Detail') }}
             </UButton>
           </div>
         </div>
 
         <UDivider />
-        <div class="flex justify-between  my-3">
+        
+        <div class="flex justify-between my-3 mt-5">
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
-              {{ communityInfo.website }}
+              {{ Info.website }}
             </UBadge>
           </div>
         </div>
@@ -351,11 +364,11 @@ const dark = 'https://source.unsplash.com/random/200x200?stars'
             </UButton>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 mt-10">
           <div>{{ $t('TokenOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
-              {{ communityInfo.token }}
+              USDC
             </UBadge>
           </div>
         </div>
@@ -363,7 +376,7 @@ const dark = 'https://source.unsplash.com/random/200x200?stars'
           <div>{{ $t('TransPlatOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
-              {{ communityInfo.platform }}
+              OKE
             </UBadge>
           </div>
         </div>
@@ -378,7 +391,7 @@ const dark = 'https://source.unsplash.com/random/200x200?stars'
         </div>
         <div class="flex justify-between my-3">
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-          <div>{{ communityInfo.builderNumber }}</div>
+          <div>10</div>
         </div>
       </div>
       <UDivider />
@@ -391,13 +404,15 @@ const dark = 'https://source.unsplash.com/random/200x200?stars'
       <UDashboardSidebarLinks :links="footerLinks" />
 
       <UDivider class="bottom-0 sticky" />
-
+        <!--
       <template #footer>
-        <!-- ~/components/UserDropdown.vue -->
         <UserDropdown />
       </template>
+      -->
+
     </UDashboardSidebar>
   </UDashboardPanel>
+  
   <UDashboardPage>
     <UPage class="overflow-y-auto h-full w-full">
       <div class="   mx-10 mt-10  ">

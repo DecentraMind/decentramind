@@ -237,7 +237,7 @@ const links2 = [{
     <!--        </template>-->
     <!--      </UDashboardSidebar>-->
     <!--    </UDashboardPanel>-->
-
+      
     <slot />
 
 
@@ -249,8 +249,8 @@ const links2 = [{
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
-    <UModal v-model="communityCreate">
-      <UCard class=" w-[1150px]">
+    <UModal v-model="communityCreate" :ui="{ width: w-full }">
+      <UCard>
         <CommunityCreate />
       </UCard>
     </UModal>
