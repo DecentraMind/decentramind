@@ -128,12 +128,7 @@ const ranges = [
   { label: 'Last year', duration: { years: 1 } }
 ]
 
-// sider config
-const appConfig = useAppConfig()
-const { isHelpSlideoverOpen } = useDashboard()
-
 const slug = $computed(() => route.params.slug)
-
 
 const footerLinks = $computed(() => {
   return [
@@ -155,30 +150,6 @@ const footerLinks = $computed(() => {
   ]
 })
 
-const groups = [
-  {
-    key: 'code',
-    label: 'Code',
-    commands: [
-      {
-        id: 'source',
-        label: 'View page source',
-        icon: 'i-simple-icons-github',
-        click: () => {
-          window.open(`https://github.com/nuxt-ui-pro/dashboard/blob/main/pages${route.path === '/' ? '/index' : route.path}.vue`, '_blank')
-        },
-      },
-    ],
-  },
-]
-
-const defaultColors = ref(
-  ['green', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet'].map((color) => ({
-    label: color,
-    chip: color,
-    click: () => (appConfig.ui.primary = color),
-  }))
-)
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
@@ -297,9 +268,7 @@ onMounted(async () => {
                 {{ $t("Create Task") }}
               </UButton>
             </div>
-            <div class="ml-3">
-              <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
-            </div>
+
           </div>
         </div>
         <UBlogList orientation="horizontal">

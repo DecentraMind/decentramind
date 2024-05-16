@@ -172,6 +172,11 @@ function joinTask() {
   <UDashboardPage>
     <UPage>
       <div class="w-full overflow-y-auto h-full ">
+        <div class="flex justify-end mb-4">
+          <div class="ml-3">
+            <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
+          </div>
+        </div>
         <div class="mx-10">
           <UColorModeImage :light="blogPost.image" :dark="blogPost.image" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
