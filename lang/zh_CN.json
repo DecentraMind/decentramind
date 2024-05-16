@@ -110,5 +110,6 @@
   "TokenOfCommunityDetail": "社区代币",
   "TransPlatOfCommunityDetail": "交易平台",
   "GithubOfCommunityDetail": "Github 地址",
-  "BuilderNumberOfCommunityDetail": "Builder数量"
+  "BuilderNumberOfCommunityDetail": "Builder数量",
+  "Invite people": "邀请"
 }

@@ -207,66 +207,10 @@ const ranges = [
 
 // sider config
 const appConfig = useAppConfig();
-const { isHelpSlideoverOpen } = useDashboard();
 
 const slug = $computed(() => route.params.slug);
 
-const links = $computed(() => {
-  return [
-    {
-      id: "home",
-      label: "Home",
-      icon: "i-heroicons-home",
-      to: `/${slug}/`,
-      tooltip: {
-        text: "Home",
-        shortcuts: ["G", "H"],
-      },
-    },
-    {
-      id: "tasks",
-      label: "Tasks",
-      icon: "i-arcticons-x-twitter",
-      to: `/${slug}/tasks`,
-      badge: "4",
-      tooltip: {
-        text: "Inbox",
-        shortcuts: ["G", "I"],
-      },
-    },
-    {
-      id: "inbox",
-      label: "Inbox",
-      icon: "i-heroicons-inbox",
-      to: `/${slug}/inbox`,
-      badge: "4",
-      tooltip: {
-        text: "Inbox",
-        shortcuts: ["G", "I"],
-      },
-    },
-    {
-      id: "users",
-      label: "Users",
-      icon: "i-heroicons-user-group",
-      to: `/${slug}/users`,
-      tooltip: {
-        text: "Users",
-        shortcuts: ["G", "U"],
-      },
-    },
-    {
-      id: "community-discovery",
-      label: "Cmmunity-discovery",
-      icon: "i-heroicons-user-group",
-      to: `/${slug}/discovery`,
-      tooltip: {
-        text: "Community-discovery",
-        shortcuts: ["G", "U"],
-      },
-    },
-  ];
-});
+
 const footerLinks = $computed(() => {
   return [
     {
@@ -275,7 +219,7 @@ const footerLinks = $computed(() => {
       to: `/${slug}/tasks`,
     },
     {
-      label: "Invite people",
+      label: t("Invite people"),
       icon: "i-heroicons-plus",
       to: `/${slug}/settings/communityinfo`,
     },
@@ -283,11 +227,7 @@ const footerLinks = $computed(() => {
 });
 
 const groups = [
-  {
-    key: "links",
-    label: "Go to",
-    commands: links.map((link) => ({ ...link, shortcuts: link.tooltip?.shortcuts })),
-  },
+
   {
     key: "code",
     label: "Code",
@@ -422,7 +362,7 @@ const dark = 'https://source.unsplash.com/random/200x200?stars'
                 </div>
               </div>
             </template>
-            <UButton to="/signup/detail-task/" class="absolute right-0" color="primary" variant="outline">{{ $t("Explor Detail") }}</UButton>
+            <UButton to="`/${slug}/tasks/${blogPost.uuid}`" class="absolute right-0" color="primary" variant="outline">{{ $t("Explor Detail") }}</UButton>
           </UBlogPost>
         </UBlogList>
       </div>

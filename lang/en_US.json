@@ -109,5 +109,6 @@
   "TokenOfCommunityDetail": "Token",
   "TransPlatOfCommunityDetail": "TransPlat",
   "GithubOfCommunityDetail": "Github",
-  "BuilderNumberOfCommunityDetail": "BuilderNumber"
+  "BuilderNumberOfCommunityDetail": "BuilderNumber",
+  "Invite people": "Invite people"
 }

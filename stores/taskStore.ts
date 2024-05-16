@@ -79,6 +79,15 @@ export const taskStore = defineStore('taskStore', () => {
     showSuccess('Get all tasks success')
   }
 
+  const getTaskById = async (taskId: string) => {
+    await getAllTasks('GetAllTasks')
+    for(let item of respArray){
+      console.log("item = " + item)
+      if(item.id === taskId)
+        console.log("find this task")
+    }
+  }
+
   const joinSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string) => {
     // TODO 1.解析 space url 获取 Twitter space 信息，2.比对头像确权
     let data = {
@@ -107,5 +116,5 @@ export const taskStore = defineStore('taskStore', () => {
     }
   }
 
-  return $$({ createTask, getAllTasks, joinSpaceTask, respArray })
+  return $$({ createTask, getAllTasks, joinSpaceTask, getTaskById, respArray })
 })
