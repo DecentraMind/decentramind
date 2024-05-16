@@ -18,6 +18,13 @@ const permissions: PermissionType[] = [
   'DISPATCH'
 ]
 
+import Arweave from 'arweave';
+
+const arweave = Arweave.init({
+  host: 'arweave.net', // 这是主网节点的 URL
+  port: 443,
+  protocol: 'https'
+});
 
 
 export const aoStore = defineStore('aoStore', () => {
@@ -168,8 +175,22 @@ export const aoStore = defineStore('aoStore', () => {
     aoCoinBalance = (await getBalance('AOCoin')) / 1e3
   }
 
+  const getarbalance = async () => {
+    try {
+      // 查询地址余额
+      const balance = await arweave.wallets.getBalance(address);
+      console.log('Balance (in winston):', balance);
 
-  return $$({ tokenMap, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, doLogin })
+      // 将余额从 winston 转换为 AR
+      const arBalance = arweave.ar.winstonToAr(balance);
+      console.log('Balance (in AR):', arBalance);
+      return arBalance
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  return $$({ tokenMap, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, doLogin, getarbalance })
 })
 
 if (import.meta.hot)

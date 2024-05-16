@@ -84,24 +84,24 @@ watchEffect(() => {
 
 
 onMounted(async () => {
-  await loadCommunityInfo(route.params.pid);
-});
+  await loadCommunityInfo(route.params.pid)
+})
 
 watch(() => route.params.pid, async (newPid) => {
-  await loadCommunityInfo(newPid);
-});
+  await loadCommunityInfo(newPid)
+})
 
 const loadCommunityInfo = async (pid) => {
   try {
-    communityInfo = await getCommunityInfo(pid);
-    const jsonData = communityInfo.Messages[0].Data;
-    const jsonObjects = jsonData.match(/\{.*?\}/g);
-    communityInfoJson = jsonObjects.map((item) => JSON.parse(item));
-    communityLoading = false;
+    communityInfo = await getCommunityInfo(pid)
+    const jsonData = communityInfo.Messages[0].Data
+    const jsonObjects = jsonData.match(/\{.*?\}/g)
+    communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
+    communityLoading = false
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error)
   }
-};
+}
 </script>
 
 <template>
@@ -117,11 +117,15 @@ const loadCommunityInfo = async (pid) => {
           color="primary"
           :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]">
           <template #title>
-            <div class="text-3xl mb-12 mt-3 px-12">{{ Info.name }}</div>
+            <div class="text-3xl mb-12 mt-3 px-12">
+              {{ Info.name }}
+            </div>
           </template>
           <template #description>
             <div class="flex flex-col w-5/6 px-12">
-              <Text class="mb-3">{{ $t('community.detail') }}</Text>
+              <Text class="mb-3">
+                {{ $t('community.detail') }}
+              </Text>
               <Text>
                 {{ Info.desc }}
               </Text>

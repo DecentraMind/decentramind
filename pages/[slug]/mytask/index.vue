@@ -24,21 +24,45 @@ const columns = computed(() => defaultColumns.filter((column) => selectedColumns
 
 const query = computed(() => ({ q: q.value, statuses: selectedStatuses, locations: selectedLocations, sort: sort.column, order: sort.direction }))
 
-const { data: Wallettoken, pending } = await useFetch<Wallettoken[]>('/api/wallettoken', { query, default: () => [] })
+let arbalance = $ref('0')
+const Wallettoken = ref<Wallettoken[]>([
+  {
+    id: 1,
+    token: 'AR',
+    chain: 'Arweave',
+    balance: arbalance,
+    balance_u: '$0.000',
+    avatar: {
+      src: 'https://i.pravatar.cc/128?u=1'
+    },
+    status: 'subscribed'
+  },
+  // 可以添加更多的初始数据
+]);
 
 
 function onSubmitAccount () {
   console.log('Submitted form:', accountForm)
 }
+const { getarbalance } = $(aoStore())
 
+const test = async() => {
+  arbalance = await getarbalance()
+}
+onMounted(async () => {
+  try {
+    arbalance = await getarbalance()
 
-
-
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+})
 </script>
 
 <template>
   <UDashboardPanelContent class="pb-24">
     <UCard @submit.prevent="onSubmitAccount">
+      <UButton @click="test">test</UButton>
       <template #header>
         <ULandingCard
           description="39.44USD"
@@ -50,7 +74,7 @@ function onSubmitAccount () {
           </template>
           <template #description>
             <div class="flex items-center mt-5">
-              <div class="text-5xl">39.44</div>
+              <div class="text-5xl">{{ parseFloat(arbalance).toFixed(3) }}</div>
               <div class="text-3xl">USD</div>
             </div>
           </template>
@@ -77,8 +101,8 @@ function onSubmitAccount () {
         </template>
         <template #balance-data="{ row }">
           <div class="flex flex-col">
-            <span class="text-gray-900 dark:text-white font-medium text-xl">{{ row.balance }}</span>
-            <span>{{ row.balance_u }}</span>
+            <span class="text-gray-900 dark:text-white font-medium text-xl">{{ parseFloat(arbalance).toFixed(3) }}</span>
+            <span>{{ parseFloat(arbalance).toFixed(3) }}</span>
           </div>
         </template>
         <template #withdraw-data>

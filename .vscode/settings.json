@@ -3,88 +3,16 @@
     "lang"
   ],
 
-  // 控制是否应在遇到提交字符时接受建议。例如，在 JavaScript 中，半角分号 (`;`) 可以为提交字符，能够在接受建议的同时键入该字符。
-  "editor.acceptSuggestionOnCommitCharacter": true,
-
-  // 控制编辑器是否在左括号后自动插入右括号。
-  //  - always
-  //  - languageDefined: 使用语言配置确定何时自动闭合括号。
-  //  - beforeWhitespace: 仅当光标位于空白字符左侧时，才自动闭合括号。
-  //  - never
-  "editor.autoClosingBrackets": "languageDefined",
-
-  // 控制编辑器是否在左引号后自动插入右引号。
-  //  - always
-  //  - languageDefined: 使用语言配置确定何时自动闭合引号。
-  //  - beforeWhitespace: 仅当光标位于空白字符左侧时，才自动闭合引号。
-  //  - never
-  "editor.autoClosingQuotes": "languageDefined",
-
-  // 控制编辑器是否应在用户键入、粘贴、移动或缩进行时自动调整缩进。
-  //  - none: 编辑器不会自动插入缩进。
-  //  - keep: 编辑器将保留当前行的缩进。
-  //  - brackets: 编辑器将保留当前行的缩进并遵循语言定义的括号。
-  //  - advanced: 编辑器将保留当前行的缩进、使用语言定义的括号并调用语言定义的特定 onEnterRules。
-  //  - full: 编辑器将保留当前行的缩进，使用语言定义的括号，调用由语言定义的特殊输入规则，并遵循由语言定义的缩进规则。
-  "editor.autoIndent": "full",
-
-  // 控制在键入引号或方括号时，编辑器是否应自动将所选内容括起来。
-  //  - languageDefined: 使用语言配置确定何时自动包住所选内容。
-  //  - quotes: 使用引号而非括号来包住所选内容。
-  //  - brackets: 使用括号而非引号来包住所选内容。
-  //  - never
-  "editor.autoSurround": "languageDefined",
-
-  // 控制是否已启用括号对着色。使用 `workbench.colorCustomizations` 替代括号高亮颜色。
-  "editor.bracketPairColorization.enabled": true,
-
-  // 控制每个方括号类型是否具有自己的独立颜色池。
-  "editor.bracketPairColorization.independentColorPoolPerBracketType": false,
-
-  // 控制是否在编辑器中显示 CodeLens。
-  "editor.codeLens": true,
-
-  // 控制在对行注释执行切换、添加或删除操作时，是否应忽略空行。
-  "editor.comments.ignoreEmptyLines": true,
-
-  // 控制在注释时是否插入空格字符。
-  "editor.comments.insertSpace": true,
-
-  // 控制在复制时是否同时复制语法高亮。
-  "editor.copyWithSyntaxHighlighting": true,
-
-  // 控制编辑器是否显示缩进参考线。
-  "editor.guides.indentation": true,
-
-  //------------//
-  //vue3语法高亮设置
-
-  // vscode默认启用了根据文件类型自动设置tabsize的选项
-  "editor.detectIndentation": false,
-
-  //黄色波浪线
-  "eslint.enable": false,
-
-  // 重新设定tabsize
-  "editor.tabSize": 2,
-  "editor.fontSize": 16,
-
-  // #每次保存的时候自动格式化
-  "editor.formatOnSave": true,
 
   // #每次保存的时候将代码按eslint格式进行修复 ,"eslint.autoFixOnSave": true 这个已经过时了
-  "editor.codeActionsOnSave": {
-    "source.fixAll": true
-  },
+  //"editor.codeActionsOnSave": {
+  //  "source.fixAll": true
+  //},
 
-  // 粘贴后的内容, 是否自动格式化
-  "editor.formatOnPaste": false,
-  "eslint.format.enable": true,
-  "files.autoSave": "afterDelay", //超过屏幕视图换行
 
   "eslint.validate": [
     // eslint规则对以下几种后缀文件生效. 默认为["javascript", "javascriptreact"]
-    "vue",
+    //"vue",
     "javascript",
     "javascriptreact",
     "typescript",
@@ -98,11 +26,11 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[vue]": {
+  ///"[vue]": {
     // 可选值： eslint ："dbaeumer.vscode-eslint"  vetur: "octref.vetur"   prettier: "esbenp.prettier-vscode"
     // 对 vue 文件，使用 prettier（格式化规则） + eslint（校验） 进行格式化，也可以选择 vetur 插件，或者单独选择prettier不加eslint
-    "editor.defaultFormatter": "Vue.volar"
-  },
+  ///  "editor.defaultFormatter": "Vue.volar"
+  ///},
   "[typescript]": {
     // 对ts文件进行格式化时，使用哪一种风格 (此处使用的是vscode中安装的ts插件默认风格进行格式化)
     "editor.defaultFormatter": "vscode.typescript-language-features"
@@ -124,19 +52,5 @@
     "**/yarn.lock": true,
     "**/assets": true
   },
-  // 配置文件关联
-  "files.associations": {
-    // 比如小程序中的 .wxss 这种文件，会把它作为css文件来处理，提供对应的css的语法提示，css的格式化等。
-    "*.wxss": "css",
-    "*.cjson": "jsonc",
-    "*.wxs": "javascript",
-    "*.ts": "typescript",
-    "*.vue": "vue",
-    "*.dart": "dart"
-  },
-  //  #让prettier使用eslint的代码格式进行校验
-  "prettier.eslintIntegration": true,
-  //  #让函数(名)和后面的括号之间加个空格
-  "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
 
 }
