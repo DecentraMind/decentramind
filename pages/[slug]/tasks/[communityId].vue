@@ -8,77 +8,7 @@ const { getCommunityInfo } = $(aocommunityStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 console.log('communityId = ' + communityId)
-const blog = await getAllTasks('GetAllTasks')
-const blogPosts = $computed(() => respArray)
 
-const blogPosts1 = [
-  {
-    id: 1,
-    name: 'Task 1',
-    image: 'https://picsum.photos/640/360',
-    description:
-      'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 2,
-    name: 'Task 2',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 3,
-    name: 'Task 3',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt DevTools v1.0 is out, generally available to all Nuxt projects!',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 4,
-    name: 'Task 4',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 5,
-    name: 'Task 5',
-    image: 'https://picsum.photos/640/360',
-    description:
-      'Nuxt 3.8 is out, bringing built-in DevTools, automatic Nuxt Image install, a new app...',
-    reward: '100 Token + 200 USDT',
-    builderNum: 1000,
-    status: '未开始',
-  },
-  {
-    id: 6,
-    name: 'Task 6',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 7,
-    name: 'Task 6',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-]
-console.log('blogPosts = ' + blogPosts.builderNumber)
 const items = [
   {
     label: t('Open Mission Area'),
@@ -204,62 +134,7 @@ const { isHelpSlideoverOpen } = useDashboard()
 
 const slug = $computed(() => route.params.slug)
 
-const links = $computed(() => {
-  return [
-    {
-      id: 'home',
-      label: 'Home',
-      icon: 'i-heroicons-home',
-      to: `/${slug}/`,
-      tooltip: {
-        text: 'Home',
-        shortcuts: ['G', 'H'],
-      },
-    },
-    {
-      id: 'tasks',
-      label: 'Tasks',
-      icon: 'i-arcticons-x-twitter',
-      to: `/${slug}/tasks`,
-      badge: '4',
-      tooltip: {
-        text: 'Inbox',
-        shortcuts: ['G', 'I'],
-      },
-    },
-    {
-      id: 'inbox',
-      label: 'Inbox',
-      icon: 'i-heroicons-inbox',
-      to: `/${slug}/inbox`,
-      badge: '4',
-      tooltip: {
-        text: 'Inbox',
-        shortcuts: ['G', 'I'],
-      },
-    },
-    {
-      id: 'users',
-      label: 'Users',
-      icon: 'i-heroicons-user-group',
-      to: `/${slug}/users`,
-      tooltip: {
-        text: 'Users',
-        shortcuts: ['G', 'U'],
-      },
-    },
-    {
-      id: 'community-discovery',
-      label: 'Cmmunity-discovery',
-      icon: 'i-heroicons-user-group',
-      to: `/${slug}/discovery`,
-      tooltip: {
-        text: 'Community-discovery',
-        shortcuts: ['G', 'U'],
-      },
-    },
-  ]
-})
+
 const footerLinks = $computed(() => {
   return [
     {
@@ -281,11 +156,6 @@ const footerLinks = $computed(() => {
 })
 
 const groups = [
-  {
-    key: 'links',
-    label: 'Go to',
-    commands: links.map((link) => ({ ...link, shortcuts: link.tooltip?.shortcuts })),
-  },
   {
     key: 'code',
     label: 'Code',
@@ -327,6 +197,7 @@ const loadCommunityInfo = async (pid) => {
 }
 
 onMounted(async () => {
+  await getAllTasks('GetAllTasks')
   await loadCommunityInfo(route.params.communityId)
 })
 </script>
@@ -336,7 +207,7 @@ onMounted(async () => {
     <UDashboardSidebar>
       <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
       <div v-for="Info in communityInfoJson" :key="Info.uuid">
-        <div class="flex justify-between  my-3">
+        <div class="flex justify-between  my-3 items-center">
           <div class="text-3xl">{{ Info.name }}</div>
           <div>
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
@@ -346,8 +217,8 @@ onMounted(async () => {
         </div>
 
         <UDivider />
-        
-        <div class="flex justify-between my-3 mt-5">
+
+        <div class="flex justify-between my-3 mt-5 items-center">
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
@@ -355,7 +226,7 @@ onMounted(async () => {
             </UBadge>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 items-center">
           <div>{{ $t('SocialOfCommunityDetail') }}</div>
           <div>
             <UButton variant="link">
@@ -364,15 +235,15 @@ onMounted(async () => {
             </UButton>
           </div>
         </div>
-        <div class="flex justify-between my-3 mt-10">
-          <div>{{ $t('TokenOfCommunityDetail') }}</div>
+        <div class="flex justify-between my-3 mt-10 items-center">
+          <div >{{ $t('TokenOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
               USDC
             </UBadge>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 items-center">
           <div>{{ $t('TransPlatOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
@@ -380,7 +251,7 @@ onMounted(async () => {
             </UBadge>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 items-center">
           <div>{{ $t('GithubOfCommunityDetail') }}</div>
           <div>
             <UButton to="www.github.com" variant="link">
@@ -389,7 +260,7 @@ onMounted(async () => {
             </UButton>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 items-center">
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
           <div>10</div>
         </div>
@@ -412,7 +283,7 @@ onMounted(async () => {
 
     </UDashboardSidebar>
   </UDashboardPanel>
-  
+
   <UDashboardPage>
     <UPage class="overflow-y-auto h-full w-full">
       <div class="   mx-10 mt-10  ">
@@ -422,17 +293,17 @@ onMounted(async () => {
           </div>
           <div class="flex">
             <div>
-              <UButton color="black" variant="solid" size="lg" @click="openModal">
+              <UButton color="white" variant="solid" size="lg" @click="openModal">
                 {{ $t("Create Task") }}
               </UButton>
             </div>
             <div class="ml-3">
-              <UButton icon="i-heroicons-x-mark-20-solid" color="black" variant="solid" size="lg" />
+              <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
             </div>
           </div>
         </div>
         <UBlogList orientation="horizontal">
-          <UBlogPost v-for="blogPost in blogPosts" :key="blogPost.id" :image="blogPost.image"
+          <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="blogPost.image"
             :description="blogPost.description">
             <template #title>
               <div class="flex justify-between ...">
