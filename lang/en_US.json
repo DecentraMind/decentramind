@@ -84,7 +84,7 @@
   "Time Zone": "Time Zone",
   "Time": "Time",
   "Public Quests": "Public Quests",
-  "Private Quests": "Unopened mission area",
+  "Private Quests": "Private Quests",
   "Start a Public Quest": "Start a Public Quest",
   "Join Task": "Join Task",
   "builders now": "builders now",
@@ -114,5 +114,12 @@
   "Send Bounty": "Send Bounty",
   "Rules of Judgment": "Rules of Judgment",
   "I have read all rules": "I have read all rules",
-  "Nothing here,click to start your first public quest.": "Nothing here,click to start your first public quest."
+  "Nothing here,click to start your first public quest.": "Nothing here,click to start your first public quest.",
+  "Twitter Space Quest": "Twitter Space Quest",
+  "Promotion Quest": "Promotion Quest",
+  "Invitation Quest": "Invitation Quest",
+  "Try Our Product Quest": "Try Our Product Quest",
+  "Thread Quest": "Thread Quest",
+  "Twitter Article Quest": "Twitter Article Quest",
+  "More Quests Soon": "More Quests Soon"
 }

@@ -166,9 +166,11 @@ const loadCommunityInfo = async (pid) => {
     console.error('Error fetching data:', error)
   }
 }
+const taskTypes = [t('Twitter Space Quest'), t('Promotion Quest'), t('Invitation Quest'),t('Try Our Product Quest'),t('Thread Quest'),t('Twitter Article Quest')]
+const taskType = ref()
 let taskListIsEmpty = $ref(true)
 onMounted(async () => {
-  await getAllTasks('GetAllTasks')
+  // await getAllTasks('GetAllTasks')
   if(Array.isArray(respArray) && respArray.length){
     taskListIsEmpty = false
   }
@@ -286,10 +288,13 @@ onMounted(async () => {
                 <div class="flex items-center justify-center">
                   <span>{{ $t('Nothing here,click to start your first public quest.') }}</span>
                 </div>
-                <div>
-                  <UButton icon="ic:baseline-add-circle-outline" color="white" variant="solid" size="lg" @click="openModal">
-                    {{ $t("Start a Public Quest") }}
-                  </UButton>
+                <div class="flex justify-between items-center">
+                  <div class="mr-3"><USelect v-model="taskType" :placeholder="$t('More Quests Soon')" :options="taskTypes" size="lg"/></div>
+                  <div>
+                    <UButton icon="ic:baseline-add-circle-outline" color="white" variant="solid" size="lg" @click="openModal">
+                      {{ $t("Start a Public Quest") }}
+                    </UButton>
+                  </div>
                 </div>
               </div>
             </template>
