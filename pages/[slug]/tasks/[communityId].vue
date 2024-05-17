@@ -8,84 +8,14 @@ const { getCommunityInfo } = $(aocommunityStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 console.log('communityId = ' + communityId)
-const blog = await getAllTasks('GetAllTasks')
-const blogPosts = $computed(() => respArray)
 
-const blogPosts1 = [
-  {
-    id: 1,
-    name: 'Task 1',
-    image: 'https://picsum.photos/640/360',
-    description:
-      'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 2,
-    name: 'Task 2',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 3,
-    name: 'Task 3',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt DevTools v1.0 is out, generally available to all Nuxt projects!',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 4,
-    name: 'Task 4',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 5,
-    name: 'Task 5',
-    image: 'https://picsum.photos/640/360',
-    description:
-      'Nuxt 3.8 is out, bringing built-in DevTools, automatic Nuxt Image install, a new app...',
-    reward: '100 Token + 200 USDT',
-    builderNum: 1000,
-    status: '未开始',
-  },
-  {
-    id: 6,
-    name: 'Task 6',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-  {
-    id: 7,
-    name: 'Task 6',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5',
-    reward: '100 Token + 200 USDT',
-    builderNum: 100,
-    status: '未开始',
-  },
-]
-console.log('blogPosts = ' + blogPosts.builderNumber)
 const items = [
   {
-    label: t('Open Mission Area'),
+    label: t('Public Quests'),
     content: '',
   },
   {
-    label: t('Unopened mission area'),
+    label: t('Private Quests'),
     content: '',
   },
 ]
@@ -177,9 +107,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.endTime = selected.value.end.toLocaleString()
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
-  let isBegin = t('Not Begin')
+  let isBegin = t('Not Start')
   if (currentDate <= selected.value.end && currentDate >= selected.value.start) {
-    isBegin = t('In Progress')
+    isBegin = t('ing')
   } else if (currentDate > selected.value.end) {
     isBegin = t('End')
   }
@@ -198,72 +128,12 @@ const ranges = [
   { label: 'Last year', duration: { years: 1 } }
 ]
 
-// sider config
-const appConfig = useAppConfig()
-const { isHelpSlideoverOpen } = useDashboard()
-
 const slug = $computed(() => route.params.slug)
 
-const links = $computed(() => {
-  return [
-    {
-      id: 'home',
-      label: 'Home',
-      icon: 'i-heroicons-home',
-      to: `/${slug}/`,
-      tooltip: {
-        text: 'Home',
-        shortcuts: ['G', 'H'],
-      },
-    },
-    {
-      id: 'tasks',
-      label: 'Tasks',
-      icon: 'i-arcticons-x-twitter',
-      to: `/${slug}/tasks`,
-      badge: '4',
-      tooltip: {
-        text: 'Inbox',
-        shortcuts: ['G', 'I'],
-      },
-    },
-    {
-      id: 'inbox',
-      label: 'Inbox',
-      icon: 'i-heroicons-inbox',
-      to: `/${slug}/inbox`,
-      badge: '4',
-      tooltip: {
-        text: 'Inbox',
-        shortcuts: ['G', 'I'],
-      },
-    },
-    {
-      id: 'users',
-      label: 'Users',
-      icon: 'i-heroicons-user-group',
-      to: `/${slug}/users`,
-      tooltip: {
-        text: 'Users',
-        shortcuts: ['G', 'U'],
-      },
-    },
-    {
-      id: 'community-discovery',
-      label: 'Cmmunity-discovery',
-      icon: 'i-heroicons-user-group',
-      to: `/${slug}/discovery`,
-      tooltip: {
-        text: 'Community-discovery',
-        shortcuts: ['G', 'U'],
-      },
-    },
-  ]
-})
 const footerLinks = $computed(() => {
   return [
     {
-      label: t('Task Area'),
+      label: t('Quests Home'),
       icon: 'i-heroicons-plus',
       to: `/${slug}/tasks`,
     },
@@ -273,42 +143,13 @@ const footerLinks = $computed(() => {
       to: `/${slug}/settings/communityinfo`,
     },
     {
-      label: 'Chat Room',
+      label: 'Chatroom',
       icon: 'i-heroicons-plus',
       to: `/${slug}/chat`,
     },
   ]
 })
 
-const groups = [
-  {
-    key: 'links',
-    label: 'Go to',
-    commands: links.map((link) => ({ ...link, shortcuts: link.tooltip?.shortcuts })),
-  },
-  {
-    key: 'code',
-    label: 'Code',
-    commands: [
-      {
-        id: 'source',
-        label: 'View page source',
-        icon: 'i-simple-icons-github',
-        click: () => {
-          window.open(`https://github.com/nuxt-ui-pro/dashboard/blob/main/pages${route.path === '/' ? '/index' : route.path}.vue`, '_blank')
-        },
-      },
-    ],
-  },
-]
-
-const defaultColors = ref(
-  ['green', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet'].map((color) => ({
-    label: color,
-    chip: color,
-    click: () => (appConfig.ui.primary = color),
-  }))
-)
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
@@ -325,8 +166,13 @@ const loadCommunityInfo = async (pid) => {
     console.error('Error fetching data:', error)
   }
 }
-
+let taskListIsEmpty = $ref(true)
 onMounted(async () => {
+  await getAllTasks('GetAllTasks')
+  if(Array.isArray(respArray) && respArray.length){
+    taskListIsEmpty = false
+  }
+  console.log("taskIsEmpty = " + taskListIsEmpty)
   await loadCommunityInfo(route.params.communityId)
 })
 </script>
@@ -336,18 +182,18 @@ onMounted(async () => {
     <UDashboardSidebar>
       <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
       <div v-for="Info in communityInfoJson" :key="Info.uuid">
-        <div class="flex justify-between  my-3">
+        <div class="flex justify-between  my-3 items-center">
           <div class="text-3xl">{{ Info.name }}</div>
           <div>
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
-              {{ $t('Explore Detail') }}
+              {{ $t('View Details') }}
             </UButton>
           </div>
         </div>
 
         <UDivider />
-        
-        <div class="flex justify-between my-3 mt-5">
+
+        <div class="flex justify-between my-3 mt-5 items-center">
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
@@ -355,7 +201,7 @@ onMounted(async () => {
             </UBadge>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 items-center">
           <div>{{ $t('SocialOfCommunityDetail') }}</div>
           <div>
             <UButton variant="link">
@@ -364,23 +210,23 @@ onMounted(async () => {
             </UButton>
           </div>
         </div>
-        <div class="flex justify-between my-3 mt-10">
-          <div>{{ $t('TokenOfCommunityDetail') }}</div>
+        <div class="flex justify-between my-3 mt-10 items-center">
+          <div >{{ $t('TokenOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
               USDC
             </UBadge>
           </div>
         </div>
-        <div class="flex justify-between my-3">
-          <div>{{ $t('TransPlatOfCommunityDetail') }}</div>
+        <div class="flex justify-between my-3 items-center">
+          <div>{{ $t('Trading Support') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
               OKE
             </UBadge>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 items-center">
           <div>{{ $t('GithubOfCommunityDetail') }}</div>
           <div>
             <UButton to="www.github.com" variant="link">
@@ -389,7 +235,7 @@ onMounted(async () => {
             </UButton>
           </div>
         </div>
-        <div class="flex justify-between my-3">
+        <div class="flex justify-between my-3 items-center">
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
           <div>10</div>
         </div>
@@ -412,7 +258,7 @@ onMounted(async () => {
 
     </UDashboardSidebar>
   </UDashboardPanel>
-  
+
   <UDashboardPage>
     <UPage class="overflow-y-auto h-full w-full">
       <div class="   mx-10 mt-10  ">
@@ -422,17 +268,35 @@ onMounted(async () => {
           </div>
           <div class="flex">
             <div>
-              <UButton color="black" variant="solid" size="lg" @click="openModal">
-                {{ $t("Create Task") }}
+              <UButton color="white" variant="solid" size="lg" @click="openModal">
+                {{ $t("Start a Public Quest") }}
               </UButton>
             </div>
-            <div class="ml-3">
-              <UButton icon="i-heroicons-x-mark-20-solid" color="black" variant="solid" size="lg" />
-            </div>
+
           </div>
         </div>
+        <div v-if="taskListIsEmpty">
+          <UPricingCard
+              :title="$t('Nothing here,click to start your first public quest.')"
+              highlight
+              orientation="vertical"
+              align="bottom">
+            <template #description>
+              <div class="flex mt-10 justify-between items-center">
+                <div class="flex items-center justify-center">
+                  <span>{{ $t('Nothing here,click to start your first public quest.') }}</span>
+                </div>
+                <div>
+                  <UButton icon="ic:baseline-add-circle-outline" color="white" variant="solid" size="lg" @click="openModal">
+                    {{ $t("Start a Public Quest") }}
+                  </UButton>
+                </div>
+              </div>
+            </template>
+          </UPricingCard>
+        </div>
         <UBlogList orientation="horizontal">
-          <UBlogPost v-for="blogPost in blogPosts" :key="blogPost.id" :image="blogPost.image"
+          <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="blogPost.image"
             :description="blogPost.description">
             <template #title>
               <div class="flex justify-between ...">
@@ -450,7 +314,7 @@ onMounted(async () => {
                 <div class="flex justify-between ...">
                   <div>
                     <Text class="text-blue-300">
-                      {{ $t("Task Reward") }}:
+                      {{ $t("Bounty") }}:
                     </Text>
                   </div>
                   <div>
@@ -462,7 +326,7 @@ onMounted(async () => {
                 <div class="flex justify-between ...">
                   <div>
                     <Text class="text-blue-300">
-                      {{ $t("Number participated") }}:
+                      {{ $t("builders now") }}:
                     </Text>
                   </div>
                   <div>
@@ -474,7 +338,7 @@ onMounted(async () => {
               </div>
             </template>
             <UButton to="/signup/detail-task/" class="absolute right-0" color="primary" variant="outline">
-              {{ $t("Explor Detail") }}
+              {{ $t("View Details") }}
             </UButton>
           </UBlogPost>
         </UBlogList>
@@ -485,18 +349,18 @@ onMounted(async () => {
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              {{ $t("Create Task") }}
+              {{ $t("Start a Public Quest") }}
             </h3>
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
               @click="isOpen = false" />
           </div>
         </template>
         <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
-          <UFormGroup name="taskLogo" :label="$t('Task Logo')">
+          <UFormGroup name="taskLogo" :label="$t('Banner')">
             <UInput v-model="state.taskLogo" type="file" size="sm" />
           </UFormGroup>
 
-          <UFormGroup name="taskName" :label="$t('Task Name')">
+          <UFormGroup name="taskName" :label="$t('Name of Quest')">
             <UInput v-model="state.taskName" placeholder="name" />
           </UFormGroup>
 
@@ -504,11 +368,11 @@ onMounted(async () => {
             <UTextarea v-model="state.taskInfo" />
           </UFormGroup>
 
-          <UFormGroup name="taskRule" :label="$t('Task Rule')">
+          <UFormGroup name="taskRule" :label="$t('Rules of the Quest')">
             <UTextarea v-model="state.taskRule" placeholder="已自动生成任务规则" />
           </UFormGroup>
 
-          <UFormGroup name="textarea" :label="$t('Task Reward')">
+          <UFormGroup name="textarea" :label="$t('Bounty')">
             <div class="flex justify-between items-center">
               <UInput v-model="state.tokenNumber" :placeholder="$t('Token Number')" />
 
@@ -517,7 +381,7 @@ onMounted(async () => {
               <UInputMenu v-model="state.tokenChain" :placeholder="$t('Chain Type')" :options="chainOptions" />
             </div>
           </UFormGroup>
-          <UFormGroup name="rewardTotal" :label="$t('Total Reward')">
+          <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
             <UInput v-model="state.rewardTotal" :placeholder="$t('Task Introduction')" />
           </UFormGroup>
           <UFormGroup name="textarea" :label="$t('Task Period')">
@@ -543,7 +407,7 @@ onMounted(async () => {
             </div>
           </UFormGroup>
           <UButton type="submit">
-            Submit
+            {{ $t('Post the Quest') }}
           </UButton>
           <UButton variant="outline" class="ml-2" @click="form.clear()">
             Clear
