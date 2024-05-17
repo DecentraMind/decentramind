@@ -34,27 +34,27 @@ const columns = [
   },
   {
     key: 'wallet',
-    label: t('Wallet Address'),
+    label: t('Wallet'),
   },
   {
     key: 'brandEffect',
-    label: t('Brand Effect'),
+    label: t('Brand'),
   },
   {
     key: 'inviteFriends',
-    label: t('Invite Friends'),
+    label: t('Friends'),
   },
   {
     key: 'audience',
-    label: t('Audience'),
+    label: t('Popularity'),
   },
   {
     key: 'url',
-    label: t('Space Url'),
+    label: t('URL'),
   },
   {
     key: 'score',
-    label: t('Score'),
+    label: t('Total Score'),
   },
 ]
 
@@ -170,7 +170,7 @@ function joinTask() {
 
 <template>
   <UDashboardPage>
-    <UPage>
+    <UPage class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
@@ -207,7 +207,7 @@ function joinTask() {
               <div class="flex ...">
                 <div class="flex-none w-60">
                   <Text class=" text-blue-300">
-                    {{ $t("Task Period") }}:
+                    {{ $t("Time") }}:
                   </Text>
                 </div>
                 <div>
@@ -219,7 +219,7 @@ function joinTask() {
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
                   <Text class="text-blue-300">
-                    {{ $t("Task Reward") }}:
+                    {{ $t("Bounty") }}:
                   </Text>
                 </div>
                 <div>
@@ -231,7 +231,7 @@ function joinTask() {
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
                   <Text class=" text-blue-300">
-                    {{ $t("Total Reward") }}:
+                    {{ $t("Total Chances") }}:
                   </Text>
                 </div>
                 <div>
@@ -243,7 +243,7 @@ function joinTask() {
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
                   <Text class="text-blue-300">
-                    {{ $t("Number participated") }}:
+                    {{ $t("builders now") }}:
                   </Text>
                 </div>
                 <div>
@@ -255,7 +255,7 @@ function joinTask() {
               <div class="flex justify-start">
                 <div class="flex-none w-60 ">
                   <Text class="text-blue-300">
-                    {{ $t("Task Rule") }}:
+                    {{ $t("Rules of the Quest") }}:
                   </Text>
                 </div>
                 <div>
@@ -266,16 +266,47 @@ function joinTask() {
               </div>
             </div>
             <div>
-              <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-                <Text class=" mr-8 text-blue-300">
-                  {{ $t("Submission Rank") }}:
-                </Text>
-                <UInput v-model="q" placeholder="Filter..." />
+              <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex ">
+                  <Text class=" mr-8 text-blue-300">
+                    {{ $t("Quests Form") }}:
+                  </Text>
+                  <UInput v-model="q" placeholder="Filter..." />
+                </div>
+                <div v-if="switchDisable()" class="flex justify-center ">
+                  <UButton :label="$t('Join Task')" @click="openModal" />
+                </div>
               </div>
               <UTable :rows="filteredRows" :columns="columns" />
             </div>
             <div v-if="switchDisable()" class="flex justify-center my-8">
-              <UButton :label="$t('Join Task')" @click="openModal" />
+              <UButton :label="$t('Send Bounty')"  />
+            </div>
+            <div class="flex ...">
+              <div class="flex-none w-60">
+                <Text class=" text-blue-300">
+                  {{ $t("Rules of Judgment") }}:
+                </Text>
+              </div>
+              <div>
+                <Text class="text-blue-300">
+                  <p> 1 Total score is 100 including Brand 10%, Friends 40%, Audience 50% </p>
+
+                  <p> 2 Brand is decided by your avatar,  change it you’ll get 10, not change get 0 </p>
+
+                  <p> 3 Friends is decided by the amount of new friends you invited </p>
+
+                  <p> 4 Popularity is decided by the amount of audience in your Twitter Space </p>
+
+                  <p> 5 The person with the highest data gets the maximum scores including Brand, Friends and Popularity </p>
+
+                  <p> 6 Everyone will have a total score, it decide the amount of your bounty </p>
+
+                  <p> 7 If the total chances are 20 but you are in 21st, sorry you can get nothing </p>
+
+                  <p> 8 You can only participate this Quests once </p>
+                </Text>
+              </div>
             </div>
           </template>
         </UBlogPost>
@@ -299,10 +330,10 @@ function joinTask() {
         </template>
         <div v-if="!isSettlementOpen" class="space-y-2">
           <p>
-            {{ $t("Thank u for your support.Please follow the rules of the quest and fill the URL of your space to the firm") }}
+            {{ $t("We appreciate your support,Please follow the rules of the quest and submit the URL back to this page") }}
           </p>
           <UButton @click="onClick">
-            I know!
+            {{ $t('I have read all rules') }}
           </UButton>
         </div>
         <div v-if="isSettlementOpen">

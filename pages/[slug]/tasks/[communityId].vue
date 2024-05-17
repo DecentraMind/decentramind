@@ -11,11 +11,11 @@ console.log('communityId = ' + communityId)
 
 const items = [
   {
-    label: t('Open Mission Area'),
+    label: t('Public Quests'),
     content: '',
   },
   {
-    label: t('Unopened mission area'),
+    label: t('Private Quests'),
     content: '',
   },
 ]
@@ -107,9 +107,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.endTime = selected.value.end.toLocaleString()
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
-  let isBegin = t('Not Begin')
+  let isBegin = t('Not Start')
   if (currentDate <= selected.value.end && currentDate >= selected.value.start) {
-    isBegin = t('In Progress')
+    isBegin = t('ing')
   } else if (currentDate > selected.value.end) {
     isBegin = t('End')
   }
@@ -133,7 +133,7 @@ const slug = $computed(() => route.params.slug)
 const footerLinks = $computed(() => {
   return [
     {
-      label: t('Task Area'),
+      label: t('Quests Home'),
       icon: 'i-heroicons-plus',
       to: `/${slug}/tasks`,
     },
@@ -143,7 +143,7 @@ const footerLinks = $computed(() => {
       to: `/${slug}/settings/communityinfo`,
     },
     {
-      label: 'Chat Room',
+      label: 'Chatroom',
       icon: 'i-heroicons-plus',
       to: `/${slug}/chat`,
     },
@@ -166,9 +166,13 @@ const loadCommunityInfo = async (pid) => {
     console.error('Error fetching data:', error)
   }
 }
-
+let taskListIsEmpty = $ref(true)
 onMounted(async () => {
   await getAllTasks('GetAllTasks')
+  if(Array.isArray(respArray) && respArray.length){
+    taskListIsEmpty = false
+  }
+  console.log("taskIsEmpty = " + taskListIsEmpty)
   await loadCommunityInfo(route.params.communityId)
 })
 </script>
@@ -182,7 +186,7 @@ onMounted(async () => {
           <div class="text-3xl">{{ Info.name }}</div>
           <div>
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
-              {{ $t('Explore Detail') }}
+              {{ $t('View Details') }}
             </UButton>
           </div>
         </div>
@@ -215,7 +219,7 @@ onMounted(async () => {
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">
-          <div>{{ $t('TransPlatOfCommunityDetail') }}</div>
+          <div>{{ $t('Trading Support') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
               OKE
@@ -265,11 +269,31 @@ onMounted(async () => {
           <div class="flex">
             <div>
               <UButton color="white" variant="solid" size="lg" @click="openModal">
-                {{ $t("Create Task") }}
+                {{ $t("Start a Public Quest") }}
               </UButton>
             </div>
 
           </div>
+        </div>
+        <div v-if="taskListIsEmpty">
+          <UPricingCard
+              :title="$t('Nothing here,click to start your first public quest.')"
+              highlight
+              orientation="vertical"
+              align="bottom">
+            <template #description>
+              <div class="flex mt-10 justify-between items-center">
+                <div class="flex items-center justify-center">
+                  <span>{{ $t('Nothing here,click to start your first public quest.') }}</span>
+                </div>
+                <div>
+                  <UButton icon="ic:baseline-add-circle-outline" color="white" variant="solid" size="lg" @click="openModal">
+                    {{ $t("Start a Public Quest") }}
+                  </UButton>
+                </div>
+              </div>
+            </template>
+          </UPricingCard>
         </div>
         <UBlogList orientation="horizontal">
           <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="blogPost.image"
@@ -290,7 +314,7 @@ onMounted(async () => {
                 <div class="flex justify-between ...">
                   <div>
                     <Text class="text-blue-300">
-                      {{ $t("Task Reward") }}:
+                      {{ $t("Bounty") }}:
                     </Text>
                   </div>
                   <div>
@@ -302,7 +326,7 @@ onMounted(async () => {
                 <div class="flex justify-between ...">
                   <div>
                     <Text class="text-blue-300">
-                      {{ $t("Number participated") }}:
+                      {{ $t("builders now") }}:
                     </Text>
                   </div>
                   <div>
@@ -314,7 +338,7 @@ onMounted(async () => {
               </div>
             </template>
             <UButton to="/signup/detail-task/" class="absolute right-0" color="primary" variant="outline">
-              {{ $t("Explor Detail") }}
+              {{ $t("View Details") }}
             </UButton>
           </UBlogPost>
         </UBlogList>
@@ -325,18 +349,18 @@ onMounted(async () => {
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              {{ $t("Create Task") }}
+              {{ $t("Start a Public Quest") }}
             </h3>
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
               @click="isOpen = false" />
           </div>
         </template>
         <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
-          <UFormGroup name="taskLogo" :label="$t('Task Logo')">
+          <UFormGroup name="taskLogo" :label="$t('Banner')">
             <UInput v-model="state.taskLogo" type="file" size="sm" />
           </UFormGroup>
 
-          <UFormGroup name="taskName" :label="$t('Task Name')">
+          <UFormGroup name="taskName" :label="$t('Name of Quest')">
             <UInput v-model="state.taskName" placeholder="name" />
           </UFormGroup>
 
@@ -344,11 +368,11 @@ onMounted(async () => {
             <UTextarea v-model="state.taskInfo" />
           </UFormGroup>
 
-          <UFormGroup name="taskRule" :label="$t('Task Rule')">
+          <UFormGroup name="taskRule" :label="$t('Rules of the Quest')">
             <UTextarea v-model="state.taskRule" placeholder="已自动生成任务规则" />
           </UFormGroup>
 
-          <UFormGroup name="textarea" :label="$t('Task Reward')">
+          <UFormGroup name="textarea" :label="$t('Bounty')">
             <div class="flex justify-between items-center">
               <UInput v-model="state.tokenNumber" :placeholder="$t('Token Number')" />
 
@@ -357,7 +381,7 @@ onMounted(async () => {
               <UInputMenu v-model="state.tokenChain" :placeholder="$t('Chain Type')" :options="chainOptions" />
             </div>
           </UFormGroup>
-          <UFormGroup name="rewardTotal" :label="$t('Total Reward')">
+          <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
             <UInput v-model="state.rewardTotal" :placeholder="$t('Task Introduction')" />
           </UFormGroup>
           <UFormGroup name="textarea" :label="$t('Task Period')">
@@ -383,7 +407,7 @@ onMounted(async () => {
             </div>
           </UFormGroup>
           <UButton type="submit">
-            Submit
+            {{ $t('Post the Quest') }}
           </UButton>
           <UButton variant="outline" class="ml-2" @click="form.clear()">
             Clear
