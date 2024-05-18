@@ -12,17 +12,21 @@ const { registInfo } = $(aocommunityStore())
 const navigation = inject<Ref<NavItem[]>>("navigation", ref([]));
 
 const links = [
-  {
-    label: "Discovery",
-    to: "/discovery",
-  },
   // {
-  //   label: "Docs",
-  //   to: "/docs",
+  //   label: "Discovery",
+  //   to: "/discovery",
   // },
   {
-    label: "Pricing",
-    to: "/pricing",
+    label: "Docs",
+    to: "/pages/discovery",
+  },
+  // {
+  //   label: "Pricing",
+  //   to: "/pricing",
+  // },
+  {
+    label: "Twitter",
+    to: "https://twitter.com/decentramindio",
   },
   // {
   //   label: "Blog",
@@ -47,24 +51,24 @@ onMounted(init)
 <template>
   <UHeader :links="links">
     <template #logo>Decentral Mind
-      <UBadge label="Beta" variant="subtle" class="mb-0.5" />
+<!--      <UBadge label="Beta" variant="subtle" class="mb-0.5" />-->
     </template>
 
-    <template #right>
-      <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
-        <UButton color="white" block>
-          {{ shortAddress(address) }}
-        </UButton>
-        <template #panel>
-          <UButton color="red" @click="doLogout">
-            Disconnect
-          </UButton>
-        </template>
-      </UPopover>
-      <UButton v-else color="white" @click="doLogin">
-        Connect Wallet
-      </UButton>
-    </template>
+<!--    <template #right>-->
+<!--      <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">-->
+<!--        <UButton color="white" block>-->
+<!--          {{ shortAddress(address) }}-->
+<!--        </UButton>-->
+<!--        <template #panel>-->
+<!--          <UButton color="red" @click="doLogout">-->
+<!--            Disconnect-->
+<!--          </UButton>-->
+<!--        </template>-->
+<!--      </UPopover>-->
+<!--      <UButton v-else color="white" @click="doLogin">-->
+<!--        Connect Wallet-->
+<!--      </UButton>-->
+<!--    </template>-->
 
     <template #panel>
       <UNavigationTree :links="mapContentNavigation(navigation)" default-open />

@@ -170,7 +170,7 @@ const taskTypes = [t('Twitter Space Quest'), t('Promotion Quest'), t('Invitation
 const taskType = ref()
 let taskListIsEmpty = $ref(true)
 onMounted(async () => {
-  // await getAllTasks('GetAllTasks')
+  await getAllTasks('GetAllTasks')
   if(Array.isArray(respArray) && respArray.length){
     taskListIsEmpty = false
   }
