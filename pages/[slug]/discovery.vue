@@ -98,7 +98,7 @@ const test = (newLocale) => {
       </div>
       <div class=" mx-auto w-full">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
-          <UBlogPost v-for="community in communityList" :key="community.uuid" image="https://picsum.photos/640/360" :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`">
+          <UBlogPost v-for="community in communityList" :key="community.uuid" :image="`/community/${community.banner}.png`" :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`">
             <template #title>
               <div class="flex items-center">
                 <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="md" />

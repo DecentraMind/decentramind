@@ -12,6 +12,7 @@ const options = [
 let isCreated = $ref(false)
 
 let state = $ref({
+  banner: undefined,
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
@@ -82,8 +83,9 @@ const CreateCommunity = async () => {
     }
   ]
   const jsonString = JSON.stringify(communitySubmit);
-
-  createCommunity = await addCommunity(state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
+  console.log("---------------------------------")
+  console.log(state.banner)
+  createCommunity = await addCommunity(state.banner, state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
   isCreated = true
   isLoading = false
 }
@@ -106,7 +108,27 @@ const bannerupload = () => {
 }
 
 
+const items = [
+  '/community/imageone.png',
+  '/community/imagetwo.png',
+  '/community/imagethree.png'
+]
+const currentIndex = $ref(0); // 用于存储当前选中的索引
 
+const updateBanner = (index: number) => {
+  console.log('-----------------bbbbbbbbbbbbbbbb')
+  if (index === 1) {
+    state.banner = 'imageone';
+  } else if (index === 2) {
+    state.banner = 'imagetwo';
+  } else if (index === 3) {
+    state.banner = 'imagethree'
+  }
+  console.log(state.banner)
+};
+const test = ()=> {
+  console.log(state.banner)
+}
 </script>
 
 <template>
@@ -131,10 +153,37 @@ const bannerupload = () => {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.banner') }}</div>
           </template>
-          <UButton :label="`${$t('community.banner.submit')}`" size="xl" square variant="outline"
-            class="flex justify-center w-[420px] h-[80px]" @click="bannerupload" />
-          <UInput id="bannerupload" v-model="state.inputMenu" type="file" size="sm" class="opacity-0"
-            @change="handleUp" />
+          <UCarousel
+            v-model="currentIndex"
+            :items="items"
+            :ui="{
+              item: 'basis-full',
+              container: 'rounded-lg',
+              indicators: {
+                wrapper: 'relative bottom-0 mt-4'
+              }
+            }"
+            indicators
+            class="w-64 mx-auto"
+          >
+            <template #default="{ item }">
+              <img :src="item" class="w-full" draggable="false">
+            </template>
+
+            <template #indicator="{ onClick, page, active }">
+              <UButton 
+                :label="String(page)" 
+                :variant="active ? 'solid' : 'outline'" 
+                size="2xs" 
+                class="rounded-full min-w-6 justify-center" 
+                @click="() => {
+                  currentIndex = page; // 更新当前索引
+                  updateBanner(page)
+                  onClick(page); // 触发页面点击事件
+                }"
+              />
+            </template>
+          </UCarousel>
         </UFormGroup>
 
         <UFormGroup name="Name" class="flex flex-row items-center space-x-1">

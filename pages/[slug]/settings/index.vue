@@ -35,6 +35,7 @@ const saveInfo = async () => {
 onMounted(async () => {
   try {
     info = await getInfo();
+    console.log("--",info)
     const jsonData = info.Messages[0].Data;
     const jsonObjects = jsonData.match(/\{.*?\}/g);
     infoJson = jsonObjects.map(item => JSON.parse(item));

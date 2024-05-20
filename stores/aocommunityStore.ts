@@ -13,7 +13,7 @@ import {
 const { address } = $(aoStore())
 
 export const aocommunityStore = defineStore('aocommunityStore', () => {
-  const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
+  const processID = 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU'
   let communityList = $ref({})
   let joincommunityList = $ref({})
   let isLoading = $ref(false)
@@ -35,7 +35,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
   //创建社区方法
-  const addCommunity = async (Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
+  const addCommunity = async (Banner, Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
     if (isLoading) return
     isLoading = true
 
@@ -43,6 +43,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
     let communitySubmitList = [
       {
+        "banner": Banner,
         "name": Name,
         "desc": Inbro,
         "creater": address,
@@ -69,8 +70,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //获取社区列表方法
   const getCommunitylist = async () => {
-    if (isLoading) return
-    isLoading = true
+    //if (isLoading) return
+    //isLoading = true
     if (address !== '') {
       let result = await dryrun({
         process: processID,
@@ -103,6 +104,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       isLoading = false
       return result
     }
+    isLoading = true
 
   }
 
@@ -181,9 +183,10 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //获取个人信息
   const getInfo = async () => {
+    console.log(isLoading)
     if (isLoading) return
     isLoading = true
-
+    console.log('------')
     let Info = await dryrun({
       process: processID,
       tags: [
