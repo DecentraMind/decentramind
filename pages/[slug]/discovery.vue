@@ -65,22 +65,25 @@ const test = (newLocale) => {
   <div class="min-h-screen bg-red-1900 w-full">
     <UDashboardNavbar title="Home">
       <template #right>
-        <NuxtLink :to="`/${slug}/mytask`">
-          <UButton color="white">我的任务台</UButton>
-        </NuxtLink>
-        <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
-          <UButton color="white" block>
-            {{ shortAddress(address) }}
-          </UButton>
-          <template #panel>
-            <UButton color="red" @click="doLogout">
-              Disconnect
+        <UBadge color="white">
+          <NuxtLink :to="`/${slug}/mytask`">
+            <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
+          </NuxtLink>
+          |
+          <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
+            <UButton variant="ghost" color="white" block>
+              {{ shortAddress(address) }}
             </UButton>
-          </template>
-        </UPopover>
-        <UButton v-else color="white" @click="doLogin">
-          Connect Wallet
-        </UButton>
+            <template #panel>
+              <UButton color="red" @click="doLogout">
+                Disconnect
+              </UButton>
+            </template>
+          </UPopover>
+          <UButton v-else variant="ghost" color="white" @click="doLogin">
+            Connect Wallet
+          </UButton>
+        </UBadge>
         <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>
