@@ -8,7 +8,10 @@ const options = [
   { label: 'OKE', value: 'OKE' },
   { label: 'Binance', value: 'Binance' },
 ]
-
+const supportSelect = ['OKE', 'Binance']
+const supportSelected = ref([])
+const tokenselect = ['USDC', 'AR']
+const tokenselected = ref([])
 let isCreated = $ref(false)
 
 let state = $ref({
@@ -23,6 +26,8 @@ let state = $ref({
   showTwitter: undefined,
   Whitebook: undefined,
   showWhitebook: undefined,
+  Github: undefined,
+  showGithub: undefined,
   Buildernum: undefined,
   showBuildernum: undefined,
   Allreward: undefined,
@@ -233,13 +238,23 @@ const test = ()=> {
             <Text>{{ $t('show') }}</Text>
           </div>
         </UFormGroup>
+        
+        <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class="text-sky-400 w-[300px]">Github</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Github" placeholder="URL" />
+            <UToggle v-model="state.showGithub" />
+            <Text>{{ $t('show') }}</Text>
+          </div>
+        </UFormGroup>
 
         <UFormGroup name="Buildernum" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.buildnum') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Buildernum" :placeholder="`${$t('community.buildnum.label')}`" />
             <UToggle v-model="state.showBuildernum" />
             <Text>{{ $t('show') }}</Text>
           </div>
@@ -250,7 +265,6 @@ const test = ()=> {
             <div class="text-sky-400 w-[300px]">{{ $t('community.allreward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Allreward" :placeholder="`${$t('community.buildnum.label')}`" />
             <UToggle v-model="state.showAllreward" />
             <Text>{{ $t('show') }}</Text>
           </div>
@@ -261,7 +275,7 @@ const test = ()=> {
             <div class="text-sky-400 w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Typereward" :placeholder="`${$t('community.buildnum.label')}`" />
+            <USelectMenu v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
             <UToggle v-model="state.showTypereward" />
             <Text>{{ $t('show') }}</Text>
           </div>
@@ -314,7 +328,7 @@ const test = ()=> {
             <template #label>
               <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.platforms') }}</div>
             </template>
-            <USelect v-model="state.TradePlatform" placeholder="OKE" :options="options" />
+            <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select people" />
           </UFormGroup>
         </div>
 
