@@ -104,7 +104,7 @@ const test = (newLocale) => {
           <UBlogPost v-for="community in communityList" :key="community.uuid" :image="`/community/${community.banner}.png`" :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`">
             <template #title>
               <div class="flex items-center">
-                <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="md" />
+                <UAvatar :src="community.logo" alt="Avatar" size="md" />
                 <Text class="mx-3 text-2xl">
                   {{ community.name }}
                 </Text>

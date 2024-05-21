@@ -35,7 +35,26 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
   //创建社区方法
-  const addCommunity = async (Banner, Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
+  const addCommunity = async (
+    logo,
+    Banner,
+    Name,
+    Inbro,
+    Website,
+    ShowWebsite,
+    Twitter,
+    ShowTwitter,
+    Whitebook,
+    ShowWhitebook,
+    Github,
+    ShowGithub,
+    ShowBuildnum,
+    ShowAllreward,
+    Bounty,
+    ShowBounty,
+    Ispublished,
+    Support
+  ) => {
     if (isLoading) return
     isLoading = true
 
@@ -43,19 +62,31 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
     let communitySubmitList = [
       {
+        "logo": logo,
         "banner": Banner,
         "name": Name,
         "desc": Inbro,
         "creater": address,
-        "twitter": Twitter,
         "website": Website,
+        "showwebsite": ShowWebsite,
+        "twitter": Twitter,
+        "showtwitter": ShowTwitter,
         "whitebook": Whitebook,
-        "allreward": Allreward,
+        "showwhitebook": ShowWhitebook,
+        "github": Github,
+        "showgithub": ShowGithub,
+        "showbuildnum": ShowBuildnum,
+        "showallreward": ShowAllreward,
+        "bounty": Bounty,
+        "showbounty": ShowBounty,
+        "ispublished": Ispublished,
+        "support": Support,
         "uuid": uuid,
       }
     ]
     const jsonString = JSON.stringify(communitySubmitList);
-
+    console.log("---------nonono")
+    console.log(jsonString)
     let createCommunity = await message({
       process: processID,
       tags: [

@@ -17,14 +17,14 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
     -- 检查是否已经存在 joined 字段
     if usercommunity[newColumn].joined then
       -- 如果 joined 字段已存在，则在其末尾追加 "xDao"
-      local isDuplicate = false       -- 标志位，表示是否存在重复数据
+      local isDuplicate = false -- 标志位，表示是否存在重复数据
 
       -- 遍历 usercommunity[newColumn].joined
       for _, data in ipairs(usercommunity[newColumn].joined) do
         if data == msg.Data then
           print("joined--")
           isDuplicate = true
-          break           -- 如果找到重复数据，则跳出循环
+          break -- 如果找到重复数据，则跳出循环
         end
       end
 
@@ -58,14 +58,14 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
   -- 检查是否已经存在 joined 字段
   if usercommunity[newColumn].joined then
     -- 如果 joined 字段已存在，则在其末尾追加 "xDao"
-    local isDuplicate = false     -- 标志位，表示是否存在重复数据
+    local isDuplicate = false -- 标志位，表示是否存在重复数据
 
     -- 遍历 usercommunity[newColumn].joined
     for _, data in ipairs(usercommunity[newColumn].joined) do
       if data == msg.Data then
         print("joined--")
         isDuplicate = true
-        break         -- 如果找到重复数据，则跳出循环
+        break -- 如果找到重复数据，则跳出循环
       end
     end
 
@@ -88,6 +88,8 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
     local dCom = json.decode(communityItem)
     local itemCopy = {
       uuid = dCom[1].uuid,
+      logo = dCom[1].logo,
+      banner = dCom[1].banner,
       name = dCom[1].name,
       desc = dCom[1].desc,
       twitter = dCom[1].twitter,
@@ -95,20 +97,20 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       whitebook = dCom[1].whitebook,
       allreward = dCom[1].allreward
     }
-    itemCopy.isJoined = false     -- 默认 isJoined 为 false
+    itemCopy.isJoined = false -- 默认 isJoined 为 false
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress].joined then
         if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
           for _, userCommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
             if dCom[1].uuid == userCommunityItem then
-              itemCopy.isJoined = true               -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
+              itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
               break
             end
           end
         end
       end
     end
-    table.insert(communityCopy, itemCopy)     -- 将复制后的项目添加到 communityCopy 数组中
+    table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
   end
   print(communityCopy)
   -- 需要将table转成json字符串传回
@@ -126,13 +128,15 @@ Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "community
     if msg.Tags.uuid == dCom[1].uuid then
       local itemCopy = {
         uuid = dCom[1].uuid,
+        logo = dCom[1].logo,
+        banner = dCom[1].banner,
         name = dCom[1].name,
         desc = dCom[1].desc,
         website = dCom[1].website,
         whitebook = dCom[1].whitebook,
         allreward = dCom[1].allreward
       }
-      table.insert(communityCopy, itemCopy)       -- 将复制后的项目添加到 communityCopy 数组中
+      table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
     end
   end
   -- 需要将table转成json字符串传回
@@ -152,6 +156,8 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
           print("goods")
           local itemCopy = {
             uuid = dCom[1].uuid,
+            logo = dCom[1].logo,
+            banner = dCom[1].banner,
             name = dCom[1].name,
             desc = dCom[1].desc,
             twitter = dCom[1].twitter,
@@ -159,7 +165,7 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
             whitebook = dCom[1].whitebook,
             allreward = dCom[1].allreward
           }
-          table.insert(communityCopy, itemCopy)           -- 将复制后的项目添加到 communityCopy 数组中
+          table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
           break
         end
       end
@@ -235,18 +241,18 @@ Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo")
 end)
 -- handlers方法测试功能，用来测试这里得方法以及查看表内容等等。。
 Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTest"), function(msg)
-  local pretty = require(".pretty")
+  --local pretty = require(".pretty")
 
-  local formatted = pretty.tprint(community, 2)
+  --local formatted = pretty.tprint(community, 2)
 
   -- prints the formatted table structure
-  for _, i in pairs(formatted) do
-    print(i)
-  end
+  --for _, i in pairs(formatted) do
+  --  print(i)
+  --end
 
-  -- for k, _ in pairs(community) do
-  --    community[k] = nil
-  -- end
+  for k, _ in pairs(community) do
+    community[k] = nil
+  end
 
   -- for k, _ in pairs(usercommunity) do
   --    usercommunity[k] = nil

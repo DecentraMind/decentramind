@@ -101,29 +101,30 @@ const footerLinks = $computed(() => {
 
 <template>
   <div class="flex">
-    <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>
+    <UDashboardPanel :width="350" collapsible>
       <UDashboardSidebar>
-        <UColorModeImage :light="light" :dark="dark" />
-        <div>
-          <div class="flex justify-between  my-3">
-            <div>{{ communityInfo.communityName }}</div>
+        <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
+        <div v-for="Info in communityInfoJson" :key="Info.uuid">
+          <div class="flex justify-between  my-3 items-center">
+            <div class="text-3xl">{{ Info.name }}</div>
             <div>
-              <UButton color="black" variant="solid" :to="`/${slug}/community-details/${communityId}`">
-                {{ $t('Explore Detail') }}
+              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
+                {{ $t('View Details') }}
               </UButton>
             </div>
           </div>
 
           <UDivider />
-          <div class="flex justify-between  my-3">
+
+          <div class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
             <div>
               <UBadge color="primary" variant="soft" size="lg">
-                {{ communityInfo.website }}
+                {{ Info.website }}
               </UBadge>
             </div>
           </div>
-          <div class="flex justify-between my-3">
+          <div class="flex justify-between my-3 items-center">
             <div>{{ $t('SocialOfCommunityDetail') }}</div>
             <div>
               <UButton variant="link">
@@ -132,23 +133,23 @@ const footerLinks = $computed(() => {
               </UButton>
             </div>
           </div>
-          <div class="flex justify-between my-3">
-            <div>{{ $t('TokenOfCommunityDetail') }}</div>
+          <div class="flex justify-between my-3 mt-10 items-center">
+            <div >{{ $t('TokenOfCommunityDetail') }}</div>
             <div>
               <UBadge color="primary" variant="soft" size="lg">
-                {{ communityInfo.token }}
+                USDC
               </UBadge>
             </div>
           </div>
-          <div class="flex justify-between my-3">
-            <div>{{ $t('TransPlatOfCommunityDetail') }}</div>
+          <div class="flex justify-between my-3 items-center">
+            <div>{{ $t('Trading Support') }}</div>
             <div>
               <UBadge color="primary" variant="soft" size="lg">
-                {{ communityInfo.platform }}
+                OKE
               </UBadge>
             </div>
           </div>
-          <div class="flex justify-between my-3">
+          <div class="flex justify-between my-3 items-center">
             <div>{{ $t('GithubOfCommunityDetail') }}</div>
             <div>
               <UButton to="www.github.com" variant="link">
@@ -157,9 +158,9 @@ const footerLinks = $computed(() => {
               </UButton>
             </div>
           </div>
-          <div class="flex justify-between my-3">
+          <div class="flex justify-between my-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-            <div>{{ communityInfo.builderNumber }}</div>
+            <div>10</div>
           </div>
         </div>
         <UDivider />
@@ -172,11 +173,12 @@ const footerLinks = $computed(() => {
         <UDashboardSidebarLinks :links="footerLinks" />
 
         <UDivider class="bottom-0 sticky" />
-
+          <!--
         <template #footer>
-          <!-- ~/components/UserDropdown.vue -->
           <UserDropdown />
         </template>
+        -->
+
       </UDashboardSidebar>
     </UDashboardPanel>
     <UPage>

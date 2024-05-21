@@ -9,38 +9,39 @@ const options = [
   { label: 'Binance', value: 'Binance' },
 ]
 const supportSelect = ['OKE', 'Binance']
-const supportSelected = ref([])
+const supportSelected = $ref([])
 const tokenselect = ['USDC', 'AR']
-const tokenselected = ref([])
+const tokenselected = $ref([])
 let isCreated = $ref(false)
 
 let state = $ref({
+  logobase64Data: undefined,
   banner: undefined,
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
   Inbro: undefined,
   Website: undefined,
-  showWebsite: undefined,
+  showWebsite: false,
   Twitter: undefined,
-  showTwitter: undefined,
+  showTwitter: false,
   Whitebook: undefined,
-  showWhitebook: undefined,
+  showWhitebook: false,
   Github: undefined,
-  showGithub: undefined,
+  showGithub: false,
   Buildernum: undefined,
-  showBuildernum: undefined,
+  showBuildernum: false,
   Allreward: undefined,
-  showAllreward: undefined,
+  showAllreward: false,
   Typereward: undefined,
-  showTypereward: undefined,
+  showTypereward: false,
   showDetail: false,
-  isPublished: undefined,
+  isPublished: false,
   TokenName: undefined,
-  showTokenName: undefined,
+  showTokenName: false,
   isTradable: undefined,
   TradePlatform: undefined,
-  showAlltoken: undefined,
+  showAlltoken: false,
   Alltoken: undefined,
   Communitytoken: undefined,
   Teamtoken: undefined,
@@ -54,10 +55,12 @@ const schema = z.object({
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
   }),
+  /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
     return !isNaN(num) && num <= 100
   }, { message: 'Must be a valid number less than or equal to 20' }),
+  */
 })
 
 type Schema = z.infer<typeof schema>
@@ -90,21 +93,46 @@ const CreateCommunity = async () => {
   const jsonString = JSON.stringify(communitySubmit);
   console.log("---------------------------------")
   console.log(state.banner)
-  createCommunity = await addCommunity(state.banner, state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
+  createCommunity = await addCommunity(
+    state.logobase64Data, 
+    state.banner, 
+    state.Name, 
+    state.Inbro, 
+    state.Website, 
+    state.showWebsite,
+    state.Twitter, 
+    state.showTwitter,
+    state.Whitebook, 
+    state.showWhitebook,
+    state.Github,
+    state.showGithub,
+    state.showBuildernum, //builder人数
+    state.showAllreward, //所有总奖励
+    tokenselected, //选择的token类型
+    state.showTypereward, //奖励的token类型
+    state.isPublished, //是否有发行token
+    supportSelected
+  )
   isCreated = true
   isLoading = false
 }
 
 
-const handleUp = async (value: any) => {
-  console.log("goods")
+const handleUp = (event) => {
+  const file = event.target?.files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      state.logobase64Data = e.target.result
+      console.log("Base64 Data: ", state.logobase64Data)
+    }
+    reader.readAsDataURL(file)
+  }
 }
 
 const logoupload = () => {
   const input = document.querySelector('#logoupload') as any
-  console.log(state.input)
   input.click()
-  console.log(state.input)
 }
 
 const bannerupload = () => {
@@ -132,7 +160,7 @@ const updateBanner = (index: number) => {
   console.log(state.banner)
 };
 const test = ()=> {
-  console.log(state.banner)
+  console.log(state.showAllreward)
 }
 </script>
 
@@ -144,6 +172,7 @@ const test = ()=> {
           <div class="text-3xl p-2">{{ $t('community.create') }}</div>
         </template>
       </UAlert>
+      <UButton @click="test">test</UButton>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
         <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
           <template #label>
@@ -151,7 +180,7 @@ const test = ()=> {
           </template>
           <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]"
             @click="logoupload" />
-          <UInput id="logoupload" v-model="state.input" type="file" size="sm" class="opacity-0" @change="handleUp" />
+          <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
 
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
@@ -213,7 +242,7 @@ const test = ()=> {
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Website" placeholder="URL" />
             <UToggle v-model="state.showWebsite" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showWebsite ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -224,7 +253,7 @@ const test = ()=> {
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Twitter" placeholder="URL" />
             <UToggle v-model="state.showTwitter" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showTwitter ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -235,7 +264,7 @@ const test = ()=> {
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Whitebook" placeholder="URL" />
             <UToggle v-model="state.showWhitebook" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showWhitebook ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
         
@@ -246,7 +275,7 @@ const test = ()=> {
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Github" placeholder="URL" />
             <UToggle v-model="state.showGithub" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showGithub ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -256,7 +285,7 @@ const test = ()=> {
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.showBuildernum" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showBuildernum ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -266,7 +295,7 @@ const test = ()=> {
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.showAllreward" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showAllreward ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -277,7 +306,7 @@ const test = ()=> {
           <div class="flex flex-row items-center space-x-3">
             <USelectMenu v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
             <UToggle v-model="state.showTypereward" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showTypereward ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -299,7 +328,7 @@ const test = ()=> {
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isPublished" />
-              <Text>{{ $t('yes') }}</Text>
+              <Text>{{ state.isPublished ? $t('yes') : $t('no') }}</Text>
             </div>
           </UFormGroup>
 
@@ -310,7 +339,7 @@ const test = ()=> {
             <div class="flex flex-row items-center space-x-3">
               <UInput v-model="state.TokenName" placeholder="" />
               <UToggle v-model="state.showTokenName" />
-              <Text>{{ $t('show') }}</Text>
+              <Text>{{ state.showTokenName ? $t('show') : $t('hide') }}</Text>
             </div>
           </UFormGroup>
 
@@ -320,7 +349,7 @@ const test = ()=> {
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isTradable" />
-              <Text>{{ $t('yes') }}</Text>
+              <Text>{{ state.isTradable ? $t('yes') : $t('no') }}</Text>
             </div>
           </UFormGroup>
 
