@@ -16,7 +16,7 @@ let isCreated = $ref(false)
 
 let state = $ref({
   logobase64Data: undefined,
-  banner: undefined,
+  banner: 'imageone',
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
@@ -36,7 +36,7 @@ let state = $ref({
   Typereward: undefined,
   showTypereward: false,
   showDetail: false,
-  isPublished: false,
+  isPublished: true,
   TokenName: undefined,
   showTokenName: false,
   isTradable: undefined,
@@ -44,8 +44,6 @@ let state = $ref({
   showAlltoken: false,
   Alltoken: undefined,
   Communitytoken: undefined,
-  Teamtoken: undefined,
-  Flowtoken: undefined,
 })
 
 const schema = z.object({
@@ -111,7 +109,12 @@ const CreateCommunity = async () => {
     tokenselected, //选择的token类型
     state.showTypereward, //奖励的token类型
     state.isPublished, //是否有发行token
-    supportSelected
+    token.communityToken, //社区token分配比例额度
+    state.isTradable, //是否可以交易
+    supportSelected, //交易得平台
+    state.showDetail, //是否显示细节token分配额度比例
+    state.Alltoken, //分配得token总量
+    token.tokenSupply //社区token分配比例详情
   )
   isCreated = true
   isLoading = false
@@ -160,7 +163,62 @@ const updateBanner = (index: number) => {
   console.log(state.banner)
 };
 const test = ()=> {
-  console.log(state.showAllreward)
+  console.log(token.communityToken)
+}
+
+// 初始化表单组状态数组
+const token = $ref({
+  communityToken: [
+    {
+      tokenName: '',
+      showTokenName: false
+    }
+  ],
+  tokenSupply: [
+    {
+      name: '',
+      supply: '',
+    }
+  ]
+})
+
+// 添加表单组函数
+const addFormGroup = () => {
+  token.communityToken.push({
+    tokenName: '',
+    showTokenName: false
+  })
+}
+
+// 移除表单组函数
+const removeFormGroup = (index: any) => {
+  token.communityToken.splice(index, 1)
+}
+
+// 监听 state.isPublished 的变化
+watch(() => state.isPublished, (newVal) => {
+  if (newVal) {
+    if (token.communityToken.length === 0) {
+      addFormGroup()
+    }
+  } else {
+    token.communityToken = []
+  }
+})
+
+
+
+// 添加表单组函数
+const addSupplyGroup = () => {
+  token.tokenSupply.push({
+    name: '',
+    supply: '',
+  })
+}
+
+// 移除表单组函数
+const removeSupplyGroup = (index) => {
+  token.tokenSupply.splice(index, 1)
 }
 </script>
 
@@ -231,8 +289,7 @@ const test = ()=> {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.intro') }}</div>
           </template>
-          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`"
-            class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
@@ -332,16 +389,20 @@ const test = ()=> {
             </div>
           </UFormGroup>
 
-          <UFormGroup name="range" label="Range">
-            <template #label>
-              <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.name') }}</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.TokenName" placeholder="" />
-              <UToggle v-model="state.showTokenName" />
-              <Text>{{ state.showTokenName ? $t('show') : $t('hide') }}</Text>
-            </div>
-          </UFormGroup>
+          <div v-for="(formGroup, index) in token.communityToken" :key="index">
+            <UFormGroup name="range" label="Range">
+              <template #label>
+                <div class="text-sky-400 min-w-[100px]">{{ index+1 }}st Token</div>
+              </template>
+              <div class="flex flex-row items-center space-x-3">
+                <UInput v-model="formGroup.tokenName" placeholder="" />
+                <UToggle v-model="formGroup.showTokenName" />
+                <Text>{{ formGroup.showTokenName ? $t('show') : $t('hide') }}</Text>
+                <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
+              </div>
+            </UFormGroup>
+          </div>
+          <UButton v-if="state.isPublished" variant="outline" icon="material-symbols:add" @click="addFormGroup" />
 
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
@@ -378,33 +439,28 @@ const test = ()=> {
           <div v-show="state.showAlltoken">
             <UFormGroup name="range" class="mb-2">
               <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Alltoken" placeholder="" />
+                <UInput v-model="state.Alltoken" placeholder="" class="w-[120px]" />
               </div>
             </UFormGroup>
 
-            <UFormGroup name="range" class="mb-2">
-              <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Communitytoken" placeholder="community" />%
-              </div>
-            </UFormGroup>
+            <div v-for="(formGroup, index) in token.tokenSupply" :key="index">
+              <UFormGroup name="range" class="mb-2">
+                <div class="flex flex-row items-center space-x-3">
+                  <UInput v-model="formGroup.name" placeholder="community" />
+                  <UInput v-model="formGroup.supply" placeholder="%" class="w-[50px]" />
+                  <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
+                </div>
+              </UFormGroup>
+            </div>
 
-            <UFormGroup name="range" class="mb-2">
-              <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Teamtoken" placeholder="team" />%
-              </div>
-            </UFormGroup>
-
-            <UFormGroup name="range">
-              <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Flowtoken" placeholder="liquidity" />%
-              </div>
-            </UFormGroup>
+            <UButton variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
           </div>
         </div>
-
-        <UButton type="submit" class="ml-20" @click="CreateCommunity">
-          {{ $t('add') }}
-        </UButton>
+        <div class="flex justify-center">
+          <UButton type="submit" size="xl" @click="CreateCommunity">
+            {{ $t('add') }}
+          </UButton>
+        </div>
       </UForm>
       <UModal v-model="isCreated" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
@@ -413,14 +469,12 @@ const test = ()=> {
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                 Modal
               </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-                @click="isCreated = false" />
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />
             </div>
           </template>
           <UContainer class="w-full flex justify-around">
             <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
-            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{
-            $t('community.look') }}
+            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
             </UButton>
           </UContainer>
         </UCard>

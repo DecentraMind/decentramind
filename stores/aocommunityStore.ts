@@ -53,7 +53,12 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     Bounty,
     ShowBounty,
     Ispublished,
-    Support
+    CommunityToken,
+    IsTradable,
+    Support,
+    ShowDetail,
+    AllToken,
+    TokenSupply
   ) => {
     if (isLoading) return
     isLoading = true
@@ -80,7 +85,12 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "bounty": Bounty,
         "showbounty": ShowBounty,
         "ispublished": Ispublished,
+        "communitytoken": CommunityToken,
+        "istradable": IsTradable,
         "support": Support,
+        "showdetail": ShowDetail,
+        "alltoken": AllToken,
+        "tokensupply": TokenSupply,
         "uuid": uuid,
       }
     ]
@@ -101,8 +111,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //获取社区列表方法
   const getCommunitylist = async () => {
-    //if (isLoading) return
-    //isLoading = true
+    if (isLoading) return
+    isLoading = true
     if (address !== '') {
       let result = await dryrun({
         process: processID,
