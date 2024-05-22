@@ -230,7 +230,6 @@ const removeSupplyGroup = (index) => {
           <div class="text-3xl p-2">{{ $t('community.create') }}</div>
         </template>
       </UAlert>
-      <UButton @click="test">test</UButton>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
         <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
           <template #label>
