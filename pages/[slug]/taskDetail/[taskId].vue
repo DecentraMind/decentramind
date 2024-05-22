@@ -1,31 +1,44 @@
 <script setup lang="ts">
 
 import CommonAlert from '~/components/CommonAlert.vue'
+import {taskStore} from '../../../stores/taskStore'
 const { t } = useI18n()
-const { createTask, getAllTasks, joinSpaceTask } = $(taskStore())
-const blogPost = {
-  id: 1,
-  name: 'Task 1',
-  image: 'https://picsum.photos/640/360',
-  description:
-    'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
-    'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
-    'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
-    'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
-    'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
-    'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.',
-  reward: '100 Token + 200 USDT',
-  taskTime: '2024/03/02-2024/06/06',
-  rewardSessions: 200,
-  submittedSessions: 195,
-  taskRule:
-    '任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则' +
-    '任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则' +
-    '任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则',
-  builderNum: 100,
-  status: '进行中',
-  isJoin: '已参与',
-}
+const { getTaskById, joinSpaceTask } = $(taskStore())
+
+const route = useRoute()
+const taskId = $computed(() => route.params.taskId)
+
+let blogPost = await getTaskById(taskId)
+console.log('blogPost = ' + JSON.stringify(blogPost))
+// onMounted(async () => {
+//
+//   blogPost = await getTaskById(taskId)
+//   console.log('blogPost = ' + JSON.stringify(blogPost))
+//   console.log(blogPost.name)
+// })
+// const blogPost = {
+//   id: 1,
+//   name: 'Task 1',
+//   image: 'https://picsum.photos/640/360',
+//   description:
+//       'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
+//       'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
+//       'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
+//       'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
+//       'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.' +
+//       'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.',
+//   reward: '100 Token + 200 USDT',
+//   taskTime: '2024/03/02-2024/06/06',
+//   rewardSessions: 200,
+//   submittedSessions: 195,
+//   taskRule:
+//       '任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则' +
+//       '任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则' +
+//       '任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则任务规则',
+//   builderNum: 100,
+//   status: '进行中',
+//   isJoin: '已参与',
+// }
 
 const columns = [
   {
@@ -118,7 +131,8 @@ const people = [
 const q = ref('')
 
 function switchDisable() {
-  return blogPost.status == '进行中' && blogPost.isJoin == '已参与'
+  // return blogPost.status == '进行中' && blogPost.isJoin == '已参与'
+  return true
 }
 const filteredRows = computed(() => {
   if (!q.value) {
@@ -166,6 +180,7 @@ function joinTask() {
   joinSpaceTask('20c1f625-9fcf-4113-83f6-19e63b2a9d6c', addr, url)
   isOpen = false
 }
+
 </script>
 
 <template>
@@ -212,7 +227,7 @@ function joinTask() {
                 </div>
                 <div>
                   <Text class="text-blue-300">
-                    {{ blogPost.taskTime }}
+                    {{ blogPost.startTime }} - {{ blogPost.endTime }}
                   </Text>
                 </div>
               </div>
@@ -236,7 +251,7 @@ function joinTask() {
                 </div>
                 <div>
                   <Text class="text-blue-300">
-                    {{ blogPost.rewardSessions }}
+                    {{ blogPost.rewardTotal }}
                   </Text>
                 </div>
               </div>
@@ -248,7 +263,7 @@ function joinTask() {
                 </div>
                 <div>
                   <Text class="text-blue-300">
-                    {{ blogPost.submittedSessions }}
+                    {{ blogPost.buildNumber }}
                   </Text>
                 </div>
               </div>
@@ -264,6 +279,9 @@ function joinTask() {
                   </Text>
                 </div>
               </div>
+              <div v-if="switchDisable()" class="flex justify-center ">
+                <UButton :label="$t('Join Task')" @click="openModal" />
+              </div>
             </div>
             <div>
               <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
@@ -273,14 +291,20 @@ function joinTask() {
                   </Text>
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
-                <div v-if="switchDisable()" class="flex justify-center ">
-                  <UButton :label="$t('Join Task')" @click="openModal" />
-                </div>
+<!--                <div v-if="switchDisable()" class="flex justify-center ">-->
+<!--                  <UButton :label="$t('Join Task')" @click="openModal" />-->
+<!--                </div>-->
               </div>
               <UTable :rows="filteredRows" :columns="columns" />
             </div>
             <div v-if="switchDisable()" class="flex justify-center my-8">
-              <UButton :label="$t('Send Bounty')"  />
+              <div class="mx-4">
+                <UButton :label="$t('Submit')" />
+              </div>
+              <div class="mx-4">
+                <UButton :label="$t('Send Bounty')" />
+              </div>
+
             </div>
             <div class="flex ...">
               <div class="flex-none w-60">
@@ -320,11 +344,11 @@ function joinTask() {
               {{ $t("Join Task") }}
             </h3>
             <UButton
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-x-mark-20-solid"
-              class="-my-1"
-              @click="isOpen = false"
+                color="gray"
+                variant="ghost"
+                icon="i-heroicons-x-mark-20-solid"
+                class="-my-1"
+                @click="isOpen = false"
             />
           </div>
         </template>

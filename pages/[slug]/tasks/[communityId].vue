@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { sub, format, isSameDay, type Duration } from 'date-fns'
 import type { FormSubmitEvent } from '#ui/types'
+import {taskStore} from '../../../stores/taskStore';
+import {aocommunityStore} from '../../../stores/aocommunityStore';
 
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray } = $(taskStore())
@@ -133,14 +135,14 @@ const slug = $computed(() => route.params.slug)
 const footerLinks = $computed(() => {
   return [
     {
-      label: t('Quests Home'),
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/tasks`,
-    },
-    {
       label: 'Invite people',
       icon: 'i-heroicons-plus',
       to: `/${slug}/settings/communityinfo`,
+    },
+    {
+      label: t('Quests Home'),
+      icon: 'i-heroicons-plus',
+      to: `/${slug}/tasks`,
     },
     {
       label: 'Chatroom',
@@ -168,11 +170,11 @@ const loadCommunityInfo = async (pid) => {
 }
 const taskTypes = [t('Twitter Space Quest'), t('Promotion Quest'), t('Invitation Quest'),t('Try Our Product Quest'),t('Thread Quest'),t('Twitter Article Quest')]
 const taskType = ref()
-let taskListIsEmpty = $ref(true)
+let taskListIsEmpty = $ref(false)
 onMounted(async () => {
-  await getAllTasks('GetAllTasks')
-  if(Array.isArray(respArray) && respArray.length){
-    taskListIsEmpty = false
+  await getAllTasks(communityId, 'GetAllTasks')
+  if(!Array.isArray(respArray) && !respArray.length){
+    taskListIsEmpty = true
   }
   console.log("taskIsEmpty = " + taskListIsEmpty)
   await loadCommunityInfo(route.params.communityId)
@@ -342,7 +344,7 @@ onMounted(async () => {
                 </div>
               </div>
             </template>
-            <UButton to="/signup/detail-task/" class="absolute right-0" color="primary" variant="outline">
+            <UButton :to="`/${slug}/taskDetail/${blogPost.id}`" class="absolute right-0" color="primary" variant="outline">
               {{ $t("View Details") }}
             </UButton>
           </UBlogPost>
