@@ -69,7 +69,7 @@ watchEffect(() => {
 })
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
-const communityInfo = {
+const communityInfo2 = {
   communityName: 'permadao',
   website: 'www.demo.com',
   socialMedia: 'twitter',
@@ -97,33 +97,64 @@ const footerLinks = $computed(() => {
     },
   ]
 })
+
+let communityInfo = $ref({})
+let communityInfoJson = $ref({})
+const loadCommunityInfo = async (pid) => {
+  try {
+    communityInfo = await getCommunityInfo(pid)
+    const jsonData = communityInfo.Messages[0].Data
+    const jsonObjects = jsonData.match(/\{.*?\}/g)
+    communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
+    console.log("-------------", communityInfoJson)
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+}
+
+
+
+let chatID = $ref<string | string[] | null>(null)
+const test = () => {
+  console.log("-------nnn")
+  if (!route.params.pid) return
+  console.log(chatID)
+}
+onMounted( () => {
+  if (!route.params.pid) return
+  chatID = route.params.pid
+})
+onMounted(async () => {
+  await loadCommunityInfo("798e6573-7cac-4575-8ed1-e638bd2a4e41")
+})
 </script>
 
 <template>
-  <div class="flex">
-    <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>
+  <div class="flex w-full">
+    <UDashboardPanel :width="350" collapsible>
       <UDashboardSidebar>
-        <UColorModeImage :light="light" :dark="dark" />
-        <div>
-          <div class="flex justify-between  my-3">
-            <div>{{ communityInfo.communityName }}</div>
+        <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
+        <div v-for="Info in communityInfoJson" :key="Info.uuid">
+          <div class="flex justify-between  my-3 items-center">
+            <div class="text-3xl">{{ Info.name }}</div>
             <div>
-              <UButton color="black" variant="solid" :to="`/${slug}/community-details/${communityId}`">
-                {{ $t('Explore Detail') }}
+              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
+                {{ $t('View Details') }}
               </UButton>
             </div>
           </div>
 
           <UDivider />
-          <div class="flex justify-between  my-3">
+
+          <div class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
             <div>
               <UBadge color="primary" variant="soft" size="lg">
-                {{ communityInfo.website }}
+                {{ Info.website }}
               </UBadge>
             </div>
           </div>
-          <div class="flex justify-between my-3">
+          <div class="flex justify-between my-3 items-center">
             <div>{{ $t('SocialOfCommunityDetail') }}</div>
             <div>
               <UButton variant="link">
@@ -132,23 +163,23 @@ const footerLinks = $computed(() => {
               </UButton>
             </div>
           </div>
-          <div class="flex justify-between my-3">
-            <div>{{ $t('TokenOfCommunityDetail') }}</div>
+          <div class="flex justify-between my-3 mt-10 items-center">
+            <div >{{ $t('TokenOfCommunityDetail') }}</div>
             <div>
               <UBadge color="primary" variant="soft" size="lg">
-                {{ communityInfo.token }}
+                USDC
               </UBadge>
             </div>
           </div>
-          <div class="flex justify-between my-3">
-            <div>{{ $t('TransPlatOfCommunityDetail') }}</div>
+          <div class="flex justify-between my-3 items-center">
+            <div>{{ $t('Trading Support') }}</div>
             <div>
               <UBadge color="primary" variant="soft" size="lg">
-                {{ communityInfo.platform }}
+                OKE
               </UBadge>
             </div>
           </div>
-          <div class="flex justify-between my-3">
+          <div class="flex justify-between my-3 items-center">
             <div>{{ $t('GithubOfCommunityDetail') }}</div>
             <div>
               <UButton to="www.github.com" variant="link">
@@ -157,9 +188,9 @@ const footerLinks = $computed(() => {
               </UButton>
             </div>
           </div>
-          <div class="flex justify-between my-3">
+          <div class="flex justify-between my-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-            <div>{{ communityInfo.builderNumber }}</div>
+            <div>10</div>
           </div>
         </div>
         <UDivider />
@@ -172,32 +203,27 @@ const footerLinks = $computed(() => {
         <UDashboardSidebarLinks :links="footerLinks" />
 
         <UDivider class="bottom-0 sticky" />
-
+          <!--
         <template #footer>
-          <!-- ~/components/UserDropdown.vue -->
           <UserDropdown />
         </template>
+        -->
+
       </UDashboardSidebar>
     </UDashboardPanel>
     <UPage>
       <UContainer>
         <UPageGrid>
-          
+          <!--
           <UAside class="border rounded-md  border-1 border-gray-600">
-            <UDashboardNavbar title="Inbox" :badge="filteredMails.length">
-              <template #center v-if="false">
-                <UTabs v-model="selectedTab" :items="tabItems" :ui="{ wrapper: '', list: { height: 'h-9', tab: { height: 'h-7', size: 'text-[13px]' } } }" />
-              </template>
-              <template #right>
-                <InboxNewBtn />
-              </template>
-            </UDashboardNavbar>
             <InboxList v-model="selectedMail" :mails="filteredMails" />
           </UAside>
+          -->
           
       
           <div class="flex xl:col-span-2">
-            <div v-if="selectedMail" class="w-full">
+            <div v-if="chatID" class="w-full">
+              <!--
               <UDashboardNavbar v-if="false">
                 <template #toggle>
                   <UDashboardNavbarToggle icon="i-heroicons-x-mark" />
@@ -245,8 +271,8 @@ const footerLinks = $computed(() => {
                   </UDropdown>
                 </template>
               </UDashboardNavbar>
-
-              <InboxMail :mail="selectedMail" class="mt-10" />
+              -->
+              <InboxMail :mail="chatID" class="mt-10 w-[1000px]" />
             </div>
             <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
               <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />

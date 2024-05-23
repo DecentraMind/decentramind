@@ -14,6 +14,11 @@ export const inboxStore = defineStore('inboxStore', () => {
   let isInboxLoading = $ref(false)
 
   const state = $(lsItemRef('inboxStore', {
+    'ceT-iiktGCMloqbpVIwKfLfkObym-lJgWYoYUKctk2U': {
+      name: 'HelloRWA',
+      latestMsgTime: new Date(),
+      createdAt: new Date()
+    },
     'Fv5lQPftoQ4VGhLGc-ZV0EteHaYSjsvaQQJoYxxwE40': {
       name: 'AO Arena DAO Chat',
       latestMsgTime: new Date(),

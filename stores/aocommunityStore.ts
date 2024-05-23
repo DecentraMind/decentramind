@@ -9,11 +9,15 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
+import fs from 'fs'
 
 const { address } = $(aoStore())
 
+// Read the Lua file
+//const luaCode = fs.readFileSync('./AO/chat.lua', 'utf8')
+
 export const aocommunityStore = defineStore('aocommunityStore', () => {
-  const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
+  const processID = 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU'
   let communityList = $ref({})
   let joincommunityList = $ref({})
   let isLoading = $ref(false)
@@ -35,7 +39,31 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
   //创建社区方法
-  const addCommunity = async (Name, Inbro, Twitter, Website, Whitebook, Allreward) => {
+  const addCommunity = async (
+    logo,
+    Banner,
+    Name,
+    Inbro,
+    Website,
+    ShowWebsite,
+    Twitter,
+    ShowTwitter,
+    Whitebook,
+    ShowWhitebook,
+    Github,
+    ShowGithub,
+    ShowBuildnum,
+    ShowAllreward,
+    Bounty,
+    ShowBounty,
+    Ispublished,
+    CommunityToken,
+    IsTradable,
+    Support,
+    ShowDetail,
+    AllToken,
+    TokenSupply
+  ) => {
     if (isLoading) return
     isLoading = true
 
@@ -43,18 +71,36 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
     let communitySubmitList = [
       {
+        "logo": logo,
+        "banner": Banner,
         "name": Name,
         "desc": Inbro,
         "creater": address,
-        "twitter": Twitter,
         "website": Website,
+        "showwebsite": ShowWebsite,
+        "twitter": Twitter,
+        "showtwitter": ShowTwitter,
         "whitebook": Whitebook,
-        "allreward": Allreward,
+        "showwhitebook": ShowWhitebook,
+        "github": Github,
+        "showgithub": ShowGithub,
+        "showbuildnum": ShowBuildnum,
+        "showallreward": ShowAllreward,
+        "bounty": Bounty,
+        "showbounty": ShowBounty,
+        "ispublished": Ispublished,
+        "communitytoken": CommunityToken,
+        "istradable": IsTradable,
+        "support": Support,
+        "showdetail": ShowDetail,
+        "alltoken": AllToken,
+        "tokensupply": TokenSupply,
         "uuid": uuid,
       }
     ]
     const jsonString = JSON.stringify(communitySubmitList);
-
+    console.log("---------nonono")
+    console.log(jsonString)
     let createCommunity = await message({
       process: processID,
       tags: [
@@ -103,6 +149,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       isLoading = false
       return result
     }
+    isLoading = true
 
   }
 
@@ -181,9 +228,10 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //获取个人信息
   const getInfo = async () => {
+    console.log(isLoading)
     if (isLoading) return
     isLoading = true
-
+    console.log('------')
     let Info = await dryrun({
       process: processID,
       tags: [
@@ -194,6 +242,16 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
     return Info
   }
+
+  //创建社区聊天室
+  //const makecommunityChat = async () => {
+  //  let processId = await spawn({
+  //    module: luaCode,
+  //    scheduler: "8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw",
+  //    signer: createDataItemSigner(window.arweaveWallet),
+  //   })
+  //  return processId
+  // }
 
   return $$({ communityList, joincommunityList, communityCreate, registInfo, getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityjoined, getCommunityInfo })
 })

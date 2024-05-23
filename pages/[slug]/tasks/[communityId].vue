@@ -132,6 +132,7 @@ const ranges = [
 
 const slug = $computed(() => route.params.slug)
 
+const chatId = $ref("ceT-iiktGCMloqbpVIwKfLfkObym-lJgWYoYUKctk2U")
 const footerLinks = $computed(() => {
   return [
     {
@@ -147,7 +148,7 @@ const footerLinks = $computed(() => {
     {
       label: 'Chatroom',
       icon: 'i-heroicons-plus',
-      to: `/${slug}/chat`,
+      to: `/${slug}/chat/${chatId}`,
     },
   ]
 })

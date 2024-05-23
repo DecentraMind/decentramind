@@ -8,37 +8,42 @@ const options = [
   { label: 'OKE', value: 'OKE' },
   { label: 'Binance', value: 'Binance' },
 ]
-
+const supportSelect = ['OKE', 'Binance']
+const supportSelected = $ref([])
+const tokenselect = ['USDC', 'AR']
+const tokenselected = $ref([])
 let isCreated = $ref(false)
 
 let state = $ref({
+  logobase64Data: undefined,
+  banner: 'imageone',
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
   Inbro: undefined,
   Website: undefined,
-  showWebsite: undefined,
+  showWebsite: false,
   Twitter: undefined,
-  showTwitter: undefined,
+  showTwitter: false,
   Whitebook: undefined,
-  showWhitebook: undefined,
+  showWhitebook: false,
+  Github: undefined,
+  showGithub: false,
   Buildernum: undefined,
-  showBuildernum: undefined,
+  showBuildernum: false,
   Allreward: undefined,
-  showAllreward: undefined,
+  showAllreward: false,
   Typereward: undefined,
-  showTypereward: undefined,
+  showTypereward: false,
   showDetail: false,
-  isPublished: undefined,
+  isPublished: true,
   TokenName: undefined,
-  showTokenName: undefined,
+  showTokenName: false,
   isTradable: undefined,
   TradePlatform: undefined,
-  showAlltoken: undefined,
+  showAlltoken: false,
   Alltoken: undefined,
   Communitytoken: undefined,
-  Teamtoken: undefined,
-  Flowtoken: undefined,
 })
 
 const schema = z.object({
@@ -48,10 +53,12 @@ const schema = z.object({
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
   }),
+  /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
     return !isNaN(num) && num <= 100
   }, { message: 'Must be a valid number less than or equal to 20' }),
+  */
 })
 
 type Schema = z.infer<typeof schema>
@@ -82,22 +89,53 @@ const CreateCommunity = async () => {
     }
   ]
   const jsonString = JSON.stringify(communitySubmit);
-
-  createCommunity = await addCommunity(state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
+  console.log("---------------------------------")
+  console.log(state.banner)
+  createCommunity = await addCommunity(
+    state.logobase64Data, 
+    state.banner, 
+    state.Name, 
+    state.Inbro, 
+    state.Website, 
+    state.showWebsite,
+    state.Twitter, 
+    state.showTwitter,
+    state.Whitebook, 
+    state.showWhitebook,
+    state.Github,
+    state.showGithub,
+    state.showBuildernum, //builder人数
+    state.showAllreward, //所有总奖励
+    tokenselected, //选择的token类型
+    state.showTypereward, //奖励的token类型
+    state.isPublished, //是否有发行token
+    token.communityToken, //社区token分配比例额度
+    state.isTradable, //是否可以交易
+    supportSelected, //交易得平台
+    state.showDetail, //是否显示细节token分配额度比例
+    state.Alltoken, //分配得token总量
+    token.tokenSupply //社区token分配比例详情
+  )
   isCreated = true
   isLoading = false
 }
 
 
-const handleUp = async (value: any) => {
-  console.log("goods")
+const handleUp = (event) => {
+  const file = event.target?.files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      state.logobase64Data = e.target.result
+      console.log("Base64 Data: ", state.logobase64Data)
+    }
+    reader.readAsDataURL(file)
+  }
 }
 
 const logoupload = () => {
   const input = document.querySelector('#logoupload') as any
-  console.log(state.input)
   input.click()
-  console.log(state.input)
 }
 
 const bannerupload = () => {
@@ -106,7 +144,82 @@ const bannerupload = () => {
 }
 
 
+const items = [
+  '/community/imageone.png',
+  '/community/imagetwo.png',
+  '/community/imagethree.png'
+]
+const currentIndex = $ref(0); // 用于存储当前选中的索引
 
+const updateBanner = (index: number) => {
+  console.log('-----------------bbbbbbbbbbbbbbbb')
+  if (index === 1) {
+    state.banner = 'imageone';
+  } else if (index === 2) {
+    state.banner = 'imagetwo';
+  } else if (index === 3) {
+    state.banner = 'imagethree'
+  }
+  console.log(state.banner)
+};
+const test = ()=> {
+  console.log(token.communityToken)
+}
+
+// 初始化表单组状态数组
+const token = $ref({
+  communityToken: [
+    {
+      tokenName: '',
+      showTokenName: false
+    }
+  ],
+  tokenSupply: [
+    {
+      name: '',
+      supply: '',
+    }
+  ]
+})
+
+// 添加表单组函数
+const addFormGroup = () => {
+  token.communityToken.push({
+    tokenName: '',
+    showTokenName: false
+  })
+}
+
+// 移除表单组函数
+const removeFormGroup = (index: any) => {
+  token.communityToken.splice(index, 1)
+}
+
+// 监听 state.isPublished 的变化
+watch(() => state.isPublished, (newVal) => {
+  if (newVal) {
+    if (token.communityToken.length === 0) {
+      addFormGroup()
+    }
+  } else {
+    token.communityToken = []
+  }
+})
+
+
+
+// 添加表单组函数
+const addSupplyGroup = () => {
+  token.tokenSupply.push({
+    name: '',
+    supply: '',
+  })
+}
+
+// 移除表单组函数
+const removeSupplyGroup = (index) => {
+  token.tokenSupply.splice(index, 1)
+}
 </script>
 
 <template>
@@ -124,17 +237,44 @@ const bannerupload = () => {
           </template>
           <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]"
             @click="logoupload" />
-          <UInput id="logoupload" v-model="state.input" type="file" size="sm" class="opacity-0" @change="handleUp" />
+          <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
 
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.banner') }}</div>
           </template>
-          <UButton :label="`${$t('community.banner.submit')}`" size="xl" square variant="outline"
-            class="flex justify-center w-[420px] h-[80px]" @click="bannerupload" />
-          <UInput id="bannerupload" v-model="state.inputMenu" type="file" size="sm" class="opacity-0"
-            @change="handleUp" />
+          <UCarousel
+            v-model="currentIndex"
+            :items="items"
+            :ui="{
+              item: 'basis-full',
+              container: 'rounded-lg',
+              indicators: {
+                wrapper: 'relative bottom-0 mt-4'
+              }
+            }"
+            indicators
+            class="w-64 mx-auto"
+          >
+            <template #default="{ item }">
+              <img :src="item" class="w-full" draggable="false">
+            </template>
+
+            <template #indicator="{ onClick, page, active }">
+              <UButton 
+                :label="String(page)" 
+                :variant="active ? 'solid' : 'outline'" 
+                size="2xs" 
+                class="rounded-full min-w-6 justify-center" 
+                @click="() => {
+                  currentIndex = page; // 更新当前索引
+                  updateBanner(page)
+                  onClick(page); // 触发页面点击事件
+                }"
+              />
+            </template>
+          </UCarousel>
         </UFormGroup>
 
         <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
@@ -148,8 +288,7 @@ const bannerupload = () => {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.intro') }}</div>
           </template>
-          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`"
-            class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
@@ -159,7 +298,7 @@ const bannerupload = () => {
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Website" placeholder="URL" />
             <UToggle v-model="state.showWebsite" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showWebsite ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -170,7 +309,7 @@ const bannerupload = () => {
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Twitter" placeholder="URL" />
             <UToggle v-model="state.showTwitter" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showTwitter ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -181,29 +320,38 @@ const bannerupload = () => {
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Whitebook" placeholder="URL" />
             <UToggle v-model="state.showWhitebook" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showWhitebook ? $t('show') : $t('hide') }}</Text>
+          </div>
+        </UFormGroup>
+        
+        <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class="text-sky-400 w-[300px]">Github</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Github" placeholder="URL" />
+            <UToggle v-model="state.showGithub" />
+            <Text>{{ state.showGithub ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
         <UFormGroup name="Buildernum" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.buildnum') }}</div>
+            <div class="text-sky-400 w-[480px]">{{ $t('community.buildnum') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Buildernum" :placeholder="`${$t('community.buildnum.label')}`" />
             <UToggle v-model="state.showBuildernum" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showBuildernum ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
         <UFormGroup name="Allreward" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.allreward') }}</div>
+            <div class="text-sky-400 w-[480px]">{{ $t('community.allreward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Allreward" :placeholder="`${$t('community.buildnum.label')}`" />
             <UToggle v-model="state.showAllreward" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showAllreward ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -212,9 +360,9 @@ const bannerupload = () => {
             <div class="text-sky-400 w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Typereward" :placeholder="`${$t('community.buildnum.label')}`" />
+            <USelectMenu class="mr-10" v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
             <UToggle v-model="state.showTypereward" />
-            <Text>{{ $t('show') }}</Text>
+            <Text>{{ state.showTypereward ? $t('show') : $t('hide') }}</Text>
           </div>
         </UFormGroup>
 
@@ -236,20 +384,24 @@ const bannerupload = () => {
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isPublished" />
-              <Text>{{ $t('yes') }}</Text>
+              <Text>{{ state.isPublished ? $t('yes') : $t('no') }}</Text>
             </div>
           </UFormGroup>
 
-          <UFormGroup name="range" label="Range">
-            <template #label>
-              <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.name') }}</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.TokenName" placeholder="" />
-              <UToggle v-model="state.showTokenName" />
-              <Text>{{ $t('show') }}</Text>
-            </div>
-          </UFormGroup>
+          <div v-for="(formGroup, index) in token.communityToken" :key="index">
+            <UFormGroup name="range" label="Range">
+              <template #label>
+                <div class="text-sky-400 min-w-[100px]">{{ index+1 }}st Token</div>
+              </template>
+              <div class="flex flex-row items-center space-x-3">
+                <UInput v-model="formGroup.tokenName" placeholder="" />
+                <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
+                <UToggle v-model="formGroup.showTokenName" />
+                <Text>{{ formGroup.showTokenName ? $t('show') : $t('hide') }}</Text>
+              </div>
+            </UFormGroup>
+          </div>
+          <UButton v-if="state.isPublished" variant="outline" icon="material-symbols:add" @click="addFormGroup" />
 
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
@@ -257,7 +409,7 @@ const bannerupload = () => {
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isTradable" />
-              <Text>{{ $t('yes') }}</Text>
+              <Text>{{ state.isTradable ? $t('yes') : $t('no') }}</Text>
             </div>
           </UFormGroup>
 
@@ -265,7 +417,7 @@ const bannerupload = () => {
             <template #label>
               <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.platforms') }}</div>
             </template>
-            <USelect v-model="state.TradePlatform" placeholder="OKE" :options="options" />
+            <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select people" />
           </UFormGroup>
         </div>
 
@@ -286,33 +438,28 @@ const bannerupload = () => {
           <div v-show="state.showAlltoken">
             <UFormGroup name="range" class="mb-2">
               <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Alltoken" placeholder="" />
+                <UInput v-model="state.Alltoken" placeholder="" class="w-[120px]" />
               </div>
             </UFormGroup>
 
-            <UFormGroup name="range" class="mb-2">
-              <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Communitytoken" placeholder="community" />%
-              </div>
-            </UFormGroup>
+            <div v-for="(formGroup, index) in token.tokenSupply" :key="index">
+              <UFormGroup name="range" class="mb-2">
+                <div class="flex flex-row items-center space-x-3">
+                  <UInput v-model="formGroup.name" placeholder="community" />
+                  <UInput v-model="formGroup.supply" placeholder="%" class="w-[50px]" />
+                  <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
+                </div>
+              </UFormGroup>
+            </div>
 
-            <UFormGroup name="range" class="mb-2">
-              <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Teamtoken" placeholder="team" />%
-              </div>
-            </UFormGroup>
-
-            <UFormGroup name="range">
-              <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Flowtoken" placeholder="liquidity" />%
-              </div>
-            </UFormGroup>
+            <UButton variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
           </div>
         </div>
-
-        <UButton type="submit" class="ml-20" @click="CreateCommunity">
-          {{ $t('add') }}
-        </UButton>
+        <div class="flex justify-center">
+          <UButton type="submit" size="xl" @click="CreateCommunity">
+            {{ $t('add') }}
+          </UButton>
+        </div>
       </UForm>
       <UModal v-model="isCreated" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
@@ -321,14 +468,12 @@ const bannerupload = () => {
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                 Modal
               </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-                @click="isCreated = false" />
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />
             </div>
           </template>
           <UContainer class="w-full flex justify-around">
             <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
-            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{
-            $t('community.look') }}
+            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
             </UButton>
           </UContainer>
         </UCard>

@@ -5,8 +5,9 @@ import { nextTick } from 'vue'
 import { useElementVisibility, watchDebounced } from '@vueuse/core'
 
 const { mail } = $defineProps<{
-  mail: Mail,
+  mail: string,
 }>()
+
 
 const msgTop = ref(null)
 const msgTopIsVisible = useElementVisibility(msgTop)
@@ -19,10 +20,11 @@ const { showSuccess } = $(notificationStore())
 const { address } = $(arweaveWalletStore())
 
 const msgBottom = $ref(null)
+
 let msg = $ref('')
 let isLoading = $ref(false)
 
-const loadedItemsCount = $computed(() => Object.keys(itemsCache[mail.id]).length)
+const loadedItemsCount = $computed(() => Object.keys(itemsCache[chatID]).length)
 const scrollToBottom = () => {
   nextTick(() => {
     msgBottom.scrollIntoView({ behavior: 'smooth' })
@@ -34,7 +36,7 @@ const doSubmit = async () => {
   isLoading = true
 
   // show pending status
-  itemsCache[mail.id][999999] = {
+  itemsCache[chatID][999999] = {
     id: 999999,
     isPending: true,
     Timestamp: Date.now(),
@@ -43,11 +45,11 @@ const doSubmit = async () => {
   }
   scrollToBottom()
 
-  await sendMessage(mail.id, msg)
+  await sendMessage(chatID, msg)
   showSuccess('Send message succeed!')
   isLoading = false
   msg = ''
-  await loadInboxList(mail.id)
+  await loadInboxList(chatID)
   scrollToBottom()
 }
 
@@ -57,7 +59,7 @@ watchDebounced(msgTopIsVisible, async () => {
   if (!msgTopIsVisible.value || isTopLoading || loadedItemsCount === 0) return
 
   isTopLoading = true
-  await loadInboxList(mail.id, 10, false)
+  await loadInboxList(chatID, 10, false)
   isTopLoading = false
 })
 
@@ -68,6 +70,18 @@ defineShortcuts({
   }
 })
 
+const route = useRoute()
+let chatID = $ref<string | string[] | null>(null)
+const test = () => {
+  console.log("-------nnn")
+  if (!route.params.pid) return
+  console.log(chatID)
+}
+onMounted( () => {
+  if (!route.params.pid) return
+  chatID = route.params.pid
+})
+
 </script>
 
 <template>
@@ -75,21 +89,19 @@ defineShortcuts({
     <div class="-m-4 -top-4 z-99 sticky">
       <div class="bg-background flex  p-4  justify-between  ">
         <div class="flex gap-4 items-center">
-          <DicebearAvatar :seed="mail.id" :alt="mail.name" size="lg" />
+          <DicebearAvatar :seed="chatID" alt="test" size="lg" />
 
           <div class="min-w-0">
             <p class="font-semibold text-gray-900 dark:text-white">
-              {{ mail.name }}
+              DAO Chat
             </p>
             <p class="font-medium text-gray-500 dark:text-gray-400">
-              {{ mail.id }}
+              ceT-iiktGCMloqbpVIwKfLfkObym-lJgWYoYUKctk2U
             </p>
           </div>
         </div>
 
-        <p class="font-medium text-gray-900 dark:text-white">
-          {{ isToday(new Date(mail.createdAt)) ? format(new Date(mail.createdAt), 'HH:mm') : format(new Date(mail.createdAt), 'dd MMM') }}
-        </p>
+
       </div>
 
       <UDivider class="" />
@@ -101,12 +113,12 @@ defineShortcuts({
       </div>
     </div>
     <div class="flex-1 min-h-50 overflow-y-auto max-h-[900px]">
-      <InboxListMessage :id="mail.id" @loaded="scrollToBottom" />
+      <InboxListMessage :id="chatID" @loaded="scrollToBottom" />
     </div>
     <div class="my-5" ref="msgBottom"> </div>
     <div class="-bottom-4 sticky">
       <form @submit.prevent="doSubmit">
-        <UTextarea :disabled="isLoading" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" :placeholder="`Reply to ${mail.name}`">
+        <UTextarea :disabled="isLoading" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" placeholder="Reply to test">
           <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->
           <UButton :disabled="isLoading" type="submit" color="black" label="Send" icon="i-heroicons-paper-airplane" class="right-3.5 bottom-2.5 absolute">
           </UButton>
