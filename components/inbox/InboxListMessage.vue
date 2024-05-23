@@ -49,12 +49,23 @@ const getData = item => {
   return item.Data
 }
 
+//const makecommunityChat = $(aocommunityStore())
+
+//const test = async()=> {
+//  const a = await makecommunityChat()
+//  console.log("--------",a)
+//}
+
 </script>
 <template>
   <div class="space-y-5">
+    <!--
+    <UButton @click="test">test</UButton>
+    <InboxNewBtn />
+    -->
     <div v-for="item in items" :key="item.id" class="flex gap-2.5 items-start" :class="isSelf(item) ? 'flex-row-reverse' : ''">
       <DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />
-
+      
       <div class="flex flex-col w-full max-w-[400px] gap-1">
         <div class="flex space-x-2 items-center rtl:space-x-reverse" :class="isSelf(item) ? 'justify-end' : ''">
           <span class="font-semibold flex-1 text-sm text-gray-900 dark:text-white">{{ shortAddress(item.From) }}</span>

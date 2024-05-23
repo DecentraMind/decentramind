@@ -97,10 +97,25 @@ const footerLinks = $computed(() => {
     },
   ]
 })
+
+
+
+
+
+let chatID = $ref<string | string[] | null>(null)
+const test = () => {
+  console.log("-------nnn")
+  if (!route.params.pid) return
+  console.log(chatID)
+}
+onMounted( () => {
+  if (!route.params.pid) return
+  chatID = route.params.pid
+})
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex w-full">
     <UDashboardPanel :width="350" collapsible>
       <UDashboardSidebar>
         <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
@@ -115,7 +130,7 @@ const footerLinks = $computed(() => {
           </div>
 
           <UDivider />
-
+          
           <div class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
             <div>
@@ -184,22 +199,16 @@ const footerLinks = $computed(() => {
     <UPage>
       <UContainer>
         <UPageGrid>
-          
+          <!--
           <UAside class="border rounded-md  border-1 border-gray-600">
-            <UDashboardNavbar title="Inbox" :badge="filteredMails.length">
-              <template #center v-if="false">
-                <UTabs v-model="selectedTab" :items="tabItems" :ui="{ wrapper: '', list: { height: 'h-9', tab: { height: 'h-7', size: 'text-[13px]' } } }" />
-              </template>
-              <template #right>
-                <InboxNewBtn />
-              </template>
-            </UDashboardNavbar>
             <InboxList v-model="selectedMail" :mails="filteredMails" />
           </UAside>
+          -->
           
       
           <div class="flex xl:col-span-2">
-            <div v-if="selectedMail" class="w-full">
+            <div v-if="chatID" class="w-full">
+              <!--
               <UDashboardNavbar v-if="false">
                 <template #toggle>
                   <UDashboardNavbarToggle icon="i-heroicons-x-mark" />
@@ -247,8 +256,8 @@ const footerLinks = $computed(() => {
                   </UDropdown>
                 </template>
               </UDashboardNavbar>
-
-              <InboxMail :mail="selectedMail" class="mt-10" />
+              -->
+              <InboxMail :mail="chatID" class="mt-10 w-[1000px]" />
             </div>
             <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
               <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />

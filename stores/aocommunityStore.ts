@@ -9,8 +9,12 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
+import fs from 'fs'
 
 const { address } = $(aoStore())
+
+// Read the Lua file
+//const luaCode = fs.readFileSync('./AO/chat.lua', 'utf8')
 
 export const aocommunityStore = defineStore('aocommunityStore', () => {
   const processID = 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU'
@@ -238,6 +242,16 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
     return Info
   }
+
+  //创建社区聊天室
+  //const makecommunityChat = async () => {
+  //  let processId = await spawn({
+  //    module: luaCode,
+  //    scheduler: "8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw",
+  //    signer: createDataItemSigner(window.arweaveWallet),
+  //   })
+  //  return processId
+  // }
 
   return $$({ communityList, joincommunityList, communityCreate, registInfo, getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityjoined, getCommunityInfo })
 })
