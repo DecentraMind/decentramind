@@ -69,7 +69,7 @@ watchEffect(() => {
 })
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
-const communityInfo = {
+const communityInfo2 = {
   communityName: 'permadao',
   website: 'www.demo.com',
   socialMedia: 'twitter',
@@ -98,7 +98,19 @@ const footerLinks = $computed(() => {
   ]
 })
 
-
+let communityInfo = $ref({})
+let communityInfoJson = $ref({})
+const loadCommunityInfo = async (pid) => {
+  try {
+    communityInfo = await getCommunityInfo(pid)
+    const jsonData = communityInfo.Messages[0].Data
+    const jsonObjects = jsonData.match(/\{.*?\}/g)
+    communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
+    console.log("-------------", communityInfoJson)
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+}
 
 
 
@@ -111,6 +123,9 @@ const test = () => {
 onMounted( () => {
   if (!route.params.pid) return
   chatID = route.params.pid
+})
+onMounted(async () => {
+  await loadCommunityInfo("798e6573-7cac-4575-8ed1-e638bd2a4e41")
 })
 </script>
 
@@ -130,7 +145,7 @@ onMounted( () => {
           </div>
 
           <UDivider />
-          
+
           <div class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
             <div>
