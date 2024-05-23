@@ -337,7 +337,7 @@ const removeSupplyGroup = (index) => {
 
         <UFormGroup name="Buildernum" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.buildnum') }}</div>
+            <div class="text-sky-400 w-[480px]">{{ $t('community.buildnum') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.showBuildernum" />
@@ -347,7 +347,7 @@ const removeSupplyGroup = (index) => {
 
         <UFormGroup name="Allreward" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.allreward') }}</div>
+            <div class="text-sky-400 w-[480px]">{{ $t('community.allreward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.showAllreward" />
@@ -360,7 +360,7 @@ const removeSupplyGroup = (index) => {
             <div class="text-sky-400 w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
+            <USelectMenu class="mr-10" v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
             <UToggle v-model="state.showTypereward" />
             <Text>{{ state.showTypereward ? $t('show') : $t('hide') }}</Text>
           </div>
@@ -395,9 +395,9 @@ const removeSupplyGroup = (index) => {
               </template>
               <div class="flex flex-row items-center space-x-3">
                 <UInput v-model="formGroup.tokenName" placeholder="" />
+                <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
                 <UToggle v-model="formGroup.showTokenName" />
                 <Text>{{ formGroup.showTokenName ? $t('show') : $t('hide') }}</Text>
-                <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
               </div>
             </UFormGroup>
           </div>
