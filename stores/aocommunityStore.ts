@@ -203,6 +203,24 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return join
   }
 
+  //退出社区方法
+  const exitCommunity = async (uuid) => {
+    if (isLoading) return
+    isLoading = true
+
+    let exit = await message({
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'exit' },
+        { name: 'userAddress', value: address }
+      ],
+      signer: createDataItemSigner(window.arweaveWallet),
+      data: uuid,
+    });
+    isLoading = false
+    return exit
+  }
+
   //修改个人信息
   const personalInfo = async (username, twitter, mail, phone) => {
     if (isLoading) return
@@ -244,17 +262,32 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
 
   //创建社区聊天室
-  //const makecommunityChat = async () => {
-  //  let processId = await spawn({
-  //    module: luaCode,
-  //    scheduler: "8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw",
-  //    signer: createDataItemSigner(window.arweaveWallet),
-  //   })
-  //  return processId
-  // }
+  const makecommunityChat = async () => {
+    let processId = await spawn({
+      module: luaCode,
+      scheduler: "8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw",
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    return processId
+  }
 
-  return $$({ communityList, joincommunityList, communityCreate, registInfo, getCommunitylist, addCommunity, joinCommunity, personalInfo, getInfo, getCommunityjoined, getCommunityInfo })
+  return $$({
+    communityList,
+    joincommunityList,
+    communityCreate,
+    makecommunityChat,
+    registInfo,
+    getCommunitylist,
+    addCommunity,
+    joinCommunity,
+    exitCommunity,
+    personalInfo,
+    getInfo,
+    getCommunityjoined,
+    getCommunityInfo
+  })
 })
+
 
 
 if (import.meta.hot)

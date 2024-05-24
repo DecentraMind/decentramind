@@ -164,7 +164,6 @@ const loadCommunityInfo = async (pid) => {
     const jsonData = communityInfo.Messages[0].Data
     const jsonObjects = jsonData.match(/\{.*?\}/g)
     communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
-    console.log("-------------", communityInfoJson)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -237,8 +236,13 @@ const taskTypes = [
     }
   }]
 ]
-</script>
 
+const { exitCommunity } = $(aocommunityStore())
+const quitCommunity = async(communityuuid: any) => {
+  console.log(communityuuid)
+  await exitCommunity(communityuuid)
+}
+</script>
 <template>
   <UDashboardPanel :width="350" collapsible>
     <UDashboardSidebar>
@@ -250,7 +254,7 @@ const taskTypes = [
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
               {{ $t('View Details') }}
             </UButton>
-            <UButton color="white" variant="solid">
+            <UButton color="white" variant="solid" @click="quitCommunity(Info.uuid)">
               {{ $t('Quit') }}
             </UButton>
           </div>

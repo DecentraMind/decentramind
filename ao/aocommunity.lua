@@ -46,7 +46,6 @@ end)
 
 -- 加入社区方法
 Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(msg)
-  print(cJson)
   local newColumn = msg.Tags.userAddress
   print(msg.Tags.userAddress)
   -- 检查是否已经存在相同名字的列
@@ -76,6 +75,32 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
   else
     -- 如果 joined 字段不存在，则新建一个 joined 字段，并赋值为包含 "xDao" 的数组
     usercommunity[newColumn].joined = { msg.Data }
+  end
+end)
+
+-- 退出社区的方法
+Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(msg)
+  local newColumn = msg.Tags.userAddress
+  print(msg.Tags.userAddress)
+
+  -- 检查是否存在 usercommunity[newColumn]
+  if usercommunity[newColumn] then
+    -- 检查是否存在 usercommunity[newColumn].joined
+    if usercommunity[newColumn].joined then
+      -- 遍历 usercommunity[newColumn].joined
+      for i, data in ipairs(usercommunity[newColumn].joined) do
+        if data == msg.Data then
+          -- 找到 msg.Data 并删除
+          table.remove(usercommunity[newColumn].joined, i)
+          print("Removed " .. msg.Data .. " from joined")
+          break -- 删除后跳出循环
+        end
+      end
+    else
+      print("No 'joined' field in usercommunity[" .. newColumn .. "]")
+    end
+  else
+    print("No column named " .. newColumn .. " in usercommunity")
   end
 end)
 
