@@ -156,12 +156,25 @@ const userinfo = {
 }
 const error_msg = '感谢你对社区的支持~经系统检测，你还没有绑定twitter账号哦！'
 let isOpen = $ref(false)
+let isOpenJoin = $ref(false)
 function openModal() {
   if (isNullOrEmpty(userinfo.userTwitter)) {
     modal.open(CommonAlert, { message: error_msg })
   } else {
     isOpen = true
   }
+}
+function openJoin() {
+  if (isNullOrEmpty(userinfo.userTwitter)) {
+    modal.open(CommonAlert, { message: error_msg })
+  } else {
+    isOpenJoin = true
+  }
+}
+function onClick() {
+  //  调用参与任务方法，只计数不提交
+  joinSpaceTask('20c1f625-9fcf-4113-83f6-19e63b2a9d6c', addr, url)
+  isOpenJoin = false
 }
 function isNullOrEmpty(str: string | null | undefined): boolean {
   return !str || str.length === 0 || str.length == undefined
@@ -170,14 +183,13 @@ function isNullOrEmpty(str: string | null | undefined): boolean {
 
 const emit = defineEmits(['success'])
 
-let isSettlementOpen = $ref(false)
-function onClick() {
-  isSettlementOpen = true
-}
+
+
 const addr = $ref('')
 const url = $ref('')
 function joinTask() {
-  joinSpaceTask('20c1f625-9fcf-4113-83f6-19e63b2a9d6c', addr, url)
+  // TODO 调用提交space链接并解析方法
+  // joinSpaceTask('20c1f625-9fcf-4113-83f6-19e63b2a9d6c', addr, url)
   isOpen = false
 }
 
@@ -280,7 +292,7 @@ function joinTask() {
                 </div>
               </div>
               <div v-if="switchDisable()" class="flex justify-center ">
-                <UButton :label="$t('Join Task')" @click="openModal" />
+                <UButton :label="$t('Join Task')" @click="openJoin" />
               </div>
             </div>
             <div>
@@ -299,7 +311,7 @@ function joinTask() {
             </div>
             <div v-if="switchDisable()" class="flex justify-center my-8">
               <div class="mx-4">
-                <UButton :label="$t('Submit')" />
+                <UButton :label="$t('Submit')" @click="openModal" />
               </div>
               <div class="mx-4">
                 <UButton :label="$t('Send Bounty')" />
@@ -336,7 +348,7 @@ function joinTask() {
         </UBlogPost>
       </div>
     </UPage>
-    <UModal v-model="isOpen">
+    <UModal v-model="isOpenJoin">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
@@ -348,7 +360,7 @@ function joinTask() {
                 variant="ghost"
                 icon="i-heroicons-x-mark-20-solid"
                 class="-my-1"
-                @click="isOpen = false"
+                @click="isOpenJoin = false"
             />
           </div>
         </template>
@@ -360,7 +372,25 @@ function joinTask() {
             {{ $t('I have read all rules') }}
           </UButton>
         </div>
-        <div v-if="isSettlementOpen">
+      </UCard>
+    </UModal>
+    <UModal v-model="isOpen">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+              {{ $t("Join Task") }}
+            </h3>
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              class="-my-1"
+              @click="isOpen = false"
+            />
+          </div>
+        </template>
+        <div>
           <div class="my-8">
             <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />
           </div>

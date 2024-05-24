@@ -54,7 +54,7 @@ function selectRange(duration: Duration) {
   selected.value = { start: sub(new Date(), duration), end: new Date() }
 }
 const state = $ref({
-  taskLogo: undefined,
+  taskLogo: 'banner1',
   taskName: undefined,
   taskInfo: undefined,
   taskRule: undefined,
@@ -169,17 +169,74 @@ const loadCommunityInfo = async (pid) => {
     console.error('Error fetching data:', error)
   }
 }
-const taskTypes = [t('Twitter Space Quest'), t('Promotion Quest'), t('Invitation Quest'),t('Try Our Product Quest'),t('Thread Quest'),t('Twitter Article Quest')]
 const taskType = ref()
 let taskListIsEmpty = $ref(false)
 onMounted(async () => {
   await getAllTasks(communityId, 'GetAllTasks')
-  if(!Array.isArray(respArray) && !respArray.length){
+  if(respArray.length === 0){
     taskListIsEmpty = true
   }
   console.log("taskIsEmpty = " + taskListIsEmpty)
   await loadCommunityInfo(route.params.communityId)
 })
+
+const banners = [
+  '/task/banner1.jpg',
+  '/task/banner2.jpg',
+  '/task/banner3.jpg',
+  '/task/banner4.jpg',
+  '/task/banner5.jpg'
+]
+const currentIndex = $ref(0); // 用于存储当前选中的索引
+const updateBanner = (index: number) => {
+  console.log('-----------------bbbbbbbbbbbbbbbb')
+  if (index === 1) {
+    state.taskLogo = 'banner1'
+  } else if (index === 2) {
+    state.taskLogo = 'banner2'
+  } else if (index === 3) {
+    state.taskLogo = 'banner3'
+  }else if (index === 4){
+    state.taskLogo = 'banner4'
+  }else if (index === 5){
+    state.taskLogo = 'banner5'
+  }
+  console.log(state.taskLogo)
+}
+
+const taskTypes = [
+  [{
+    label: 'Twitter Space Quest',
+    click: () => {
+      isOpen = true
+    }
+  }], [{
+    label: 'Promotion Quest',
+    click: () => {
+      alert('This quest template is being prepared')
+    }
+  }], [{
+    label: 'Invitation Quest',
+    click: () => {
+      alert('This quest template is being prepared')
+    }
+  }], [{
+    label: 'Try Our Product Quest',
+    click: () => {
+      alert('This quest template is being prepared')
+    }
+  }], [{
+    label: 'Thread Quest',
+    click: () => {
+      alert('This quest template is being prepared')
+    }
+  }], [{
+    label: 'Twitter Article Quest',
+    click: () => {
+      alert('This quest template is being prepared')
+    }
+  }]
+]
 </script>
 
 <template>
@@ -192,6 +249,9 @@ onMounted(async () => {
           <div>
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
               {{ $t('View Details') }}
+            </UButton>
+            <UButton color="white" variant="solid">
+              {{ $t('Quit') }}
             </UButton>
           </div>
         </div>
@@ -266,21 +326,20 @@ onMounted(async () => {
 
   <UDashboardPage>
     <UPage class="overflow-y-auto h-full w-full">
-      <div class="   mx-10 mt-10  ">
-        <div class="flex justify-between mb-4">
+      <div class=" flex flex-col mx-10 mt-10 items-center  ">
+        <div class="flex w-full justify-between mb-4">
           <div>
             <UTabs :items="items" @change="onChange" />
           </div>
           <div class="flex">
             <div>
-              <UButton color="white" variant="solid" size="lg" @click="openModal">
-                {{ $t("Start a Public Quest") }}
-              </UButton>
+              <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
+                <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+              </UDropdown>
             </div>
-
           </div>
         </div>
-        <div v-if="taskListIsEmpty">
+        <div class="w-1/3" v-if="taskListIsEmpty">
           <UPricingCard
               :title="$t('Nothing here,click to start your first public quest.')"
               highlight
@@ -292,64 +351,63 @@ onMounted(async () => {
                   <span>{{ $t('Nothing here,click to start your first public quest.') }}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <div class="mr-3"><USelect v-model="taskType" :placeholder="$t('More Quests Soon')" :options="taskTypes" size="lg"/></div>
-                  <div>
-                    <UButton icon="ic:baseline-add-circle-outline" color="white" variant="solid" size="lg" @click="openModal">
-                      {{ $t("Start a Public Quest") }}
-                    </UButton>
-                  </div>
+                  <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
+                    <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+                  </UDropdown>
                 </div>
               </div>
             </template>
           </UPricingCard>
         </div>
-        <UBlogList orientation="horizontal">
-          <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="blogPost.image"
-            :description="blogPost.description">
-            <template #title>
-              <div class="flex justify-between ...">
-                <Text>{{ blogPost.name }}</Text>
-                <UBadge color="green" variant="solid">
-                  {{ blogPost.status }}
-                </UBadge>
-              </div>
-            </template>
-            <template #description>
-              <div class="flex flex-col space-y-2">
-                <Text class="text-blue-900">
-                  {{ blogPost.description }}
-                </Text>
+        <div class="mx-auto w-full" v-if="!taskListIsEmpty">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
+            <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="`/task/${blogPost.image}.jpg`"
+                       :description="blogPost.description">
+              <template #title>
                 <div class="flex justify-between ...">
-                  <div>
-                    <Text class="text-blue-300">
-                      {{ $t("Bounty") }}:
-                    </Text>
+                  <Text>{{ blogPost.name }}</Text>
+                  <UBadge color="green" variant="solid">
+                    {{ blogPost.status }}
+                  </UBadge>
+                </div>
+              </template>
+              <template #description>
+                <div class="flex flex-col space-y-2">
+                  <Text class="text-blue-900">
+                    {{ blogPost.description }}
+                  </Text>
+                  <div class="flex justify-between ...">
+                    <div>
+                      <Text class="text-blue-300">
+                        {{ $t("Bounty") }}:
+                      </Text>
+                    </div>
+                    <div>
+                      <Text class="text-blue-300">
+                        {{ blogPost.reward }}
+                      </Text>
+                    </div>
                   </div>
-                  <div>
-                    <Text class="text-blue-300">
-                      {{ blogPost.reward }}
-                    </Text>
+                  <div class="flex justify-between ...">
+                    <div>
+                      <Text class="text-blue-300">
+                        {{ $t("builders now") }}:
+                      </Text>
+                    </div>
+                    <div>
+                      <Text class="text-blue-300">
+                        {{ blogPost.builderNum }}
+                      </Text>
+                    </div>
                   </div>
                 </div>
-                <div class="flex justify-between ...">
-                  <div>
-                    <Text class="text-blue-300">
-                      {{ $t("builders now") }}:
-                    </Text>
-                  </div>
-                  <div>
-                    <Text class="text-blue-300">
-                      {{ blogPost.builderNum }}
-                    </Text>
-                  </div>
-                </div>
-              </div>
-            </template>
-            <UButton :to="`/${slug}/taskDetail/${blogPost.id}`" class="absolute right-0" color="primary" variant="outline">
-              {{ $t("View Details") }}
-            </UButton>
-          </UBlogPost>
-        </UBlogList>
+              </template>
+              <UButton :to="`/${slug}/taskDetail/${blogPost.id}`" class="absolute right-0" color="primary" variant="outline">
+                {{ $t("View Details") }}
+              </UButton>
+            </UBlogPost>
+          </div>
+        </div>
       </div>
     </UPage>
     <UModal v-model="isOpen">
@@ -365,7 +423,40 @@ onMounted(async () => {
         </template>
         <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
           <UFormGroup name="taskLogo" :label="$t('Banner')">
-            <UInput v-model="state.taskLogo" type="file" size="sm" />
+            <template #label>
+              <div class="text-sky-400 w-[300px]">{{ $t('Banner') }}</div>
+            </template>
+            <UCarousel
+              v-model="currentIndex"
+              :items="banners"
+              :ui="{
+              item: 'basis-full',
+              container: 'rounded-lg',
+              indicators: {
+                wrapper: 'relative bottom-0 mt-4'
+              }
+            }"
+              indicators
+              class="w-64 mx-auto"
+            >
+              <template #default="{ item }">
+                <img :src="item" class="w-full" draggable="false">
+              </template>
+
+              <template #indicator="{ onClick, page, active }">
+                <UButton
+                  :label="String(page)"
+                  :variant="active ? 'solid' : 'outline'"
+                  size="2xs"
+                  class="rounded-full min-w-6 justify-center"
+                  @click="() => {
+                  currentIndex = page; // 更新当前索引
+                  updateBanner(page)
+                  onClick(page); // 触发页面点击事件
+                }"
+                />
+              </template>
+            </UCarousel>
           </UFormGroup>
 
           <UFormGroup name="taskName" :label="$t('Name of Quest')">

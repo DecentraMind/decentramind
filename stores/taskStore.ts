@@ -60,10 +60,12 @@ export const taskStore = defineStore('taskStore', () => {
     for (let index = 0; index < resp.length; index++) {
 
       let element = JSON.parse(resp[index])
+      console.log('communityId = ' + element.communityId)
       if(element.communityId !== communityId){
+        // console.log('communityId = ' + element.communityId)
         continue
       }
-      console.log("builderNumber = " + element.buildNumber)
+      console.log('builderNumber = ' + element.buildNumber)
       let respData = {
         id: element.taskId,
         name: element.taskName,
@@ -79,6 +81,7 @@ export const taskStore = defineStore('taskStore', () => {
         status: element.isBegin,
       }
       respArray.push(respData)
+
     }
     // console.log("respArray = " + respArray)
     // for (let index = 0; index < respArray.length; index++) {
