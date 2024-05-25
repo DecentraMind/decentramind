@@ -21,7 +21,13 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   let communityList = $ref({})
   let joincommunityList = $ref({})
   let isLoading = $ref(false)
+  let currentUuid = $ref('')
   let communityCreate = $ref(false)
+
+  //设置当前选中社区的uuid
+  const setCurrentuuid = (uuid: any) => {
+    currentUuid = uuid
+  }
 
   //用户注册方法
   const registInfo = async () => {
@@ -113,7 +119,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
 
-  //获取社区列表方法
+  //获取社区列表方法(会产生社区表，以及一个加入了的社区表)
   const getCommunitylist = async () => {
     if (isLoading) return
     isLoading = true
@@ -125,12 +131,25 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
           { name: 'userAddress', value: address }
         ],
       });
-      const jsonData = result.Messages[0].Data // 获取原始的 JSON 字符串
-      const jsonObjects = jsonData.match(/\{.*?\}/g) // 使用正则表达式匹配字符串中的 JSON 对象
-      communityList = jsonObjects.map((item: any) => JSON.parse(item)) // 解析每个 JSON 对象并存储到数组中
-      joincommunityList = jsonObjects
-        .map((item: any) => JSON.parse(item))
-        .filter((item: any) => item.isJoined === true);
+      console.log('--------------------', result)
+      console.log()
+      const jsonData = result.Messages[0].Data;
+      communityList = JSON.parse(jsonData); // Parse the main JSON data
+
+      // Iterate through each object and parse nested JSON strings
+      communityList = communityList.map((item) => {
+        if (item.communitytoken && typeof item.communitytoken === 'string') {
+          try {
+            item.communitytoken = JSON.parse(item.communitytoken);
+          } catch (e) {
+            console.error('Failed to parse communitytoken:', e, item.communitytoken);
+          }
+        }
+        return item;
+      });
+
+      joincommunityList = communityList.filter((item) => item.isJoined === true);
+      console.log("-----------", joincommunityList)
       isLoading = false
       return result
     } else {
@@ -146,11 +165,10 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       joincommunityList = jsonObjects
         .map((item: any) => JSON.parse(item))
         .filter((item: any) => item.isJoined === true);
+      console.log("------------------", result)
       isLoading = false
       return result
     }
-    isLoading = true
-
   }
 
   //获取已加入得社区列表
@@ -169,8 +187,20 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return result
   }
 
+  //通过缓存的社区list来获取指定社区信息
+  const getLocalcommunityInfo = async (uuid: any) => {
+    console.log(uuid)
+    //if (isLoading) return
+    //isLoading = true
+
+    const communityInfo = communityList.find(community => community.uuid === uuid);
+    console.log(uuid)
+    console.log("--------nnn:", communityList)
+    return communityInfo
+  }
+
   //获取指定社区信息
-  const getCommunityInfo = async (uuid) => {
+  const getCommunityInfo = async (uuid: any) => {
     if (isLoading) return
     isLoading = true
 
@@ -263,20 +293,24 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //创建社区聊天室
   const makecommunityChat = async () => {
-    let processId = await spawn({
-      module: luaCode,
-      scheduler: "8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw",
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-    return processId
+    const response = await fetch('/AO/chat.lua')
+    const luaScript = await response.text()
+    //let processId = await spawn({
+    //  scheduler: "8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw",
+    //  signer: createDataItemSigner(window.arweaveWallet),
+    //})
+    //return processId
   }
 
   return $$({
     communityList,
     joincommunityList,
     communityCreate,
+    currentUuid,
+    setCurrentuuid,
     makecommunityChat,
     registInfo,
+    getLocalcommunityInfo,
     getCommunitylist,
     addCommunity,
     joinCommunity,

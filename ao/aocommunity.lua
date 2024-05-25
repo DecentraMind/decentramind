@@ -108,19 +108,36 @@ end)
 Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "communitylist"), function(msg)
   -- 创建 communityCopy 数组
   print("goods")
+  print(community)
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
     local dCom = json.decode(communityItem)
+    print(dCom)
     local itemCopy = {
       uuid = dCom[1].uuid,
-      logo = dCom[1].logo,
+      -- logo = dCom[1].logo,
       banner = dCom[1].banner,
       name = dCom[1].name,
       desc = dCom[1].desc,
-      twitter = dCom[1].twitter,
       website = dCom[1].website,
+      showwebsite = dCom[1].showwebsite,
+      twitter = dCom[1].twitter,
+      showtwitter = dCom[1].showtwitter,
       whitebook = dCom[1].whitebook,
-      allreward = dCom[1].allreward
+      showwhitebook = dCom[1].showwhitebook,
+      github = dCom[1].github,
+      showgithub = dCom[1].showgithub,
+      showbuildnum = dCom[1].showbuildnum,
+      showallreward = dCom[1].showallreward,
+      bounty = dCom[1].bounty,
+      showbounty = dCom[1].showbounty,
+      ispublished = dCom[1].ispublished,
+      communitytoken = json.encode(dCom[1].communitytoken),
+      istradable = dCom[1].istradable,
+      support = dCom[1].support,
+      showdetail = dCom[1].showdetail,
+      alltoken = dCom[1].alltoken,
+      tokensupply = dCom[1].tokensupply
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
     if usercommunity[msg.Tags.userAddress] then
@@ -137,7 +154,7 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
     end
     table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
   end
-  print(communityCopy)
+  -- print(communityCopy)
   -- 需要将table转成json字符串传回
   local cJson = json.encode(communityCopy)
   Handlers.utils.reply(cJson)(msg)
@@ -158,8 +175,24 @@ Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "community
         name = dCom[1].name,
         desc = dCom[1].desc,
         website = dCom[1].website,
+        showwebsite = dCom[1].showwebsite,
+        twitter = dCom[1].twitter,
+        showtwitter = dCom[1].showtwitter,
         whitebook = dCom[1].whitebook,
-        allreward = dCom[1].allreward
+        showwhitebook = dCom[1].showwhitebook,
+        github = dCom[1].github,
+        showgithub = dCom[1].showgithub,
+        showbuildnum = dCom[1].showbuildnum,
+        showallreward = dCom[1].showallreward,
+        bounty = json.encode(dCom[1].bounty),
+        showbounty = dCom[1].showbounty,
+        ispublished = dCom[1].ispublished,
+        communitytoken = json.encode(dCom[1].communitytoken),
+        istradable = dCom[1].istradable,
+        support = json.encode(dCom[1].support),
+        showdetail = dCom[1].showdetail,
+        alltoken = dCom[1].alltoken,
+        tokensupply = json.encode(dCom[1].tokensupply)
       }
       table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
     end
@@ -185,10 +218,25 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
             banner = dCom[1].banner,
             name = dCom[1].name,
             desc = dCom[1].desc,
-            twitter = dCom[1].twitter,
             website = dCom[1].website,
+            showwebsite = dCom[1].showwebsite,
+            twitter = dCom[1].twitter,
+            showtwitter = dCom[1].showtwitter,
             whitebook = dCom[1].whitebook,
-            allreward = dCom[1].allreward
+            showwhitebook = dCom[1].showwhitebook,
+            github = dCom[1].github,
+            showgithub = dCom[1].showgithub,
+            showbuildnum = dCom[1].showbuildnum,
+            showallreward = dCom[1].showallreward,
+            bounty = dCom[1].bounty,
+            showbounty = dCom[1].showbounty,
+            ispublished = dCom[1].ispublished,
+            communitytoken = dCom[1].communitytoken,
+            istradable = dCom[1].istradable,
+            support = dCom[1].support,
+            showdetail = dCom[1].showdetail,
+            alltoken = dCom[1].alltoken,
+            tokensupply = dCom[1].tokensupply
           }
           table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
           break

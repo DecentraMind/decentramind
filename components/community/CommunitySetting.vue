@@ -4,7 +4,6 @@
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
-
 const options = [
   { label: 'OKE', value: 'OKE' },
   { label: 'Binance', value: 'Binance' },
@@ -72,7 +71,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 }
 
 
-const { addCommunity, communityCreate } = $(aocommunityStore())
+const { addCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
 let createCommunity = $ref('')
 let isLoading = $ref(false)
 
@@ -163,9 +162,7 @@ const updateBanner = (index: number) => {
   }
   console.log(state.banner)
 };
-const test = ()=> {
-  console.log(token.communityToken)
-}
+
 
 // 初始化表单组状态数组
 const token = $ref({
@@ -221,6 +218,12 @@ const addSupplyGroup = () => {
 const removeSupplyGroup = (index) => {
   token.tokenSupply.splice(index, 1)
 }
+
+const test = async() => {
+  const a = await getLocalcommunityInfo(currentUuid)
+  console.log('------------lll')
+  console.log(a)
+}
 </script>
 
 <template>
@@ -228,7 +231,7 @@ const removeSupplyGroup = (index) => {
     <DashboardPanelContent class="w-full overflow-y-auto pl-20 pt-10">
       <UAlert>
         <template #title>
-          <div class="text-3xl p-2">{{ $t('community.create') }}</div>
+          <div class="text-3xl p-2">{{ $t('community.create') }}12</div>
         </template>
       </UAlert>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
@@ -236,11 +239,10 @@ const removeSupplyGroup = (index) => {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.logo') }}</div>
           </template>
-          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]"
-            @click="logoupload" />
+          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
           <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
-
+        <UButton @click="test">test</UButton>
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.banner') }}</div>

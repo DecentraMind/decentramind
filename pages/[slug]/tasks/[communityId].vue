@@ -6,10 +6,12 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray } = $(taskStore())
-const { getCommunityInfo } = $(aocommunityStore())
+const { getCommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 console.log('communityId = ' + communityId)
+
+let communitySetting = $ref(false)
 
 const items = [
   {
@@ -171,10 +173,12 @@ const loadCommunityInfo = async (pid) => {
 const taskType = ref()
 let taskListIsEmpty = $ref(false)
 onMounted(async () => {
+  setCurrentuuid(route.params.communityId)
   await getAllTasks(communityId, 'GetAllTasks')
   if(respArray.length === 0){
     taskListIsEmpty = true
   }
+  
   console.log("taskIsEmpty = " + taskListIsEmpty)
   await loadCommunityInfo(route.params.communityId)
 })
@@ -315,7 +319,9 @@ const quitCommunity = async(communityuuid: any) => {
       <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
       <div class="flex-1" />
-
+      <div>
+        <UButton @click="communitySetting = true">test</UButton>
+      </div>
       <UDashboardSidebarLinks :links="footerLinks" />
 
       <UDivider class="bottom-0 sticky" />
@@ -421,8 +427,7 @@ const quitCommunity = async(communityuuid: any) => {
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
               {{ $t("Start a Public Quest") }}
             </h3>
-            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-              @click="isOpen = false" />
+            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
           </div>
         </template>
         <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
@@ -434,12 +439,12 @@ const quitCommunity = async(communityuuid: any) => {
               v-model="currentIndex"
               :items="banners"
               :ui="{
-              item: 'basis-full',
-              container: 'rounded-lg',
-              indicators: {
-                wrapper: 'relative bottom-0 mt-4'
-              }
-            }"
+                item: 'basis-full',
+                container: 'rounded-lg',
+                indicators: {
+                  wrapper: 'relative bottom-0 mt-4'
+                }
+              }"
               indicators
               class="w-64 mx-auto"
             >
@@ -454,10 +459,10 @@ const quitCommunity = async(communityuuid: any) => {
                   size="2xs"
                   class="rounded-full min-w-6 justify-center"
                   @click="() => {
-                  currentIndex = page; // 更新当前索引
-                  updateBanner(page)
-                  onClick(page); // 触发页面点击事件
-                }"
+                    currentIndex = page; // 更新当前索引
+                    updateBanner(page)
+                    onClick(page); // 触发页面点击事件
+                  }"
                 />
               </template>
             </UCarousel>
@@ -519,4 +524,9 @@ const quitCommunity = async(communityuuid: any) => {
       </UCard>
     </UModal>
   </UDashboardPage>
+  <UModal v-model="communitySetting" :ui="{ width: w-full }">
+      <UCard>
+        <CommunitySetting />
+      </UCard>
+    </UModal>
 </template>
