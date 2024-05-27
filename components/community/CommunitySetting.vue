@@ -4,15 +4,14 @@
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
-
 const options = [
   { label: 'OKE', value: 'OKE' },
   { label: 'Binance', value: 'Binance' },
 ]
 const supportSelect = ['OKE', 'Binance']
-const supportSelected = $ref([])
+let supportSelected = $ref([])
 const tokenselect = ['USDC', 'AR']
-const tokenselected = $ref([])
+let tokenselected = $ref([])
 let isCreated = $ref(false)
 
 let state = $ref({
@@ -72,7 +71,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 }
 
 
-const { addCommunity, communityCreate } = $(aocommunityStore())
+const { addCommunity, settingCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
 let createCommunity = $ref('')
 let isLoading = $ref(false)
 
@@ -92,7 +91,7 @@ const CreateCommunity = async () => {
   const jsonString = JSON.stringify(communitySubmit);
   console.log("---------------------------------")
   console.log(state.banner)
-  createCommunity = await addCommunity(
+  createCommunity = await settingCommunity(
     state.logobase64Data, 
     state.banner, 
     state.Name, 
@@ -164,9 +163,7 @@ const updateBanner = (index: number) => {
   }
   console.log(state.banner)
 };
-const test = ()=> {
-  console.log(token.communityToken)
-}
+
 
 // 初始化表单组状态数组
 const token = $ref({
@@ -222,6 +219,41 @@ const addSupplyGroup = () => {
 const removeSupplyGroup = (index) => {
   token.tokenSupply.splice(index, 1)
 }
+
+const setcommunitycurrent = async() => {
+  const communityInfo = await getLocalcommunityInfo(currentUuid)
+  //state.banner = a.banner;
+  console.log(communityInfo)
+
+  state.logobase64Data = communityInfo.logo
+  state.banner = communityInfo.banner
+  state.Name = communityInfo.name
+  state.Inbro = communityInfo.desc
+  state.Website = communityInfo.website
+  state.showWebsite = communityInfo.showwebsite
+  state.Twitter = communityInfo.twitter
+  state.showTwitter = communityInfo.showtwitter
+  state.Whitebook = communityInfo.whitebook
+  state.showWhitebook = communityInfo.showwhitebook
+  state.Github = communityInfo.github
+  state.showGithub = communityInfo.showgithub
+  state.showBuildernum = communityInfo.showbuildnum //builder人数
+  state.showAllreward = communityInfo.showallreward //所有总奖励
+  tokenselected = communityInfo.bounty //选择的token类型
+  state.showTypereward = communityInfo.showbounty //奖励的token类型
+  state.showDetail = communityInfo.showdetail //是否显示细节token分配额度比例
+  state.isPublished = communityInfo.ispublished //是否有发行token
+  token.communityToken = communityInfo.communitytoken //社区token分配比例额度
+  state.isTradable = communityInfo.istradable //是否可以交易
+  supportSelected = communityInfo.support //交易得平台
+  state.showAlltoken = communityInfo.showalltoken
+  state.Alltoken = communityInfo.alltoken //分配得token总量
+  token.tokenSupply = communityInfo.tokensupply //社区token分配比例详情
+}
+
+onMounted(async () => {
+  await setcommunitycurrent()
+})
 </script>
 
 <template>
@@ -237,11 +269,10 @@ const removeSupplyGroup = (index) => {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.logo') }}</div>
           </template>
-          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]"
-            @click="logoupload" />
+          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
           <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
-
+        <!--<UButton @click="test">test</UButton>-->
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.banner') }}</div>

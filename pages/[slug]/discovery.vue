@@ -18,7 +18,7 @@ const blogPosts = [
     description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.'
   }
 ]
-const { communityList, getCommunitylist, joinCommunity } = $(aocommunityStore())
+const { communityList, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
 let result = $ref()
 
 const getCommunity = async () => {
@@ -53,17 +53,17 @@ const translate = [
   }]
 ]
 const { t, locale , defaultLocale } = useI18n()
-const test = (newLocale) => {
-  console.log(locale.value)
-  locale.value = 'en'
-  console.log(locale.value)
-  console.log(`Language switched to: ${newLocale}`)
+const test = async () => {
+  console.log("test")
+  const uuidt = "798e6573-7cac-4575-8ed1-e638bd2a4e41"
+  const a = await getLocalcommunityInfo(uuidt)
+  console.log("---------:", a)
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-red-1900 w-full">
-    <UDashboardNavbar title="Home">
+    <UDashboardNavbar title="Community">
       <template #right>
         <UBadge color="white">
           <NuxtLink :to="`/${slug}/mytask`">
@@ -90,6 +90,7 @@ const test = (newLocale) => {
       </template>
     </UDashboardNavbar>
     <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">
+      <!--<UButton @click="test">test12</UButton>-->
       <!--
       测试按钮
       <UButton color="white" @click="doLogin">Arconnect</UButton>
@@ -114,7 +115,7 @@ const test = (newLocale) => {
               <div class="flex flex-col space-y-2">
                 <div class="flex flex-col min-h-[50px]">
                   <Text class="text-blue-300 text-2xl">
-                    builder: 100
+                    builder: 10012
                   </Text>
                   <Text class="text-blue-900 text-2xl">
                     {{ community.desc }}

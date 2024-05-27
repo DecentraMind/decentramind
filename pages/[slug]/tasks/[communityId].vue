@@ -6,10 +6,12 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray } = $(taskStore())
-const { getCommunityInfo } = $(aocommunityStore())
+const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 console.log('communityId = ' + communityId)
+
+let communitySetting = $ref(false)
 
 const items = [
   {
@@ -160,10 +162,9 @@ let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
   try {
-    communityInfo = await getCommunityInfo(pid)
-    const jsonData = communityInfo.Messages[0].Data
-    const jsonObjects = jsonData.match(/\{.*?\}/g)
-    communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
+    communityInfo = await getLocalcommunityInfo(pid)
+    console.log("-----------nnnnn11")
+    console.log(communityInfo)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -171,10 +172,12 @@ const loadCommunityInfo = async (pid) => {
 const taskType = ref()
 let taskListIsEmpty = $ref(false)
 onMounted(async () => {
+  setCurrentuuid(route.params.communityId)
   await getAllTasks(communityId, 'GetAllTasks')
   if(respArray.length === 0){
     taskListIsEmpty = true
   }
+  
   console.log("taskIsEmpty = " + taskListIsEmpty)
   await loadCommunityInfo(route.params.communityId)
 })
@@ -247,14 +250,15 @@ const quitCommunity = async(communityuuid: any) => {
   <UDashboardPanel :width="350" collapsible>
     <UDashboardSidebar>
       <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
-      <div v-for="Info in communityInfoJson" :key="Info.uuid">
+      <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
+      <div>
         <div class="flex justify-between  my-3 items-center">
-          <div class="text-3xl">{{ Info.name }}</div>
+          <div class="text-3xl">{{ communityInfo.name }}</div>
           <div>
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
               {{ $t('View Details') }}
             </UButton>
-            <UButton color="white" variant="solid" @click="quitCommunity(Info.uuid)">
+            <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
               {{ $t('Quit') }}
             </UButton>
           </div>
@@ -266,7 +270,7 @@ const quitCommunity = async(communityuuid: any) => {
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
-              {{ Info.website }}
+              {{ communityInfo.website }}
             </UBadge>
           </div>
         </div>
@@ -315,7 +319,9 @@ const quitCommunity = async(communityuuid: any) => {
       <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
       <div class="flex-1" />
-
+      <div>
+        <UButton @click="communitySetting = true">setting</UButton>
+      </div>
       <UDashboardSidebarLinks :links="footerLinks" />
 
       <UDivider class="bottom-0 sticky" />
@@ -421,8 +427,7 @@ const quitCommunity = async(communityuuid: any) => {
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
               {{ $t("Start a Public Quest") }}
             </h3>
-            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-              @click="isOpen = false" />
+            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
           </div>
         </template>
         <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
@@ -434,12 +439,12 @@ const quitCommunity = async(communityuuid: any) => {
               v-model="currentIndex"
               :items="banners"
               :ui="{
-              item: 'basis-full',
-              container: 'rounded-lg',
-              indicators: {
-                wrapper: 'relative bottom-0 mt-4'
-              }
-            }"
+                item: 'basis-full',
+                container: 'rounded-lg',
+                indicators: {
+                  wrapper: 'relative bottom-0 mt-4'
+                }
+              }"
               indicators
               class="w-64 mx-auto"
             >
@@ -454,10 +459,10 @@ const quitCommunity = async(communityuuid: any) => {
                   size="2xs"
                   class="rounded-full min-w-6 justify-center"
                   @click="() => {
-                  currentIndex = page; // 更新当前索引
-                  updateBanner(page)
-                  onClick(page); // 触发页面点击事件
-                }"
+                    currentIndex = page; // 更新当前索引
+                    updateBanner(page)
+                    onClick(page); // 触发页面点击事件
+                  }"
                 />
               </template>
             </UCarousel>
@@ -519,4 +524,9 @@ const quitCommunity = async(communityuuid: any) => {
       </UCard>
     </UModal>
   </UDashboardPage>
+  <UModal v-model="communitySetting" :ui="{ width: w-full }">
+      <UCard>
+        <CommunitySetting />
+      </UCard>
+    </UModal>
 </template>
