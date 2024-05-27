@@ -109,7 +109,7 @@ const loadCommunityInfo = async (pid) => {
 
     <!--<div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">-->
     <div class="w-full px-50">
-      <UColorModeImage :src="communityInfo.logo" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
+      <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
       <UPage class="pl-36 pr-80">
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."

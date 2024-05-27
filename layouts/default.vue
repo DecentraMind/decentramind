@@ -172,14 +172,15 @@ const test = ()=> {
       <UDashboardSidebar>
         <template #header>
           <NuxtLink :to="`/${slug}/discovery`">
-            <img src="/logo.png" class="h-full w-full">
+            <img src="/logo.png" class="h-full w-full transition duration-300 ease-in-out transform hover:brightness-75">
           </NuxtLink>
         </template>
 
         <UDivider />
 
         <NuxtLink v-for="item in joincommunityList" :key="item.uuid" :to="`/${slug}/tasks/${item.uuid}`">
-          <img src="/logo.png" :title="item.name" class="h-full w-full">
+          <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
+          <img :src="item.logo" :title="item.name" class="h-full w-full rounded-lg transition duration-300 ease-in-out transform hover:brightness-75">
         </NuxtLink>
         <UButton variant="soft" @click="communityCreate = true">
           <UIcon name="ion:add" class="h-full w-full " />
