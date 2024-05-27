@@ -119,7 +119,7 @@ const communityList1 = [
   { title: 'HelloRWA3', slug: 'hellorwa3', avatar: '/logo.png' },
 ]
 
-const { joincommunityList, communityCreate, getCommunitylist } = $(aocommunityStore())
+const { userInfo, joincommunityList, communityCreate, getCommunitylist, getInfo } = $(aocommunityStore())
 
 let result = $ref()
 const createCommunity = $ref(false)
@@ -138,6 +138,7 @@ onMounted(async () => {
     if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
       communityLoading = false
     }
+    await getInfo()
     await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -160,6 +161,9 @@ const links2 = [{
   to: '/releases'
 }]
 
+const test = ()=> {
+  const a = getInfo()
+}
 </script>
 
 <template>
@@ -168,18 +172,24 @@ const links2 = [{
       <UDashboardSidebar>
         <template #header>
           <NuxtLink :to="`/${slug}/discovery`">
-            <img src="/logo.png" class="h-full w-full">
+            <img src="/logo.png" class="h-full w-full transition duration-300 ease-in-out transform hover:brightness-75">
           </NuxtLink>
         </template>
 
         <UDivider />
 
         <NuxtLink v-for="item in joincommunityList" :key="item.uuid" :to="`/${slug}/tasks/${item.uuid}`">
-          <img src="/logo.png" :title="item.name" class="h-full w-full">
+          <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
+          <img :src="item.logo" :title="item.name" class="h-full w-full rounded-lg transition duration-300 ease-in-out transform hover:brightness-75">
         </NuxtLink>
         <UButton variant="soft" @click="communityCreate = true">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
+        <!--
+        <UButton variant="soft" @click="test">
+          <UIcon name="ion:add" class="h-full w-full " />
+        </UButton>
+        -->
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />

@@ -37,7 +37,7 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
       usercommunity[newColumn].joined = { item.uuid }
     end
   end
-  print(encodedData)
+  -- print(encodedData)
   table.insert(community, msg.Data)
 
   print("add success")
@@ -71,7 +71,7 @@ Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "commun
   -- 如果找到匹配的列
   if communityIndex then
     -- 替换该列的数据为 testData 中对应的数据
-    community[communityIndex] = testData[1]
+    community[communityIndex] = msg.Data
   else
     -- 如果未找到匹配的列，则将 testData 添加到 community 中
     -- table.insert(community, testData[1])
@@ -171,7 +171,7 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       showbounty = dCom[1].showbounty,
       showdetail = dCom[1].showdetail,
       ispublished = dCom[1].ispublished,
-      -- communitytoken = json.encode(dCom[1].communitytoken),
+      communitytoken = dCom[1].communitytoken,
       istradable = dCom[1].istradable,
       support = dCom[1].support,
       showalltoken = dCom[1].showalltoken,
@@ -227,7 +227,7 @@ Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "community
         showbounty = dCom[1].showbounty,
         showdetail = dCom[1].showdetail,
         ispublished = dCom[1].ispublished,
-        -- communitytoken = json.encode(dCom[1].communitytoken),
+        communitytoken = dCom[1].communitytoken,
         istradable = dCom[1].istradable,
         support = dCom[1].support,
         showalltoken = dCom[1].showalltoken,
@@ -272,7 +272,7 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
             showbounty = dCom[1].showbounty,
             showdetail = dCom[1].showdetail,
             ispublished = dCom[1].ispublished,
-            -- communitytoken = json.encode(dCom[1].communitytoken),
+            communitytoken = dCom[1].communitytoken,
             istradable = dCom[1].istradable,
             support = dCom[1].support,
             showalltoken = dCom[1].showalltoken,

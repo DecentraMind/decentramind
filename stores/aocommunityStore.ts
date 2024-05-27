@@ -19,6 +19,7 @@ const { address } = $(aoStore())
 export const aocommunityStore = defineStore('aocommunityStore', () => {
   const processID = 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU'
   let communityList = $ref({})
+  let userInfo = $ref({})
   let joincommunityList = $ref({})
   let isLoading = $ref(false)
   let currentUuid = $ref('')
@@ -123,7 +124,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //创建社区方法
   const settingCommunity = async (
-    //logo,
+    logo,
     Banner,
     Name,
     Inbro,
@@ -336,9 +337,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const personalInfo = async (username, twitter, mail, phone) => {
     if (isLoading) return
     isLoading = true
-
-    console.log("goods")
-    console.log(address)
     let Info = await message({
       process: processID,
       tags: [
@@ -357,10 +355,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //获取个人信息
   const getInfo = async () => {
-    console.log(isLoading)
     if (isLoading) return
     isLoading = true
-    console.log('------')
     let Info = await dryrun({
       process: processID,
       tags: [
@@ -368,6 +364,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         { name: 'userAddress', value: address }
       ]
     })
+    // 检查是否成功获取到了 Info
+
+    const jsonData = Info.Messages[0].Data;
+    const jsonObjects = jsonData.match(/\{.*?\}/g);
+    const infoJson = jsonObjects.map(item => JSON.parse(item));
+    // 赋值给 userInfo
+    userInfo = infoJson
+
+    console.log(userInfo)
     isLoading = false
     return Info
   }
@@ -384,6 +389,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
 
   return $$({
+    userInfo,
     communityList,
     joincommunityList,
     communityCreate,

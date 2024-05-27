@@ -102,7 +102,7 @@ const test = async () => {
       </div>
       <div class=" mx-auto w-full">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
-          <UBlogPost v-for="community in communityList" :key="community.uuid" :image="`/community/${community.banner}.png`" :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`">
+          <UBlogPost v-for="community in communityList" :key="community.uuid" :image="`/task/${community.banner}.jpg`" :description="community.decs" :to="`/${slug}/community-details/${community.uuid}`">
             <template #title>
               <div class="flex items-center">
                 <UAvatar :src="community.logo" alt="Avatar" size="md" />
@@ -115,7 +115,7 @@ const test = async () => {
               <div class="flex flex-col space-y-2">
                 <div class="flex flex-col min-h-[50px]">
                   <Text class="text-blue-300 text-2xl">
-                    builder: 10012
+                    builder: 100
                   </Text>
                   <Text class="text-blue-900 text-2xl">
                     {{ community.desc }}

@@ -17,7 +17,7 @@ let isCreated = $ref(false)
 
 let state = $ref({
   logobase64Data: undefined,
-  banner: 'imageone',
+  banner: 'banner1',
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
@@ -147,20 +147,26 @@ const bannerupload = () => {
 
 
 const items = [
-  '/community/imageone.png',
-  '/community/imagetwo.png',
-  '/community/imagethree.png'
+'/task/banner1.jpg',
+  '/task/banner2.jpg',
+  '/task/banner3.jpg',
+  '/task/banner4.jpg',
+  '/task/banner5.jpg'
 ]
 const currentIndex = $ref(0); // 用于存储当前选中的索引
 
 const updateBanner = (index: number) => {
   console.log('-----------------bbbbbbbbbbbbbbbb')
   if (index === 1) {
-    state.banner = 'imageone';
+    state.banner = 'banner1'
   } else if (index === 2) {
-    state.banner = 'imagetwo';
+    state.banner = 'banner2'
   } else if (index === 3) {
-    state.banner = 'imagethree'
+    state.banner = 'banner3'
+  }else if (index === 4){
+    state.banner = 'banner4'
+  }else if (index === 5){
+    state.banner = 'banner5'
   }
   console.log(state.banner)
 };
