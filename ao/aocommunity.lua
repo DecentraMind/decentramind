@@ -44,6 +44,45 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
   Handlers.utils.reply("add")(msg)
 end)
 
+-- 查找刀这个uuid的社区列
+local function findCommunityIndexByUUID(community, uuid)
+  print("--------")
+  print(uuid)
+  for index, entry in ipairs(community) do
+    print("111")
+    local dCom = json.decode(entry)
+    print(dCom[1].uuid)
+    if dCom[1].uuid == uuid then
+      print("--------", entry)
+      return index
+    end
+  end
+  return nil
+end
+-- 修改社区信息
+Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "communitysetting"), function(msg)
+  local testData = json.decode(msg.Data)
+  local newColumn = msg.Tags.userAddress
+  -- 找到 testData 的 uuid
+  local testDataUUID = testData[1].uuid
+  -- 找到 community 中与 testDataUUID 匹配的列
+  local communityIndex = findCommunityIndexByUUID(community, testDataUUID)
+
+  -- 如果找到匹配的列
+  if communityIndex then
+    -- 替换该列的数据为 testData 中对应的数据
+    community[communityIndex] = testData[1]
+  else
+    -- 如果未找到匹配的列，则将 testData 添加到 community 中
+    -- table.insert(community, testData[1])
+    print("目标社区为空")
+  end
+  -- table.insert(community, msg.Data)
+
+  print("setting change success")
+  Handlers.utils.reply("communitysetting")(msg)
+end)
+
 -- 加入社区方法
 Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(msg)
   local newColumn = msg.Tags.userAddress
@@ -108,43 +147,43 @@ end)
 Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "communitylist"), function(msg)
   -- 创建 communityCopy 数组
   print("goods")
-  print(community)
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
-    local dCom = json.decode(communityItem)
-    print(dCom)
+    -- local dCom = json.decode(communityItem)
+    local dCom = communityItem
     local itemCopy = {
-      uuid = dCom[1].uuid,
+      uuid = dCom.uuid,
       -- logo = dCom[1].logo,
-      banner = dCom[1].banner,
-      name = dCom[1].name,
-      desc = dCom[1].desc,
-      website = dCom[1].website,
-      showwebsite = dCom[1].showwebsite,
-      twitter = dCom[1].twitter,
-      showtwitter = dCom[1].showtwitter,
-      whitebook = dCom[1].whitebook,
-      showwhitebook = dCom[1].showwhitebook,
-      github = dCom[1].github,
-      showgithub = dCom[1].showgithub,
-      showbuildnum = dCom[1].showbuildnum,
-      showallreward = dCom[1].showallreward,
-      bounty = dCom[1].bounty,
-      showbounty = dCom[1].showbounty,
-      ispublished = dCom[1].ispublished,
-      communitytoken = json.encode(dCom[1].communitytoken),
-      istradable = dCom[1].istradable,
-      support = dCom[1].support,
-      showdetail = dCom[1].showdetail,
-      alltoken = dCom[1].alltoken,
-      tokensupply = dCom[1].tokensupply
+      banner = dCom.banner,
+      name = dCom.name,
+      desc = dCom.desc,
+      website = dCom.website,
+      showwebsite = dCom.showwebsite,
+      twitter = dCom.twitter,
+      showtwitter = dCom.showtwitter,
+      whitebook = dCom.whitebook,
+      showwhitebook = dCom.showwhitebook,
+      github = dCom.github,
+      showgithub = dCom.showgithub,
+      showbuildnum = dCom.showbuildnum,
+      showallreward = dCom.showallreward,
+      bounty = dCom.bounty,
+      showbounty = dCom.showbounty,
+      showdetail = dCom.showdetail,
+      ispublished = dCom.ispublished,
+      -- communitytoken = json.encode(dCom[1].communitytoken),
+      istradable = dCom.istradable,
+      support = dCom.support,
+      showalltoken = dCom.showalltoken,
+      alltoken = dCom.alltoken,
+      tokensupply = dCom.tokensupply
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress].joined then
         if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
           for _, userCommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
-            if dCom[1].uuid == userCommunityItem then
+            if dCom.uuid == userCommunityItem then
               itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
               break
             end

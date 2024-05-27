@@ -52,5 +52,6 @@
     "**/yarn.lock": true,
     "**/assets": true
   },
+  "i18n-ally.keystyle": "nested",
 
 }

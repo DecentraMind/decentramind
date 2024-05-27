@@ -9,9 +9,9 @@ const options = [
   { label: 'Binance', value: 'Binance' },
 ]
 const supportSelect = ['OKE', 'Binance']
-const supportSelected = $ref([])
+let supportSelected = $ref([])
 const tokenselect = ['USDC', 'AR']
-const tokenselected = $ref([])
+let tokenselected = $ref([])
 let isCreated = $ref(false)
 
 let state = $ref({
@@ -71,7 +71,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 }
 
 
-const { addCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
+const { addCommunity, settingCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
 let createCommunity = $ref('')
 let isLoading = $ref(false)
 
@@ -91,8 +91,8 @@ const CreateCommunity = async () => {
   const jsonString = JSON.stringify(communitySubmit);
   console.log("---------------------------------")
   console.log(state.banner)
-  createCommunity = await addCommunity(
-    state.logobase64Data, 
+  createCommunity = await settingCommunity(
+    //state.logobase64Data, 
     state.banner, 
     state.Name, 
     state.Inbro, 
@@ -108,11 +108,12 @@ const CreateCommunity = async () => {
     state.showAllreward, //所有总奖励
     tokenselected, //选择的token类型
     state.showTypereward, //奖励的token类型
+    state.showDetail, //是否显示细节token分配额度比例
     state.isPublished, //是否有发行token
     token.communityToken, //社区token分配比例额度
     state.isTradable, //是否可以交易
     supportSelected, //交易得平台
-    state.showDetail, //是否显示细节token分配额度比例
+    state.showAlltoken, //是否显示分配的总token
     state.Alltoken, //分配得token总量
     token.tokenSupply //社区token分配比例详情
   )
@@ -219,11 +220,40 @@ const removeSupplyGroup = (index) => {
   token.tokenSupply.splice(index, 1)
 }
 
-const test = async() => {
-  const a = await getLocalcommunityInfo(currentUuid)
-  console.log('------------lll')
-  console.log(a)
+const setcommunitycurrent = async() => {
+  const communityInfo = await getLocalcommunityInfo(currentUuid)
+  //state.banner = a.banner;
+  console.log(communityInfo)
+
+  //state.logobase64Data = communityInfo.logo
+  state.banner = communityInfo.banner
+  state.Name = communityInfo.name
+  state.Inbro = communityInfo.desc
+  state.Website = communityInfo.website
+  state.showWebsite = communityInfo.showwebsite
+  state.Twitter = communityInfo.twitter
+  state.showTwitter = communityInfo.showtwitter
+  state.Whitebook = communityInfo.whitebook
+  state.showWhitebook = communityInfo.showwhitebook
+  state.Github = communityInfo.github
+  state.showGithub = communityInfo.showgithub
+  state.showBuildernum = communityInfo.showbuildnum //builder人数
+  state.showAllreward = communityInfo.showallreward //所有总奖励
+  tokenselected = communityInfo.bounty //选择的token类型
+  state.showTypereward = communityInfo.showbounty //奖励的token类型
+  state.showDetail = communityInfo.showdetail //是否显示细节token分配额度比例
+  state.isPublished = communityInfo.ispublished //是否有发行token
+  token.communityToken = communityInfo.communitytoken //社区token分配比例额度
+  state.isTradable = communityInfo.istradable //是否可以交易
+  supportSelected = communityInfo.support //交易得平台
+  state.showAlltoken = communityInfo.showalltoken
+  state.Alltoken = communityInfo.alltoken //分配得token总量
+  token.tokenSupply = communityInfo.tokensupply //社区token分配比例详情
 }
+
+onMounted(async () => {
+  await setcommunitycurrent()
+})
 </script>
 
 <template>
@@ -231,7 +261,7 @@ const test = async() => {
     <DashboardPanelContent class="w-full overflow-y-auto pl-20 pt-10">
       <UAlert>
         <template #title>
-          <div class="text-3xl p-2">{{ $t('community.create') }}12</div>
+          <div class="text-3xl p-2">{{ $t('community.create') }}</div>
         </template>
       </UAlert>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
@@ -242,7 +272,7 @@ const test = async() => {
           <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
           <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
-        <UButton @click="test">test</UButton>
+        <!--<UButton @click="test">test</UButton>-->
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.banner') }}</div>

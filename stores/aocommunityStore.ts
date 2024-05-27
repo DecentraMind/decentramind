@@ -62,11 +62,12 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     ShowAllreward,
     Bounty,
     ShowBounty,
+    ShowDetail,
     Ispublished,
     CommunityToken,
     IsTradable,
     Support,
-    ShowDetail,
+    ShowAlltoken,
     AllToken,
     TokenSupply
   ) => {
@@ -94,11 +95,12 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "showallreward": ShowAllreward,
         "bounty": Bounty,
         "showbounty": ShowBounty,
+        "showdetail": ShowDetail,
         "ispublished": Ispublished,
         "communitytoken": CommunityToken,
         "istradable": IsTradable,
         "support": Support,
-        "showdetail": ShowDetail,
+        "showalltoken": ShowAlltoken,
         "alltoken": AllToken,
         "tokensupply": TokenSupply,
         "uuid": uuid,
@@ -119,10 +121,89 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
 
-  //获取社区列表方法(会产生社区表，以及一个加入了的社区表)
-  const getCommunitylist = async () => {
+  //创建社区方法
+  const settingCommunity = async (
+    //logo,
+    Banner,
+    Name,
+    Inbro,
+    Website,
+    ShowWebsite,
+    Twitter,
+    ShowTwitter,
+    Whitebook,
+    ShowWhitebook,
+    Github,
+    ShowGithub,
+    ShowBuildnum,
+    ShowAllreward,
+    Bounty,
+    ShowBounty,
+    ShowDetail,
+    Ispublished,
+    CommunityToken,
+    IsTradable,
+    Support,
+    ShowAlltoken,
+    AllToken,
+    TokenSupply
+  ) => {
     if (isLoading) return
     isLoading = true
+
+    const uuid = createuuid()
+
+    let communitySubmitList = [
+      {
+        //"logo": logo,
+        "banner": Banner,
+        "name": Name,
+        "desc": Inbro,
+        "creater": address,
+        "owner": address,
+        "website": Website,
+        "showwebsite": ShowWebsite,
+        "twitter": Twitter,
+        "showtwitter": ShowTwitter,
+        "whitebook": Whitebook,
+        "showwhitebook": ShowWhitebook,
+        "github": Github,
+        "showgithub": ShowGithub,
+        "showbuildnum": ShowBuildnum,
+        "showallreward": ShowAllreward,
+        "bounty": Bounty,
+        "showbounty": ShowBounty,
+        "showdetail": ShowDetail,
+        "ispublished": Ispublished,
+        "communitytoken": CommunityToken,
+        "istradable": IsTradable,
+        "support": Support,
+        "showalltoken": ShowAlltoken,
+        "alltoken": AllToken,
+        "tokensupply": TokenSupply,
+        "uuid": currentUuid,
+      }
+    ]
+    const jsonString = JSON.stringify(communitySubmitList);
+    console.log("---------nonono")
+    console.log(jsonString)
+    let settingCommunity = await message({
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'communitysetting' },
+        { name: 'userAddress', value: address }
+      ],
+      signer: createDataItemSigner(window.arweaveWallet),
+      data: jsonString,
+    });
+    console.log(settingCommunity)
+    isLoading = false
+  }
+
+  //获取社区列表方法(会产生社区表，以及一个加入了的社区表)
+  const getCommunitylist = async () => {
+    //if (isLoading) return
+    //isLoading = true
     if (address !== '') {
       let result = await dryrun({
         process: processID,
@@ -131,7 +212,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
           { name: 'userAddress', value: address }
         ],
       });
-      console.log('--------------------', result)
+      console.log('--------------------11', result)
       console.log()
       const jsonData = result.Messages[0].Data;
       communityList = JSON.parse(jsonData); // Parse the main JSON data
@@ -195,7 +276,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
     const communityInfo = communityList.find(community => community.uuid === uuid);
     console.log(uuid)
-    console.log("--------nnn:", communityList)
+    console.log("--------nnn:", communityInfo)
     return communityInfo
   }
 
@@ -313,6 +394,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     getLocalcommunityInfo,
     getCommunitylist,
     addCommunity,
+    settingCommunity,
     joinCommunity,
     exitCommunity,
     personalInfo,

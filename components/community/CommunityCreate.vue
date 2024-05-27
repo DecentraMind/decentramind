@@ -109,11 +109,12 @@ const CreateCommunity = async () => {
     state.showAllreward, //所有总奖励
     tokenselected, //选择的token类型
     state.showTypereward, //奖励的token类型
+    state.showDetail, //是否显示细节token分配额度比例
     state.isPublished, //是否有发行token
     token.communityToken, //社区token分配比例额度
     state.isTradable, //是否可以交易
     supportSelected, //交易得平台
-    state.showDetail, //是否显示细节token分配额度比例
+    state.showAlltoken, //是否显示分配的总token
     state.Alltoken, //分配得token总量
     token.tokenSupply //社区token分配比例详情
   )

@@ -63,7 +63,7 @@ const test = async () => {
 
 <template>
   <div class="min-h-screen bg-red-1900 w-full">
-    <UDashboardNavbar title="Home">
+    <UDashboardNavbar title="Community">
       <template #right>
         <UBadge color="white">
           <NuxtLink :to="`/${slug}/mytask`">
@@ -90,7 +90,7 @@ const test = async () => {
       </template>
     </UDashboardNavbar>
     <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">
-      <UButton @click="test">test12</UButton>
+      <!--<UButton @click="test">test12</UButton>-->
       <!--
       测试按钮
       <UButton color="white" @click="doLogin">Arconnect</UButton>

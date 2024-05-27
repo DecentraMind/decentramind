@@ -6,7 +6,7 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray } = $(taskStore())
-const { getCommunityInfo, setCurrentuuid } = $(aocommunityStore())
+const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 console.log('communityId = ' + communityId)
@@ -162,10 +162,9 @@ let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
   try {
-    communityInfo = await getCommunityInfo(pid)
-    const jsonData = communityInfo.Messages[0].Data
-    const jsonObjects = jsonData.match(/\{.*?\}/g)
-    communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
+    communityInfo = await getLocalcommunityInfo(pid)
+    console.log("-----------nnnnn11")
+    console.log(communityInfo)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -251,14 +250,15 @@ const quitCommunity = async(communityuuid: any) => {
   <UDashboardPanel :width="350" collapsible>
     <UDashboardSidebar>
       <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
-      <div v-for="Info in communityInfoJson" :key="Info.uuid">
+      <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
+      <div>
         <div class="flex justify-between  my-3 items-center">
-          <div class="text-3xl">{{ Info.name }}</div>
+          <div class="text-3xl">{{ communityInfo.name }}</div>
           <div>
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
               {{ $t('View Details') }}
             </UButton>
-            <UButton color="white" variant="solid" @click="quitCommunity(Info.uuid)">
+            <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
               {{ $t('Quit') }}
             </UButton>
           </div>
@@ -270,7 +270,7 @@ const quitCommunity = async(communityuuid: any) => {
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
             <UBadge color="primary" variant="soft" size="lg">
-              {{ Info.website }}
+              {{ communityInfo.website }}
             </UBadge>
           </div>
         </div>
@@ -320,7 +320,7 @@ const quitCommunity = async(communityuuid: any) => {
 
       <div class="flex-1" />
       <div>
-        <UButton @click="communitySetting = true">test</UButton>
+        <UButton @click="communitySetting = true">setting</UButton>
       </div>
       <UDashboardSidebarLinks :links="footerLinks" />
 
