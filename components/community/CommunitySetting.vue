@@ -92,7 +92,7 @@ const CreateCommunity = async () => {
   console.log("---------------------------------")
   console.log(state.banner)
   createCommunity = await settingCommunity(
-    //state.logobase64Data, 
+    state.logobase64Data, 
     state.banner, 
     state.Name, 
     state.Inbro, 
@@ -225,7 +225,7 @@ const setcommunitycurrent = async() => {
   //state.banner = a.banner;
   console.log(communityInfo)
 
-  //state.logobase64Data = communityInfo.logo
+  state.logobase64Data = communityInfo.logo
   state.banner = communityInfo.banner
   state.Name = communityInfo.name
   state.Inbro = communityInfo.desc

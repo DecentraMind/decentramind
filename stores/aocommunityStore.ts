@@ -155,7 +155,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
     let communitySubmitList = [
       {
-        //"logo": logo,
+        "logo": logo,
         "banner": Banner,
         "name": Name,
         "desc": Inbro,

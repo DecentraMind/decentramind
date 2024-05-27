@@ -149,41 +149,41 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
   print("goods")
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
-    -- local dCom = json.decode(communityItem)
-    local dCom = communityItem
+    local dCom = json.decode(communityItem)
+    -- local dCom = communityItem
     local itemCopy = {
-      uuid = dCom.uuid,
-      -- logo = dCom[1].logo,
-      banner = dCom.banner,
-      name = dCom.name,
-      desc = dCom.desc,
-      website = dCom.website,
-      showwebsite = dCom.showwebsite,
-      twitter = dCom.twitter,
-      showtwitter = dCom.showtwitter,
-      whitebook = dCom.whitebook,
-      showwhitebook = dCom.showwhitebook,
-      github = dCom.github,
-      showgithub = dCom.showgithub,
-      showbuildnum = dCom.showbuildnum,
-      showallreward = dCom.showallreward,
-      bounty = dCom.bounty,
-      showbounty = dCom.showbounty,
-      showdetail = dCom.showdetail,
-      ispublished = dCom.ispublished,
+      uuid = dCom[1].uuid,
+      logo = dCom[1].logo,
+      banner = dCom[1].banner,
+      name = dCom[1].name,
+      desc = dCom[1].desc,
+      website = dCom[1].website,
+      showwebsite = dCom[1].showwebsite,
+      twitter = dCom[1].twitter,
+      showtwitter = dCom[1].showtwitter,
+      whitebook = dCom[1].whitebook,
+      showwhitebook = dCom[1].showwhitebook,
+      github = dCom[1].github,
+      showgithub = dCom[1].showgithub,
+      showbuildnum = dCom[1].showbuildnum,
+      showallreward = dCom[1].showallreward,
+      bounty = dCom[1].bounty,
+      showbounty = dCom[1].showbounty,
+      showdetail = dCom[1].showdetail,
+      ispublished = dCom[1].ispublished,
       -- communitytoken = json.encode(dCom[1].communitytoken),
-      istradable = dCom.istradable,
-      support = dCom.support,
-      showalltoken = dCom.showalltoken,
-      alltoken = dCom.alltoken,
-      tokensupply = dCom.tokensupply
+      istradable = dCom[1].istradable,
+      support = dCom[1].support,
+      showalltoken = dCom[1].showalltoken,
+      alltoken = dCom[1].alltoken,
+      tokensupply = dCom[1].tokensupply
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress].joined then
         if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
           for _, userCommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
-            if dCom.uuid == userCommunityItem then
+            if dCom[1].uuid == userCommunityItem then
               itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
               break
             end
@@ -223,15 +223,16 @@ Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "community
         showgithub = dCom[1].showgithub,
         showbuildnum = dCom[1].showbuildnum,
         showallreward = dCom[1].showallreward,
-        bounty = json.encode(dCom[1].bounty),
+        bounty = dCom[1].bounty,
         showbounty = dCom[1].showbounty,
-        ispublished = dCom[1].ispublished,
-        communitytoken = json.encode(dCom[1].communitytoken),
-        istradable = dCom[1].istradable,
-        support = json.encode(dCom[1].support),
         showdetail = dCom[1].showdetail,
+        ispublished = dCom[1].ispublished,
+        -- communitytoken = json.encode(dCom[1].communitytoken),
+        istradable = dCom[1].istradable,
+        support = dCom[1].support,
+        showalltoken = dCom[1].showalltoken,
         alltoken = dCom[1].alltoken,
-        tokensupply = json.encode(dCom[1].tokensupply)
+        tokensupply = dCom[1].tokensupply
       }
       table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
     end
@@ -269,11 +270,12 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
             showallreward = dCom[1].showallreward,
             bounty = dCom[1].bounty,
             showbounty = dCom[1].showbounty,
+            showdetail = dCom[1].showdetail,
             ispublished = dCom[1].ispublished,
-            communitytoken = dCom[1].communitytoken,
+            -- communitytoken = json.encode(dCom[1].communitytoken),
             istradable = dCom[1].istradable,
             support = dCom[1].support,
-            showdetail = dCom[1].showdetail,
+            showalltoken = dCom[1].showalltoken,
             alltoken = dCom[1].alltoken,
             tokensupply = dCom[1].tokensupply
           }
