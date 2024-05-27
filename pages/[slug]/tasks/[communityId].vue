@@ -249,7 +249,7 @@ const quitCommunity = async(communityuuid: any) => {
 <template>
   <UDashboardPanel :width="350" collapsible>
     <UDashboardSidebar>
-      <UColorModeImage :light="light" :dark="dark" class="h-[80px]" />
+      <UColorModeImage :src="communityInfo.logo" class="h-[80px]" />
       <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
       <div>
         <div class="flex justify-between  my-3 items-center">

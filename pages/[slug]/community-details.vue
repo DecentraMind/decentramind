@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const { getCommunityInfo } = $(aocommunityStore())
+const { getLocalcommunityInfo } = $(aocommunityStore())
 
 const { t } = useI18n()
 
@@ -93,7 +93,7 @@ watch(() => route.params.pid, async (newPid) => {
 
 const loadCommunityInfo = async (pid) => {
   try {
-    communityInfo = await getCommunityInfo(pid)
+    communityInfo = await getLocalcommunityInfo(pid)
     const jsonData = communityInfo.Messages[0].Data
     const jsonObjects = jsonData.match(/\{.*?\}/g)
     communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
@@ -106,11 +106,10 @@ const loadCommunityInfo = async (pid) => {
 
 <template>
   <UDashboardPage>
-    <div v-if="communityLoading" class="w-full flex justify-center">
-      <UIcon name="svg-spinners:blocks-scale" class="mt-0 w-[250px]" size="xl" dynamic v-bind="$attrs" />
-    </div>
-    <div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">
-      <UColorModeImage :light="light" :dark="dark" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
+
+    <!--<div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">-->
+    <div class="w-full px-50">
+      <UColorModeImage :src="communityInfo.logo" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
       <UPage class="pl-36 pr-80">
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
@@ -118,7 +117,7 @@ const loadCommunityInfo = async (pid) => {
           :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]">
           <template #title>
             <div class="text-3xl mb-12 mt-3 px-12">
-              {{ Info.name }}
+              {{ communityInfo.name }}
             </div>
           </template>
           <template #description>
@@ -127,62 +126,70 @@ const loadCommunityInfo = async (pid) => {
                 {{ $t('community.detail') }}
               </Text>
               <Text>
-                {{ Info.desc }}
+                {{ communityInfo.desc }}
               </Text>
             </div>
           </template>
         </ULandingCard>
         <UPageBody prose>
           <ULandingGrid>
-            <ULandingCard class="col-span-4 row-span-2">
-              <div class="flex justify-between px-12">
-                <div>{{ $t('community.website') }}</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
+            <ULandingCard class="col-span-8 row-span-2 flex">
+              <div class="flex justify-between w-full">
+                <div class="" style="flex: 1; height: 100%;">
+                  <div class="flex justify-between px-16">
+                    <div>{{ $t('community.website') }}</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.website }}</UBadge>
+                    </div>
+                  </div>
+                  <div class="flex justify-between px-16">
+                    <div>{{ $t('community.detail.social') }}</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.twitter }}</UBadge>
+                    </div>
+                  </div>
+                  <div class="flex justify-between px-16">
+                    <div>{{ $t('community.detail.token') }}</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.website }}</UBadge>
+                    </div>
+                  </div>
+                  <div class="flex justify-between px-16">
+                    <div>{{ $t('community.token.platforms') }}</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.website }}</UBadge>
+                    </div>
+                  </div>
+                  <div class="flex justify-between px-16">
+                    <div>{{ $t('community.detail.contribute') }}</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.website }}</UBadge>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.social') }}</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
-                </div>
-              </div>
-              <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.token') }}</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
-                </div>
-              </div>
-              <div class="flex justify-between px-12">
-                <div>{{ $t('community.token.platforms') }}</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
-                </div>
-              </div>
-              <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.contribute') }}</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
-                </div>
-              </div>
-            </ULandingCard>
-            <ULandingCard class="col-span-4 row-span-2">
-              <div class="flex justify-between px-12">
-                <div>Github</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
-                </div>
-              </div>
-              <div class="flex justify-between px-12">
-                <div>{{ $t('community.buildnum') }}</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
-                </div>
-              </div>
-              <div class="flex justify-between px-12">
-                <div>{{ $t('community.detail.reward.issued') }}</div>
-                <div class="w-32 flex justify-around items-center">
-                  <UBadge>{{ Info.website }}</UBadge>
+                <!--
+                </ULandingCard>
+                <ULandingCard class="col-span-4 row-span-2">
+                  -->
+                <div class="" style="flex: 1;">
+                  <div class="flex justify-between px-16">
+                    <div>Github</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.website }}</UBadge>
+                    </div>
+                  </div>
+                  <div class="flex justify-between px-16">
+                    <div>{{ $t('community.buildnum') }}</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.website }}</UBadge>
+                    </div>
+                  </div>
+                  <div class="flex justify-between px-16">
+                    <div>{{ $t('community.detail.reward.issued') }}</div>
+                    <div class="w-32 flex justify-around items-center">
+                      <UBadge>{{ communityInfo.website }}</UBadge>
+                    </div>
+                  </div>
                 </div>
               </div>
             </ULandingCard>
