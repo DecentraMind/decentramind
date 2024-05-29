@@ -19,6 +19,7 @@ const blogPosts = [
   }
 ]
 const { communityList, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
+const { gettoken } = $(linktwitter())
 let result = $ref()
 
 const getCommunity = async () => {
@@ -84,6 +85,7 @@ const test = async () => {
             Connect Wallet
           </UButton>
         </UBadge>
+        <UButton color="white" @click="gettoken">twitter</UButton>
         <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>
