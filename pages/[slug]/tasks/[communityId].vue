@@ -5,8 +5,9 @@ import {taskStore} from '../../../stores/taskStore';
 import {aocommunityStore} from '../../../stores/aocommunityStore';
 
 const { t } = useI18n()
-const { createTask, getAllTasks, respArray } = $(taskStore())
+const { createTask, getAllTasks, respArray, sendBounty } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
+const { address } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 console.log('communityId = ' + communityId)
@@ -109,6 +110,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.zone = event.data.zone
   transData.startTime = selected.value.start.toLocaleString()
   transData.endTime = selected.value.end.toLocaleString()
+  transData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
   let isBegin = t('Not Start')
@@ -155,9 +157,6 @@ const footerLinks = $computed(() => {
   ]
 })
 
-const light = 'https://source.unsplash.com/random/200x200?sky'
-const dark = 'https://source.unsplash.com/random/200x200?stars'
-
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
@@ -177,7 +176,7 @@ onMounted(async () => {
   if(respArray.length === 0){
     taskListIsEmpty = true
   }
-  
+
   console.log("taskIsEmpty = " + taskListIsEmpty)
   await loadCommunityInfo(route.params.communityId)
 })
