@@ -258,9 +258,6 @@ const quitCommunity = async(communityuuid: any) => {
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
               {{ $t('View Details') }}
             </UButton>
-            <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
-              {{ $t('Quit') }}
-            </UButton>
           </div>
         </div>
 
@@ -269,9 +266,9 @@ const quitCommunity = async(communityuuid: any) => {
         <div class="flex justify-between my-3 mt-5 items-center">
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
-            <UBadge color="primary" variant="soft" size="lg">
+            <div class="flex justify-center border rounded-lg w-[90px]">
               {{ communityInfo.website }}
-            </UBadge>
+            </div>
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">
@@ -285,18 +282,26 @@ const quitCommunity = async(communityuuid: any) => {
         </div>
         <div class="flex justify-between my-3 mt-10 items-center">
           <div >{{ $t('TokenOfCommunityDetail') }}</div>
-          <div>
-            <UBadge color="primary" variant="soft" size="lg">
-              USDC
-            </UBadge>
+          <div class="flex">
+            <div 
+              v-for="(token, index) in communityInfo.communitytoken" 
+              :key="index" 
+              class="flex justify-center border rounded-lg w-[80px]"
+            >
+              {{ token.tokenName }}
+            </div>
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('Trading Support') }}</div>
           <div>
-            <UBadge color="primary" variant="soft" size="lg">
-              OKE
-            </UBadge>
+            <div 
+              v-for="(token, index) in communityInfo.support" 
+              :key="index"
+              class="flex justify-center border rounded-lg w-[80px]"
+            >
+              {{ token }}
+            </div>
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">
@@ -310,8 +315,11 @@ const quitCommunity = async(communityuuid: any) => {
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-          <div>10</div>
+          <div>0</div>
         </div>
+        <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
+          {{ $t('Quit') }}
+        </UButton>
       </div>
       <UDivider />
 

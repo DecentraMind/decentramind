@@ -62,7 +62,7 @@ onMounted(async () => {
 <template>
   <UDashboardPanelContent class="pb-24">
     <UCard @submit.prevent="onSubmitAccount">
-      <UButton @click="test">test</UButton>
+      <!--<UButton @click="test">test</UButton>-->
       <template #header>
         <ULandingCard
           description="39.44USD"
