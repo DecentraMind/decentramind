@@ -317,9 +317,17 @@ const quitCommunity = async(communityuuid: any) => {
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
           <div>0</div>
         </div>
-        <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
-          {{ $t('Quit') }}
-        </UButton>
+        <div class="flex">
+          <UButton 
+            color="white" 
+            variant="solid" 
+            class="ml-auto"
+            @click="quitCommunity(communityInfo.uuid)"
+          >
+            {{ $t('Quit') }}
+            <UIcon name="bi:arrow-left-circle" />
+          </UButton>
+        </div>
       </div>
       <UDivider />
 
@@ -327,8 +335,8 @@ const quitCommunity = async(communityuuid: any) => {
       <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
       <div class="flex-1" />
-      <div>
-        <UButton @click="communitySetting = true">setting</UButton>
+      <div class="flex">
+        <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
       </div>
       <UDashboardSidebarLinks :links="footerLinks" />
 

@@ -57,14 +57,14 @@ onMounted(async () => {
       <div class="flex flex-wrap">
         <div v-for="(item, index) in joincommunityList" :key="index" class="w-1/2 pl-5">
           <div class="flex items-center mb-5">
-            <UColorModeImage :light="light" :dark="dark" class="h-[100px]" />
+            <UColorModeImage :src="item.logo" :light="light" :dark="dark" class="h-[100px]" />
             <UFormGroup :label="item.label" :name="item.name" class="ml-5 w-[300px]">
               <template #label>
                 <div class="text-xl">
                   {{ item.name }}
                 </div>
               </template>
-              <UInput v-model="item.value" />
+              <!--<UInput v-model="item.value" />-->
             </UFormGroup>
             <UToggle v-model="item.show" class="ml-10" size="xl" />{{ $t('show') }}
           </div>

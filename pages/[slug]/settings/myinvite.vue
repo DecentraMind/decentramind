@@ -108,7 +108,7 @@ onMounted(async () => {
       </div>
       <div v-for="(item, index) in joincommunityList" :key="index" class="flex items-center justify-between pr-[120px]">
         <div class="flex items-center mt-5">
-          <UColorModeImage :light="light" :dark="dark" class="h-[100px]" />
+          <UColorModeImage :src="item.logo" :light="light" :dark="dark" class="h-[100px]" />
           <div class="ml-10 text-xl w-[100px]">{{ item.name }}</div>
           <div class="ml-10 text-xl">{{ $t('setting.invited') }}</div>
           <UAvatarGroup size="sm" :max="2" class="ml-10">
