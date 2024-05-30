@@ -173,13 +173,13 @@ const taskType = ref()
 let taskListIsEmpty = $ref(false)
 onMounted(async () => {
   setCurrentuuid(route.params.communityId)
+  await loadCommunityInfo(route.params.communityId)
   await getAllTasks(communityId, 'GetAllTasks')
   if(respArray.length === 0){
     taskListIsEmpty = true
   }
   
   console.log("taskIsEmpty = " + taskListIsEmpty)
-  await loadCommunityInfo(route.params.communityId)
 })
 
 const banners = [
