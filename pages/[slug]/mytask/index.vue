@@ -116,7 +116,8 @@ onMounted(async () => {
       >
         <template #token-data="{ row }">
           <div class="flex items-center gap-3">
-            <UAvatar v-bind="row.avatar" :alt="row.name" size="lg" />
+            <!--<UAvatar v-bind="row.avatar" :alt="row.name" size="lg" />-->
+            <UAvatar :alt="row.name" size="lg" />
             <div class="flex flex-col">
               <span class="text-gray-900 dark:text-white font-medium text-xl">{{ row.token }}</span>
               <span>{{ row.chain }}</span>
@@ -129,9 +130,11 @@ onMounted(async () => {
             <span>{{ parseFloat(arbalance).toFixed(3) }}</span>
           </div>
         </template>
+        <!--
         <template #withdraw-data>
           <UButton>{{ $t('wallet.withdraw')}}</UButton>
         </template>
+        -->
       </UTable>
 
       <template #footer>
