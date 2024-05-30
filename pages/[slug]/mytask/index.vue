@@ -25,6 +25,27 @@ const columns = computed(() => defaultColumns.filter((column) => selectedColumns
 const query = computed(() => ({ q: q.value, statuses: selectedStatuses, locations: selectedLocations, sort: sort.column, order: sort.direction }))
 
 let arbalance = $ref('0')
+
+
+const Wallettokens = ref<WalletToken[]>([]);
+
+function convertTokenBalances() {
+  const tokens: WalletToken[] = [];
+  for (const [token, balance] of Object.entries(tokenBalances)) {
+    tokens.push({
+      token,
+      balance,
+      balance_u: `$${balance.toFixed(3)}`,
+      avatar: {
+        src: `https://i.pravatar.cc/128?u=${token}`
+      },
+      status: 'subscribed'
+    });
+  }
+  Wallettokens.value = tokens;
+  console.log("~~~~~~~~~",Wallettokens)
+}
+/*
 const Wallettoken = ref<Wallettoken[]>([
   {
     id: 1,
@@ -36,23 +57,26 @@ const Wallettoken = ref<Wallettoken[]>([
       src: 'https://i.pravatar.cc/128?u=1'
     },
     status: 'subscribed'
-  },
+  }, 
   // 可以添加更多的初始数据
 ]);
-
+*/
 
 function onSubmitAccount () {
   console.log('Submitted form:', accountForm)
 }
-const { getarbalance } = $(aoStore())
+const { init, tokenBalances, getarbalance } = $(aoStore())
 
 const test = async() => {
-  arbalance = await getarbalance()
+  console.log("nnnnnnnngggggg")
+    await init()
+    convertTokenBalances()
+    console.log("-----gggg",tokenBalances)
 }
 onMounted(async () => {
   try {
-    arbalance = await getarbalance()
-
+    await init()
+    convertTokenBalances()
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -62,7 +86,7 @@ onMounted(async () => {
 <template>
   <UDashboardPanelContent class="pb-24">
     <UCard @submit.prevent="onSubmitAccount">
-      <UButton @click="test">test</UButton>
+      <!--<UButton @click="test">test</UButton>-->
       <template #header>
         <ULandingCard
           description="39.44USD"
@@ -83,7 +107,7 @@ onMounted(async () => {
 
       <UTable
         v-model:sort="sort"
-        :rows="Wallettoken"
+        :rows="Wallettokens"
         :columns="columns"
         :loading="pending"
         sort-mode="manual"
@@ -92,7 +116,8 @@ onMounted(async () => {
       >
         <template #token-data="{ row }">
           <div class="flex items-center gap-3">
-            <UAvatar v-bind="row.avatar" :alt="row.name" size="lg" />
+            <!--<UAvatar v-bind="row.avatar" :alt="row.name" size="lg" />-->
+            <UAvatar :alt="row.name" size="lg" />
             <div class="flex flex-col">
               <span class="text-gray-900 dark:text-white font-medium text-xl">{{ row.token }}</span>
               <span>{{ row.chain }}</span>
@@ -105,9 +130,11 @@ onMounted(async () => {
             <span>{{ parseFloat(arbalance).toFixed(3) }}</span>
           </div>
         </template>
+        <!--
         <template #withdraw-data>
           <UButton>{{ $t('wallet.withdraw')}}</UButton>
         </template>
+        -->
       </UTable>
 
       <template #footer>

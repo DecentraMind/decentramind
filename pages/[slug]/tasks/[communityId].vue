@@ -172,13 +172,13 @@ const taskType = ref()
 let taskListIsEmpty = $ref(false)
 onMounted(async () => {
   setCurrentuuid(route.params.communityId)
+  await loadCommunityInfo(route.params.communityId)
   await getAllTasks(communityId, 'GetAllTasks')
   if(respArray.length === 0){
     taskListIsEmpty = true
   }
 
   console.log("taskIsEmpty = " + taskListIsEmpty)
-  await loadCommunityInfo(route.params.communityId)
 })
 
 const banners = [
@@ -257,9 +257,6 @@ const quitCommunity = async(communityuuid: any) => {
             <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
               {{ $t('View Details') }}
             </UButton>
-            <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
-              {{ $t('Quit') }}
-            </UButton>
           </div>
         </div>
 
@@ -268,9 +265,9 @@ const quitCommunity = async(communityuuid: any) => {
         <div class="flex justify-between my-3 mt-5 items-center">
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
-            <UBadge color="primary" variant="soft" size="lg">
+            <div class="flex justify-center border rounded-lg w-[90px]">
               {{ communityInfo.website }}
-            </UBadge>
+            </div>
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">
@@ -284,18 +281,26 @@ const quitCommunity = async(communityuuid: any) => {
         </div>
         <div class="flex justify-between my-3 mt-10 items-center">
           <div >{{ $t('TokenOfCommunityDetail') }}</div>
-          <div>
-            <UBadge color="primary" variant="soft" size="lg">
-              USDC
-            </UBadge>
+          <div class="flex">
+            <div 
+              v-for="(token, index) in communityInfo.communitytoken" 
+              :key="index" 
+              class="flex justify-center border rounded-lg w-[80px]"
+            >
+              {{ token.tokenName }}
+            </div>
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('Trading Support') }}</div>
           <div>
-            <UBadge color="primary" variant="soft" size="lg">
-              OKE
-            </UBadge>
+            <div 
+              v-for="(token, index) in communityInfo.support" 
+              :key="index"
+              class="flex justify-center border rounded-lg w-[80px]"
+            >
+              {{ token }}
+            </div>
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">
@@ -309,7 +314,18 @@ const quitCommunity = async(communityuuid: any) => {
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-          <div>10</div>
+          <div>0</div>
+        </div>
+        <div class="flex">
+          <UButton 
+            color="white" 
+            variant="solid" 
+            class="ml-auto"
+            @click="quitCommunity(communityInfo.uuid)"
+          >
+            {{ $t('Quit') }}
+            <UIcon name="bi:arrow-left-circle" />
+          </UButton>
         </div>
       </div>
       <UDivider />
@@ -318,8 +334,8 @@ const quitCommunity = async(communityuuid: any) => {
       <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
       <div class="flex-1" />
-      <div>
-        <UButton @click="communitySetting = true">setting</UButton>
+      <div class="flex">
+        <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
       </div>
       <UDashboardSidebarLinks :links="footerLinks" />
 

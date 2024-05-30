@@ -66,8 +66,7 @@ onMounted(async () => {
         </div>
       </template>
 
-      <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">{{
-      $t('setting.person.social') }}
+      <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">{{$t('setting.person.social') }}
       </div>
       <UFormGroup label="twitter" name="twitter" class="mb-5 pl-10">
         <template #label>

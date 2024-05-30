@@ -85,6 +85,20 @@ watchEffect(() => {
 
 onMounted(async () => {
   await loadCommunityInfo(route.params.pid)
+
+  if (communityInfo && communityInfo.tokensupply) {
+    initChart(communityInfo.tokensupply);
+  } else {
+    console.error("Failed to initialize chart: Tokensupply data is not available.");
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+      if (chartInstance) {
+        chartInstance.resize();
+      }
+    });
+  }
 })
 
 watch(() => route.params.pid, async (newPid) => {
@@ -94,14 +108,79 @@ watch(() => route.params.pid, async (newPid) => {
 const loadCommunityInfo = async (pid) => {
   try {
     communityInfo = await getLocalcommunityInfo(pid)
-    const jsonData = communityInfo.Messages[0].Data
-    const jsonObjects = jsonData.match(/\{.*?\}/g)
-    communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
+    console.log("--------aaa",communityInfo.tokensupply)
+    //const jsonData = communityInfo.Messages[0].Data
+    //const jsonObjects = jsonData.match(/\{.*?\}/g)
+    //communityInfoJson = jsonObjects.map((item) => JSON.parse(item))
     communityLoading = false
   } catch (error) {
     console.error('Error fetching data:', error)
   }
 }
+
+
+import * as echarts from 'echarts';
+
+const chart = ref(null);
+let chartInstance = null;
+
+const initChart = (tokensupply) => {
+  if (chart.value) {
+    chartInstance = echarts.init(chart.value);
+
+    if (tokensupply && Array.isArray(tokensupply)) {
+      // 将 communityInfo.supply 转换为 ECharts 所需的格式
+      const a = JSON.parse(JSON.stringify(communityInfo.tokensupply))
+
+      const data = a.map(item => ({
+        value: item.supply,
+        name: item.name
+      }));
+
+      const option = {
+        title: {
+          text: 'Token Allocation\nTotal Supply 2100000',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'item'
+        },
+        legend: {
+          orient: 'vertical',
+          left: 'left'
+        },
+        series: [
+          {
+            name: 'Access From',
+            type: 'pie',
+            radius: '50%',
+            data: data,
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ]
+      };
+
+      chartInstance.setOption(option);
+    } else {
+      console.warn("Tokensupply is not available or is not an array.");
+    }
+  }
+};
+
+
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined' && chartInstance) {
+    window.removeEventListener('resize', chartInstance.resize);
+    chartInstance.dispose();
+  }
+});
 </script>
 
 <template>
@@ -139,31 +218,45 @@ const loadCommunityInfo = async (pid) => {
                   <div class="flex justify-between px-16">
                     <div>{{ $t('community.website') }}</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.website }}</UBadge>
+                      <div class="flex justify-center border rounded-lg w-[300px]">{{ communityInfo.website }}</div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16">
-                    <div>{{ $t('community.detail.social') }}</div>
+                  <div class="flex justify-between px-16 pt-2">
+                    <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.twitter }}</UBadge>
+                      <div class="flex justify-center border rounded-lg w-[300px]">{{ communityInfo.twitter }}</div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16">
+                  <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.detail.token') }}</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.website }}</UBadge>
+                      <div 
+                        v-for="(token, index) in communityInfo.communitytoken" 
+                        :key="index" 
+                        class="flex justify-center border rounded-lg w-[300px]"
+                      >
+                        {{ token.tokenName }}
+                      </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16">
+                  <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.token.platforms') }}</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.website }}</UBadge>
+                      <div 
+                        v-for="(token, index) in communityInfo.support" 
+                        :key="index"
+                        class="flex justify-center border rounded-lg w-[300px]"
+                      >
+                        {{ token }}
+                      </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16">
+                  <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.detail.contribute') }}</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.website }}</UBadge>
+                      <div class="flex justify-center border rounded-lg w-[300px]">
+                        {{ communityInfo.website }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -175,19 +268,25 @@ const loadCommunityInfo = async (pid) => {
                   <div class="flex justify-between px-16">
                     <div>Github</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.website }}</UBadge>
+                      <div class="flex justify-center border rounded-lg w-[300px]">
+                        {{ communityInfo.github }}
+                      </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16">
+                  <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.buildnum') }}</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.website }}</UBadge>
+                      <div class="flex justify-center border rounded-lg w-[300px]">
+                        {{ communityInfo.website }}
+                      </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16">
+                  <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.detail.reward.issued') }}</div>
                     <div class="w-32 flex justify-around items-center">
-                      <UBadge>{{ communityInfo.website }}</UBadge>
+                      <div class="flex justify-center border rounded-lg w-[300px]">
+                        {{ communityInfo.website }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -213,6 +312,7 @@ const loadCommunityInfo = async (pid) => {
                 {{ $t('community.economics') }}<br>
                 {{ $t('community.token.all') }} 2100000
               </div>
+              <div ref="chart" :style="{ width: '100%', height: '400px' }"></div>
             </ULandingCard>
           </ULandingGrid>
         </UPageBody>
