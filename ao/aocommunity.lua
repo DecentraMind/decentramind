@@ -296,25 +296,35 @@ end)
 -- 获取个人信息
 Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), function(msg)
   local tempInfo = {}
-
+  print("gooods")
   -- 检查 usercommunity 中是否存在指定用户
   local userInfo = usercommunity[msg.Tags.userAddress]
   if userInfo then
     -- 将用户信息添加到临时表
+    tempInfo.avatar = userInfo.avatar or "N/A"
     tempInfo.username = userInfo.username or "N/A"
     tempInfo.twitter = userInfo.twitter or "N/A"
+    tempInfo.showtwitter = userInfo.showtwitter or true
     tempInfo.mail = userInfo.mail or "N/A"
+    tempInfo.showmail = userInfo.showmail or true
     tempInfo.phone = userInfo.phone or "N/A"
+    tempInfo.showphone = userInfo.showphone or true
   else
     -- 用户信息不存在时，设置默认值
+    tempInfo.avatar = "N/A"
     tempInfo.username = "N/A"
     tempInfo.twitter = "N/A"
+    tempInfo.showtwitter = true
     tempInfo.mail = "N/A"
+    tempInfo.showmail = true
     tempInfo.phone = "N/A"
+    tempInfo.showphone = true
   end
+  print(usercommunity[msg.Tags.userAddress])
   -- 需要将table转成json字符串传回
   local iJson = json.encode(tempInfo)
-  Handlers.utils.reply(iJson)(msg)
+
+  Handlers.utils.reply(usercommunity[msg.Tags.userAddress])(msg)
 end)
 
 -- 个人信息修改
@@ -326,21 +336,8 @@ Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalIn
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
     usercommunity[newColumn] = {}
   end
-  if msg.Tags.username then
-    usercommunity[msg.Tags.userAddress].username = msg.Tags.username
-  end
 
-  if msg.Tags.twitter then
-    usercommunity[msg.Tags.userAddress].twitter = msg.Tags.twitter
-  end
-
-  if msg.Tags.mail then
-    usercommunity[msg.Tags.userAddress].mail = msg.Tags.mail
-  end
-
-  if msg.Tags.phone then
-    usercommunity[msg.Tags.userAddress].phone = msg.Tags.phone
-  end
+  usercommunity[newColumn] = msg.Data
 end)
 
 -- 注册个人信息
@@ -349,10 +346,14 @@ Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo")
   local newColum = msg.Tags.userAddress
   if not usercommunity[newColum] then
     usercommunity[newColum] = {}
+    usercommunity[newColum].avatar = "N/A"
     usercommunity[newColum].name = "N/A"
     usercommunity[newColum].twitter = "N/A"
+    usercommunity[newColum].twitter = true
     usercommunity[newColum].mail = "N/A"
+    usercommunity[newColum].showmail = true
     usercommunity[newColum].phone = "N/A"
+    usercommunity[newColum].showphone = true
     usercommunity[newColum].joined = {}
   end
 end)
@@ -368,8 +369,9 @@ Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTe
   --  print(i)
   --end
 
-  for k, _ in pairs(community) do
-    community[k] = nil
+  for k, _ in pairs(usercommunity) do
+    print()
+    usercommunity[k] = nil
   end
 
   -- for k, _ in pairs(usercommunity) do

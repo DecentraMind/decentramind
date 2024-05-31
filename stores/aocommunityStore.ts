@@ -337,21 +337,33 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
 
   //修改个人信息
-  const personalInfo = async (username, twitter, mail, phone) => {
-    if (isLoading) return
-    isLoading = true
+  const personalInfo = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone) => {
+    //if (isLoading) return
+    //isLoading = true
+    console.log("------------gggggggggggggggggggggggg")
+    let personal = [
+      {
+        "avatar": avatar,
+        "username": username,
+        "twitter": twitter,
+        "showtwitter": showtwitter,
+        "mail": mail,
+        "showmail": showmail,
+        "phone": phone,
+        "showphone": showphone,
+      }
+    ]
+    const jsonString = JSON.stringify(personal);
     let Info = await message({
       process: processID,
       tags: [
         { name: 'Action', value: 'personalInfo' },
-        { name: 'userAddress', value: address },
-        { name: 'username', value: username },
-        { name: 'twitter', value: twitter },
-        { name: 'mail', value: mail },
-        { name: 'phone', value: phone }
+        { name: 'userAddress', value: address }
       ],
+      data: jsonString,
       signer: createDataItemSigner(window.arweaveWallet),
     })
+    console.log("------------gggggggggggggggggggggggg")
     isLoading = false
     return Info
   }
