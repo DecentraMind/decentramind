@@ -195,11 +195,11 @@ const test = ()=> {
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
         
-        
+        <!--
         <UButton variant="soft" @click="test">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
-       
+       -->
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -209,7 +209,7 @@ const test = ()=> {
           <UPopover mode="hover" :to="`/${slug}/settings`">
             <NuxtLink :to="`/${slug}/settings`">
               <UAvatar v-if="userInfo[0].avatar == 'N/A'" src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
-                <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+              <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
             </NuxtLink>
             <template #panel>
               <div class="h-[350px] w-[300px] pt-10 pl-10">
