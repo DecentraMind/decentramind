@@ -252,7 +252,7 @@ async function testAO() {
 }
 </script>
 <template>
-  <UDashboardPanel :width="350" collapsible>
+  <UDashboardPanel :width="420" collapsible>
     <UDashboardSidebar>
       <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />
       <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
@@ -287,10 +287,10 @@ async function testAO() {
         </div>
         <div class="flex justify-between my-3 mt-10 items-center">
           <div >{{ $t('TokenOfCommunityDetail') }}</div>
-          <div class="flex">
-            <div
-              v-for="(token, index) in communityInfo.communitytoken"
-              :key="index"
+          <div class="flex space-x-3">
+            <div 
+              v-for="(token, index) in communityInfo.communitytoken" 
+              :key="index" 
               class="flex justify-center border rounded-lg w-[80px]"
             >
               {{ token.tokenName }}
@@ -299,9 +299,9 @@ async function testAO() {
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('Trading Support') }}</div>
-          <div>
-            <div
-              v-for="(token, index) in communityInfo.support"
+          <div class="flex space-x-3">
+            <div 
+              v-for="(token, index) in communityInfo.support" 
               :key="index"
               class="flex justify-center border rounded-lg w-[80px]"
             >
@@ -320,13 +320,13 @@ async function testAO() {
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-          <div>0</div>
+          <div>{{ communityInfo.buildnum }}</div>
         </div>
         <div class="flex">
-          <UButton
-            color="white"
-            variant="solid"
-            class="ml-auto"
+          <UButton 
+            color="white" 
+            variant="solid" 
+            class="ml-auto mt-10"
             @click="quitCommunity(communityInfo.uuid)"
           >
             {{ $t('Quit') }}

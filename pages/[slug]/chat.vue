@@ -98,7 +98,7 @@ const footerLinks = $computed(() => {
   ]
 })
 
-const { currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
+const { currentUuid, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
@@ -109,13 +109,15 @@ const loadCommunityInfo = async (pid) => {
   }
 }
 
-
+let communityuser = $ref({})
 
 let chatID = $ref<string | string[] | null>(null)
 const test = () => {
   console.log("-------nnn")
   if (!route.params.pid) return
   console.log(chatID)
+  const a = getCommunityuser(communityInfo.uuid)
+  console.log("------",a)
 }
 onMounted( () => {
   if (!route.params.pid) return
@@ -123,12 +125,26 @@ onMounted( () => {
 })
 onMounted(async () => {
   await loadCommunityInfo(currentUuid)
+  const result = await getCommunityuser(communityInfo.uuid)
+  if (result && result.Messages && result.Messages.length > 0) {
+    const dataStr = result.Messages[0].Data;
+    
+    try {
+      communityuser = JSON.parse(dataStr);
+      console.log(dataJson);
+      // 你可以在这里进一步处理 dataJson
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+  } else {
+    console.error('No messages found in result');
+  }
 })
 </script>
 
 <template>
   <div class="flex w-full">
-    <UDashboardPanel :width="350" collapsible>
+    <UDashboardPanel :width="420" collapsible>
       <UDashboardSidebar>
         <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
@@ -163,7 +179,7 @@ onMounted(async () => {
           </div>
           <div class="flex justify-between my-3 mt-10 items-center">
             <div >{{ $t('TokenOfCommunityDetail') }}</div>
-            <div class="flex">
+            <div class="flex space-x-3">
               <div 
                 v-for="(token, index) in communityInfo.communitytoken" 
                 :key="index" 
@@ -175,7 +191,7 @@ onMounted(async () => {
           </div>
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('Trading Support') }}</div>
-            <div>
+            <div class="flex space-x-3">
               <div 
                 v-for="(token, index) in communityInfo.support" 
                 :key="index"
@@ -196,11 +212,19 @@ onMounted(async () => {
           </div>
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-            <div>0</div>
+            <div>{{ communityInfo.buildnum }}</div>
           </div>
-          <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
-            {{ $t('Quit') }}
-          </UButton>
+          <div class="flex">
+            <UButton 
+              color="white" 
+              variant="solid" 
+              class="ml-auto mt-10"
+              @click="quitCommunity(communityInfo.uuid)"
+            >
+              {{ $t('Quit') }}
+              <UIcon name="bi:arrow-left-circle" />
+            </UButton>
+          </div>
         </div>
         <UDivider />
 
@@ -208,8 +232,8 @@ onMounted(async () => {
         <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
         <div class="flex-1" />
-        <div>
-          <UButton @click="communitySetting = true">setting</UButton>
+        <div class="flex">
+          <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
         </div>
         <UDashboardSidebarLinks :links="footerLinks" />
 
@@ -222,19 +246,19 @@ onMounted(async () => {
 
       </UDashboardSidebar>
     </UDashboardPanel>
-    <UPage>
-      <UContainer>
-        <UPageGrid>
-          <!--
-          <UAside class="border rounded-md  border-1 border-gray-600">
-            <InboxList v-model="selectedMail" :mails="filteredMails" />
-          </UAside>
-          -->
-          
-      
-          <div class="flex xl:col-span-2">
-            <div v-if="chatID" class="w-full">
-              <!--
+    <UPage class=" w-full">
+      <!--<UContainer class="w-full">-->
+      <UPageGrid class="w-full">
+        <!--
+        <UAside class="border rounded-md  border-1 border-gray-600">
+          <InboxList v-model="selectedMail" :mails="filteredMails" />
+        </UAside>
+        -->
+        
+    
+        <div class="flex xl:col-span-2 w-full">
+          <div v-if="chatID" class="w-full">
+            <!--
               <UDashboardNavbar v-if="false">
                 <template #toggle>
                   <UDashboardNavbarToggle icon="i-heroicons-x-mark" />
@@ -283,14 +307,34 @@ onMounted(async () => {
                 </template>
               </UDashboardNavbar>
               -->
-              <InboxMail :mail="chatID" class="mt-10 w-[1000px]" />
-            </div>
-            <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
-              <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
-            </UMain>
+            <InboxMail :mail="chatID" class="mt-10 w-full" />
           </div>
-        </UPageGrid>
-      </UContainer>
+          <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
+            <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
+          </UMain>
+        </div>
+        <div class="pt-10 pr-10">
+          <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="communityuser.length">
+            <template #title>
+              <Text class="text-5xl">
+                User
+              </Text>
+            </template>
+          </UDashboardNavbar>
+          <ULandingCard class="h-full">
+            <div v-for="(user, index) in communityuser" :key="index">
+              <UDashboardSection
+                icon="i-heroicons-user"
+                title=""
+                :description="user"
+                orientation="vertical"
+                class="px-4 mt-6"
+              />
+            </div>
+          </ULandingCard>
+        </div>
+      </UPageGrid>
+      <!--</UContainer>-->
     </UPage>
   </div>
 </template>
