@@ -69,12 +69,14 @@ const { init, tokenBalances, getarbalance } = $(aoStore())
 
 const test = async() => {
   console.log("nnnnnnnngggggg")
+  convertTokenBalances()
     await init()
     convertTokenBalances()
     console.log("-----gggg",tokenBalances)
 }
 onMounted(async () => {
   try {
+    convertTokenBalances()
     await init()
     convertTokenBalances()
   } catch (error) {

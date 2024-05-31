@@ -165,6 +165,7 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       showwhitebook = dCom[1].showwhitebook,
       github = dCom[1].github,
       showgithub = dCom[1].showgithub,
+      buildnum = dCom[1].buildnum,
       showbuildnum = dCom[1].showbuildnum,
       showallreward = dCom[1].showallreward,
       bounty = dCom[1].bounty,
@@ -221,6 +222,7 @@ Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "community
         showwhitebook = dCom[1].showwhitebook,
         github = dCom[1].github,
         showgithub = dCom[1].showgithub,
+        buildnum = dCom[1].buildnum,
         showbuildnum = dCom[1].showbuildnum,
         showallreward = dCom[1].showallreward,
         bounty = dCom[1].bounty,
@@ -266,6 +268,7 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
             showwhitebook = dCom[1].showwhitebook,
             github = dCom[1].github,
             showgithub = dCom[1].showgithub,
+            buildnum = dCom[1].buildnum,
             showbuildnum = dCom[1].showbuildnum,
             showallreward = dCom[1].showallreward,
             bounty = dCom[1].bounty,
@@ -353,6 +356,7 @@ Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo")
     usercommunity[newColum].joined = {}
   end
 end)
+
 -- handlers方法测试功能，用来测试这里得方法以及查看表内容等等。。
 Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTest"), function(msg)
   --local pretty = require(".pretty")

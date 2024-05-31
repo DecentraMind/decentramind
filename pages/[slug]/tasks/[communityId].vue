@@ -294,7 +294,7 @@ const quitCommunity = async(communityuuid: any) => {
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('Trading Support') }}</div>
-          <div>
+          <div class="flex">
             <div 
               v-for="(token, index) in communityInfo.support" 
               :key="index"
@@ -315,13 +315,13 @@ const quitCommunity = async(communityuuid: any) => {
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-          <div>0</div>
+          <div>{{ communityInfo.buildnum }}</div>
         </div>
         <div class="flex">
           <UButton 
             color="white" 
             variant="solid" 
-            class="ml-auto"
+            class="ml-auto mt-10"
             @click="quitCommunity(communityInfo.uuid)"
           >
             {{ $t('Quit') }}

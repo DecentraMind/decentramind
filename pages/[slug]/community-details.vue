@@ -252,7 +252,7 @@ onBeforeUnmount(() => {
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
-                    <div>{{ $t('community.detail.contribute') }}</div>
+                    <div>{{ $t('community.typereward') }}</div>
                     <div class="w-32 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
                         {{ communityInfo.website }}
@@ -282,10 +282,10 @@ onBeforeUnmount(() => {
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
-                    <div>{{ $t('community.detail.reward.issued') }}</div>
+                    <div>{{ $t('community.allreward') }}</div>
                     <div class="w-32 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
-                        {{ communityInfo.website }}
+                        3
                       </div>
                     </div>
                   </div>
