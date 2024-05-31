@@ -144,7 +144,7 @@ onMounted(async () => {
 
 <template>
   <div class="flex w-full">
-    <UDashboardPanel :width="390" collapsible>
+    <UDashboardPanel :width="420" collapsible>
       <UDashboardSidebar>
         <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
@@ -179,7 +179,7 @@ onMounted(async () => {
           </div>
           <div class="flex justify-between my-3 mt-10 items-center">
             <div >{{ $t('TokenOfCommunityDetail') }}</div>
-            <div class="flex">
+            <div class="flex space-x-3">
               <div 
                 v-for="(token, index) in communityInfo.communitytoken" 
                 :key="index" 
@@ -191,7 +191,7 @@ onMounted(async () => {
           </div>
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('Trading Support') }}</div>
-            <div class="flex">
+            <div class="flex space-x-3">
               <div 
                 v-for="(token, index) in communityInfo.support" 
                 :key="index"
