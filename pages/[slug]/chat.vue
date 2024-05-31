@@ -175,7 +175,7 @@ onMounted(async () => {
           </div>
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('Trading Support') }}</div>
-            <div>
+            <div class="flex">
               <div 
                 v-for="(token, index) in communityInfo.support" 
                 :key="index"
@@ -196,11 +196,19 @@ onMounted(async () => {
           </div>
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-            <div>0</div>
+            <div>{{ communityInfo.buildnum }}</div>
           </div>
-          <UButton color="white" variant="solid" @click="quitCommunity(communityInfo.uuid)">
-            {{ $t('Quit') }}
-          </UButton>
+          <div class="flex">
+            <UButton 
+              color="white" 
+              variant="solid" 
+              class="ml-auto mt-10"
+              @click="quitCommunity(communityInfo.uuid)"
+            >
+              {{ $t('Quit') }}
+              <UIcon name="bi:arrow-left-circle" />
+            </UButton>
+          </div>
         </div>
         <UDivider />
 
@@ -208,8 +216,8 @@ onMounted(async () => {
         <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
         <div class="flex-1" />
-        <div>
-          <UButton @click="communitySetting = true">setting</UButton>
+        <div class="flex">
+          <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
         </div>
         <UDashboardSidebarLinks :links="footerLinks" />
 
@@ -222,19 +230,19 @@ onMounted(async () => {
 
       </UDashboardSidebar>
     </UDashboardPanel>
-    <UPage>
-      <UContainer>
-        <UPageGrid>
-          <!--
-          <UAside class="border rounded-md  border-1 border-gray-600">
-            <InboxList v-model="selectedMail" :mails="filteredMails" />
-          </UAside>
-          -->
-          
-      
-          <div class="flex xl:col-span-2">
-            <div v-if="chatID" class="w-full">
-              <!--
+    <UPage class=" w-full">
+      <!--<UContainer class="w-full">-->
+      <UPageGrid class="w-full">
+        <!--
+        <UAside class="border rounded-md  border-1 border-gray-600">
+          <InboxList v-model="selectedMail" :mails="filteredMails" />
+        </UAside>
+        -->
+        
+    
+        <div class="flex xl:col-span-2 w-full">
+          <div v-if="chatID" class="w-full">
+            <!--
               <UDashboardNavbar v-if="false">
                 <template #toggle>
                   <UDashboardNavbarToggle icon="i-heroicons-x-mark" />
@@ -283,14 +291,17 @@ onMounted(async () => {
                 </template>
               </UDashboardNavbar>
               -->
-              <InboxMail :mail="chatID" class="mt-10 w-[1000px]" />
-            </div>
-            <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
-              <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
-            </UMain>
+            <InboxMail :mail="chatID" class="mt-10 w-full" />
           </div>
-        </UPageGrid>
-      </UContainer>
+          <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
+            <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
+          </UMain>
+        </div>
+        <div class="border">
+          test
+        </div>
+      </UPageGrid>
+      <!--</UContainer>-->
     </UPage>
   </div>
 </template>

@@ -139,7 +139,7 @@ const initChart = (tokensupply) => {
 
       const option = {
         title: {
-          text: 'Token Allocation\nTotal Supply 2100000',
+          text: `Token Allocation\nTotal Supply ${communityInfo.alltoken}`,
           left: 'center'
         },
         tooltip: {
@@ -308,10 +308,12 @@ onBeforeUnmount(() => {
               </UTable>
             </ULandingCard>
             <ULandingCard class="col-span-8 row-span-2">
+              <!--
               <div class="px-12">
                 {{ $t('community.economics') }}<br>
                 {{ $t('community.token.all') }} 2100000
               </div>
+              -->
               <div ref="chart" :style="{ width: '100%', height: '400px' }"></div>
             </ULandingCard>
           </ULandingGrid>
