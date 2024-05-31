@@ -11,7 +11,7 @@
   "Token Number": "Token 数量",
   "Token Type": "Token 类型",
   "Chain Type": "链",
-  "Total Chances": "总奖励场次数",
+  "Total Chances": "总奖励任务数",
   "Time Zone": "时区",
   "Time": "任务周期",
   "Public Quests": "开放任务区",
@@ -101,10 +101,10 @@
   "task.from": "来自社区",
   "task.sum": "金额",
   "task.allsum": "总金额",
-  "Not Settle": "未结算",
+  "Unsettled": "未结算",
   "Settled": "已结算",
   "Not Start": "未开始",
-  "ing": "进行中",
+  "Ing": "进行中",
   "End": "已结束",
   "WebsiteOfCommunityDetail": "网站",
   "SocialOfCommunityDetail": "社交媒体",
@@ -125,5 +125,6 @@
   "Twitter Article Quest": "推特文章任务",
   "More Quests Soon": "更多任务准备中",
   "Quit": "退出",
-  "Not Join": "未参与"
+  "Not Join": "未参与",
+  "taskRule": "1.你将会使用你本人的twitter账号为该社区发起一场space.<br>2.请在space开始之前将你的twitter头像更换成社区logo并保持至将space链接提交回来的15分钟之后.<br>3.当你发起space时，请将你的社区邀请链接置顶在space中."
 }

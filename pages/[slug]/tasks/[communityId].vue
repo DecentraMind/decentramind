@@ -5,7 +5,7 @@ import {taskStore} from '../../../stores/taskStore';
 import {aocommunityStore} from '../../../stores/aocommunityStore';
 
 const { t } = useI18n()
-const { createTask, getAllTasks, respArray, sendBounty } = $(taskStore())
+const { createTask, getAllTasks, respArray, makecommunityChat } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { address } = $(aoStore())
 const route = useRoute()
@@ -36,14 +36,19 @@ function onChange(index) {
 
 
 const tokenOptions = [
-  { label: 'Eth', value: 'Eth' },
-  { label: 'USDT', value: 'USDT' },
-  { label: 'AR', value: 'AR' }
+  { label: 'AR', value: 'AR' },
+  { label: 'AOCRED', value: 'AOCRED' },
+  { label: 'Bark', value: 'Bark' },
+  { label: 'TRUNK', value: 'TRUNK' },
+  { label: 'AR.IO EXP', value: 'AR.IO EXP' },
+  { label: '0rbit Points', value: '0rbit Points' },
+  { label: 'Earth', value: 'Earth' },
+  { label: 'Fire', value: 'Fire' },
+  { label: 'Air', value: 'Air' },
+  { label: 'Lava', value: 'Lava' }
 ]
 const chainOptions = [
-  { label: 'Ethereum Mainnet', value: 'Ethereum Mainnet' },
-  { label: 'Linea Mainnet', value: 'Linea Mainnet' },
-  { label: 'Arweave Mainnet', value: 'Arweave Mainnet' }
+  { label: 'AO', value: 'AO' }
 ]
 const timeZoneOptions = [
   { label: 'ACDT', value: 'ACDT' },
@@ -72,7 +77,7 @@ const transData = {
   taskLogo: undefined,
   taskName: undefined,
   taskInfo: undefined,
-  taskRule: undefined,
+  taskRule: '',
   tokenNumber: undefined,
   tokenType: undefined,
   tokenChain: undefined,
@@ -85,7 +90,7 @@ const transData = {
   ownerId: undefined,
   communityId: '',
   isBegin: '',
-  isSettle: t('Not Settle')
+  isSettle: t('Unsettled')
 }
 const form = $ref()
 function uuid() {
@@ -102,7 +107,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.taskLogo = event.data.taskLogo
   transData.taskName = event.data.taskName
   transData.taskInfo = event.data.taskInfo
-  transData.taskRule = event.data.taskRule
+  transData.taskRule = t('taskRule')
   transData.tokenNumber = event.data.tokenNumber
   transData.tokenType = event.data.tokenType.value
   transData.tokenChain = event.data.tokenChain.value
@@ -115,7 +120,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   const currentDate = new Date()
   let isBegin = t('Not Start')
   if (currentDate <= selected.value.end && currentDate >= selected.value.start) {
-    isBegin = t('ing')
+    isBegin = t('Ing')
   } else if (currentDate > selected.value.end) {
     isBegin = t('End')
   }
@@ -139,11 +144,11 @@ const slug = $computed(() => route.params.slug)
 const chatId = $ref("ceT-iiktGCMloqbpVIwKfLfkObym-lJgWYoYUKctk2U")
 const footerLinks = $computed(() => {
   return [
-    {
-      label: 'Invite people',
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/settings/communityinfo`,
-    },
+    // {
+    //   label: 'Invite people',
+    //   icon: 'i-heroicons-plus',
+    //   to: `/${slug}/settings/communityinfo`,
+    // },
     {
       label: t('Quests Home'),
       icon: 'i-heroicons-plus',
@@ -162,8 +167,6 @@ let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
   try {
     communityInfo = await getLocalcommunityInfo(pid)
-    console.log("-----------nnnnn11")
-    console.log(communityInfo)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -244,6 +247,9 @@ const quitCommunity = async(communityuuid: any) => {
   console.log(communityuuid)
   await exitCommunity(communityuuid)
 }
+async function testAO() {
+  await makecommunityChat()
+}
 </script>
 <template>
   <UDashboardPanel :width="350" collapsible>
@@ -282,9 +288,9 @@ const quitCommunity = async(communityuuid: any) => {
         <div class="flex justify-between my-3 mt-10 items-center">
           <div >{{ $t('TokenOfCommunityDetail') }}</div>
           <div class="flex">
-            <div 
-              v-for="(token, index) in communityInfo.communitytoken" 
-              :key="index" 
+            <div
+              v-for="(token, index) in communityInfo.communitytoken"
+              :key="index"
               class="flex justify-center border rounded-lg w-[80px]"
             >
               {{ token.tokenName }}
@@ -294,8 +300,8 @@ const quitCommunity = async(communityuuid: any) => {
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('Trading Support') }}</div>
           <div>
-            <div 
-              v-for="(token, index) in communityInfo.support" 
+            <div
+              v-for="(token, index) in communityInfo.support"
               :key="index"
               class="flex justify-center border rounded-lg w-[80px]"
             >
@@ -317,9 +323,9 @@ const quitCommunity = async(communityuuid: any) => {
           <div>0</div>
         </div>
         <div class="flex">
-          <UButton 
-            color="white" 
-            variant="solid" 
+          <UButton
+            color="white"
+            variant="solid"
             class="ml-auto"
             @click="quitCommunity(communityInfo.uuid)"
           >
@@ -337,6 +343,20 @@ const quitCommunity = async(communityuuid: any) => {
       <div class="flex">
         <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
       </div>
+      <UPopover mode="hover" :popper="{ placement: 'top' }">
+        <UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />
+
+        <template #panel>
+          <div class="p-4">
+            <div>Invite Url: </div>
+            <div>
+              ```ts
+              www.dm.com/invite/example
+              ```
+            </div>
+          </div>
+        </template>
+      </UPopover>
       <UDashboardSidebarLinks :links="footerLinks" />
 
       <UDivider class="bottom-0 sticky" />
@@ -358,13 +378,15 @@ const quitCommunity = async(communityuuid: any) => {
           </div>
           <div class="flex">
             <div>
+              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+
               </UDropdown>
             </div>
           </div>
         </div>
-        <div class="w-1/3" v-if="taskListIsEmpty">
+        <div class=" w-1/3" v-if="taskListIsEmpty">
           <UPricingCard
               :title="$t('Nothing here,click to start your first public quest.')"
               highlight
@@ -391,43 +413,43 @@ const quitCommunity = async(communityuuid: any) => {
               <template #title>
                 <div class="flex justify-between ...">
                   <Text>{{ blogPost.name }}</Text>
-                  <UBadge color="green" variant="solid">
+                  <UBadge size="xs" color="black" variant="solid">
                     {{ blogPost.status }}
                   </UBadge>
                 </div>
               </template>
               <template #description>
                 <div class="flex flex-col space-y-2">
-                  <Text class="text-blue-900">
+                  <Text >
                     {{ blogPost.description }}
                   </Text>
                   <div class="flex justify-between ...">
                     <div>
-                      <Text class="text-blue-300">
+                      <Text >
                         {{ $t("Bounty") }}:
                       </Text>
                     </div>
                     <div>
-                      <Text class="text-blue-300">
+                      <Text >
                         {{ blogPost.reward }}
                       </Text>
                     </div>
                   </div>
                   <div class="flex justify-between ...">
                     <div>
-                      <Text class="text-blue-300">
+                      <Text >
                         {{ $t("builders now") }}:
                       </Text>
                     </div>
                     <div>
-                      <Text class="text-blue-300">
+                      <Text >
                         {{ blogPost.builderNum }}
                       </Text>
                     </div>
                   </div>
                 </div>
               </template>
-              <UButton :to="`/${slug}/taskDetail/${blogPost.id}`" class="absolute right-0" color="primary" variant="outline">
+              <UButton :to="`/${slug}/taskDetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
                 {{ $t("View Details") }}
               </UButton>
             </UBlogPost>
@@ -448,7 +470,7 @@ const quitCommunity = async(communityuuid: any) => {
         <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
           <UFormGroup name="taskLogo" :label="$t('Banner')">
             <template #label>
-              <div class="text-sky-400 w-[300px]">{{ $t('Banner') }}</div>
+              <div class="w-[300px]">{{ $t('Banner') }}</div>
             </template>
             <UCarousel
               v-model="currentIndex"
@@ -492,7 +514,7 @@ const quitCommunity = async(communityuuid: any) => {
           </UFormGroup>
 
           <UFormGroup name="taskRule" :label="$t('Rules of the Quest')">
-            <UTextarea v-model="state.taskRule" placeholder="已自动生成任务规则" />
+            <UTextarea disabled v-model="state.taskRule" :placeholder="$t('taskRule')" />
           </UFormGroup>
 
           <UFormGroup name="textarea" :label="$t('Bounty')">
@@ -505,7 +527,7 @@ const quitCommunity = async(communityuuid: any) => {
             </div>
           </UFormGroup>
           <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
-            <UInput v-model="state.rewardTotal" :placeholder="$t('Task Introduction')" />
+            <UInput v-model="state.rewardTotal" :placeholder="$t('Total Chances')" />
           </UFormGroup>
           <UFormGroup name="textarea" :label="$t('Task Period')">
             <div class="flex justify-between items-center">

@@ -2,7 +2,7 @@ import {
   createDataItemSigner,
   result,
   message,
-  dryrun
+  dryrun, spawn
 } from '@permaweb/aoconnect'
 
 import { PermissionType } from 'arconnect'
@@ -62,7 +62,8 @@ export const taskStore = defineStore('taskStore', () => {
     for (let index = 0; index < resp.length; index++) {
 
       let element = JSON.parse(resp[index])
-      console.log('communityId = ' + element.communityId)
+      // console.log('communityId = ' + element.communityId)
+      // console.log('trans communityId = ' + communityId)
       if(element.communityId !== communityId){
         // console.log('communityId = ' + element.communityId)
         continue
@@ -73,11 +74,12 @@ export const taskStore = defineStore('taskStore', () => {
         name: element.taskName,
         image: element.taskLogo,
         description: element.taskInfo,
-          startTime: element.startTime,
-          endTime: element.endTime,
-          rewardTotal: element.rewardTotal,
-          buildNumber: element.buildNumber,
-          taskRule: element.taskRule,
+        startTime: element.startTime,
+        endTime: element.endTime,
+        zone: element.zone,
+        rewardTotal: element.rewardTotal,
+        buildNumber: element.buildNumber,
+        taskRule: element.taskRule,
         reward: element.tokenNumber + ' ' + element.tokenType,
         builderNum: element.buildNumber,
         status: element.isBegin,
@@ -248,7 +250,44 @@ export const taskStore = defineStore('taskStore', () => {
       return ''
     }
   }
-  return $$({ createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
+
+  // const makecommunityChat = async () => {
+  //   console.log("------------------good")
+  //   let processId = await spawn({
+  //     module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
+  //     scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
+  //     signer: createDataItemSigner(window.arweaveWallet),
+  //   })
+  //   console.log('gooooods', processId)
+  //   return processId
+  // }
+
+  // const makecommunityChat = async () => {
+  //   console.log("------------------good")
+  //   let processId2 = await spawn({
+  //     module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
+  //     scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
+  //     signer: createDataItemSigner(window.arweaveWallet),
+  //   })
+  //   return processId2
+  // }
+  const makecommunityChat = async  () => {
+    const processId2 = 'eCQysY6Vgxz-A5z1_LHFnknLUmsRseYPBJ9mIzQ-yVs'
+    const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
+    let buildLua = await message({
+      process: processId2,
+      tags: [
+        { name: 'Action', value: 'eval' }
+      ],
+      data: luaCode,
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    console.log('gooooods', processId2)
+    console.log('result', buildLua)
+    return processId2
+  }
+
+  return $$({  createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat})
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

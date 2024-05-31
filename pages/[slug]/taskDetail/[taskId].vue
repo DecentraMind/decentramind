@@ -2,6 +2,8 @@
 
 import CommonAlert from '~/components/CommonAlert.vue'
 import {taskStore} from '../../../stores/taskStore'
+import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
+import {shortAddress} from "../../../utils/web3";
 const { t } = useI18n()
 const { getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo } = $(aocommunityStore())
@@ -11,23 +13,27 @@ const route = useRoute()
 const taskId = $computed(() => route.params.taskId)
 
 let blogPost = await getTaskById(taskId)
+let communityId = blogPost.communityId
 let isOwner = blogPost.ownerId === address
 let taskJoinRecord = await getTaskJoinRecord(taskId)
 let isJoined = () => {
   for (let index = 0; index < taskJoinRecord.length; index++) {
     let element = taskJoinRecord[index]
     if(element.joinedAddress === address){
-      return true;
+      return true
     }
   }
   return false
 }
 let joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 let spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
+// let chatProcessId = await makecommunityChat()
+// console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
 console.log('blogPost = ' + JSON.stringify(blogPost))
-console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
-console.log('isJoined = ' + isJoined)
+// console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
+// console.log('isJoined = ' + isJoined)
+// console.log('chatProcessId = ' + chatProcessId)
+console.log('userInfo = ' + JSON.stringify(userInfo))
 
 // onMounted(async () => {
 //
@@ -64,6 +70,10 @@ const columns = [
   {
     key: 'score',
     label: t('Total Score'),
+  },
+  {
+    key: 'bounty',
+    label: t('Bounty'),
   },
 ]
 
@@ -126,7 +136,7 @@ const addr = $ref('')
 const url = $ref('')
 function submitTask() {
   // TODO 调用提交space链接并解析方法
-  submitSpaceTask(taskId, addr, url)
+  submitSpaceTask(taskId, address, url)
   isOpen = false
 }
 async function sendBountyByAo() {
@@ -147,6 +157,9 @@ function select (row) {
   console.log("selected = " + JSON.stringify(selected))
 
 }
+function returnBackPage() {
+  route.back()
+}
 </script>
 
 <template>
@@ -155,7 +168,7 @@ function select (row) {
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
-            <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
+            <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" @click="returnBackPage"/>
           </div>
         </div>
         <div class="mx-10">
@@ -164,88 +177,103 @@ function select (row) {
 
         <UBlogPost :key="blogPost.id" :description="blogPost.description" class="p-10">
           <template #title>
-            <div class="flex justify-start...">
-              <Text>{{ blogPost.name }}</Text>
-              <div class="mx-8">
-                <UBadge color="green" variant="solid">
-                  {{ blogPost.status }}
-                </UBadge>
+            <div class="flex justify-start">
+              <div class="flex-none w-60"><Text>{{ blogPost.name }}</Text></div>
+              <div class="flex justify-start">
+                <div>
+                  <UBadge color="black" variant="solid">
+                    {{ blogPost.status }}
+                  </UBadge>
+                </div>
+                <div class="mx-2">
+                  <UBadge color="black" variant="solid">
+                    {{ joinStatus }}
+                  </UBadge>
+                </div>
+                <div v-if="isOwner" class="mx-2">
+                  <UBadge color="black" variant="solid">
+                    {{ blogPost.isSettle }}
+                  </UBadge>
+                </div>
               </div>
-              <div class="mx-8">
-                <UBadge color="green" variant="solid">
-                  {{ joinStatus }}
-                </UBadge>
-              </div>
-              <div v-if="isOwner" class="mx-8">
-                <UBadge color="green" variant="solid">
-                  {{ blogPost.isSettle }}
-                </UBadge>
-              </div>
+
               <!-- <UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge>
               <UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge> -->
             </div>
           </template>
           <template #description>
             <div class="flex flex-col space-y-2">
-              <Text class="text-blue-900">
+              <Text>
                 {{ blogPost.description }}
               </Text>
               <div class="flex ...">
                 <div class="flex-none w-60">
-                  <Text class=" text-blue-300">
+                  <Text>
+                    {{ $t("Time Zone") }}:
+                  </Text>
+                </div>
+                <div>
+                  <Text>
+                    {{ blogPost.zone }}
+                  </Text>
+                </div>
+              </div>
+              <div class="flex ...">
+                <div class="flex-none w-60">
+                  <Text>
                     {{ $t("Time") }}:
                   </Text>
                 </div>
                 <div>
-                  <Text class="text-blue-300">
+                  <Text>
                     {{ blogPost.startTime }} - {{ blogPost.endTime }}
                   </Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
-                  <Text class="text-blue-300">
+                  <Text>
                     {{ $t("Bounty") }}:
                   </Text>
                 </div>
                 <div>
-                  <Text class="text-blue-300">
+                  <Text>
                     {{ blogPost.reward }}
                   </Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
-                  <Text class=" text-blue-300">
+                  <Text>
                     {{ $t("Total Chances") }}:
                   </Text>
                 </div>
                 <div>
-                  <Text class="text-blue-300">
+                  <Text>
                     {{ blogPost.rewardTotal }}
                   </Text>
                 </div>
               </div>
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
-                  <Text class="text-blue-300">
+                  <Text>
                     {{ $t("builders now") }}:
                   </Text>
                 </div>
                 <div>
-                  <Text class="text-blue-300">
+                  <Text>
                     {{ blogPost.joined }}
                   </Text>
                 </div>
               </div>
               <div class="flex justify-start">
                 <div class="flex-none w-60 ">
-                  <Text class="text-blue-300">
+                  <Text>
                     {{ $t("Rules of the Quest") }}:
                   </Text>
                 </div>
                 <div>
-                  <Text class="text-blue-300">
+                  <Text style="white-space: pre-line">
                     {{ blogPost.taskRule }}
                   </Text>
                 </div>
@@ -254,33 +282,38 @@ function select (row) {
                 <UButton :label="$t('Join Task')" @click="openJoin" />
               </div>
             </div>
-            <div>
+<!--            <UDivider class="mt-4" />-->
+            <div class="mt-8">
               <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex ">
-                  <Text class=" mr-8 text-blue-300">
+                  <Text class=" mr-8">
                     {{ $t("Quests Form") }}:
                   </Text>
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
               </div>
-              <UTable v-model="selected" :rows="filteredRows" :columns="columns" @select="select"/>
+              <UTable v-model="selected" :rows="filteredRows" :columns="columns" @select="select">
+                <template #address-data="{ row }">
+                   {{ isOwner ? row.address : shortAddress(row.address)}}
+                </template>
+              </UTable>
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
               <div class="mx-4">
-                <UButton :label="$t('Submit')" @click="openModal" />
+                <UButton color="white" :label="$t('Submit')" @click="openModal" />
               </div>
               <div v-if="isOwner" class="mx-4">
-                <UButton :label="$t('Send Bounty')" @click="sendBountyByAo"/>
+                <UButton color="white" :label="$t('Send Bounty')" @click="sendBountyByAo"/>
               </div>
             </div>
             <div class="flex ...">
               <div class="flex-none w-60">
-                <Text class=" text-blue-300">
+                <Text>
                   {{ $t("Rules of Judgment") }}:
                 </Text>
               </div>
               <div>
-                <Text class="text-blue-300">
+                <Text>
                   <p> 1 Total score is 100 including Brand 10%, Friends 40%, Audience 50% </p>
 
                   <p> 2 Brand is decided by your avatar,  change it you’ll get 10, not change get 0 </p>
@@ -295,7 +328,7 @@ function select (row) {
 
                   <p> 7 If the total chances are 20 but you are in 21st, sorry you can get nothing </p>
 
-                  <p> 8 You can only participate this Quests once </p>
+                  <p> 8 Yout only have 1 chance for this quest </p>
                 </Text>
               </div>
             </div>
@@ -346,9 +379,9 @@ function select (row) {
           </div>
         </template>
         <div>
-          <div class="my-8">
-            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />
-          </div>
+<!--          <div class="my-8">-->
+<!--            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />-->
+<!--          </div>-->
           <div class="my-8">
             <UInput v-model="url" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>

@@ -21,3 +21,11 @@ Handlers.add(
         Handlers.utils.reply("Send bounty success")(msg)
     end
 )
+
+Handlers.add(
+    "sendBounty",
+    Handlers.utils.hasMatchingTag("Action", "sendBounty"),
+    function (msg)
+        Handlers.utils.reply("Send bounty success")(msg)
+    end
+)

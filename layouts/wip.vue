@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <UPage class="min-h-screen bg-green-600">
+  <UPage class="min-h-screen ">
     <UPageBody>
       <UContainer>
         <slot />
