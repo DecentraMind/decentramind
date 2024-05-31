@@ -64,7 +64,7 @@
   "wallet.token": "Token Application",
   "task": "Task",
   "task.public": "Open Mission Area",
-  "task.isjoin": "Participated",
+  "task.isjoin": "Did",
   "task.reward": "Awarded",
   "task.name": "Name",
   "task.from": "From Community",
@@ -81,7 +81,7 @@
   "Token Number": "Token Number",
   "Token Type": "Token Type",
   "Chain Type": "Chain Type",
-  "Total Chances": "Total Reward",
+  "Total Chances": "Total Chances",
   "Time Zone": "Time Zone",
   "Time": "Time",
   "Public Quests": "Public Quests",
@@ -100,10 +100,10 @@
   "We appreciate your support,\n\nPlease follow the rules of the quest and submit the URL back to this page": "Thank u for your support.Please follow the rules of the quest and fill the URL of your space to the firm.",
   "Submit": "Submit",
   "Quests Home": "Quests Home",
-  "Not Settle": "Not Settle",
+  "Unsettled": "Unsettled",
   "Settled": "Settled",
   "Not Start": "Not Start",
-  "ing": "ing",
+  "Ing": "Ing",
   "End": "End",
   "WebsiteOfCommunityDetail": "Website",
   "SocialOfCommunityDetail": "Twitter",
@@ -125,4 +125,5 @@
   "More Quests Soon": "More Quests Soon",
   "Quit": "Left",
   "Not Join": "Not Join"
+  "taskRule": "1.You will help the community to do a Twitter space by using your Twitter account.\n2.Please use the community’s logo as your avatar of linked account before you start your space and keep it until 15 mins after you return back your space’s URL.\n3.Please pin your invitation of this community in your space when you doing it."
 }

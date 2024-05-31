@@ -50,7 +50,7 @@ onMounted(init)
 
 <template>
   <UHeader :links="links">
-    <template #logo>Decentral Mind
+    <template #logo>DecentralMind
 <!--      <UBadge label="Beta" variant="subtle" class="mb-0.5" />-->
     </template>
 
