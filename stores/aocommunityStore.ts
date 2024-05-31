@@ -304,7 +304,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const joinCommunity = async (uuid) => {
     if (isLoading) return
     isLoading = true
-
+    console.log("---------------")
     let join = await message({
       process: processID,
       tags: [

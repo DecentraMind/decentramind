@@ -1,5 +1,7 @@
 community = community or {}
 usercommunity = usercommunity or {}
+userinfo = userinfo or {}
+
 
 local json = require("json")
 
@@ -9,18 +11,18 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
   local newColumn = msg.Tags.userAddress
   print(testData)
   -- 检查是否已经存在相同名字的列
-  if not usercommunity[newColumn] then
+  if not userinfo[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
-    usercommunity[newColumn] = {}
+    userinfo[newColumn] = {}
   end
   for i, item in ipairs(testData) do
     -- 检查是否已经存在 joined 字段
-    if usercommunity[newColumn].joined then
+    if userinfo[newColumn].joined then
       -- 如果 joined 字段已存在，则在其末尾追加 "xDao"
       local isDuplicate = false -- 标志位，表示是否存在重复数据
 
-      -- 遍历 usercommunity[newColumn].joined
-      for _, data in ipairs(usercommunity[newColumn].joined) do
+      -- 遍历 userinfo[newColumn].joined
+      for _, data in ipairs(userinfo[newColumn].joined) do
         if data == msg.Data then
           print("joined--")
           isDuplicate = true
@@ -30,11 +32,11 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
 
       if not isDuplicate then
         -- 如果 joined 字段已存在且没有重复数据，则在其末尾追加 "xDao"
-        table.insert(usercommunity[newColumn].joined, item.uuid)
+        table.insert(userinfo[newColumn].joined, item.uuid)
       end
     else
       -- 如果 joined 字段不存在，则新建一个 joined 字段，并赋值为包含 "xDao" 的数组
-      usercommunity[newColumn].joined = { item.uuid }
+      userinfo[newColumn].joined = { item.uuid }
     end
   end
   -- print(encodedData)
@@ -180,11 +182,13 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       tokensupply = dCom[1].tokensupply
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
+    print("---------------ggg", usercommunity)
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress].joined then
+        print("----------ggg", usercommunity[msg.Tags.userAddress].joined)
         if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
-          for _, userCommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
-            if dCom[1].uuid == userCommunityItem then
+          for _, usercommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
+            if dCom[1].uuid == usercommunityItem then
               itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
               break
             end
@@ -250,9 +254,9 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
     local dCom = json.decode(communityItem)
-    if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
-      for _, userCommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
-        if dCom[1].uuid == userCommunityItem then
+    if userinfo[msg.Tags.userAddress] and type(userinfo[msg.Tags.userAddress]) == "table" then
+      for _, userinfoItem in ipairs(userinfo[msg.Tags.userAddress].joined) do
+        if dCom[1].uuid == userinfoItem then
           print("goods")
           local itemCopy = {
             uuid = dCom[1].uuid,
@@ -297,8 +301,8 @@ end)
 Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), function(msg)
   local tempInfo = {}
   print("gooods")
-  -- 检查 usercommunity 中是否存在指定用户
-  local userInfo = usercommunity[msg.Tags.userAddress]
+  -- 检查 userinfo 中是否存在指定用户
+  local userInfo = userinfo[msg.Tags.userAddress]
   if userInfo then
     -- 将用户信息添加到临时表
     tempInfo.avatar = userInfo.avatar or "N/A"
@@ -320,11 +324,11 @@ Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), func
     tempInfo.phone = "N/A"
     tempInfo.showphone = true
   end
-  print(usercommunity[msg.Tags.userAddress])
+  print(userinfo[msg.Tags.userAddress])
   -- 需要将table转成json字符串传回
   local iJson = json.encode(tempInfo)
 
-  Handlers.utils.reply(usercommunity[msg.Tags.userAddress])(msg)
+  Handlers.utils.reply(userinfo[msg.Tags.userAddress])(msg)
 end)
 
 -- 个人信息修改
@@ -332,29 +336,29 @@ Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalIn
   local newColumn = msg.Tags.userAddress
   print("goods")
   -- 检查是否已经存在相同名字的列
-  if not usercommunity[newColumn] then
+  if not userinfo[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
-    usercommunity[newColumn] = {}
+    userinfo[newColumn] = {}
   end
 
-  usercommunity[newColumn] = msg.Data
+  userinfo[newColumn] = msg.Data
 end)
 
 -- 注册个人信息
 Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo"), function(msg)
   print("goods")
   local newColum = msg.Tags.userAddress
-  if not usercommunity[newColum] then
-    usercommunity[newColum] = {}
-    usercommunity[newColum].avatar = "N/A"
-    usercommunity[newColum].name = "N/A"
-    usercommunity[newColum].twitter = "N/A"
-    usercommunity[newColum].twitter = true
-    usercommunity[newColum].mail = "N/A"
-    usercommunity[newColum].showmail = true
-    usercommunity[newColum].phone = "N/A"
-    usercommunity[newColum].showphone = true
-    usercommunity[newColum].joined = {}
+  if not userinfo[newColum] then
+    userinfo[newColum] = {}
+    userinfo[newColum].avatar = "N/A"
+    userinfo[newColum].name = "N/A"
+    userinfo[newColum].twitter = "N/A"
+    userinfo[newColum].twitter = true
+    userinfo[newColum].mail = "N/A"
+    userinfo[newColum].showmail = true
+    userinfo[newColum].phone = "N/A"
+    userinfo[newColum].showphone = true
+    userinfo[newColum].joined = {}
   end
 end)
 
@@ -374,8 +378,8 @@ Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTe
     usercommunity[k] = nil
   end
 
-  -- for k, _ in pairs(usercommunity) do
-  --    usercommunity[k] = nil
+  -- for k, _ in pairs(userinfo) do
+  --    userinfo[k] = nil
   -- end
 end)
 
