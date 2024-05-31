@@ -183,17 +183,23 @@ const test = ()=> {
 
         <NuxtLink v-for="item in joincommunityList" :key="item.uuid" :to="`/${slug}/tasks/${item.uuid}`">
           <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
-          <img :src="item.logo" :title="item.name" class="h-full w-full rounded-lg transition duration-300 ease-in-out transform hover:brightness-75">
+          <div class="aspect-w-1 aspect-h-1">
+            <img 
+              :src="item.logo" 
+              :title="item.name" 
+              class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
+            >
+          </div>
         </NuxtLink>
         <UButton variant="soft" @click="communityCreate = true">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
         
-        <!--
+        
         <UButton variant="soft" @click="test">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
-        -->
+       
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -202,11 +208,13 @@ const test = ()=> {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="`/${slug}/settings`">
             <NuxtLink :to="`/${slug}/settings`">
-              <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+              <UAvatar v-if="userInfo[0].avatar == 'N/A'" src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
             </NuxtLink>
             <template #panel>
               <div class="h-[350px] w-[300px] pt-10 pl-10">
-                <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                <UAvatar v-if="userInfo[0].avatar == 'N/A'" src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
                 <div>
                   Liam
                 </div>

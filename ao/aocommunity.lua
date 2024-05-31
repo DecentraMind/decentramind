@@ -204,6 +204,33 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
   Handlers.utils.reply(cJson)(msg)
 end)
 
+-- 获取指定社区中加入得用户
+Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "communityuser"), function(msg)
+  print(usercommunity)
+  -- 目标 uuid 从消息中获取，例如 msg.Tags.uuid
+  local target_uuid = msg.Tags.uuid
+
+  -- 用于存储找到的键的表
+  local matching_keys = {}
+
+  -- 遍历 usercommunity 表
+  for key, value in pairs(usercommunity) do
+    if value.joined then
+      -- 遍历 joined 列表
+      for _, uuid in ipairs(value.joined) do
+        if uuid == target_uuid then
+          table.insert(matching_keys, key)
+          print("Found matching uuid in usercommunity:", key)
+          -- 这里可以添加你想要执行的逻辑
+        end
+      end
+    end
+  end
+  print(matching_keys)
+  cJson = json.encode(matching_keys)
+  Handlers.utils.reply(cJson)(msg)
+end)
+
 -- 获取指定社区的信息
 Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "communityInfo"), function(msg)
   -- 创建 communityCopy 数组

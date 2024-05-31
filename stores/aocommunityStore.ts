@@ -256,6 +256,23 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     }
   }
 
+  //获取指定社区中得加入用户
+  const getCommunityuser = async (uuid: any) => {
+    if (isLoading) return
+    isLoading = true
+    console.log("----------------no")
+    let result = await dryrun({
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'communityuser' },
+        { name: 'uuid', value: uuid }
+      ],
+    });
+    isLoading = false
+    console.log("---------", result)
+    return result
+  }
+
   //获取已加入得社区列表
   const getCommunityjoined = async () => {
     if (isLoading) return
@@ -395,62 +412,18 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   //创建社区聊天室
   const makecommunityChat = async () => {
     console.log("------------------good")
-    let processId2 = await spawn({
-      module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
-      scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
 
-    const luaCode = `
-    Handlers.add('inboxCount', Handlers.utils.hasMatchingTag('Action', '#Inbox'), function(msg)
-      -- Assuming Inbox is an array containing the messages
-      local inboxCount = #Inbox
-
-      -- Send the inbox count as a response
-      ao.send({
-        Target = msg.From,
-        Tags = { InboxCount = tostring(inboxCount) }
-      })
-    end)
-
-    Handlers.add('inboxMessage', Handlers.utils.hasMatchingTag('Action', 'CheckInbox'), function(msg)
-      -- Extract the index from the tags
-      local index = tonumber(msg.Tags.Index)
-
-      -- Check if the index is valid and within the range of the inbox messages
-      if index and index > 0 and index <= #Inbox then
-        -- Retrieve the message details based on the index
-        local message = Inbox[index]
-
-        -- Send the message details as a response
-        ao.send({
-          Target = msg.From,
-          Tags = {
-            Action = "Inbox",
-            Index = tostring(index),
-            MessageDetails = message
-          }
-        })
-      else
-        -- If the index is invalid or out of range, send an error message
-        ao.send({
-          Target = msg.From,
-          Tags = { Error = "Invalid inbox message index" }
-        })
-      end
-    end)
-    `;
+    const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
-      process: processID,
+      process: "nrKw54WW8JDmhuv77n3m9pKIzvZFj1b2pFdnEDudB0Q",
       tags: [
         { name: 'Action', value: 'eval' }
       ],
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    console.log('gooooods', processId2)
     console.log('result', buildLua)
-    return processId2
+    return buildLua
   }
 
   return $$({
@@ -470,6 +443,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     exitCommunity,
     personalInfo,
     getInfo,
+    getCommunityuser,
     getCommunityjoined,
     getCommunityInfo
   })

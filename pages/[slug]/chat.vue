@@ -98,7 +98,7 @@ const footerLinks = $computed(() => {
   ]
 })
 
-const { currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
+const { currentUuid, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
@@ -109,13 +109,15 @@ const loadCommunityInfo = async (pid) => {
   }
 }
 
-
+let communityuser = $ref({})
 
 let chatID = $ref<string | string[] | null>(null)
 const test = () => {
   console.log("-------nnn")
   if (!route.params.pid) return
   console.log(chatID)
+  const a = getCommunityuser(communityInfo.uuid)
+  console.log("------",a)
 }
 onMounted( () => {
   if (!route.params.pid) return
@@ -123,12 +125,26 @@ onMounted( () => {
 })
 onMounted(async () => {
   await loadCommunityInfo(currentUuid)
+  const result = await getCommunityuser(communityInfo.uuid)
+  if (result && result.Messages && result.Messages.length > 0) {
+    const dataStr = result.Messages[0].Data;
+    
+    try {
+      communityuser = JSON.parse(dataStr);
+      console.log(dataJson);
+      // 你可以在这里进一步处理 dataJson
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+  } else {
+    console.error('No messages found in result');
+  }
 })
 </script>
 
 <template>
   <div class="flex w-full">
-    <UDashboardPanel :width="350" collapsible>
+    <UDashboardPanel :width="390" collapsible>
       <UDashboardSidebar>
         <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
@@ -297,8 +313,25 @@ onMounted(async () => {
             <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
           </UMain>
         </div>
-        <div class="border">
-          test
+        <div class="pt-10 pr-10">
+          <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="communityuser.length">
+            <template #title>
+              <Text class="text-5xl">
+                User
+              </Text>
+            </template>
+          </UDashboardNavbar>
+          <ULandingCard class="h-full">
+            <div v-for="(user, index) in communityuser" :key="index">
+              <UDashboardSection
+                icon="i-heroicons-user"
+                title=""
+                :description="user"
+                orientation="vertical"
+                class="px-4 mt-6"
+              />
+            </div>
+          </ULandingCard>
         </div>
       </UPageGrid>
       <!--</UContainer>-->
