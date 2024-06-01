@@ -1,5 +1,7 @@
 community = community or {}
 usercommunity = usercommunity or {}
+userinfo = userinfo or {}
+
 
 local json = require("json")
 
@@ -9,18 +11,18 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
   local newColumn = msg.Tags.userAddress
   print(testData)
   -- 检查是否已经存在相同名字的列
-  if not usercommunity[newColumn] then
+  if not userinfo[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
-    usercommunity[newColumn] = {}
+    userinfo[newColumn] = {}
   end
   for i, item in ipairs(testData) do
     -- 检查是否已经存在 joined 字段
-    if usercommunity[newColumn].joined then
+    if userinfo[newColumn].joined then
       -- 如果 joined 字段已存在，则在其末尾追加 "xDao"
       local isDuplicate = false -- 标志位，表示是否存在重复数据
 
-      -- 遍历 usercommunity[newColumn].joined
-      for _, data in ipairs(usercommunity[newColumn].joined) do
+      -- 遍历 userinfo[newColumn].joined
+      for _, data in ipairs(userinfo[newColumn].joined) do
         if data == msg.Data then
           print("joined--")
           isDuplicate = true
@@ -30,11 +32,11 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
 
       if not isDuplicate then
         -- 如果 joined 字段已存在且没有重复数据，则在其末尾追加 "xDao"
-        table.insert(usercommunity[newColumn].joined, item.uuid)
+        table.insert(userinfo[newColumn].joined, item.uuid)
       end
     else
       -- 如果 joined 字段不存在，则新建一个 joined 字段，并赋值为包含 "xDao" 的数组
-      usercommunity[newColumn].joined = { item.uuid }
+      userinfo[newColumn].joined = { item.uuid }
     end
   end
   -- print(encodedData)
@@ -165,6 +167,7 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       showwhitebook = dCom[1].showwhitebook,
       github = dCom[1].github,
       showgithub = dCom[1].showgithub,
+      buildnum = dCom[1].buildnum,
       showbuildnum = dCom[1].showbuildnum,
       showallreward = dCom[1].showallreward,
       bounty = dCom[1].bounty,
@@ -179,11 +182,13 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       tokensupply = dCom[1].tokensupply
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
+    print("---------------ggg", usercommunity)
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress].joined then
+        print("----------ggg", usercommunity[msg.Tags.userAddress].joined)
         if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
-          for _, userCommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
-            if dCom[1].uuid == userCommunityItem then
+          for _, usercommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
+            if dCom[1].uuid == usercommunityItem then
               itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
               break
             end
@@ -196,6 +201,33 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
   -- print(communityCopy)
   -- 需要将table转成json字符串传回
   local cJson = json.encode(communityCopy)
+  Handlers.utils.reply(cJson)(msg)
+end)
+
+-- 获取指定社区中加入得用户
+Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "communityuser"), function(msg)
+  print(usercommunity)
+  -- 目标 uuid 从消息中获取，例如 msg.Tags.uuid
+  local target_uuid = msg.Tags.uuid
+
+  -- 用于存储找到的键的表
+  local matching_keys = {}
+
+  -- 遍历 usercommunity 表
+  for key, value in pairs(usercommunity) do
+    if value.joined then
+      -- 遍历 joined 列表
+      for _, uuid in ipairs(value.joined) do
+        if uuid == target_uuid then
+          table.insert(matching_keys, key)
+          print("Found matching uuid in usercommunity:", key)
+          -- 这里可以添加你想要执行的逻辑
+        end
+      end
+    end
+  end
+  print(matching_keys)
+  cJson = json.encode(matching_keys)
   Handlers.utils.reply(cJson)(msg)
 end)
 
@@ -221,6 +253,7 @@ Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "community
         showwhitebook = dCom[1].showwhitebook,
         github = dCom[1].github,
         showgithub = dCom[1].showgithub,
+        buildnum = dCom[1].buildnum,
         showbuildnum = dCom[1].showbuildnum,
         showallreward = dCom[1].showallreward,
         bounty = dCom[1].bounty,
@@ -248,9 +281,9 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
     local dCom = json.decode(communityItem)
-    if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
-      for _, userCommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
-        if dCom[1].uuid == userCommunityItem then
+    if userinfo[msg.Tags.userAddress] and type(userinfo[msg.Tags.userAddress]) == "table" then
+      for _, userinfoItem in ipairs(userinfo[msg.Tags.userAddress].joined) do
+        if dCom[1].uuid == userinfoItem then
           print("goods")
           local itemCopy = {
             uuid = dCom[1].uuid,
@@ -266,6 +299,7 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
             showwhitebook = dCom[1].showwhitebook,
             github = dCom[1].github,
             showgithub = dCom[1].showgithub,
+            buildnum = dCom[1].buildnum,
             showbuildnum = dCom[1].showbuildnum,
             showallreward = dCom[1].showallreward,
             bounty = dCom[1].bounty,
@@ -293,25 +327,35 @@ end)
 -- 获取个人信息
 Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), function(msg)
   local tempInfo = {}
-
-  -- 检查 usercommunity 中是否存在指定用户
-  local userInfo = usercommunity[msg.Tags.userAddress]
+  print("gooods")
+  -- 检查 userinfo 中是否存在指定用户
+  local userInfo = userinfo[msg.Tags.userAddress]
   if userInfo then
     -- 将用户信息添加到临时表
+    tempInfo.avatar = userInfo.avatar or "N/A"
     tempInfo.username = userInfo.username or "N/A"
     tempInfo.twitter = userInfo.twitter or "N/A"
+    tempInfo.showtwitter = userInfo.showtwitter or true
     tempInfo.mail = userInfo.mail or "N/A"
+    tempInfo.showmail = userInfo.showmail or true
     tempInfo.phone = userInfo.phone or "N/A"
+    tempInfo.showphone = userInfo.showphone or true
   else
     -- 用户信息不存在时，设置默认值
+    tempInfo.avatar = "N/A"
     tempInfo.username = "N/A"
     tempInfo.twitter = "N/A"
+    tempInfo.showtwitter = true
     tempInfo.mail = "N/A"
+    tempInfo.showmail = true
     tempInfo.phone = "N/A"
+    tempInfo.showphone = true
   end
+  print(userinfo[msg.Tags.userAddress])
   -- 需要将table转成json字符串传回
   local iJson = json.encode(tempInfo)
-  Handlers.utils.reply(iJson)(msg)
+
+  Handlers.utils.reply(userinfo[msg.Tags.userAddress])(msg)
 end)
 
 -- 个人信息修改
@@ -319,40 +363,32 @@ Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalIn
   local newColumn = msg.Tags.userAddress
   print("goods")
   -- 检查是否已经存在相同名字的列
-  if not usercommunity[newColumn] then
+  if not userinfo[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
-    usercommunity[newColumn] = {}
-  end
-  if msg.Tags.username then
-    usercommunity[msg.Tags.userAddress].username = msg.Tags.username
+    userinfo[newColumn] = {}
   end
 
-  if msg.Tags.twitter then
-    usercommunity[msg.Tags.userAddress].twitter = msg.Tags.twitter
-  end
-
-  if msg.Tags.mail then
-    usercommunity[msg.Tags.userAddress].mail = msg.Tags.mail
-  end
-
-  if msg.Tags.phone then
-    usercommunity[msg.Tags.userAddress].phone = msg.Tags.phone
-  end
+  userinfo[newColumn] = msg.Data
 end)
 
 -- 注册个人信息
 Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo"), function(msg)
   print("goods")
   local newColum = msg.Tags.userAddress
-  if not usercommunity[newColum] then
-    usercommunity[newColum] = {}
-    usercommunity[newColum].name = "N/A"
-    usercommunity[newColum].twitter = "N/A"
-    usercommunity[newColum].mail = "N/A"
-    usercommunity[newColum].phone = "N/A"
-    usercommunity[newColum].joined = {}
+  if not userinfo[newColum] then
+    userinfo[newColum] = {}
+    userinfo[newColum].avatar = "N/A"
+    userinfo[newColum].name = "N/A"
+    userinfo[newColum].twitter = "N/A"
+    userinfo[newColum].twitter = true
+    userinfo[newColum].mail = "N/A"
+    userinfo[newColum].showmail = true
+    userinfo[newColum].phone = "N/A"
+    userinfo[newColum].showphone = true
+    userinfo[newColum].joined = {}
   end
 end)
+
 -- handlers方法测试功能，用来测试这里得方法以及查看表内容等等。。
 Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTest"), function(msg)
   --local pretty = require(".pretty")
@@ -364,12 +400,13 @@ Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTe
   --  print(i)
   --end
 
-  for k, _ in pairs(community) do
-    community[k] = nil
+  for k, _ in pairs(usercommunity) do
+    print()
+    usercommunity[k] = nil
   end
 
-  -- for k, _ in pairs(usercommunity) do
-  --    usercommunity[k] = nil
+  -- for k, _ in pairs(userinfo) do
+  --    userinfo[k] = nil
   -- end
 end)
 

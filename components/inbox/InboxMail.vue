@@ -95,9 +95,6 @@ onMounted( () => {
             <p class="font-semibold text-gray-900 dark:text-white">
               DAO Chat
             </p>
-            <p class="font-medium text-gray-500 dark:text-gray-400">
-              ceT-iiktGCMloqbpVIwKfLfkObym-lJgWYoYUKctk2U
-            </p>
           </div>
         </div>
 

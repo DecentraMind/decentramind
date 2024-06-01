@@ -92,6 +92,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "showwhitebook": ShowWhitebook,
         "github": Github,
         "showgithub": ShowGithub,
+        "buildnum": 0,
         "showbuildnum": ShowBuildnum,
         "showallreward": ShowAllreward,
         "bounty": Bounty,
@@ -136,6 +137,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     ShowWhitebook,
     Github,
     ShowGithub,
+    Buildnum,
     ShowBuildnum,
     ShowAllreward,
     Bounty,
@@ -170,6 +172,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "showwhitebook": ShowWhitebook,
         "github": Github,
         "showgithub": ShowGithub,
+        "buildnum": Buildnum,
         "showbuildnum": ShowBuildnum,
         "showallreward": ShowAllreward,
         "bounty": Bounty,
@@ -253,6 +256,23 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     }
   }
 
+  //获取指定社区中得加入用户
+  const getCommunityuser = async (uuid: any) => {
+    if (isLoading) return
+    isLoading = true
+    console.log("----------------no")
+    let result = await dryrun({
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'communityuser' },
+        { name: 'uuid', value: uuid }
+      ],
+    });
+    isLoading = false
+    console.log("---------", result)
+    return result
+  }
+
   //获取已加入得社区列表
   const getCommunityjoined = async () => {
     if (isLoading) return
@@ -301,7 +321,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const joinCommunity = async (uuid) => {
     if (isLoading) return
     isLoading = true
-
+    console.log("---------------")
     let join = await message({
       process: processID,
       tags: [
@@ -334,21 +354,33 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
 
   //修改个人信息
-  const personalInfo = async (username, twitter, mail, phone) => {
-    if (isLoading) return
-    isLoading = true
+  const personalInfo = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone) => {
+    //if (isLoading) return
+    //isLoading = true
+    console.log("------------gggggggggggggggggggggggg")
+    let personal = [
+      {
+        "avatar": avatar,
+        "username": username,
+        "twitter": twitter,
+        "showtwitter": showtwitter,
+        "mail": mail,
+        "showmail": showmail,
+        "phone": phone,
+        "showphone": showphone,
+      }
+    ]
+    const jsonString = JSON.stringify(personal);
     let Info = await message({
       process: processID,
       tags: [
         { name: 'Action', value: 'personalInfo' },
-        { name: 'userAddress', value: address },
-        { name: 'username', value: username },
-        { name: 'twitter', value: twitter },
-        { name: 'mail', value: mail },
-        { name: 'phone', value: phone }
+        { name: 'userAddress', value: address }
       ],
+      data: jsonString,
       signer: createDataItemSigner(window.arweaveWallet),
     })
+    console.log("------------gggggggggggggggggggggggg")
     isLoading = false
     return Info
   }
@@ -379,13 +411,19 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //创建社区聊天室
   const makecommunityChat = async () => {
-    const response = await fetch('/AO/chat.lua')
-    const luaScript = await response.text()
-    //let processId = await spawn({
-    //  scheduler: "8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw",
-    //  signer: createDataItemSigner(window.arweaveWallet),
-    //})
-    //return processId
+    console.log("------------------good")
+
+    const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
+    let buildLua = await message({
+      process: "nrKw54WW8JDmhuv77n3m9pKIzvZFj1b2pFdnEDudB0Q",
+      tags: [
+        { name: 'Action', value: 'eval' }
+      ],
+      data: luaCode,
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    console.log('result', buildLua)
+    return buildLua
   }
 
   return $$({
@@ -405,6 +443,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     exitCommunity,
     personalInfo,
     getInfo,
+    getCommunityuser,
     getCommunityjoined,
     getCommunityInfo
   })

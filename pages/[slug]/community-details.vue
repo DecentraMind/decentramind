@@ -139,7 +139,7 @@ const initChart = (tokensupply) => {
 
       const option = {
         title: {
-          text: 'Token Allocation\nTotal Supply 2100000',
+          text: `Token Allocation\nTotal Supply ${communityInfo.alltoken}`,
           left: 'center'
         },
         tooltip: {
@@ -217,23 +217,23 @@ onBeforeUnmount(() => {
                 <div class="" style="flex: 1; height: 100%;">
                   <div class="flex justify-between px-16">
                     <div>{{ $t('community.website') }}</div>
-                    <div class="w-32 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[300px]">{{ communityInfo.website }}</div>
+                    <div class="w-36 flex justify-around items-center">
+                      <div class="flex justify-center border rounded-lg w-[350px]">{{ communityInfo.website }}</div>
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
-                    <div class="w-32 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[300px]">{{ communityInfo.twitter }}</div>
+                    <div class="w-36 flex justify-around items-center">
+                      <div class="flex justify-center border rounded-lg w-[350px]">{{ communityInfo.twitter }}</div>
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.detail.token') }}</div>
-                    <div class="w-32 flex justify-around items-center">
+                    <div class="w-36 flex justify-around items-center">
                       <div 
                         v-for="(token, index) in communityInfo.communitytoken" 
                         :key="index" 
-                        class="flex justify-center border rounded-lg w-[300px]"
+                        class="flex justify-center border rounded-lg w-[350px]"
                       >
                         {{ token.tokenName }}
                       </div>
@@ -241,20 +241,20 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.token.platforms') }}</div>
-                    <div class="w-32 flex justify-around items-center">
+                    <div class="w-36 flex justify-around items-center space-x-3">
                       <div 
                         v-for="(token, index) in communityInfo.support" 
                         :key="index"
-                        class="flex justify-center border rounded-lg w-[300px]"
+                        class="flex justify-center border rounded-lg w-[350px]"
                       >
                         {{ token }}
                       </div>
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
-                    <div>{{ $t('community.detail.contribute') }}</div>
-                    <div class="w-32 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[300px]">
+                    <div>{{ $t('community.typereward') }}</div>
+                    <div class="w-36 flex justify-around items-center">
+                      <div class="flex justify-center border rounded-lg w-[350px]">
                         {{ communityInfo.website }}
                       </div>
                     </div>
@@ -267,7 +267,7 @@ onBeforeUnmount(() => {
                 <div class="" style="flex: 1;">
                   <div class="flex justify-between px-16">
                     <div>Github</div>
-                    <div class="w-32 flex justify-around items-center">
+                    <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
                         {{ communityInfo.github }}
                       </div>
@@ -275,17 +275,17 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.buildnum') }}</div>
-                    <div class="w-32 flex justify-around items-center">
+                    <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
                         {{ communityInfo.website }}
                       </div>
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
-                    <div>{{ $t('community.detail.reward.issued') }}</div>
-                    <div class="w-32 flex justify-around items-center">
+                    <div>{{ $t('community.allreward') }}</div>
+                    <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
-                        {{ communityInfo.website }}
+                        3
                       </div>
                     </div>
                   </div>
@@ -308,10 +308,12 @@ onBeforeUnmount(() => {
               </UTable>
             </ULandingCard>
             <ULandingCard class="col-span-8 row-span-2">
+              <!--
               <div class="px-12">
                 {{ $t('community.economics') }}<br>
                 {{ $t('community.token.all') }} 2100000
               </div>
+              -->
               <div ref="chart" :style="{ width: '100%', height: '400px' }"></div>
             </ULandingCard>
           </ULandingGrid>

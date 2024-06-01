@@ -8,9 +8,9 @@ const options = [
   { label: 'OKE', value: 'OKE' },
   { label: 'Binance', value: 'Binance' },
 ]
-const supportSelect = ['OKE', 'Binance']
+const supportSelect = ['ArSwap', 'Bark', 'Permaswap', 'Binance', 'Coinbase']
 let supportSelected = $ref([])
-const tokenselect = ['USDC', 'AR']
+const tokenselect = ['AOCRED', 'Bark', 'TRUNK', 'EXP', '0rbit', 'Earth', 'Fire', 'Air', 'Lava']
 let tokenselected = $ref([])
 let isCreated = $ref(false)
 
@@ -102,6 +102,7 @@ const CreateCommunity = async () => {
     state.showWhitebook,
     state.Github,
     state.showGithub,
+    state.Buildernum,
     state.showBuildernum, //builder人数
     state.showAllreward, //所有总奖励
     tokenselected, //选择的token类型
@@ -240,6 +241,7 @@ const setcommunitycurrent = async() => {
   state.showWhitebook = communityInfo.showwhitebook
   state.Github = communityInfo.github
   state.showGithub = communityInfo.showgithub
+  state.Buildernum = communityInfo.buildnum
   state.showBuildernum = communityInfo.showbuildnum //builder人数
   state.showAllreward = communityInfo.showallreward //所有总奖励
   tokenselected = communityInfo.bounty //选择的token类型
@@ -406,17 +408,19 @@ onMounted(async () => {
 
         <UFormGroup name="range" class="flex flex-row items-center space-x-10">
           <template #label>
-            <div class="text-sky-400 min-w-[100px]">{{ $t('community.after') }}</div>
+            <div class="text-sky-400 min-w-[382px]">{{ $t('community.after') }}</div>
           </template>
-          {{ $t('hideall') }}
-          <UToggle v-model="state.showDetail" />
-          {{ $t('showall') }}
+          <div class="flex items-center space-x-3">
+            <Text>{{ $t('hideall') }}</Text>
+            <UToggle v-model="state.showDetail" />
+            <Text>{{ $t('showall') }}</Text>
+          </div>
         </UFormGroup>
 
-        <div v-show="state.showDetail" class="ml-10 space-y-3">
+        <div v-show="state.showDetail" class="space-y-3">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[150px]">{{ $t('community.token.release') }}</div>
+              <div class="text-sky-400 min-w-[450px]">{{ $t('community.token.release') }}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isPublished" />
@@ -430,8 +434,10 @@ onMounted(async () => {
                 <div class="text-sky-400 min-w-[100px]">{{ index+1 }}st Token</div>
               </template>
               <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="formGroup.tokenName" placeholder="" />
-                <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
+                <div class="flex min-w-[477px]">
+                  <UInput v-model="formGroup.tokenName" placeholder="" />
+                  <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
+                </div>
                 <UToggle v-model="formGroup.showTokenName" />
                 <Text>{{ formGroup.showTokenName ? $t('show') : $t('hide') }}</Text>
               </div>
@@ -441,29 +447,30 @@ onMounted(async () => {
 
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[150px]">{{ $t('community.token.trade') }}</div>
+              <div class="text-sky-400 min-w-[452px]">{{ $t('community.token.trade') }}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isTradable" />
               <Text>{{ state.isTradable ? $t('yes') : $t('no') }}</Text>
             </div>
           </UFormGroup>
-
-          <UFormGroup name="range" class="flex flex-row items-center space-x-10">
-            <template #label>
-              <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.platforms') }}</div>
-            </template>
-            <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select people" />
-          </UFormGroup>
+          <div v-if="state.isTradable">
+            <UFormGroup name="range" class="flex flex-row items-center space-x-10">
+              <template #label>
+                <div class="text-sky-400 min-w-[270px]">{{ $t('community.token.platforms') }}</div>
+              </template>
+              <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select people" />
+            </UFormGroup>
+          </div>
         </div>
 
         <div class="py-8 text-2xl">{{ $t('community.economics') }}</div>
 
 
-        <div class="ml-10 space-y-3">
+        <div class="space-y-3">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[100px]">{{ $t('community.token.all') }}</div>
+              <div class="text-sky-400 min-w-[410px]">{{ $t('community.token.all') }}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <Text>{{ $t('hide') }}</Text>

@@ -64,7 +64,9 @@ const getData = item => {
     <InboxNewBtn />
     -->
     <div v-for="item in items" :key="item.id" class="flex gap-2.5 items-start" :class="isSelf(item) ? 'flex-row-reverse' : ''">
-      <DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />
+      <!--<DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />-->
+      <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+            
       
       <div class="flex flex-col w-full max-w-[400px] gap-1">
         <div class="flex space-x-2 items-center rtl:space-x-reverse" :class="isSelf(item) ? 'justify-end' : ''">
