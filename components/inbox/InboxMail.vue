@@ -89,7 +89,7 @@ onMounted( () => {
     <div class="-m-4 -top-4 z-99 sticky">
       <div class="bg-background flex  p-4  justify-between  ">
         <div class="flex gap-4 items-center">
-          <DicebearAvatar :seed="chatID" alt="test" size="lg" />
+          <!--<DicebearAvatar :seed="chatID" alt="test" size="lg" />-->
 
           <div class="min-w-0">
             <p class="font-semibold text-gray-900 dark:text-white">
@@ -111,8 +111,8 @@ onMounted( () => {
       </div>
     </div>
     -->
-    <div class="h-full flex flex-col justify-between pt-10">
-      <div class="min-h-50 overflow-y-auto h-5/6 flex flex-col-reverse">
+    <div class="h-screen flex flex-col justify-between pt-10 pb-10">
+      <div class="overflow-y-auto h-5/6 flex flex-col-reverse">
         <!--<InboxListMessage :id="chatID" @loaded="scrollToBottom" />-->
         <InboxListMessage :id="chatID" />
       </div>
