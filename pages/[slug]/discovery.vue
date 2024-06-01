@@ -89,6 +89,7 @@ const test = async () => {
         <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>
+        <UColorModeButton />
       </template>
     </UDashboardNavbar>
     <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">

@@ -248,7 +248,7 @@ onMounted(async () => {
     </UDashboardPanel>
     <UPage class=" w-full">
       <!--<UContainer class="w-full">-->
-      <UPageGrid class="w-full">
+      <UPageGrid class="w-full h-full">
         <!--
         <UAside class="border rounded-md  border-1 border-gray-600">
           <InboxList v-model="selectedMail" :mails="filteredMails" />
@@ -256,7 +256,7 @@ onMounted(async () => {
         -->
         
     
-        <div class="flex xl:col-span-2 w-full">
+        <div class="flex xl:col-span-2 w-full h-full">
           <div v-if="chatID" class="w-full">
             <!--
               <UDashboardNavbar v-if="false">
@@ -307,7 +307,7 @@ onMounted(async () => {
                 </template>
               </UDashboardNavbar>
               -->
-            <InboxMail :mail="chatID" class="mt-10 w-full" />
+            <InboxMail :mail="chatID" class="pt-2 pb-10 w-full" />
           </div>
           <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
             <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />

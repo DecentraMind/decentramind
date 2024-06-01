@@ -68,7 +68,7 @@ const getData = item => {
       <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
             
       
-      <div class="flex flex-col w-full max-w-[400px] gap-1">
+      <div class="flex flex-col w-full max-w-[400px]">
         <div class="flex space-x-2 items-center rtl:space-x-reverse" :class="isSelf(item) ? 'justify-end' : ''">
           <span class="font-semibold flex-1 text-sm text-gray-900 dark:text-white">{{ shortAddress(item.From) }}</span>
           <TimeAgo class="font-normal  text-sm text-gray-500 dark:text-gray-400" :time="item.Timestamp" />

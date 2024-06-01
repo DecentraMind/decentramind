@@ -410,10 +410,20 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   //创建社区聊天室
   const makecommunityChat = async () => {
     console.log("------------------good")
+    const luaCode = `Handlers.add('inboxCount', Handlers.utils.hasMatchingTag('Action', '#Inbox'), function(msg)  local inboxCount = #Inbox ao.send({ Target = msg.From,  Tags = { InboxCount = tostring(inboxCount) }  })  end)  Handlers.add('inboxMessage', Handlers.utils.hasMatchingTag('Action', 'CheckInbox'), function(msg) local index = tonumber(msg.Tags.Index)  if index and index > 0 and index <= #Inbox then local message = Inbox[index]  ao.send({ Target = msg.From,  Tags = {  Action = "Inbox", Index = tostring(index),  MessageDetails = message  } })  else  ao.send({ Target = msg.From,  Tags = { Error = "Invalid inbox message index" }  })  end end)`;
+    /*
+    let chatProcess = await spawn({
+      module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
+      scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    console.log("gooods")
+    console.log(chatProcess)
+    console.log('gooooods', chatProcess)
+    */
 
-    const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
-      process: "nrKw54WW8JDmhuv77n3m9pKIzvZFj1b2pFdnEDudB0Q",
+      process: "oIePjvv4hpIS4YvLJWMbODUQ67VDRfcQBX9fnzmPNV4",
       tags: [
         { name: 'Action', value: 'eval' }
       ],

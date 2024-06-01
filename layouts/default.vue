@@ -163,6 +163,7 @@ const links2 = [{
 
 const { makecommunityChat } = $(aocommunityStore())
 const test = ()=> {
+  console.log("nogo")
   const a = makecommunityChat()
 
 
@@ -195,11 +196,11 @@ const test = ()=> {
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
         
-        <!--
+        
         <UButton variant="soft" @click="test">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
-       -->
+       
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -224,10 +225,10 @@ const test = ()=> {
                   <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
                 </template>
                 <div>
-                  Liam
+                  <Text v-if="userInfo.length && userInfo[0]">{{ userInfo[0].username }}</Text>
                 </div>
                 <UDivider />
-                我的社区
+                <Text class="pt-10">This man is mysterious. left nothing behind.</Text>
               </div>
             </template>
           </UPopover>
