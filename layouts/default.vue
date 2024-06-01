@@ -208,13 +208,21 @@ const test = ()=> {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="`/${slug}/settings`">
             <NuxtLink :to="`/${slug}/settings`">
-              <UAvatar v-if="userInfo[0].avatar == 'N/A'" src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
-              <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+              <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
+                <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+              </template>
+              <template v-else>
+                <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+              </template>
             </NuxtLink>
             <template #panel>
               <div class="h-[350px] w-[300px] pt-10 pl-10">
-                <UAvatar v-if="userInfo[0].avatar == 'N/A'" src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
-                <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+                <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
+                  <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+                </template>
+                <template v-else>
+                  <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                </template>
                 <div>
                   Liam
                 </div>

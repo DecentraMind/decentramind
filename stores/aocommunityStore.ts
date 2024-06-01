@@ -11,12 +11,12 @@ import {
 
 import fs from 'fs'
 
-const { address } = $(aoStore())
 
 // Read the Lua file
 //const luaCode = fs.readFileSync('./AO/chat.lua', 'utf8')
 
 export const aocommunityStore = defineStore('aocommunityStore', () => {
+  const { address } = $(aoStore())
   const processID = 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU'
   let communityList = $ref({})
   let userInfo = $ref({})
@@ -357,7 +357,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const personalInfo = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone) => {
     //if (isLoading) return
     //isLoading = true
-    console.log("------------gggggggggggggggggggggggg")
     let personal = [
       {
         "avatar": avatar,
@@ -380,7 +379,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       data: jsonString,
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    console.log("------------gggggggggggggggggggggggg")
     isLoading = false
     return Info
   }
