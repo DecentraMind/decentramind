@@ -108,20 +108,20 @@ const test = async () => {
             <template #title>
               <div class="flex items-center">
                 <UAvatar :src="community.logo" alt="Avatar" size="md" />
-                <Text class="mx-3 text-2xl">
+                <div class="mx-3 text-2xl">
                   {{ community.name }}
-                </Text>
+                </div>
               </div>
             </template>
             <template #description>
               <div class="flex flex-col space-y-2">
                 <div class="flex flex-col min-h-[50px]">
-                  <Text class="text-blue-300 text-2xl">
+                  <div class="text-blue-300 text-2xl">
                     builder: 100
-                  </Text>
-                  <Text class="text-blue-900 text-2xl">
+                  </div>
+                  <div class="text-blue-900 text-2xl">
                     {{ community.desc }}
-                  </Text>
+                  </div>
                 </div>
                 <div>
                   <template v-if="community.isJoined">

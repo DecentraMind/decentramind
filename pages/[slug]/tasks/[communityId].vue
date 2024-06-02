@@ -3,7 +3,7 @@ import { sub, format, isSameDay, type Duration } from 'date-fns'
 import type { FormSubmitEvent } from '#ui/types'
 import {taskStore} from '../../../stores/taskStore';
 import {aocommunityStore} from '../../../stores/aocommunityStore';
-
+import axios from 'axios';
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray, makecommunityChat } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
@@ -69,6 +69,9 @@ const state = $ref({
   tokenNumber: undefined,
   tokenType: undefined,
   tokenChain: undefined,
+  tokenNumber1: undefined,
+  tokenType1: undefined,
+  tokenChain1: undefined,
   rewardTotal: undefined,
   zone: undefined,
 })
@@ -81,16 +84,20 @@ const transData = {
   tokenNumber: undefined,
   tokenType: undefined,
   tokenChain: undefined,
+  tokenNumber1: undefined,
+  tokenType1: undefined,
+  tokenChain1: undefined,
   rewardTotal: undefined,
   zone: undefined,
   startTime: '',
   endTime: '',
   buildNumber: 0,
   joined: 0,
-  ownerId: undefined,
+  ownerId: '',
   communityId: '',
   isBegin: '',
-  isSettle: t('Unsettled')
+  isCal: 'N',
+  isSettle: 'N'
 }
 const form = $ref()
 function uuid() {
@@ -111,6 +118,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.tokenNumber = event.data.tokenNumber
   transData.tokenType = event.data.tokenType.value
   transData.tokenChain = event.data.tokenChain.value
+  transData.tokenNumber1 = event.data.tokenNumber1
+  transData.tokenType1 = event.data.tokenType1.value
+  transData.tokenChain1 = event.data.tokenChain1.value
   transData.rewardTotal = event.data.rewardTotal
   transData.zone = event.data.zone
   transData.startTime = selected.value.start.toLocaleString()
@@ -118,16 +128,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
-  let isBegin = t('Not Start')
+  let isBegin = t('N')
   if (currentDate <= selected.value.end && currentDate >= selected.value.start) {
-    isBegin = t('Ing')
+    isBegin = 'Y'
   } else if (currentDate > selected.value.end) {
-    isBegin = t('End')
+    isBegin = 'N'
   }
   transData.isBegin = isBegin
   transData.communityId = String(communityId)
   console.log(transData)
-  await createTask(transData, 'CreateTask')
+  await createTask(transData)
+  await getAllTasks(String(communityId))
   isOpen = false
 }
 const ranges = [
@@ -247,8 +258,49 @@ const quitCommunity = async(communityuuid: any) => {
   console.log(communityuuid)
   await exitCommunity(communityuuid)
 }
+
+
+const token = process.env.BEARER_TOKEN
+
+const endpointUrl = "https://api.twitter.com/2/spaces/search";
+// async function getRequest() {
+//
+//   // Edit query parameters below and specify a search query
+//   // optional params: host_ids,conversation_controls,created_at,creator_id,id,invited_user_ids,is_ticketed,lang,media_key,participants,scheduled_start,speaker_ids,started_at,state,title,updated_at
+//   const params = {
+//     'query': 'NBA', // Replace the value with your search term
+//     'space.fields': 'title,created_at',
+//     'expansions': 'creator_id'
+//   }
+//   console.log('token = ' + token)
+//   const res = await needle('get', endpointUrl, params, {
+//     headers: {
+//       "User-Agent": "v2SpacesSearchJS",
+//       "authorization": `Bearer ${token}`
+//     }
+//   })
+//
+//   if (res.body) {
+//     return res.body
+//   } else {
+//     throw new Error('Unsuccessful request')
+//   }
+// }
 async function testAO() {
-  await makecommunityChat()
+  console.log('in testAO()')
+  axios.get(endpointUrl, {
+    params : {
+      query: 'NBA', // Replace the value with your search term
+      'space.fields': 'title,created_at',
+      expansions: 'creator_id'
+    },
+    headers: {
+      'User-Agent': 'v2SpacesSearchJS',
+      authorization: `Bearer ${token}`
+    }
+  }).then(function (response){
+    console.log('response = ' + response)
+  })
 }
 </script>
 <template>
@@ -288,9 +340,9 @@ async function testAO() {
         <div class="flex justify-between my-3 mt-10 items-center">
           <div >{{ $t('TokenOfCommunityDetail') }}</div>
           <div class="flex space-x-3">
-            <div 
-              v-for="(token, index) in communityInfo.communitytoken" 
-              :key="index" 
+            <div
+              v-for="(token, index) in communityInfo.communitytoken"
+              :key="index"
               class="flex justify-center border rounded-lg w-[80px]"
             >
               {{ token.tokenName }}
@@ -300,8 +352,8 @@ async function testAO() {
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('Trading Support') }}</div>
           <div class="flex space-x-3">
-            <div 
-              v-for="(token, index) in communityInfo.support" 
+            <div
+              v-for="(token, index) in communityInfo.support"
               :key="index"
               class="flex justify-center border rounded-lg w-[80px]"
             >
@@ -323,9 +375,9 @@ async function testAO() {
           <div>{{ communityInfo.buildnum }}</div>
         </div>
         <div class="flex">
-          <UButton 
-            color="white" 
-            variant="solid" 
+          <UButton
+            color="white"
+            variant="solid"
             class="ml-auto mt-10"
             @click="quitCommunity(communityInfo.uuid)"
           >
@@ -414,7 +466,7 @@ async function testAO() {
                 <div class="flex justify-between ...">
                   <Text>{{ blogPost.name }}</Text>
                   <UBadge size="xs" color="black" variant="solid">
-                    {{ blogPost.status }}
+                    {{ blogPost.status == 'Y'? $t('Ing') : $t('End')}}
                   </UBadge>
                 </div>
               </template>
@@ -525,11 +577,18 @@ async function testAO() {
 
               <UInputMenu v-model="state.tokenChain" :placeholder="$t('Chain Type')" :options="chainOptions" />
             </div>
+            <div class="flex justify-between items-center">
+              <UInput v-model="state.tokenNumber1" :placeholder="$t('Token Number')" />
+
+              <UInputMenu v-model="state.tokenType1" :placeholder="$t('Token Type')" :options="tokenOptions" />
+
+              <UInputMenu v-model="state.tokenChain1" :placeholder="$t('Chain Type')" :options="chainOptions" />
+            </div>
           </UFormGroup>
           <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
             <UInput v-model="state.rewardTotal" :placeholder="$t('Total Chances')" />
           </UFormGroup>
-          <UFormGroup name="textarea" :label="$t('Task Period')">
+          <UFormGroup name="textarea" :label="$t('Time')">
             <div class="flex justify-between items-center">
               <USelect v-model="state.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
               <UPopover :popper="{ placement: 'bottom-start' }">
@@ -551,11 +610,8 @@ async function testAO() {
               </UPopover>
             </div>
           </UFormGroup>
-          <UButton type="submit">
+          <UButton color="white" type="submit">
             {{ $t('Post the Quest') }}
-          </UButton>
-          <UButton variant="outline" class="ml-2" @click="form.clear()">
-            Clear
           </UButton>
         </UForm>
       </UCard>

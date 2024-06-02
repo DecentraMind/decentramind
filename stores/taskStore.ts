@@ -6,7 +6,7 @@ import {
 } from '@permaweb/aoconnect'
 
 import { PermissionType } from 'arconnect'
-import { notificationStore } from '~/stores/notificationStore'
+
 
 const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
@@ -16,39 +16,38 @@ const permissions: PermissionType[] = [
 ]
 
 let processId = '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw'
-const { showError, showSuccess, alertMessage } = $(notificationStore())
+
 export const taskStore = defineStore('taskStore', () => {
+  const { showError, showSuccess, alertMessage } = $(notificationStore())
   let respArray = $ref([])
 
-  const createTask = async (data: any, action: string) => {
+  const createTask = async (data: any) => {
     // TODO 创建process 将process ID添加在任务信息中
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
         process: processId,
         signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: action }],
+        tags: [{ name: 'Action', value: 'CreateTask' }],
         data: JSON.stringify(data)
       })
       // TODO 给新建的process转账
-      // return messageId;
     } catch (error) {
       // alertError('messageToAo -> error:' + error)
       // return '';
     }
-    await getAllTasks('GetAllTasks')
     showSuccess('Create task success')
   }
 
-  const getAllTasks = async (communityId: string, action: string) => {
+  const getAllTasks = async (communityId: string) => {
     let res
     try {
       res = await dryrun({
         process: processId,
-        tags: [{ name: 'Action', value: action }],
+        tags: [{ name: 'Action', value: 'GetAllTasks' }],
       })
     } catch (error) {
-      alertMessage('messageToAo -> error:')
+      alertMessage(error)
       return ''
     }
     if(res.Messages[0].Data === 'null'){
@@ -80,7 +79,7 @@ export const taskStore = defineStore('taskStore', () => {
         rewardTotal: element.rewardTotal,
         buildNumber: element.buildNumber,
         taskRule: element.taskRule,
-        reward: element.tokenNumber + ' ' + element.tokenType,
+        reward: element.tokenNumber + ' ' + element.tokenType + '+' + element.tokenNumber1 + ' ' + element.tokenType1,
         builderNum: element.buildNumber,
         status: element.isBegin,
         joined: element.joined,
@@ -251,33 +250,18 @@ export const taskStore = defineStore('taskStore', () => {
     }
   }
 
-  // const makecommunityChat = async () => {
-  //   console.log("------------------good")
-  //   let processId = await spawn({
-  //     module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
-  //     scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
-  //     signer: createDataItemSigner(window.arweaveWallet),
-  //   })
-  //   console.log('gooooods', processId)
-  //   return processId
-  // }
-
-  // const makecommunityChat = async () => {
-  //   console.log("------------------good")
-  //   let processId2 = await spawn({
-  //     module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
-  //     scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
-  //     signer: createDataItemSigner(window.arweaveWallet),
-  //   })
-  //   return processId2
-  // }
   const makecommunityChat = async  () => {
-    const processId2 = 'eCQysY6Vgxz-A5z1_LHFnknLUmsRseYPBJ9mIzQ-yVs'
+    let processId2 = await spawn({
+      module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
+      scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    // const processId2 = 'eCQysY6Vgxz-A5z1_LHFnknLUmsRseYPBJ9mIzQ-yVs'
     const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
       process: processId2,
       tags: [
-        { name: 'Action', value: 'eval' }
+        { name: 'Action', value: 'Eval' }
       ],
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),

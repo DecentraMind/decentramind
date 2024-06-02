@@ -1,25 +1,27 @@
 <script setup lang="ts">
-
+const { joinCommunity } = $(aocommunityStore())
 definePageMeta({
   layout: "wip",
 });
+const { address, doLogin } = $(aoStore())
 const route = useRoute()
-const communityName = $computed(() => route.params.communityName)
-// const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
-//
-// let communityInfo = $ref({})
-// const loadCommunityInfo = async (pid) => {
-//   try {
-//     communityInfo = await getLocalcommunityInfo(pid)
-//   } catch (error) {
-//     console.error('Error fetching data:', error)
-//   }
-// }
+const communityId = $computed(() => route.params.communityId)
+// const { joinCommunity } = $(aocommunityStore())
+const slug = $computed(() => route.params.slug)
 
 // onMounted(async () => {
 //   setCurrentuuid(communityId)
 //   await loadCommunityInfo(communityId)
 // })
+async function join() {
+  await doLogin()
+  console.log('add = ' + address)
+
+  await joinCommunity(communityId)
+  console.log('join success')
+  await useRouter().push({path: '/${slug}/discovery'})
+}
+
 </script>
 
 <template>
@@ -35,7 +37,7 @@ const communityName = $computed(() => route.params.communityName)
 
       <template #footer>
         <div class="flex justify-center">
-          <UButton color="white" label="Join" to="http://localhost:3000"/>
+          <UButton color="white" label="Join" @click="join"/>
         </div>
       </template>
     </UCard>

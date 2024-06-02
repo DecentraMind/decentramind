@@ -194,6 +194,7 @@ export const aoStore = defineStore('aoStore', () => {
     console.log("nnnnnnnnnogo")
     tokenBalances.CRED = (await getBalance('CRED')) / 1e3
     tokenBalances.AOCOIN = (await getBalance('AOCoin')) / 1e3
+    console.log("nnnnnnnnnogo")
     //tokenBalances.BRKTST = (await getBalance('BRKTST')) / 1e3
     //tokenBalances.TRUNK = (await getBalance('TRUNK')) / 1e3
     //tokenBalances.EXP = (await getBalance('EXP')) / 1e3

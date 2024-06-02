@@ -182,7 +182,7 @@ function returnBackPage() {
               <div class="flex justify-start">
                 <div>
                   <UBadge color="black" variant="solid">
-                    {{ blogPost.status }}
+                    {{ blogPost.status == 'Y'? $t('Ing') : $t('End')}}
                   </UBadge>
                 </div>
                 <div class="mx-2">
@@ -192,7 +192,7 @@ function returnBackPage() {
                 </div>
                 <div v-if="isOwner" class="mx-2">
                   <UBadge color="black" variant="solid">
-                    {{ blogPost.isSettle }}
+                    {{ blogPost.isSettle == 'Y'? $t('Settled') : $t('Unsettled')}}
                   </UBadge>
                 </div>
               </div>
