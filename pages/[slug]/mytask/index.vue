@@ -65,7 +65,7 @@ const Wallettoken = ref<Wallettoken[]>([
 function onSubmitAccount () {
   console.log('Submitted form:', accountForm)
 }
-const { init, tokenBalances, getarbalance } = $(aoStore())
+const { init, tokenBalances, totalBalance, getarbalance } = $(aoStore())
 
 const test = async() => {
   console.log("nnnnnnnngggggg")
@@ -100,7 +100,7 @@ onMounted(async () => {
           </template>
           <template #description>
             <div class="flex items-center mt-5">
-              <div class="text-5xl">{{ parseFloat(arbalance).toFixed(3) }}</div>
+              <div class="text-5xl">{{ parseFloat(totalBalance).toFixed(3) }}</div>
               <div class="text-3xl">USD</div>
             </div>
           </template>
@@ -128,8 +128,8 @@ onMounted(async () => {
         </template>
         <template #balance-data="{ row }">
           <div class="flex flex-col">
-            <span class="text-gray-900 dark:text-white font-medium text-xl">{{ parseFloat(arbalance).toFixed(3) }}</span>
-            <span>{{ parseFloat(arbalance).toFixed(3) }}</span>
+            <span class="text-gray-900 dark:text-white font-medium text-xl">{{ parseFloat(row.balance).toFixed(3) }}</span>
+            <!--<span>{{ parseFloat(arbalance).toFixed(3) }}</span>-->
           </div>
         </template>
         <!--

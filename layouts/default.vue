@@ -162,9 +162,12 @@ const links2 = [{
 }]
 
 const { makecommunityChat } = $(aocommunityStore())
-const test = ()=> {
-  const a = makecommunityChat()
 
+const { postToken } = $(linktwitter())
+const test = ()=> {
+  console.log("nogo")
+  const a = makecommunityChat()
+  //const a = postToken()
 
 }
 </script>
@@ -199,7 +202,7 @@ const test = ()=> {
         <UButton variant="soft" @click="test">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
-       -->
+        -->
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -208,18 +211,26 @@ const test = ()=> {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="`/${slug}/settings`">
             <NuxtLink :to="`/${slug}/settings`">
-<!--              <UAvatar v-if="userInfo[0].avatar == 'N/A'" src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />-->
-<!--              <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />-->
+              <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
+                <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+              </template>
+              <template v-else>
+                <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+              </template>
             </NuxtLink>
             <template #panel>
               <div class="h-[350px] w-[300px] pt-10 pl-10">
-<!--                <UAvatar v-if="userInfo[0].avatar == 'N/A'" src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />-->
-<!--                <UAvatar v-else :src="userInfo[0].avatar" alt="Avatar" size="2xl" />-->
+                <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
+                  <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+                </template>
+                <template v-else>
+                  <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                </template>
                 <div>
-                  Liam
+                  <Text v-if="userInfo.length && userInfo[0]">{{ userInfo[0].username }}</Text>
                 </div>
                 <UDivider />
-                我的社区
+                <Text class="pt-10">This man is mysterious. left nothing behind.</Text>
               </div>
             </template>
           </UPopover>
@@ -271,7 +282,7 @@ const test = ()=> {
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
-    <UModal v-model="communityCreate" :ui="{ width: 'w-full' }">
+    <UModal v-model="communityCreate" :ui="{ width: w-full }">
       <UCard>
         <CommunityCreate />
       </UCard>

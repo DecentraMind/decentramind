@@ -28,12 +28,13 @@ const arweave = Arweave.init({
 
 
 export const aoStore = defineStore('aoStore', () => {
+  let totalBalance = $ref(0)
   const tokenMap = $ref({
     CRED: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
     AOCoin: 'rxl5oOyCuzrUUVB1edjrcHpcn9s9czhj4rsq4ACQGv4',
     Arena: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
     DepositService: 'kzcVZhdcZOpM90eeKb-JRX3AG7TGH__S7p5I6PsqA3g',
-    BTKTST: '8p7ApPZxC_37M06QHVejCQrKsHbcJEerd3jWNkDUWPQ',
+    BRKTST: '8p7ApPZxC_37M06QHVejCQrKsHbcJEerd3jWNkDUWPQ',
     TRUNK: 'OT9qTE2467gcozb2g8R6D6N3nQS94ENcaAIJfUzHCww',
     EXP: 'aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw',
     ORBT: 'BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc',
@@ -45,7 +46,7 @@ export const aoStore = defineStore('aoStore', () => {
   const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
   let address = $(lsItemRef('address', ''))
   let tokenBalances = $ref({
-    CRED: 0,
+    //CRED: 0,
     AOCOIN: 0,
     BRKTST: 0,
     TRUNK: 0,
@@ -61,6 +62,12 @@ export const aoStore = defineStore('aoStore', () => {
   const { showError } = $(notificationStore())
 
   const doLogin = async () => {
+    if (!window.arweaveWallet) {
+      console.error('Arweave Wallet no install');
+      alert('Please install Arweave Wallet to continue');
+      window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh';
+      return;
+    }
     await window.arweaveWallet.connect(permissions)
     try {
       address = await window.arweaveWallet.getActiveAddress()
@@ -73,8 +80,10 @@ export const aoStore = defineStore('aoStore', () => {
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       });
+      const success = 'success'
+      return success
 
-      await init()
+      //await init()
     } catch (error) {
       console.error(error)
     }
@@ -91,6 +100,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (tokenMap[process]) {
       process = tokenMap[process]
     }
+    console.log("111111111111111111111111111111111111111")
     let rz = await message({
       process,
       tags: [
@@ -98,16 +108,21 @@ export const aoStore = defineStore('aoStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
+    console.log("222222222222222222222222222")
+    console.log(process)
+
     try {
       rz = await result({
         message: rz,
         process,
       })
       rz = useGet(useGet(rz, 'Messages[0].Tags').find(tag => tag.name === 'Balance'), 'value', '0')
+      console.log("333333333333-", rz)
       return parseFloat(rz)
     } catch (err) {
       console.log(`====> err :`, err)
     }
+    console.log("-55555555555555555")
 
     return 0
   }
@@ -189,21 +204,18 @@ export const aoStore = defineStore('aoStore', () => {
   }
 
   const init = async () => {
-    console.log("ggggggods")
     if (!address) return
-    console.log("nnnnnnnnnogo")
-    tokenBalances.CRED = (await getBalance('CRED')) / 1e3
+    //tokenBalances.CRED = (await getBalance('CRED')) / 1e3
     tokenBalances.AOCOIN = (await getBalance('AOCoin')) / 1e3
-    console.log("nnnnnnnnnogo")
-    //tokenBalances.BRKTST = (await getBalance('BRKTST')) / 1e3
-    //tokenBalances.TRUNK = (await getBalance('TRUNK')) / 1e3
-    //tokenBalances.EXP = (await getBalance('EXP')) / 1e3
-    //tokenBalances.ORBT = (await getBalance('ORBT')) / 1e3
-    //tokenBalances.EARTH = (await getBalance('EARTH')) / 1e3
-    //tokenBalances.FIRE = (await getBalance('FIRE')) / 1e3
-    //tokenBalances.AIR = (await getBalance('AIR')) / 1e3
-    //tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) / 1e3
-    //console.log(tokenBalances)
+    tokenBalances.BRKTST = (await getBalance('BRKTST')) / 1e3
+    tokenBalances.TRUNK = (await getBalance('TRUNK')) / 1e3
+    tokenBalances.EXP = (await getBalance('EXP')) / 1e3
+    tokenBalances.ORBT = (await getBalance('ORBT')) / 1e3
+    tokenBalances.EARTH = (await getBalance('EARTH')) / 1e3
+    tokenBalances.FIRE = (await getBalance('FIRE')) / 1e3
+    tokenBalances.AIR = (await getBalance('AIR')) / 1e3
+    tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) / 1e3
+    totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0);
   }
 
   const getarbalance = async () => {
@@ -221,7 +233,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, tokenBalances, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, doLogin, getarbalance })
+  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, doLogin, getarbalance })
 })
 
 if (import.meta.hot)

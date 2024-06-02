@@ -7,6 +7,7 @@ const {
 
 const toast = useToast()
 const route = useRoute()
+const router = useRouter();
 const slug = $computed(() => route.params.slug)
 let communityLoading = $ref(true)
 
@@ -29,7 +30,8 @@ const getCommunity = async () => {
 }
 
 const communityJoin = async (uuid: any) => {
-  await joinCommunity(uuid)
+  const invite = "none"
+  await joinCommunity(uuid, invite)
 
   toast.add({ title: 'joined success' })
   await getCommunity()
@@ -60,6 +62,11 @@ const test = async () => {
   const a = await getLocalcommunityInfo(uuidt)
   console.log("---------:", a)
 }
+
+const Logout = async() => {
+  await doLogout()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -76,7 +83,7 @@ const test = async () => {
               {{ shortAddress(address) }}
             </UButton>
             <template #panel>
-              <UButton color="red" @click="doLogout">
+              <UButton color="red" @click="Logout">
                 Disconnect
               </UButton>
             </template>
@@ -89,6 +96,7 @@ const test = async () => {
         <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>
+        <UColorModeButton />
       </template>
     </UDashboardNavbar>
     <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">

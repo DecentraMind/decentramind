@@ -7,6 +7,7 @@ import axios from 'axios';
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray, makecommunityChat } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
+const { add } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
@@ -152,7 +153,7 @@ const ranges = [
 
 const slug = $computed(() => route.params.slug)
 
-const chatId = $ref("ceT-iiktGCMloqbpVIwKfLfkObym-lJgWYoYUKctk2U")
+const chatId = $ref("CvgIA17jnhmuh3VtYozqlFy4sLKPVJV1c4eVZOY97to")
 const footerLinks = $computed(() => {
   return [
     // {
@@ -163,12 +164,13 @@ const footerLinks = $computed(() => {
     {
       label: t('Quests Home'),
       icon: 'i-heroicons-plus',
+      class: 'border',
       to: `/${slug}/tasks`,
     },
     {
       label: 'Chatroom',
       icon: 'i-heroicons-plus',
-      to: `/${slug}/chat/${chatId}`,
+      to: `/${slug}/chat/${communityInfo.communitychatid}`,
     },
   ]
 })
@@ -185,8 +187,17 @@ const loadCommunityInfo = async (pid) => {
 const taskType = ref()
 let taskListIsEmpty = $ref(false)
 onMounted(async () => {
+
+
   setCurrentuuid(route.params.communityId)
   await loadCommunityInfo(route.params.communityId)
+
+  const rz = await add(communityInfo.name, communityInfo.communitychatid)
+  if (rz.err) {
+    console.log(rz.msg)
+    return
+  }
+
   await getAllTasks(communityId, 'GetAllTasks')
   if(respArray.length === 0){
     taskListIsEmpty = true
@@ -396,8 +407,8 @@ async function testAO() {
         <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
       </div>
       <UPopover mode="hover" :popper="{ placement: 'top' }">
-        <UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />
-
+        <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
+        <Button class="center-text border rounded-lg w-full">Invite people</Button>
         <template #panel>
           <div class="p-4">
             <div>Invite Url: </div>
@@ -409,7 +420,11 @@ async function testAO() {
           </div>
         </template>
       </UPopover>
-      <UDashboardSidebarLinks :links="footerLinks" />
+      <Button class="center-text border rounded-lg">Quests Home</Button>
+      <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
+        <Button class="center-text border rounded-lg w-full">Chatroom</Button>
+      </NuxtLink>
+      <!--<UDashboardSidebarLinks :links="footerLinks" />-->
 
       <UDivider class="bottom-0 sticky" />
         <!--
