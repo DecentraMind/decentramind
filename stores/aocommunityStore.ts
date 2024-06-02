@@ -417,7 +417,9 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
     })
     // const processId2 = 'eCQysY6Vgxz-A5z1_LHFnknLUmsRseYPBJ9mIzQ-yVs'
-    //const luaCode = "Handlers.add('inboxCount', Handlers.utils.hasMatchingTag('Action', '#Inbox'), function(msg) local inboxCount = #Inbox ao.send({ Target = msg.From, Tags = { InboxCount = tostring(inboxCount) } }) end) Handlers.add('inboxMessage', Handlers.utils.hasMatchingTag('Action', 'CheckInbox'), function(msg) local index = tonumber(msg.Tags.Index) if index and index > 0 and index <= #Inbox then local message = Inbox[index] ao.send({ Target = msg.From, Tags = { Action = "Inbox", Index = tostring(index), MessageDetails = message } }) else ao.send({ Target = msg.From, Tags = { Error = "Invalid inbox message index" } }) end end)"
+    const luaCode = 'Handlers.add("inboxCount", Handlers.utils.hasMatchingTag("Action", "#Inbox"), function(msg) local inboxCount = #Inbox ao.send({ Target = msg.From, Tags = { InboxCount = tostring(inboxCount) } }) end) Handlers.add("inboxMessage", Handlers.utils.hasMatchingTag("Action", "CheckInbox"), function(msg) local index = tonumber(msg.Tags.Index) if index and index > 0 and index <= #Inbox then local message = Inbox[index] ao.send({ Target = msg.From, Tags = { Action = "Inbox", Index = tostring(index), MessageDetails = message } }) else ao.send({ Target = msg.From, Tags = { Error = "Invalid inbox message index" } }) end end)';
+
+    //const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
       process: processId2,
       tags: [

@@ -55,7 +55,12 @@ const community = async() => {
     <NuxtLoadingIndicator />
 
     <NuxtLayout>
-      <NuxtPage />
+      <NuxtPage>
+        <template #hero>
+          test
+        </template>
+      </NuxtPage>
+      
       <!--
       <div class="flex flex-col h-screen items-center gap-4 justify-center">
         <Text class="text-7xl font-bold">Start your real community journey</Text>

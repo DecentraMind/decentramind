@@ -7,6 +7,7 @@ const {
 
 const toast = useToast()
 const route = useRoute()
+const router = useRouter();
 const slug = $computed(() => route.params.slug)
 let communityLoading = $ref(true)
 
@@ -61,6 +62,11 @@ const test = async () => {
   const a = await getLocalcommunityInfo(uuidt)
   console.log("---------:", a)
 }
+
+const Logout = async() => {
+  await doLogout()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -77,7 +83,7 @@ const test = async () => {
               {{ shortAddress(address) }}
             </UButton>
             <template #panel>
-              <UButton color="red" @click="doLogout">
+              <UButton color="red" @click="Logout">
                 Disconnect
               </UButton>
             </template>

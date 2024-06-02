@@ -196,11 +196,11 @@ const test = ()=> {
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
         
-        <!--
+        
         <UButton variant="soft" @click="test">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
-       -->
+       
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
