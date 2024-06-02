@@ -69,7 +69,7 @@ const { init, tokenBalances, totalBalance, getarbalance } = $(aoStore())
 
 const test = async() => {
   console.log("nnnnnnnngggggg")
-  convertTokenBalances()
+  
     await init()
     convertTokenBalances()
     console.log("-----gggg",tokenBalances)

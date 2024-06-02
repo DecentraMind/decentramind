@@ -26,7 +26,8 @@ let isJoined = () => {
   return false
 }
 let joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
-let spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
+let spaceTaskSubmitInfo = $ref()
+spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
 // let chatProcessId = await makecommunityChat()
 // console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
 console.log('blogPost = ' + JSON.stringify(blogPost))
@@ -134,9 +135,10 @@ const emit = defineEmits(['success'])
 
 const addr = $ref('')
 const url = $ref('')
-function submitTask() {
+async function submitTask() {
   // TODO 调用提交space链接并解析方法
   submitSpaceTask(taskId, address, url)
+  spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isOpen = false
 }
 async function sendBountyByAo() {
@@ -344,11 +346,11 @@ function returnBackPage() {
               {{ $t("Join Task") }}
             </h3>
             <UButton
-                color="gray"
-                variant="ghost"
-                icon="i-heroicons-x-mark-20-solid"
-                class="-my-1"
-                @click="isOpenJoin = false"
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              class="-my-1"
+              @click="isOpenJoin = false"
             />
           </div>
         </template>
@@ -367,7 +369,7 @@ function returnBackPage() {
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              {{ $t("Join Task") }}
+              {{ $t("Submit Quest") }}
             </h3>
             <UButton
               color="gray"

@@ -195,7 +195,7 @@ onMounted(async () => {
   const rz = await add(communityInfo.name, communityInfo.communitychatid)
   if (rz.err) {
     console.log(rz.msg)
-    return
+    //return
   }
 
   await getAllTasks(communityId, 'GetAllTasks')

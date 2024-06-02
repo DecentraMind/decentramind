@@ -32,6 +32,7 @@ export const aoStore = defineStore('aoStore', () => {
   const tokenMap = $ref({
     CRED: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
     AOCoin: 'rxl5oOyCuzrUUVB1edjrcHpcn9s9czhj4rsq4ACQGv4',
+    TEST: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
     Arena: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
     DepositService: 'kzcVZhdcZOpM90eeKb-JRX3AG7TGH__S7p5I6PsqA3g',
     BRKTST: '8p7ApPZxC_37M06QHVejCQrKsHbcJEerd3jWNkDUWPQ',
@@ -48,6 +49,7 @@ export const aoStore = defineStore('aoStore', () => {
   let tokenBalances = $ref({
     //CRED: 0,
     AOCOIN: 0,
+    TEST: 0,
     BRKTST: 0,
     TRUNK: 0,
     EXP: 0,
@@ -100,7 +102,6 @@ export const aoStore = defineStore('aoStore', () => {
     if (tokenMap[process]) {
       process = tokenMap[process]
     }
-    console.log("111111111111111111111111111111111111111")
     let rz = await message({
       process,
       tags: [
@@ -108,7 +109,6 @@ export const aoStore = defineStore('aoStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    console.log("222222222222222222222222222")
     console.log(process)
 
     try {
@@ -117,12 +117,12 @@ export const aoStore = defineStore('aoStore', () => {
         process,
       })
       rz = useGet(useGet(rz, 'Messages[0].Tags').find(tag => tag.name === 'Balance'), 'value', '0')
-      console.log("333333333333-", rz)
+      totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0);
+
       return parseFloat(rz)
     } catch (err) {
       console.log(`====> err :`, err)
     }
-    console.log("-55555555555555555")
 
     return 0
   }
@@ -207,6 +207,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (!address) return
     //tokenBalances.CRED = (await getBalance('CRED')) / 1e3
     tokenBalances.AOCOIN = (await getBalance('AOCoin')) / 1e3
+    tokenBalances.TEST = (await getBalance('TEST')) / 1e3
     tokenBalances.BRKTST = (await getBalance('BRKTST')) / 1e3
     tokenBalances.TRUNK = (await getBalance('TRUNK')) / 1e3
     tokenBalances.EXP = (await getBalance('EXP')) / 1e3
@@ -216,6 +217,7 @@ export const aoStore = defineStore('aoStore', () => {
     tokenBalances.AIR = (await getBalance('AIR')) / 1e3
     tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) / 1e3
     totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0);
+
   }
 
   const getarbalance = async () => {
