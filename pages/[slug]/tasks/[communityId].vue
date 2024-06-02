@@ -313,6 +313,21 @@ async function testAO() {
     console.log('response = ' + response)
   })
 }
+
+
+const textToCopy = $ref('');
+const copySuccess = $ref(false);
+
+const copyText = async () => {
+  try {
+    // 使用 navigator.clipboard.writeText 复制文本
+    await navigator.clipboard.writeText(textToCopy.innerText);
+    // 复制成功后设置一段时间后隐藏提示信息
+  } catch (err) {
+    console.error('复制失败: ', err);
+  }
+};
+
 </script>
 <template>
   <UDashboardPanel :width="420" collapsible>
@@ -410,15 +425,17 @@ async function testAO() {
         <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
         <Button class="center-text border rounded-lg w-full">Invite people</Button>
         <template #panel>
-          <div class="p-4">
+          <div class="p-4 ">
             <div>Invite Url: </div>
-            <div>
-              ```ts
-              www.dm.com/invite/example
-              ```
+            <div class="flex items-center">
+              <p ref="textToCopy">
+                www.dm.com/invite/?{{ communityId }}
+              </p>
+              <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
             </div>
           </div>
         </template>
+        
       </UPopover>
       <Button class="center-text border rounded-lg">Quests Home</Button>
       <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
