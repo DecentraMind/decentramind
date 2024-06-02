@@ -3,6 +3,7 @@ import type { FormError, FormSubmitEvent } from '#ui/types'
 
 const toast = useToast()
 
+const { userInfo } = $(aocommunityStore())
 
 let info = $ref({})
 let infoJson = $ref({})
@@ -41,20 +42,20 @@ const saveInfo = async () => {
 
 onMounted(async () => {
   try {
-    info = await getInfo();
-    console.log("--",info)
-    const jsonData = info.Messages[0].Data;
-    const jsonObjects = jsonData.match(/\{.*?\}/g);
-    infoJson = jsonObjects.map(item => JSON.parse(item));
-    console.log(infoJson)
-    accountForm.avatar = infoJson[0].avatar
-    accountForm.name = infoJson[0].username;
-    accountForm.twitter = infoJson[0].twitter;
-    accountForm.showtwitter = infoJson[0].showtwitter;
-    accountForm.mail = infoJson[0].mail;
-    accountForm.showmail = infoJson[0].showmail;
-    accountForm.phone = infoJson[0].phone;
-    accountForm.showtelegram = infoJson[0].showphone;
+    //info = await getInfo();
+    //console.log("--",info)
+    //const jsonData = info.Messages[0].Data;
+    //const jsonObjects = jsonData.match(/\{.*?\}/g);
+    //infoJson = jsonObjects.map(item => JSON.parse(item));
+    //console.log(infoJson)
+    accountForm.avatar = userInfo[0].avatar
+    accountForm.name = userInfo[0].username;
+    accountForm.twitter = userInfo[0].twitter;
+    accountForm.showtwitter = userInfo[0].showtwitter;
+    accountForm.mail = userInfo[0].mail;
+    accountForm.showmail = userInfo[0].showmail;
+    accountForm.phone = userInfo[0].phone;
+    accountForm.showtelegram = userInfo[0].showphone;
   } catch (error) {
     console.error('Error fetching data:', error);
   }

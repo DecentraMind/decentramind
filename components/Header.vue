@@ -44,7 +44,7 @@ const wallet = [
 ]
 
 
-onMounted(init)
+// onMounted(init)
 
 </script>
 

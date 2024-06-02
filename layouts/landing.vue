@@ -22,6 +22,7 @@ const handleButtonClick = async () => {
   isLoading.value = true;
   try {
     const result = await doLogin();
+    registInfo()
     if (result) {
       router.push('/dm');
     } else {

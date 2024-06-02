@@ -22,7 +22,7 @@ const links = [[{
     label: t('setting.invite'),
     icon: 'i-heroicons-bell',
     to: `/${slug}/settings/myinvite`
-  }], [{
+  }]/*, [{
     label: 'Documentation',
     icon: 'i-heroicons-book-open',
     to: 'https://ui.nuxt.com/pro',
@@ -32,7 +32,8 @@ const links = [[{
     icon: 'i-heroicons-credit-card',
     to: 'https://ui.nuxt.com/pro/purchase',
     target: '_blank'
-  }]]
+  }]*/
+  ]
 </script>
 
 <template>
