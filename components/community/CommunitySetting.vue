@@ -44,6 +44,8 @@ let state = $ref({
   showAlltoken: false,
   Alltoken: undefined,
   Communitytoken: undefined,
+  communityChatid: undefined,
+  time: undefined,
 })
 
 const schema = z.object({
@@ -115,6 +117,8 @@ const CreateCommunity = async () => {
     state.showAlltoken, //是否显示分配的总token
     state.Alltoken, //分配得token总量
     token.tokenSupply //社区token分配比例详情
+    state.communityChatid,
+    state.time
   )
   isCreated = true
   isLoading = false
@@ -254,6 +258,8 @@ const setcommunitycurrent = async() => {
   state.showAlltoken = communityInfo.showalltoken
   state.Alltoken = communityInfo.alltoken //分配得token总量
   token.tokenSupply = communityInfo.tokensupply //社区token分配比例详情
+  state.communityChatid = communityInfo.communitychatid
+  state.time = communityInfo.timestamp
 }
 
 onMounted(async () => {

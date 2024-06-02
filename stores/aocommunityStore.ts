@@ -129,7 +129,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
 
-  //创建社区方法
+  //修改社区方法
   const settingCommunity = async (
     logo,
     Banner,
@@ -155,7 +155,9 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     Support,
     ShowAlltoken,
     AllToken,
-    TokenSupply
+    TokenSupply,
+    CommunityChatid,
+    TimeStamp
   ) => {
     if (isLoading) return
     isLoading = true
@@ -192,6 +194,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "alltoken": AllToken,
         "tokensupply": TokenSupply,
         "uuid": currentUuid,
+        "timestamp": TimeStamp,
+        "communitychatid": CommunityChatid
       }
     ]
     const jsonString = JSON.stringify(communitySubmitList);
