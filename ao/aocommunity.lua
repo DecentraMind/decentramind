@@ -88,6 +88,7 @@ end)
 -- 加入社区方法
 Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(msg)
   local newColumn = msg.Tags.userAddress
+  local uuid = msg.Data
   print(msg.Tags.userAddress)
   -- 检查是否已经存在相同名字的列
   if not usercommunity[newColumn] then
@@ -95,6 +96,13 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
     usercommunity[newColumn] = {}
   end
 
+  -- 检查 usercommunity[newColumn] 是否存在 uuid
+  if not usercommunity[newColumn][uuid] then
+    -- 如果不存在 uuid，则添加新条目
+    usercommunity[newColumn][uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
+  end
+
+  --[[
   -- 检查是否已经存在 joined 字段
   if usercommunity[newColumn].joined then
     -- 如果 joined 字段已存在，则在其末尾追加 "xDao"
@@ -117,6 +125,7 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
     -- 如果 joined 字段不存在，则新建一个 joined 字段，并赋值为包含 "xDao" 的数组
     usercommunity[newColumn].joined = { msg.Data }
   end
+  ]]
 end)
 
 -- 退出社区的方法
@@ -127,16 +136,9 @@ Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(m
   -- 检查是否存在 usercommunity[newColumn]
   if usercommunity[newColumn] then
     -- 检查是否存在 usercommunity[newColumn].joined
-    if usercommunity[newColumn].joined then
+    if usercommunity[newColumn][msg.Data] then
       -- 遍历 usercommunity[newColumn].joined
-      for i, data in ipairs(usercommunity[newColumn].joined) do
-        if data == msg.Data then
-          -- 找到 msg.Data 并删除
-          table.remove(usercommunity[newColumn].joined, i)
-          print("Removed " .. msg.Data .. " from joined")
-          break -- 删除后跳出循环
-        end
-      end
+      usercommunity[newColumn][msg.Data] = nil
     else
       print("No 'joined' field in usercommunity[" .. newColumn .. "]")
     end
@@ -184,16 +186,8 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
     itemCopy.isJoined = false -- 默认 isJoined 为 false
     print("---------------ggg", usercommunity)
     if usercommunity[msg.Tags.userAddress] then
-      if usercommunity[msg.Tags.userAddress].joined then
-        print("----------ggg", usercommunity[msg.Tags.userAddress].joined)
-        if usercommunity[msg.Tags.userAddress] and type(usercommunity[msg.Tags.userAddress]) == "table" then
-          for _, usercommunityItem in ipairs(usercommunity[msg.Tags.userAddress].joined) do
-            if dCom[1].uuid == usercommunityItem then
-              itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
-              break
-            end
-          end
-        end
+      if usercommunity[msg.Tags.userAddress][dCom[1].uuid] then
+        itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
       end
     end
     table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中

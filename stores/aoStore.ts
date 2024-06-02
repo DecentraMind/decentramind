@@ -62,6 +62,12 @@ export const aoStore = defineStore('aoStore', () => {
   const { showError } = $(notificationStore())
 
   const doLogin = async () => {
+    if (!window.arweaveWallet) {
+      console.error('Arweave Wallet no install');
+      alert('Please install Arweave Wallet to continue');
+      return;
+    }
+
     await window.arweaveWallet.connect(permissions)
     try {
       address = await window.arweaveWallet.getActiveAddress()

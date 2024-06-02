@@ -29,7 +29,8 @@ const getCommunity = async () => {
 }
 
 const communityJoin = async (uuid: any) => {
-  await joinCommunity(uuid)
+  const invite = "none"
+  await joinCommunity(uuid, invite)
 
   toast.add({ title: 'joined success' })
   await getCommunity()

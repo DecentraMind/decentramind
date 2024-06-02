@@ -3,6 +3,14 @@ const colorMode = useColorMode()
 
 const color = computed(() => colorMode.value === 'dark' ? '#111827' : 'white')
 
+const {
+  // currentChain, selectedWallet,
+  address,
+  credBalance,
+  init, doLogout, doLogin } = $(aoStore())
+
+const { registInfo } = $(aocommunityStore())
+
 useHead({
   meta: [
     { charset: 'utf-8' },
@@ -29,6 +37,17 @@ useSeoMeta({
   twitterImage: 'https://dashboard-template.nuxt.dev/social-card.png',
   twitterCard: 'summary_large_image'
 })
+
+const router = useRouter()
+
+const community = async() => {
+  await doLogin()
+  await registInfo()
+  if (address) {
+    console.log("---------ggggggggg")
+    router.push('/signup')
+  }
+}
 </script>
 
 <template>
@@ -37,6 +56,16 @@ useSeoMeta({
 
     <NuxtLayout>
       <NuxtPage />
+      <!--
+      <div class="flex flex-col h-screen items-center gap-4 justify-center">
+        <Text class="text-7xl font-bold">Start your real community journey</Text>
+        <Text class="mt-3 mb-6">Try a better way than airdrop to build your community.</Text>
+        <NuxtLink to="signup">
+          Open to Build
+          <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
+      </NuxtLink>
+      </div>
+      -->
     </NuxtLayout>
 
     <UNotifications />
