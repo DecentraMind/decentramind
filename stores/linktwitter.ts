@@ -33,7 +33,31 @@ export const linktwitter = defineStore('linktwitter', () => {
 
         return authUrl
     }
-    return $$({ gettoken })
+
+    const postToken = async () => {
+
+        const url = 'https://api.twitter.com/oauth2/token';
+
+        // 配置 headers
+        const headers = {
+            'User-Agent': 'v2SpacesSearchJS',
+            Authorization: 'Basic eHZ6MWV2RlM0d0VFUFRHRUZQSEJvZzpMOHFxOVBaeVJn NmllS0dFS2hab2xHQzB2SldMdzhpRUo4OERSZHlPZw==',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'Content-Length': '29'
+        };
+
+        // 配置 body (data)
+        const data = new URLSearchParams();
+        data.append('grant_type', 'client_credentials');
+
+        try {
+            const response = await axios.post(url, data, { headers });
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error posting token:', error);
+        }
+    }
+    return $$({ gettoken, postToken })
 })
 
 if (import.meta.hot)
