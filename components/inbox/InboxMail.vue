@@ -85,11 +85,11 @@ onMounted( () => {
 </script>
 
 <template>
-  <div>
+  <div class="h-full">
     <div class="-m-4 -top-4 z-99 sticky">
       <div class="bg-background flex  p-4  justify-between  ">
         <div class="flex gap-4 items-center">
-          <DicebearAvatar :seed="chatID" alt="test" size="lg" />
+          <!--<DicebearAvatar :seed="chatID" alt="test" size="lg" />-->
 
           <div class="min-w-0">
             <p class="font-semibold text-gray-900 dark:text-white">
@@ -103,24 +103,29 @@ onMounted( () => {
 
       <UDivider class="" />
     </div>
+    <!--
     <div ref="msgTop" class="my-5">
       &nbsp;
       <div v-show="isTopLoading" class="flex py-10 items-center justify-center">
         <Loading class="h-8 w-8" />
       </div>
     </div>
-    <div class="flex-1 min-h-50 overflow-y-auto max-h-[900px]">
-      <InboxListMessage :id="chatID" @loaded="scrollToBottom" />
-    </div>
-    <div class="my-5" ref="msgBottom"> </div>
-    <div class="-bottom-4 sticky">
-      <form @submit.prevent="doSubmit">
-        <UTextarea :disabled="isLoading" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" placeholder="Reply to test">
-          <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->
-          <UButton :disabled="isLoading" type="submit" color="black" label="Send" icon="i-heroicons-paper-airplane" class="right-3.5 bottom-2.5 absolute">
-          </UButton>
-        </UTextarea>
-      </form>
+    -->
+    <div class="h-screen flex flex-col justify-between pt-10 pb-10">
+      <div class="overflow-y-auto h-5/6 flex flex-col-reverse">
+        <!--<InboxListMessage :id="chatID" @loaded="scrollToBottom" />-->
+        <InboxListMessage :id="chatID" />
+      </div>
+      <div class="" ref="msgBottom"> </div>
+      <div class="-bottom-4 sticky">
+        <form @submit.prevent="doSubmit">
+          <UTextarea :disabled="isLoading" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" placeholder="Reply to test">
+            <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->
+            <UButton :disabled="isLoading" type="submit" color="black" label="Send" icon="i-heroicons-paper-airplane" class="right-3.5 bottom-2.5 absolute">
+            </UButton>
+          </UTextarea>
+        </form>
+      </div>
     </div>
   </div>
 </template>

@@ -318,15 +318,17 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
 
   //加入社区方法
-  const joinCommunity = async (uuid) => {
+  const joinCommunity = async (uuid, invite) => {
     if (isLoading) return
     isLoading = true
-    console.log("---------------")
+    const time = Date.now();
     let join = await message({
       process: processID,
       tags: [
         { name: 'Action', value: 'join' },
-        { name: 'userAddress', value: address }
+        { name: 'userAddress', value: address },
+        { name: 'invite', value: invite },
+        { name: 'time', value: time.toString() }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: uuid,
@@ -409,21 +411,27 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //创建社区聊天室
   const makecommunityChat = async () => {
-    console.log("------------------good")
+    let processId2 = await spawn({
+      module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
+      scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    // const processId2 = 'eCQysY6Vgxz-A5z1_LHFnknLUmsRseYPBJ9mIzQ-yVs'
+    const luaCode = 'Handlers.add("inboxCount", Handlers.utils.hasMatchingTag("Action", "#Inbox"), function(msg) local inboxCount = #Inbox ao.send({ Target = msg.From, Tags = { InboxCount = tostring(inboxCount) } }) end) Handlers.add("inboxMessage", Handlers.utils.hasMatchingTag("Action", "CheckInbox"), function(msg) local index = tonumber(msg.Tags.Index) if index and index > 0 and index <= #Inbox then local message = Inbox[index] ao.send({ Target = msg.From, Tags = { Action = "Inbox", Index = tostring(index), MessageDetails = message } }) else ao.send({ Target = msg.From, Tags = { Error = "Invalid inbox message index" } }) end end)';
 
-    const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
+    //const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
-      process: "nrKw54WW8JDmhuv77n3m9pKIzvZFj1b2pFdnEDudB0Q",
+      process: processId2,
       tags: [
-        { name: 'Action', value: 'eval' }
+        { name: 'Action', value: 'Eval' }
       ],
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),
     })
+    console.log('gooooods', processId2)
     console.log('result', buildLua)
-    return buildLua
+    return processId2
   }
-
   return $$({
     userInfo,
     communityList,
