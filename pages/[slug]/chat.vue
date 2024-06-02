@@ -82,17 +82,13 @@ const communityInfo2 = {
 const footerLinks = $computed(() => {
   return [
     {
-      label: t('Task Area'),
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/tasks`,
-    },
-    {
       label: 'Invite people',
       icon: 'i-heroicons-plus',
       to: `/${slug}/settings/communityinfo`,
     },
     {
       label: 'Chat Room',
+      icon: 'i-heroicons-plus',
       to: `/${slug}/inbox`,
     },
   ]
@@ -235,7 +231,23 @@ onMounted(async () => {
         <div class="flex">
           <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
         </div>
-        <UDashboardSidebarLinks :links="footerLinks" />
+        <UPopover mode="hover" :popper="{ placement: 'top' }">
+          <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
+          <Button class="center-text border rounded-lg w-full">Invite people</Button>
+          <template #panel>
+            <div class="p-4">
+              <div>Invite Url: </div>
+              <div>
+                ```ts
+                www.dm.com/invite/example
+                ```
+              </div>
+            </div>
+          </template>
+        </UPopover>
+        <Button class="center-text border rounded-lg">Quests Home</Button>
+        <Button class="center-text border rounded-lg bg-black text-white">Chatroom</Button>
+        <!--<UDashboardSidebarLinks :links="footerLinks" />-->
 
         <UDivider class="bottom-0 sticky" />
           <!--
@@ -307,11 +319,13 @@ onMounted(async () => {
                 </template>
               </UDashboardNavbar>
               -->
-            <InboxMail :mail="chatID" class="pt-2 pb-10 w-full" />
+            <InboxMail :mail="chatID" class="" />
           </div>
+          <!--
           <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
             <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
           </UMain>
+          -->
         </div>
         <div class="pt-10 pr-10">
           <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="communityuser.length">
@@ -321,7 +335,7 @@ onMounted(async () => {
               </Text>
             </template>
           </UDashboardNavbar>
-          <ULandingCard class="h-full">
+          <ULandingCard class="">
             <div v-for="(user, index) in communityuser" :key="index">
               <UDashboardSection
                 icon="i-heroicons-user"
