@@ -438,7 +438,7 @@ async function testAO() {
 
   <UDashboardPage>
     <UPage class="overflow-y-auto h-full w-full">
-      <div class=" flex flex-col mx-10 mt-10 items-center  ">
+      <div class=" flex flex-col mx-10 pt-10 items-center h-full">
         <div class="flex w-full justify-between mb-4">
           <div>
             <UTabs :items="items" @change="onChange" />
@@ -453,25 +453,28 @@ async function testAO() {
             </div>
           </div>
         </div>
-        <div class=" w-1/3" v-if="taskListIsEmpty">
-          <UPricingCard
+        <div class="h-full w-full flex justify-center items-center" v-if="taskListIsEmpty">
+          <div class=" w-1/3" v-if="taskListIsEmpty">
+            <UPricingCard
               :title="$t('Nothing here,click to start your first public quest.')"
               highlight
               orientation="vertical"
-              align="bottom">
-            <template #description>
-              <div class="flex mt-10 justify-between items-center">
-                <div class="flex items-center justify-center">
-                  <span>{{ $t('Nothing here,click to start your first public quest.') }}</span>
+              align="bottom"
+            >
+              <template #description>
+                <div class="flex mt-10 justify-between items-center">
+                  <div class="flex items-center justify-center">
+                    <span>{{ $t('Nothing here,click to start your first public quest.') }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
+                      <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+                    </UDropdown>
+                  </div>
                 </div>
-                <div class="flex justify-between items-center">
-                  <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
-                    <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
-                  </UDropdown>
-                </div>
-              </div>
-            </template>
-          </UPricingCard>
+              </template>
+            </UPricingCard>
+          </div>
         </div>
         <div class="mx-auto w-full" v-if="!taskListIsEmpty">
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
