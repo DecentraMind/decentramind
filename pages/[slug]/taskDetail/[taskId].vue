@@ -16,7 +16,7 @@ let blogPost = await getTaskById(taskId)
 let communityId = blogPost.communityId
 let isOwner = blogPost.ownerId === address
 let taskJoinRecord = await getTaskJoinRecord(taskId)
-let isJoined = () => {
+let checkJoin = () => {
   for (let index = 0; index < taskJoinRecord.length; index++) {
     let element = taskJoinRecord[index]
     if(element.joinedAddress === address){
@@ -25,6 +25,7 @@ let isJoined = () => {
   }
   return false
 }
+let isJoined = checkJoin()
 let joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 let spaceTaskSubmitInfo = $ref()
 spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
