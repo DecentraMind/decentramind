@@ -195,8 +195,11 @@ onBeforeUnmount(() => {
           color="primary"
           :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]">
           <template #title>
-            <div class="text-3xl mb-12 mt-3 px-12">
+            <div class="w-full flex justify-between text-3xl mb-12 mt-3 px-12">
               {{ communityInfo.name }}
+              <NuxtLink :to="`/${slug}/tasks/${communityId}`">
+                <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
+              </NuxtLink>
             </div>
           </template>
           <template #description>

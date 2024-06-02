@@ -171,7 +171,9 @@ function returnBackPage() {
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
-            <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" @click="returnBackPage"/>
+            <NuxtLink :to="`/${slug}/tasks/${communityId}`">
+              <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
+            </NuxtLink>
           </div>
         </div>
         <div class="mx-10">

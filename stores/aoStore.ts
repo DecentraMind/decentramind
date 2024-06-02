@@ -70,7 +70,15 @@ export const aoStore = defineStore('aoStore', () => {
       window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh';
       return;
     }
-    await window.arweaveWallet.connect(permissions)
+    console.log('-----------------ggggggggggggggggggg111')
+    try {
+      await window.arweaveWallet.connect(permissions)
+      console.log("goooooods12")
+    } catch (error) {
+      const fail = 'fail'
+      return fail
+    }
+    console.log('-----------------ggggggggggggggggggg111')
     try {
       address = await window.arweaveWallet.getActiveAddress()
 
@@ -82,6 +90,7 @@ export const aoStore = defineStore('aoStore', () => {
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       });
+      console.log('-----------------ggggggggggggggggggg')
       const success = 'success'
       return success
 
@@ -109,7 +118,6 @@ export const aoStore = defineStore('aoStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    console.log(process)
 
     try {
       rz = await result({
@@ -206,17 +214,18 @@ export const aoStore = defineStore('aoStore', () => {
   const init = async () => {
     if (!address) return
     //tokenBalances.CRED = (await getBalance('CRED')) / 1e3
-    tokenBalances.AOCOIN = (await getBalance('AOCoin')) / 1e3
-    tokenBalances.TEST = (await getBalance('TEST')) / 1e3
-    tokenBalances.BRKTST = (await getBalance('BRKTST')) / 1e3
-    tokenBalances.TRUNK = (await getBalance('TRUNK')) / 1e3
-    tokenBalances.EXP = (await getBalance('EXP')) / 1e3
-    tokenBalances.ORBT = (await getBalance('ORBT')) / 1e3
-    tokenBalances.EARTH = (await getBalance('EARTH')) / 1e3
-    tokenBalances.FIRE = (await getBalance('FIRE')) / 1e3
-    tokenBalances.AIR = (await getBalance('AIR')) / 1e3
-    tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) / 1e3
+    tokenBalances.AOCOIN = (await getBalance('AOCoin')) // / 1e3
+    tokenBalances.TEST = (await getBalance('TEST')) // / 1e3
+    tokenBalances.BRKTST = (await getBalance('BRKTST')) // / 1e3
+    tokenBalances.TRUNK = (await getBalance('TRUNK'))//  / 1e3
+    tokenBalances.EXP = (await getBalance('EXP')) // / 1e3
+    tokenBalances.ORBT = (await getBalance('ORBT')) // / 1e3
+    tokenBalances.EARTH = (await getBalance('EARTH')) // / 1e3
+    tokenBalances.FIRE = (await getBalance('FIRE')) // / 1e3
+    tokenBalances.AIR = (await getBalance('AIR')) // / 1e3
+    tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) // / 1e3
     totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0);
+
 
   }
 

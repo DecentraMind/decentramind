@@ -437,7 +437,9 @@ const copyText = async () => {
         </template>
         
       </UPopover>
-      <Button class="center-text border rounded-lg">Quests Home</Button>
+      <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
+        <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
+      </NuxtLink>
       <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
         <Button class="center-text border rounded-lg w-full">Chatroom</Button>
       </NuxtLink>

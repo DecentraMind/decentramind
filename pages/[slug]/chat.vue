@@ -136,6 +136,20 @@ onMounted(async () => {
     console.error('No messages found in result');
   }
 })
+
+
+const textToCopy = $ref('');
+const copySuccess = $ref(false);
+
+const copyText = async () => {
+  try {
+    // 使用 navigator.clipboard.writeText 复制文本
+    await navigator.clipboard.writeText(textToCopy.innerText);
+    // 复制成功后设置一段时间后隐藏提示信息
+  } catch (err) {
+    console.error('复制失败: ', err);
+  }
+};
 </script>
 
 <template>
@@ -235,17 +249,20 @@ onMounted(async () => {
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
           <Button class="center-text border rounded-lg w-full">Invite people</Button>
           <template #panel>
-            <div class="p-4">
+            <div class="p-4 ">
               <div>Invite Url: </div>
-              <div>
-                ```ts
-                www.dm.com/invite/example
-                ```
+              <div class="flex items-center">
+                <p ref="textToCopy">
+                  www.dm.com/invite/?{{ communityInfo.uuid }}
+                </p>
+                <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
               </div>
             </div>
           </template>
         </UPopover>
-        <Button class="center-text border rounded-lg">Quests Home</Button>
+        <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
+          <Button class="center-text border rounded-lg w-full">Quests Home</Button>
+        </NuxtLink>
         <Button class="center-text border rounded-lg bg-black text-white">Chatroom</Button>
         <!--<UDashboardSidebarLinks :links="footerLinks" />-->
 
