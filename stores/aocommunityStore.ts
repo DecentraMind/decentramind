@@ -393,7 +393,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       ]
     })
     // 检查是否成功获取到了 Info
-
     const jsonData = Info.Messages[0].Data;
     const jsonObjects = jsonData.match(/\{.*?\}/g);
     const infoJson = jsonObjects.map(item => JSON.parse(item));

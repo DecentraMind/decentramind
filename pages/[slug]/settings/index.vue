@@ -3,8 +3,6 @@ import type { FormError, FormSubmitEvent } from '#ui/types'
 
 const toast = useToast()
 
-const { userInfo } = $(aocommunityStore())
-
 let info = $ref({})
 let infoJson = $ref({})
 let accountForm = $ref({
@@ -23,7 +21,7 @@ function onSubmitAccount() {
   console.log('Submitted form:', accountForm)
 }
 
-const { getInfo, personalInfo } = $(aocommunityStore())
+const { userInfo, getInfo, personalInfo } = $(aocommunityStore())
 
 const saveInfo = async () => {
 
@@ -38,6 +36,7 @@ const saveInfo = async () => {
     accountForm.showtelegram
   )
   toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
+  await getInfo()
 }
 
 onMounted(async () => {
@@ -48,6 +47,7 @@ onMounted(async () => {
     //const jsonObjects = jsonData.match(/\{.*?\}/g);
     //infoJson = jsonObjects.map(item => JSON.parse(item));
     //console.log(infoJson)
+    await getInfo()
     accountForm.avatar = userInfo[0].avatar
     accountForm.name = userInfo[0].username;
     accountForm.twitter = userInfo[0].twitter;

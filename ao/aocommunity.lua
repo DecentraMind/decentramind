@@ -9,7 +9,6 @@ local json = require("json")
 Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg)
   local testData = json.decode(msg.Data)
   local newColumn = msg.Tags.userAddress
-  print(testData)
   -- 检查是否已经存在相同名字的列
   if not userinfo[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
@@ -29,19 +28,14 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
   end
   -- print(encodedData)
   table.insert(community, msg.Data)
-
-  print("add success")
   Handlers.utils.reply("add")(msg)
 end)
 
 -- 查找刀这个uuid的社区列
 local function findCommunityIndexByUUID(community, uuid)
-  print("--------")
   print(uuid)
   for index, entry in ipairs(community) do
-    print("111")
     local dCom = json.decode(entry)
-    print(dCom[1].uuid)
     if dCom[1].uuid == uuid then
       print("--------", entry)
       return index
@@ -66,11 +60,10 @@ Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "commun
   else
     -- 如果未找到匹配的列，则将 testData 添加到 community 中
     -- table.insert(community, testData[1])
-    print("目标社区为空")
+    print("is null")
   end
   -- table.insert(community, msg.Data)
 
-  print("setting change success")
   Handlers.utils.reply("communitysetting")(msg)
 end)
 
@@ -78,7 +71,6 @@ end)
 Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(msg)
   local newColumn = msg.Tags.userAddress
   local uuid = msg.Data
-  print(msg.Tags.userAddress)
   -- 检查是否已经存在相同名字的列
   if not usercommunity[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
@@ -139,7 +131,6 @@ end)
 -- 获取所有社区信息
 Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "communitylist"), function(msg)
   -- 创建 communityCopy 数组
-  print("goods")
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
     local dCom = json.decode(communityItem)
@@ -176,7 +167,6 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       timestamp = dCom[1].timestamp
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
-    print("---------------ggg", dCom[1].creater)
     print(dCom[1].creater)
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress][dCom[1].uuid] then
@@ -209,7 +199,6 @@ Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "community
       -- 访问 invite 参数
 
       if subkey == target_uuid then
-        print("gooods")
         table.insert(matching_keys, key)
       end
     end
@@ -273,7 +262,6 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
     if userinfo[msg.Tags.userAddress] and type(userinfo[msg.Tags.userAddress]) == "table" then
       for _, userinfoItem in ipairs(userinfo[msg.Tags.userAddress].joined) do
         if dCom[1].uuid == userinfoItem then
-          print("goods")
           local itemCopy = {
             uuid = dCom[1].uuid,
             logo = dCom[1].logo,
@@ -316,9 +304,9 @@ end)
 -- 获取个人信息
 Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), function(msg)
   local tempInfo = {}
-  print("gooods")
   -- 检查 userinfo 中是否存在指定用户
   local userInfo = userinfo[msg.Tags.userAddress]
+  --[[
   if userInfo then
     -- 将用户信息添加到临时表
     tempInfo.avatar = userInfo.avatar or "N/A"
@@ -340,17 +328,20 @@ Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), func
     tempInfo.phone = "N/A"
     tempInfo.showphone = true
   end
+
   print(userinfo[msg.Tags.userAddress])
   -- 需要将table转成json字符串传回
   local iJson = json.encode(tempInfo)
+  ]]
 
-  Handlers.utils.reply(userinfo[msg.Tags.userAddress])(msg)
+  -- 尝试将 userInfo 解析为 JSON
+  local jsonInfo = json.encode(userInfo)
+  Handlers.utils.reply(userInfo)(msg)
 end)
 
 -- 个人信息修改
 Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalInfo"), function(msg)
   local newColumn = msg.Tags.userAddress
-  print("goods")
   -- 检查是否已经存在相同名字的列
   if not userinfo[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
@@ -362,7 +353,6 @@ end)
 
 -- 注册个人信息
 Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo"), function(msg)
-  print("goods")
   local newColum = msg.Tags.userAddress
   if not userinfo[newColum] then
     userinfo[newColum] = {}
