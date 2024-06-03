@@ -275,7 +275,7 @@ const copyText = async () => {
 
       </UDashboardSidebar>
     </UDashboardPanel>
-    <UPage class=" w-full">
+    <UPage class="w-full">
       <!--<UContainer class="w-full">-->
       <UPageGrid class="w-full h-full">
         <!--
@@ -285,7 +285,7 @@ const copyText = async () => {
         -->
         
     
-        <div class="flex xl:col-span-2 w-full h-full">
+        <div class="flex xl:col-span-2 w-full h-full ml-10">
           <div v-if="chatID" class="w-full">
             <!--
               <UDashboardNavbar v-if="false">
@@ -344,7 +344,7 @@ const copyText = async () => {
           </UMain>
           -->
         </div>
-        <div class="pt-10 pr-10">
+        <div class="pt-10 pr-10 pl-32">
           <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="communityuser.length">
             <template #title>
               <Text class="text-3xl">
@@ -359,8 +359,11 @@ const copyText = async () => {
                 title=""
                 :description="user"
                 orientation="vertical"
-                class="px-4 mt-6"
-              />
+              >
+                <template #icon>
+                  <UAvatar src="/community/chatavatar.jpg"/>
+                </template>
+              </UDashboardSection>
             </div>
           </ULandingCard>
         </div>

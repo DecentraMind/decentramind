@@ -178,7 +178,7 @@ const test = ()=> {
       <UDashboardSidebar>
         <template #header>
           <NuxtLink :to="`/${slug}/discovery`">
-            <img src="/logo.png" class="h-full w-full transition duration-300 ease-in-out transform hover:brightness-75">
+            <img src="/export.png" class="h-full w-full transition duration-300 ease-in-out transform hover:brightness-75">
           </NuxtLink>
         </template>
 

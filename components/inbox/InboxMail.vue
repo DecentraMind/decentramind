@@ -93,12 +93,9 @@ onMounted( () => {
 
           <div class="min-w-0">
             <p class="font-semibold text-gray-900 dark:text-white">
-              
             </p>
           </div>
         </div>
-
-
       </div>
 
       <UDivider class="" />

@@ -176,10 +176,11 @@ function returnBackPage() {
             </NuxtLink>
           </div>
         </div>
+        <!--
         <div class="mx-10">
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
-
+        -->
         <UBlogPost :key="blogPost.id" :description="blogPost.description" class="p-10">
           <template #title>
             <div class="flex justify-start">
@@ -284,7 +285,7 @@ function returnBackPage() {
                 </div>
               </div>
               <div v-if="!isJoined" class="flex justify-center ">
-                <UButton :label="$t('Join Task')" @click="openJoin" />
+                <UButton color="white" :label="$t('Join Task')" @click="openJoin" />
               </div>
             </div>
 <!--            <UDivider class="mt-4" />-->
@@ -299,7 +300,10 @@ function returnBackPage() {
               </div>
               <UTable v-model="selected" :rows="filteredRows" :columns="columns" @select="select">
                 <template #address-data="{ row }">
-                   {{ isOwner ? row.address : shortAddress(row.address)}}
+                  {{ isOwner ? row.address : shortAddress(row.address)}}
+                </template>
+                <template #url-data="{ row }">
+                  {{ isOwner ? row.url : shortAddress(row.url)}}
                 </template>
               </UTable>
             </div>
@@ -366,7 +370,7 @@ function returnBackPage() {
             {{ $t("We appreciate your support,Please follow the rules of the quest and submit the URL back to this page") }}
           </p>
           <div class="flex justify-center">
-            <UButton @click="onClick">
+            <UButton color="white" @click="onClick">
               {{ $t('I have read all rules') }}
             </UButton>
           </div>

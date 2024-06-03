@@ -16,7 +16,7 @@ let isCreated = $ref(false)
 
 let state = $ref({
   logobase64Data: undefined,
-  banner: 'banner1',
+  banner: 'banner6',
   input: undefined,
   inputMenu: undefined,
   Name: undefined,
@@ -149,27 +149,18 @@ const bannerupload = () => {
 
 
 const items = [
-  '/task/banner1.jpg',
-  '/task/banner2.jpg',
-  '/task/banner3.jpg',
-  '/task/banner4.jpg',
-  '/task/banner5.jpg'
+  '/task/banner6.jpg',
+  '/task/banner7.jpg'
 ]
 const currentIndex = $ref(0); // 用于存储当前选中的索引
 
 const updateBanner = (index: number) => {
   console.log('-----------------bbbbbbbbbbbbbbbb')
   if (index === 1) {
-    state.banner = 'banner1'
+    state.banner = 'banner6'
   } else if (index === 2) {
-    state.banner = 'banner2'
-  } else if (index === 3) {
-    state.banner = 'banner3'
-  }else if (index === 4){
-    state.banner = 'banner4'
-  }else if (index === 5){
-    state.banner = 'banner5'
-  }
+    state.banner = 'banner7'
+  } 
   console.log(state.banner)
 };
 
@@ -278,7 +269,7 @@ onMounted(async () => {
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
         <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.logo') }}</div>
+            <div class=" w-[300px]">{{ $t('community.logo') }}</div>
           </template>
           <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
           <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
@@ -286,7 +277,7 @@ onMounted(async () => {
         <!--<UButton @click="test">test</UButton>-->
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.banner') }}</div>
+            <div class=" w-[300px]">{{ $t('community.banner') }}</div>
           </template>
           <UCarousel
             v-model="currentIndex"
@@ -323,21 +314,21 @@ onMounted(async () => {
 
         <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.name') }}</div>
+            <div class=" w-[300px]">{{ $t('community.name') }}</div>
           </template>
           <UInput v-model="state.Name" placeholder="Name" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Inbro" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.intro') }}</div>
+            <div class=" w-[300px]">{{ $t('community.intro') }}</div>
           </template>
           <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.website') }}</div>
+            <div class=" w-[300px]">{{ $t('community.website') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Website" placeholder="URL" />
@@ -348,7 +339,7 @@ onMounted(async () => {
 
         <UFormGroup name="Twitter" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.twitter') }}</div>
+            <div class=" w-[300px]">{{ $t('community.twitter') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Twitter" placeholder="URL" />
@@ -359,7 +350,7 @@ onMounted(async () => {
 
         <UFormGroup name="Whitebook" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.whitebook') }}</div>
+            <div class=" w-[300px]">{{ $t('community.whitebook') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Whitebook" placeholder="URL" />
@@ -370,7 +361,7 @@ onMounted(async () => {
         
         <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">Github</div>
+            <div class=" w-[300px]">Github</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.Github" placeholder="URL" />
@@ -381,7 +372,7 @@ onMounted(async () => {
 
         <UFormGroup name="Buildernum" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[480px]">{{ $t('community.buildnum') }}</div>
+            <div class=" w-[480px]">{{ $t('community.buildnum') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.showBuildernum" />
@@ -391,7 +382,7 @@ onMounted(async () => {
 
         <UFormGroup name="Allreward" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[480px]">{{ $t('community.allreward') }}</div>
+            <div class=" w-[480px]">{{ $t('community.allreward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.showAllreward" />
@@ -401,10 +392,10 @@ onMounted(async () => {
 
         <UFormGroup name="Typereward" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class="text-sky-400 w-[300px]">{{ $t('community.typereward') }}</div>
+            <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu class="mr-10" v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
+            <USelectMenu class="w-[130px] mr-10" v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
             <UToggle v-model="state.showTypereward" />
             <Text>{{ state.showTypereward ? $t('show') : $t('hide') }}</Text>
           </div>
@@ -414,7 +405,7 @@ onMounted(async () => {
 
         <UFormGroup name="range" class="flex flex-row items-center space-x-10">
           <template #label>
-            <div class="text-sky-400 min-w-[382px]">{{ $t('community.after') }}</div>
+            <div class=" min-w-[382px]">{{ $t('community.after') }}</div>
           </template>
           <div class="flex items-center space-x-3">
             <Text>{{ $t('hideall') }}</Text>
@@ -426,7 +417,7 @@ onMounted(async () => {
         <div v-show="state.showDetail" class="space-y-3">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[450px]">{{ $t('community.token.release') }}</div>
+              <div class=" min-w-[450px]">{{ $t('community.token.release') }}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isPublished" />
@@ -437,7 +428,7 @@ onMounted(async () => {
           <div v-for="(formGroup, index) in token.communityToken" :key="index">
             <UFormGroup name="range" label="Range">
               <template #label>
-                <div class="text-sky-400 min-w-[100px]">{{ index+1 }}st Token</div>
+                <div class=" min-w-[100px]">{{ index+1 }}st Token</div>
               </template>
               <div class="flex flex-row items-center space-x-3">
                 <div class="flex min-w-[477px]">
@@ -453,7 +444,7 @@ onMounted(async () => {
 
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[452px]">{{ $t('community.token.trade') }}</div>
+              <div class=" min-w-[452px]">{{ $t('community.token.trade') }}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <UToggle v-model="state.isTradable" />
@@ -463,7 +454,7 @@ onMounted(async () => {
           <div v-if="state.isTradable">
             <UFormGroup name="range" class="flex flex-row items-center space-x-10">
               <template #label>
-                <div class="text-sky-400 min-w-[270px]">{{ $t('community.token.platforms') }}</div>
+                <div class=" min-w-[270px]">{{ $t('community.token.platforms') }}</div>
               </template>
               <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select people" />
             </UFormGroup>
@@ -476,7 +467,7 @@ onMounted(async () => {
         <div class="space-y-3">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class="text-sky-400 min-w-[410px]">{{ $t('community.token.all') }}</div>
+              <div class=" min-w-[410px]">{{ $t('community.token.all') }}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <Text>{{ $t('hide') }}</Text>
@@ -505,7 +496,7 @@ onMounted(async () => {
           </div>
         </div>
         <div class="flex justify-center">
-          <UButton type="submit" size="xl" @click="CreateCommunity">
+          <UButton color="white" type="submit" size="xl" @click="CreateCommunity">
             {{ $t('add') }}
           </UButton>
         </div>

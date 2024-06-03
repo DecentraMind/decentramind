@@ -187,8 +187,8 @@ onBeforeUnmount(() => {
   <UDashboardPage>
 
     <!--<div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">-->
-    <div class="w-full px-50">
-      <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
+    <div class="w-full px-50 pt-16">
+      <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
       <UPage class="pl-36 pr-80">
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
@@ -257,8 +257,12 @@ onBeforeUnmount(() => {
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.typereward') }}</div>
                     <div class="w-36 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[350px]">
-                        {{ communityInfo.website }}
+                      <div 
+                        v-for="(token, index) in communityInfo.bounty" 
+                        :key="index"
+                        class="flex justify-center border rounded-lg w-[350px]"
+                      >
+                        {{ token }}
                       </div>
                     </div>
                   </div>
@@ -280,7 +284,7 @@ onBeforeUnmount(() => {
                     <div>{{ $t('community.buildnum') }}</div>
                     <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
-                        {{ communityInfo.website }}
+                        {{ communityInfo.buildnum }}
                       </div>
                     </div>
                   </div>
@@ -288,7 +292,7 @@ onBeforeUnmount(() => {
                     <div>{{ $t('community.allreward') }}</div>
                     <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
-                        3
+                        0
                       </div>
                     </div>
                   </div>

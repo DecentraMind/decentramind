@@ -4,8 +4,11 @@ import type { FormSubmitEvent } from '#ui/types'
 import {taskStore} from '../../../stores/taskStore';
 import {aocommunityStore} from '../../../stores/aocommunityStore';
 import axios from 'axios';
+
+import { z } from 'zod'
+
 const { t } = useI18n()
-const { createTask, getAllTasks, respArray, makecommunityChat } = $(taskStore())
+const { createTask, getAllTasks, respArray, makecommunityChat, joinTask } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
@@ -35,6 +38,19 @@ function onChange(index) {
   alert(`${item.label} was clicked!此处应该刷新下方列表数据，重新渲染，待完善`)
 }
 
+const schema = z.object({
+  taskName: z.string().min(2).max(10),
+  taskInfo: z.string().min(3).max(30),
+
+  /*
+  Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
+    const num = parseInt(value)
+    return !isNaN(num) && num <= 100
+  }, { message: 'Must be a valid number less than or equal to 20' }),
+  */
+})
+
+type Schema = z.infer<typeof schema>
 
 const tokenOptions = [
   { label: 'AR', value: 'AR' },
@@ -139,6 +155,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.communityId = String(communityId)
   console.log(transData)
   await createTask(transData)
+  await joinTask(transData.taskId, address)
+
   await getAllTasks(String(communityId))
   isOpen = false
 }
@@ -264,10 +282,16 @@ const taskTypes = [
   }]
 ]
 
+let exitButton = $ref(false)
 const { exitCommunity } = $(aocommunityStore())
+const router = useRouter();
+
+
+
 const quitCommunity = async(communityuuid: any) => {
   console.log(communityuuid)
   await exitCommunity(communityuuid)
+  router.push(`/${slug}/discovery`);
 }
 
 
@@ -332,9 +356,9 @@ const copyText = async () => {
 <template>
   <UDashboardPanel :width="420" collapsible>
     <UDashboardSidebar>
-      <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />
+      <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
       <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
-      <div>
+      <div class="pt-8">
         <div class="flex justify-between  my-3 items-center">
           <div class="text-3xl">{{ communityInfo.name }}</div>
           <div>
@@ -405,7 +429,7 @@ const copyText = async () => {
             color="white"
             variant="solid"
             class="ml-auto mt-10"
-            @click="quitCommunity(communityInfo.uuid)"
+            @click="exitButton = true"
           >
             {{ $t('Quit') }}
             <UIcon name="bi:arrow-left-circle" />
@@ -555,7 +579,7 @@ const copyText = async () => {
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
           </div>
         </template>
-        <UForm ref="form" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
+        <UForm ref="form" :schema="schema" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
           <UFormGroup name="taskLogo" :label="$t('Banner')">
             <template #label>
               <div class="w-[300px]">{{ $t('Banner') }}</div>
@@ -652,10 +676,21 @@ const copyText = async () => {
         </UForm>
       </UCard>
     </UModal>
-  </UDashboardPage>
-  <UModal v-model="communitySetting" :ui="{ width: w-full }">
+    <UModal v-model="communitySetting" :ui="{ width: w-full }">
       <UCard>
         <CommunitySetting />
       </UCard>
     </UModal>
+    <UModal v-model="exitButton" :ui="{ width: w-full }">
+      <UCard class="min-w-[300px] flex justify-center">
+        <div class="w-full flex justify-center text-2xl">
+          Sure to exit
+        </div>
+        <div class="w-full flex space-x-10 mt-6">
+          <UButton @click="exitButton = false">No</UButton>
+          <UButton @click="quitCommunity(communityId)">Yes</UButton>
+        </div>
+      </UCard>
+    </UModal>
+  </UDashboardPage>
 </template>

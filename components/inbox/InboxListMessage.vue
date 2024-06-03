@@ -65,7 +65,7 @@ const getData = item => {
     -->
     <div v-for="item in items" :key="item.id" class="flex gap-2.5 items-start" :class="isSelf(item) ? 'flex-row-reverse' : ''">
       <!--<DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />-->
-      <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+      <UAvatar src="/community/chatavatar.jpg" alt="Avatar" size="2xl" />
             
       
       <div class="flex flex-col w-full max-w-[400px]">

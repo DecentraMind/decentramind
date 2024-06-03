@@ -124,23 +124,23 @@ const Logout = async() => {
             <template #description>
               <div class="flex flex-col space-y-2">
                 <div class="flex flex-col min-h-[50px]">
-                  <div class="text-blue-300 text-2xl">
+                  <div class="text-2xl">
                     builder: 100
                   </div>
-                  <div class="text-blue-900 text-2xl">
+                  <div class="text-2xl">
                     {{ community.desc }}
                   </div>
                 </div>
                 <div>
                   <template v-if="community.isJoined">
                     <!-- 显示文本“已加入” -->
-                    <UButton class="absolute right-0 w-[65px]" color="primary" variant="outline" disabled>
+                    <UButton class="absolute right-0 w-[65px]" color="white" variant="outline" disabled>
                       {{ $t('community.list.isjoin') }}
                     </UButton>
                   </template>
                   <template v-else>
                     <!-- 显示 UButton 组件 -->
-                    <UButton class="absolute right-0 w-[60px]" :ui="{ font: 'font-medium'}" color="primary" variant="outline" @click="() => communityJoin(community.uuid)">
+                    <UButton class="absolute right-0 w-[60px]" :ui="{ font: 'font-medium'}" color="white" variant="outline" @click="() => communityJoin(community.uuid)">
                       {{ $t('community.list.join') }}
                     </UButton>
                   </template>
