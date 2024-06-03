@@ -120,7 +120,7 @@ const userinfo = {
   userTwitter: 'xx',
 }
 let isSettlementOpen = userinfo.userTwitter
-const error_msg = '感谢你对社区的支持~经系统检测，你还没有绑定twitter账号哦！'
+const error_msg = 'Please bound your twitter account！'
 let isOpen = $ref(false)
 let isOpenJoin = $ref(false)
 function openModal() {
@@ -316,7 +316,7 @@ function returnBackPage() {
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
               </div>
-              <UTable v-model="selected" :rows="filteredRows" :columns="columns" @select="select">
+              <UTable v-if="isJoined" v-model="selected" :rows="filteredRows" :columns="columns" @select="select">
                 <template #address-data="{ row }">
                   {{ isOwner ? row.address : shortAddress(row.address)}}
                 </template>
@@ -333,7 +333,7 @@ function returnBackPage() {
                 <UButton color="white" :label="$t('Send Bounty')" @click="sendBountyByAo"/>
               </div>
             </div>
-            <div class="flex ...">
+            <div class="flex mt-4">
               <div class="flex-none w-60">
                 <Text>
                   {{ $t("Rules of Judgment") }}:

@@ -52,7 +52,7 @@ const schema = z.object({
 type Schema = z.infer<typeof schema>
 
 const tokenOptions = [
-  { label: 'AR', value: 'AR' },
+//  { label: 'AR', value: 'AR' },
   { label: 'AOCRED', value: 'AOCRED' },
   { label: 'Bark', value: 'Bark' },
   { label: 'TRUNK', value: 'TRUNK' },
@@ -67,8 +67,32 @@ const chainOptions = [
   { label: 'AO', value: 'AO' }
 ]
 const timeZoneOptions = [
-  { label: 'ACDT', value: 'ACDT' },
-  { label: 'AT', value: 'AT' },
+  { label: 'GMT-11:00', value: 'GMT-11:00' },
+  { label: 'GMT-10:00', value: 'GMT-10:00' },
+  { label: 'GMT-9:00', value: 'GMT-9:00' },
+  { label: 'GMT-8:00', value: 'GMT-8:00' },
+  { label: 'GMT-7:00', value: 'GMT-7:00' },
+  { label: 'GMT-6:00', value: 'GMT-6:00' },
+  { label: 'GMT-5:00', value: 'GMT-5:00' },
+  { label: 'GMT-4:00', value: 'GMT-4:00' },
+  { label: 'GMT-3:00', value: 'GMT-3:00' },
+  { label: 'GMT-2:00', value: 'GMT-2:00' },
+  { label: 'GMT-1:00', value: 'GMT-1:00' },
+  { label: 'GMT+0:00', value: 'GMT+0:00' },
+  { label: 'GMT+1:00', value: 'GMT+1:00' },
+  { label: 'GMT+2:00', value: 'GMT+2:00' },
+  { label: 'GMT+3:00', value: 'GMT+3:00' },
+  { label: 'GMT+4:00', value: 'GMT+4:00' },
+  { label: 'GMT+5:00', value: 'GMT+5:00' },
+  { label: 'GMT+6:00', value: 'GMT+6:00' },
+  { label: 'GMT+7:00', value: 'GMT+7:00' },
+  { label: 'GMT+8:00', value: 'GMT+8:00' },
+  { label: 'GMT+9:00', value: 'GMT+9:00' },
+  { label: 'GMT+10:00', value: 'GMT+10:00' },
+  { label: 'GMT+11:00', value: 'GMT+11:00' },
+  { label: 'GMT+12:00', value: 'GMT+12:00' },
+  { label: 'GMT+13:00', value: 'GMT+13:00' },
+  { label: 'GMT+14:00', value: 'GMT+14:00' },
 ]
 const selected = ref({ start: sub(new Date(), { days: 14 }), end: new Date() })
 function isRangeSelected(duration: Duration) {
