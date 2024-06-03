@@ -135,7 +135,7 @@ onMounted(async () => {
         </template>
         -->
       </UTable>
-
+      <!--
       <template #footer>
         <div class="flex pl-10">
           <UButton type="submit" color="black">
@@ -143,6 +143,7 @@ onMounted(async () => {
           </UButton>
         </div>
       </template>
+      -->
     </UCard>
   </UDashboardPanelContent>
 </template>
