@@ -44,6 +44,25 @@ console.log('userInfo = ' + JSON.stringify(userInfo))
 //   console.log(blogPost.name)
 // })
 
+function calculateScore(spaceTaskSubmitInfo){
+  // 找到friends和audience的最大值
+  spaceTaskSubmitInfo.sort((a, b) => a.getPerson - b.getPerson)
+  let getPersionMax = spaceTaskSubmitInfo[0].getPerson
+  spaceTaskSubmitInfo.sort((a, b) => a.audience - b.audience)
+  let audienceMax = spaceTaskSubmitInfo[0].audience
+  let totalScore = 0
+  for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
+    let friendScore = spaceTaskSubmitInfo[i].getPerson / getPersionMax * 40
+    let audienceScore = spaceTaskSubmitInfo[i].audience / audienceMax * 50
+    spaceTaskSubmitInfo[i].score = friendScore + audienceScore + spaceTaskSubmitInfo[i].brandEffect
+    totalScore += spaceTaskSubmitInfo[i].score
+  }
+  for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
+    spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i] / totalScore * 100).toFixed(2) + '%'
+  }
+  // 计算完成后更新AO侧数据和前端表单数据
+}
+
 const columns = [
   {
     key: 'id',
