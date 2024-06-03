@@ -366,7 +366,7 @@ const copyText = async () => {
         <div class="flex justify-between my-3 mt-5 items-center">
           <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
           <div>
-            <div class="flex justify-center border rounded-lg w-[90px]">
+            <div class="flex justify-center border rounded-lg w-full pl-2 pr-2">
               {{ communityInfo.website }}
             </div>
           </div>
@@ -386,7 +386,7 @@ const copyText = async () => {
             <div
               v-for="(token, index) in communityInfo.communitytoken"
               :key="index"
-              class="flex justify-center border rounded-lg w-[80px]"
+              class="flex justify-center border rounded-lg w-full pl-2 pr-2"
             >
               {{ token.tokenName }}
             </div>
@@ -398,7 +398,7 @@ const copyText = async () => {
             <div
               v-for="(token, index) in communityInfo.support"
               :key="index"
-              class="flex justify-center border rounded-lg w-[80px]"
+              class="flex justify-center border rounded-lg w-full pl-2 pr-2"
             >
               {{ token }}
             </div>

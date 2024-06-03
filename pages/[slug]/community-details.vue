@@ -231,7 +231,7 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.detail.token') }}</div>
-                    <div class="w-36 flex justify-around items-center">
+                    <div class="w-36 flex justify-around items-center space-x-1">
                       <div 
                         v-for="(token, index) in communityInfo.communitytoken" 
                         :key="index" 
@@ -243,7 +243,7 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.token.platforms') }}</div>
-                    <div class="w-36 flex justify-around items-center space-x-3">
+                    <div class="w-36 flex justify-around items-center space-x-1">
                       <div 
                         v-for="(token, index) in communityInfo.support" 
                         :key="index"
@@ -255,7 +255,7 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.typereward') }}</div>
-                    <div class="w-36 flex justify-around items-center">
+                    <div class="w-36 flex justify-around items-center space-x-1">
                       <div 
                         v-for="(token, index) in communityInfo.bounty" 
                         :key="index"
