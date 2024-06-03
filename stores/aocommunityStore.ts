@@ -358,7 +358,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     let personal = [
       {
         "avatar": avatar,
-        "username": username,
+        "name": username,
         "twitter": twitter,
         "showtwitter": showtwitter,
         "mail": mail,
