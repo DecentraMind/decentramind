@@ -49,7 +49,7 @@ onMounted(async () => {
     //console.log(infoJson)
     await getInfo()
     accountForm.avatar = userInfo[0].avatar
-    accountForm.name = userInfo[0].username;
+    accountForm.name = userInfo[0].name;
     accountForm.twitter = userInfo[0].twitter;
     accountForm.showtwitter = userInfo[0].showtwitter;
     accountForm.mail = userInfo[0].mail;

@@ -354,11 +354,27 @@ end)
 -- 注册个人信息
 Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo"), function(msg)
   local newColum = msg.Tags.userAddress
+  local jsonColum = {
+    avatar = "N/A",
+    name = "N/A",
+    twitter = "N/A",
+    showtwitter = true,
+    mail = "N/A",
+    showmail = true,
+    phone = "N/A",
+    showphone = true,
+    joined = {}
+  }
+  local enjson = json.encode(jsonColum)
+  if not userinfo[newColum] then
+    userinfo[newColum] = enjson
+  end
+  --[[
   if not userinfo[newColum] then
     userinfo[newColum] = {}
     userinfo[newColum].avatar = "N/A"
     userinfo[newColum].name = "N/A"
-    userinfo[newColum].twitter = "N/A"
+    userinfo[newColum].showtwitter = "N/A"
     userinfo[newColum].twitter = true
     userinfo[newColum].mail = "N/A"
     userinfo[newColum].showmail = true
@@ -366,6 +382,7 @@ Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo")
     userinfo[newColum].showphone = true
     userinfo[newColum].joined = {}
   end
+  ]]
 end)
 
 -- handlers方法测试功能，用来测试这里得方法以及查看表内容等等。。
@@ -379,9 +396,9 @@ Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTe
   --  print(i)
   --end
 
-  for k, _ in pairs(community) do
+  for k, _ in pairs(userinfo) do
     print()
-    community[k] = nil
+    userinfo[k] = nil
   end
 
   -- for k, _ in pairs(userinfo) do

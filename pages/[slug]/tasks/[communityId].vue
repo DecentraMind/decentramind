@@ -214,7 +214,7 @@ onMounted(async () => {
     //return
   }
 
-  await getAllTasks(communityId, 'GetAllTasks')
+  await getAllTasks(communityId)
   if(respArray.length === 0){
     taskListIsEmpty = true
   }

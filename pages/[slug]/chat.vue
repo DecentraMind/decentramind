@@ -152,13 +152,13 @@ const copyText = async () => {
   <div class="flex w-full">
     <UDashboardPanel :width="420" collapsible>
       <UDashboardSidebar>
-        <UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />
+        <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
-        <div>
+        <div class="pt-8">
           <div class="flex justify-between  my-3 items-center">
             <div class="text-3xl">{{ communityInfo.name }}</div>
             <div>
-              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
+              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${currentUuid}`">
                 {{ $t('View Details') }}
               </UButton>
             </div>

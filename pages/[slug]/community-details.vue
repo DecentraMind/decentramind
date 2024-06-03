@@ -196,7 +196,7 @@ onBeforeUnmount(() => {
           <template #title>
             <div class="w-full flex justify-between text-3xl mb-12 mt-3 px-12">
               {{ communityInfo.name }}
-              <NuxtLink :to="`/${slug}/tasks/${communityId}`">
+              <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
                 <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
               </NuxtLink>
             </div>

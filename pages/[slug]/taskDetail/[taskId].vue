@@ -27,7 +27,7 @@ let checkJoin = () => {
 }
 let isJoined = checkJoin()
 let joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
-let spaceTaskSubmitInfo = $ref()
+let spaceTaskSubmitInfo = $ref({})
 spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
 // let chatProcessId = await makecommunityChat()
 // console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
@@ -156,7 +156,7 @@ const addr = $ref('')
 const url = $ref('')
 async function submitTask() {
   // TODO 调用提交space链接并解析方法
-  submitSpaceTask(taskId, address, url)
+  await submitSpaceTask(taskId, address, url)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isOpen = false
 }
