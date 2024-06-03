@@ -116,7 +116,7 @@ const CreateCommunity = async () => {
     supportSelected, //交易得平台
     state.showAlltoken, //是否显示分配的总token
     state.Alltoken, //分配得token总量
-    token.tokenSupply //社区token分配比例详情
+    token.tokenSupply, //社区token分配比例详情
     state.communityChatid,
     state.time
   )
