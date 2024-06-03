@@ -344,26 +344,32 @@ function returnBackPage() {
     <UModal v-model="isOpenJoin">
       <UCard>
         <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              {{ $t("Join Task") }}
-            </h3>
-            <UButton
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-x-mark-20-solid"
-              class="-my-1"
-              @click="isOpenJoin = false"
-            />
+          <div class="flex items-center justify-center">
+            <div class="flex justify-center">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                {{ $t("Join Task") }}
+              </h3>
+            </div>
+            <!--
+              <UButton
+                color="gray"
+                variant="ghost"
+                icon="i-heroicons-x-mark-20-solid"
+                class="-my-1"
+                @click="isOpenJoin = false"
+              />
+              -->
           </div>
         </template>
         <div class="space-y-2">
           <p>
             {{ $t("We appreciate your support,Please follow the rules of the quest and submit the URL back to this page") }}
           </p>
-          <UButton @click="onClick">
-            {{ $t('I have read all rules') }}
-          </UButton>
+          <div class="flex justify-center">
+            <UButton @click="onClick">
+              {{ $t('I have read all rules') }}
+            </UButton>
+          </div>
         </div>
       </UCard>
     </UModal>

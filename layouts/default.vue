@@ -219,7 +219,7 @@ const test = ()=> {
               </template>
             </NuxtLink>
             <template #panel>
-              <div class="h-[350px] w-[300px] pt-10 pl-10">
+              <div class="h-[350px] w-[300px] pt-10 pl-10 pr-10">
                 <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
                   <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
                 </template>

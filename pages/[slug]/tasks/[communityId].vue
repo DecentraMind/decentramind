@@ -435,7 +435,6 @@ const copyText = async () => {
             </div>
           </div>
         </template>
-        
       </UPopover>
       <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
         <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
@@ -446,12 +445,11 @@ const copyText = async () => {
       <!--<UDashboardSidebarLinks :links="footerLinks" />-->
 
       <UDivider class="bottom-0 sticky" />
-        <!--
+      <!--
       <template #footer>
         <UserDropdown />
       </template>
       -->
-
     </UDashboardSidebar>
   </UDashboardPanel>
 
@@ -464,10 +462,9 @@ const copyText = async () => {
           </div>
           <div class="flex">
             <div>
-              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
+              <!--<UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
-
               </UDropdown>
             </div>
           </div>
@@ -480,12 +477,14 @@ const copyText = async () => {
               orientation="vertical"
               align="bottom"
             >
+              <template #title>
+                <div class="text-2xl pt-16">
+                  {{ $t('Nothing here,click to start your first public quest.') }}
+                </div>
+              </template>
               <template #description>
-                <div class="flex mt-10 justify-between items-center">
-                  <div class="flex items-center justify-center">
-                    <span>{{ $t('Nothing here,click to start your first public quest.') }}</span>
-                  </div>
-                  <div class="flex justify-between items-center">
+                <div class="flex mt-10 justify-center items-center">
+                  <div class="flex justify-center items-center">
                     <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                       <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
                     </UDropdown>

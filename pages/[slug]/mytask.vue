@@ -20,7 +20,7 @@ const links = [[{
 <template>
   <UDashboardPage>
     <UDashboardPanel grow>
-      <UDashboardNavbar title="Settings" />
+      <UDashboardNavbar :title="`${t('wallet.Dashboard')}`" />
 
       <UDashboardToolbar class="py-0 px-1.5 overflow-x-auto">
         <UHorizontalNavigation :links="links" />

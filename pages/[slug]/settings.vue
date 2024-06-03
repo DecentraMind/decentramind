@@ -32,14 +32,15 @@ const links = [[{
     icon: 'i-heroicons-credit-card',
     to: 'https://ui.nuxt.com/pro/purchase',
     target: '_blank'
-  }]*/
+  }]
+  */
   ]
 </script>
 
 <template>
   <UDashboardPage>
     <UDashboardPanel grow>
-      <UDashboardNavbar title="Settings" />
+      <UDashboardNavbar :title="`${t('setting.title')}`" />
 
       <UDashboardToolbar class="py-0 px-1.5 overflow-x-auto">
         <UHorizontalNavigation :links="links" />

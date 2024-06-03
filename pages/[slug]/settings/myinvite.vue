@@ -98,6 +98,10 @@ onMounted(async () => {
     console.error('Error fetching data:', error);
   }
 });
+let inviteDetail = $ref(false)
+const detail = () => {
+  inviteDetail = true
+}
 </script>
 
 <template>
@@ -117,8 +121,19 @@ onMounted(async () => {
             <UAvatar src="https://avatars.githubusercontent.com/u/7547335?v=4" alt="smarroufin" />
           </UAvatarGroup>
         </div>
-        <UButton class="flex-end text-xl text-center">{{ $t('setting.invite.check') }}</UButton>
+        <UButton class="flex-end text-xl text-center" @click="detail">{{ $t('setting.invite.check') }}</UButton>
       </div>
     </UCard>
+    <UModal v-model="inviteDetail" :ui="{ width: w-full }">
+      <div class="flex min-h-[300px] min-w-[600px] pt-10 pl-6">
+        <div class="mr-6">{{ $t('setting.invited') }}</div>
+        <div class="border h-full pl-6 pb-2 pr-10">
+          <div class="flex items-center space-x-3">
+            <UAvatar src="https://avatars.githubusercontent.com/u/904724?v=4" alt="Atinux" />
+            <Text>0x9A....775c37897Csad89798798SD</Text>
+          </div>
+        </div>
+      </div>
+    </UModal>
   </udashboardpanelcontent>
 </template>

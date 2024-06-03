@@ -462,7 +462,7 @@ let settingInfo = $ref(true)
                 <template #label>
                   <div class="text-sky-400 min-w-[270px]">{{ $t('community.token.platforms') }}</div>
                 </template>
-                <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select people" />
+                <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select" />
               </UFormGroup>
             </div>
           </div>

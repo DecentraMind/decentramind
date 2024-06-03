@@ -347,7 +347,7 @@ const copyText = async () => {
         <div class="pt-10 pr-10">
           <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="communityuser.length">
             <template #title>
-              <Text class="text-5xl">
+              <Text class="text-3xl">
                 User
               </Text>
             </template>

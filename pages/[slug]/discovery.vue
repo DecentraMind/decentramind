@@ -50,7 +50,7 @@ onMounted(async () => {
 
 const translate = [
   [{
-    label: '中文',
+    label: '简体中文',
   }, {
     label: 'English'
   }]
@@ -71,7 +71,7 @@ const Logout = async() => {
 
 <template>
   <div class="min-h-screen bg-red-1900 w-full">
-    <UDashboardNavbar title="Community">
+    <UDashboardNavbar title="Explore">
       <template #right>
         <UBadge color="white">
           <NuxtLink :to="`/${slug}/mytask`">
@@ -92,7 +92,7 @@ const Logout = async() => {
             Connect Wallet
           </UButton>
         </UBadge>
-        <UButton color="white" @click="gettoken">twitter</UButton>
+        <UButton color="white" @click="gettoken">{{ $t('twitter.link')}}</UButton>
         <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>
