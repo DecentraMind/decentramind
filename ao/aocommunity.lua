@@ -49,6 +49,7 @@ local function findCommunityIndexByUUID(community, uuid)
   end
   return nil
 end
+
 -- 修改社区信息
 Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "communitysetting"), function(msg)
   local testData = json.decode(msg.Data)
@@ -170,12 +171,13 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       showalltoken = dCom[1].showalltoken,
       alltoken = dCom[1].alltoken,
       tokensupply = dCom[1].tokensupply,
+      creater = dCom[1].creater,
       communitychatid = dCom[1].communitychatid,
       timestamp = dCom[1].timestamp
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
-    print("---------------ggg", dCom[1].uuid)
-    print(dCom[1].uuid)
+    print("---------------ggg", dCom[1].creater)
+    print(dCom[1].creater)
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress][dCom[1].uuid] then
         itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
@@ -251,7 +253,8 @@ Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "community
         support = dCom[1].support,
         showalltoken = dCom[1].showalltoken,
         alltoken = dCom[1].alltoken,
-        tokensupply = dCom[1].tokensupply
+        tokensupply = dCom[1].tokensupply,
+        creater = dCom[1].creater
       }
       table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
     end

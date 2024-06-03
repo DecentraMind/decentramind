@@ -424,7 +424,7 @@ const copyText = async () => {
           <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
           <div>{{ communityInfo.buildnum }}</div>
         </div>
-        <div class="flex">
+        <div v-if="communityInfo.creater !== address" class="flex">
           <UButton
             color="white"
             variant="solid"

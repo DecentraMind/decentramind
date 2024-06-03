@@ -392,7 +392,7 @@ let settingInfo = $ref(true)
               <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
-              <USelectMenu class="w-[130px] mr-10" v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
+              <USelectMenu v-model="tokenselected" class="w-[130px] mr-10" :options="tokenselect" multiple placeholder="Select Token" />
               <UToggle v-model="state.showTypereward" />
               <Text>{{ state.showTypereward ? $t('show') : $t('hide') }}</Text>
             </div>
@@ -429,11 +429,27 @@ let settingInfo = $ref(true)
                 </template>
                 <div class="flex flex-row items-center space-x-3">
                   <div class="flex min-w-[477px]">
-                    <UInput v-model="formGroup.tokenName" placeholder="" />
-                    <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
+                    <USelect v-model="formGroup.tokenName" :options="tokenselect" />
+
+                    <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)"/>
                   </div>
                   <UToggle v-model="formGroup.showTokenName" />
                   <Text>{{ formGroup.showTokenName ? $t('show') : $t('hide') }}</Text>
+                  <UPopover mode="hover" :popper="{ placement: 'right-end' }">
+                    <template #panel>
+                      <div class="w-full w-[160px] h-[25px] flex justify-center">
+                        <ULink
+                          to="https://forms.gle/RwWbeFphvyi8ZEU9A"
+                          active-class="text-primary"
+                          target="_blank"
+                          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                        >
+                          Add new tokens
+                        </ULink>
+                      </div>
+                    </template>
+                    <UIcon name="gravity-ui:circle-question" />
+                  </UPopover>
                 </div>
               </UFormGroup>
             </div>
