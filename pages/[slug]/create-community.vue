@@ -96,14 +96,12 @@ const CreateCommunity = async () => {
 
 
 const handleUp = async (value: any) => {
-  console.log("goods")
+  console.log("is click")
 }
 
 const logoupload = () => {
   const input = document.querySelector('#logoupload') as any
-  console.log(state.input)
   input.click()
-  console.log(state.input)
 }
 const bannerupload = () => {
   const input = document.querySelector('#bannerupload') as any

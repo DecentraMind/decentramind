@@ -109,11 +109,8 @@ let communityuser = $ref({})
 
 let chatID = $ref<string | string[] | null>(null)
 const test = () => {
-  console.log("-------nnn")
   if (!route.params.pid) return
-  console.log(chatID)
   const a = getCommunityuser(communityInfo.uuid)
-  console.log("------",a)
 }
 onMounted( () => {
   if (!route.params.pid) return
@@ -127,7 +124,6 @@ onMounted(async () => {
     
     try {
       communityuser = JSON.parse(dataStr);
-      console.log(dataJson);
       // 你可以在这里进一步处理 dataJson
     } catch (error) {
       console.error('Error parsing JSON:', error);

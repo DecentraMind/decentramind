@@ -44,7 +44,6 @@ const community = async() => {
   await doLogin()
   await registInfo()
   if (address) {
-    console.log("---------ggggggggg")
     router.push('/signup')
   }
 }

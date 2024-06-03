@@ -31,11 +31,10 @@ let spaceTaskSubmitInfo = $ref()
 spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
 // let chatProcessId = await makecommunityChat()
 // console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
-console.log('blogPost = ' + JSON.stringify(blogPost))
+
 // console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
 // console.log('isJoined = ' + isJoined)
 // console.log('chatProcessId = ' + chatProcessId)
-console.log('userInfo = ' + JSON.stringify(userInfo))
 
 // onMounted(async () => {
 //

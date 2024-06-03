@@ -112,8 +112,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       }
     ]
     const jsonString = JSON.stringify(communitySubmitList);
-    console.log("---------nonono")
-    console.log(jsonString)
     const invite = "none"
     let createCommunity = await message({
       process: processID,
@@ -199,8 +197,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       }
     ]
     const jsonString = JSON.stringify(communitySubmitList);
-    console.log("---------nonono")
-    console.log(jsonString)
     let settingCommunity = await message({
       process: processID,
       tags: [
@@ -210,7 +206,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
     });
-    console.log(settingCommunity)
     isLoading = false
   }
 
@@ -226,8 +221,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
           { name: 'userAddress', value: address }
         ],
       });
-      console.log('--------------------11', result)
-      console.log()
       const jsonData = result.Messages[0].Data;
       communityList = JSON.parse(jsonData); // Parse the main JSON data
 
@@ -244,7 +237,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       });
 
       joincommunityList = communityList.filter((item) => item.isJoined === true);
-      console.log("-----------", joincommunityList)
       isLoading = false
       return result
     } else {
@@ -260,7 +252,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       joincommunityList = jsonObjects
         .map((item: any) => JSON.parse(item))
         .filter((item: any) => item.isJoined === true);
-      console.log("------------------", result)
       isLoading = false
       return result
     }
@@ -270,7 +261,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const getCommunityuser = async (uuid: any) => {
     if (isLoading) return
     isLoading = true
-    console.log("----------------no")
     let result = await dryrun({
       process: processID,
       tags: [
@@ -279,7 +269,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       ],
     });
     isLoading = false
-    console.log("---------", result)
     return result
   }
 
@@ -301,13 +290,10 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //通过缓存的社区list来获取指定社区信息
   const getLocalcommunityInfo = async (uuid: any) => {
-    console.log(uuid)
     //if (isLoading) return
     //isLoading = true
 
     const communityInfo = communityList.find(community => community.uuid === uuid);
-    console.log(uuid)
-    console.log("--------nnn:", communityInfo)
     return communityInfo
   }
 
@@ -414,7 +400,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     // 赋值给 userInfo
     userInfo = infoJson
 
-    console.log(userInfo)
     isLoading = false
     return Info
   }
@@ -444,8 +429,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    console.log('gooooods', processId2)
-    console.log('result', buildLua)
     return processId2
   }
   return $$({

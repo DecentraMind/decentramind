@@ -23,7 +23,6 @@ export const linktwitter = defineStore('linktwitter', () => {
     const consumerSecret = 'iq5S97n0VwrcpOu95xXiO6AC0wZgfZTIoYAubUj20KNF5p0_Hp'; // 客户端密钥
 
     const gettoken = () => {
-        console.log("-----111", process.env.SUPABASE_URL)
         const authUrl = authClient.generateAuthURL({
             state: STATE,
             code_challenge_method: "plain",

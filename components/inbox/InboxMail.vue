@@ -73,9 +73,7 @@ defineShortcuts({
 const route = useRoute()
 let chatID = $ref<string | string[] | null>(null)
 const test = () => {
-  console.log("-------nnn")
   if (!route.params.pid) return
-  console.log(chatID)
 }
 onMounted( () => {
   if (!route.params.pid) return

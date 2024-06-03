@@ -70,15 +70,12 @@ export const aoStore = defineStore('aoStore', () => {
       window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh';
       return;
     }
-    console.log('-----------------ggggggggggggggggggg111')
     try {
       await window.arweaveWallet.connect(permissions)
-      console.log("goooooods12")
     } catch (error) {
       const fail = 'fail'
       return fail
     }
-    console.log('-----------------ggggggggggggggggggg111')
     try {
       address = await window.arweaveWallet.getActiveAddress()
 
@@ -90,7 +87,6 @@ export const aoStore = defineStore('aoStore', () => {
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       });
-      console.log('-----------------ggggggggggggggggggg')
       const success = 'success'
       return success
 

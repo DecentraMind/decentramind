@@ -14,7 +14,6 @@ const { add } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
-console.log('communityId = ' + communityId)
 
 let communitySetting = $ref(false)
 
@@ -153,7 +152,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
   transData.isBegin = isBegin
   transData.communityId = String(communityId)
-  console.log(transData)
   await createTask(transData)
   await joinTask(transData.taskId, address)
 
@@ -221,7 +219,6 @@ onMounted(async () => {
     taskListIsEmpty = true
   }
 
-  console.log("taskIsEmpty = " + taskListIsEmpty)
 })
 
 const banners = [
@@ -233,7 +230,6 @@ const banners = [
 ]
 const currentIndex = $ref(0); // 用于存储当前选中的索引
 const updateBanner = (index: number) => {
-  console.log('-----------------bbbbbbbbbbbbbbbb')
   if (index === 1) {
     state.taskLogo = 'banner1'
   } else if (index === 2) {
@@ -245,7 +241,6 @@ const updateBanner = (index: number) => {
   }else if (index === 5){
     state.taskLogo = 'banner5'
   }
-  console.log(state.taskLogo)
 }
 
 const taskTypes = [
@@ -289,7 +284,6 @@ const router = useRouter();
 
 
 const quitCommunity = async(communityuuid: any) => {
-  console.log(communityuuid)
   await exitCommunity(communityuuid)
   router.push(`/${slug}/discovery`);
 }
@@ -322,7 +316,6 @@ const endpointUrl = "https://api.twitter.com/2/spaces/search";
 //   }
 // }
 async function testAO() {
-  console.log('in testAO()')
   axios.get(endpointUrl, {
     params : {
       query: 'NBA', // Replace the value with your search term

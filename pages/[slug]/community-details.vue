@@ -108,7 +108,6 @@ watch(() => route.params.pid, async (newPid) => {
 const loadCommunityInfo = async (pid) => {
   try {
     communityInfo = await getLocalcommunityInfo(pid)
-    console.log("--------aaa",communityInfo.tokensupply)
     //const jsonData = communityInfo.Messages[0].Data
     //const jsonObjects = jsonData.match(/\{.*?\}/g)
     //communityInfoJson = jsonObjects.map((item) => JSON.parse(item))

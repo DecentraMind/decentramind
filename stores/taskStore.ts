@@ -22,6 +22,8 @@ export const taskStore = defineStore('taskStore', () => {
   let respArray = $ref([])
 
   const createTask = async (data: any) => {
+
+
     // TODO 创建process 将process ID添加在任务信息中
     await window.arweaveWallet.connect(permissions)
     try {
@@ -50,24 +52,21 @@ export const taskStore = defineStore('taskStore', () => {
       alertMessage(error)
       return ''
     }
-    if(res.Messages[0].Data === 'null'){
-        respArray = []
-        return ''
+    if (res.Messages[0].Data === 'null') {
+      respArray = []
+      return ''
     }
     let resp = res.Messages[0].Data.split(';')
-    console.log("resp.length = " + resp.length)
-    console.log("resp = " + resp)
     respArray = []
     for (let index = 0; index < resp.length; index++) {
 
       let element = JSON.parse(resp[index])
       // console.log('communityId = ' + element.communityId)
       // console.log('trans communityId = ' + communityId)
-      if(element.communityId !== communityId){
+      if (element.communityId !== communityId) {
         // console.log('communityId = ' + element.communityId)
         continue
       }
-      console.log('builderNumber = ' + element.buildNumber)
       const respData = {
         id: element.taskId,
         name: element.taskName,
@@ -99,16 +98,16 @@ export const taskStore = defineStore('taskStore', () => {
     showSuccess('Get all tasks success')
   }
 
-  const getTaskById = async(taskId: string) => {
-      // 根据taskId获取单个任务信息
-      for (let index = 0; index < respArray.length; index++) {
-        const taskItem = respArray[index]
-        if(taskItem.id === taskId){
-            showSuccess('get task by id success')
-            return taskItem
-        }
+  const getTaskById = async (taskId: string) => {
+    // 根据taskId获取单个任务信息
+    for (let index = 0; index < respArray.length; index++) {
+      const taskItem = respArray[index]
+      if (taskItem.id === taskId) {
+        showSuccess('get task by id success')
+        return taskItem
       }
-      return ''
+    }
+    return ''
   }
 
   const joinTask = async (taskId: string, joinedAddress: string) => {
@@ -116,7 +115,6 @@ export const taskStore = defineStore('taskStore', () => {
       taskId: taskId,
       joinedAddress: joinedAddress
     }
-    console.log(JSON.stringify(data))
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
@@ -144,7 +142,7 @@ export const taskStore = defineStore('taskStore', () => {
       alertMessage(error)
       return ''
     }
-    if(res.Messages[0].Data === 'null'){
+    if (res.Messages[0].Data === 'null') {
       TaskJoinRecords = []
       return ''
     }
@@ -173,7 +171,6 @@ export const taskStore = defineStore('taskStore', () => {
       url: spaceUrl,
       score: 0
     }
-    console.log(JSON.stringify(data))
     // 将解析好的数据保存进 AO，与任务 ID 相关联
     await window.arweaveWallet.connect(permissions)
     try {
@@ -202,12 +199,11 @@ export const taskStore = defineStore('taskStore', () => {
       alertMessage(error)
       return ''
     }
-    if(res.Messages[0].Data === 'null'){
+    if (res.Messages[0].Data === 'null') {
       spaceTaskSubmitInfo = []
       return ''
     }
     let resp = res.Messages[0].Data.split(';')
-    console.log("infos = " + resp)
     for (let index = 0; index < resp.length; index++) {
 
       let element = JSON.parse(resp[index])
@@ -228,13 +224,12 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   // wallets: 需要转账的钱包地址 tokenNumber: 每个账户需要转的token数量 tokenType: 转账的token类型的地址
-  const sendBounty = async (processId: string, wallets: string[], tokenNumber: string,tokenType: string) => {
+  const sendBounty = async (processId: string, wallets: string[], tokenNumber: string, tokenType: string) => {
     let data = {
       wallets: wallets,
       tokenNumber: tokenNumber,
       tokenType: tokenType
     }
-    console.log(JSON.stringify(data))
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
@@ -250,7 +245,7 @@ export const taskStore = defineStore('taskStore', () => {
     }
   }
 
-  const makecommunityChat = async  () => {
+  const makecommunityChat = async () => {
     let processId2 = await spawn({
       module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
       scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
@@ -266,12 +261,10 @@ export const taskStore = defineStore('taskStore', () => {
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    console.log('gooooods', processId2)
-    console.log('result', buildLua)
     return processId2
   }
 
-  return $$({  createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat})
+  return $$({ createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

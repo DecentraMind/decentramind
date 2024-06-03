@@ -72,7 +72,6 @@ const handleUp = (event) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       accountForm.avatar = e.target.result
-      console.log("Base64 Data: ", accountForm.avatar)
     }
     reader.readAsDataURL(file)
   }

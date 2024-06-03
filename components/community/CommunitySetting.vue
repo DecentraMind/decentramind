@@ -131,7 +131,6 @@ const handleUp = (event) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       state.logobase64Data = e.target.result
-      console.log("Base64 Data: ", state.logobase64Data)
     }
     reader.readAsDataURL(file)
   }
@@ -155,13 +154,11 @@ const items = [
 const currentIndex = $ref(0); // 用于存储当前选中的索引
 
 const updateBanner = (index: number) => {
-  console.log('-----------------bbbbbbbbbbbbbbbb')
   if (index === 1) {
     state.banner = 'banner6'
   } else if (index === 2) {
     state.banner = 'banner7'
   } 
-  console.log(state.banner)
 };
 
 

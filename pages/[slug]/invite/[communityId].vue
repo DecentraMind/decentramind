@@ -15,7 +15,6 @@ const slug = $computed(() => route.params.slug)
 // })
 async function join() {
   await doLogin()
-  console.log('add = ' + address)
 
   await joinCommunity(communityId)
   console.log('join success')

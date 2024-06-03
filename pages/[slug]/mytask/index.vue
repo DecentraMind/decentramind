@@ -43,7 +43,6 @@ function convertTokenBalances() {
     });
   }
   Wallettokens.value = tokens;
-  console.log("~~~~~~~~~",Wallettokens)
 }
 /*
 const Wallettoken = ref<Wallettoken[]>([
@@ -68,11 +67,9 @@ function onSubmitAccount () {
 const { init, tokenBalances, totalBalance, getarbalance } = $(aoStore())
 
 const test = async() => {
-  console.log("nnnnnnnngggggg")
   
     await init()
     convertTokenBalances()
-    console.log("-----gggg",tokenBalances)
 }
 onMounted(async () => {
   try {

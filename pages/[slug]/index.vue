@@ -57,10 +57,8 @@ const translate = [
 ]
 const { t, locale , defaultLocale } = useI18n()
 const test = async () => {
-  console.log("test")
   const uuidt = "798e6573-7cac-4575-8ed1-e638bd2a4e41"
   const a = await getLocalcommunityInfo(uuidt)
-  console.log("---------:", a)
 }
 
 const Logout = async() => {

@@ -165,7 +165,6 @@ const { makecommunityChat } = $(aocommunityStore())
 
 const { postToken } = $(linktwitter())
 const test = ()=> {
-  console.log("nogo")
   const a = makecommunityChat()
   //const a = postToken()
 
