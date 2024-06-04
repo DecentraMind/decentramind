@@ -135,7 +135,7 @@ const handleUp = (event) => {
       </UFormGroup>
       <UFormGroup label="phone" name="phone" class="mb-5 pl-10">
         <template #label>
-          {{ $t('setting.person.phone') }}
+          Telegram
         </template>
         <div class="flex items-center space-x-3">
           <UInput v-model="accountForm.phone" />

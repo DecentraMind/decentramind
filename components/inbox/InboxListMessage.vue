@@ -74,7 +74,7 @@ const getData = item => {
           <TimeAgo class="font-normal  text-sm text-gray-500 dark:text-gray-400" :time="item.Timestamp" />
         </div>
         <div class="flex flex-col bg-gray-100 border-gray-200 p-4 leading-1.5 dark:bg-gray-700" :class="isSelf(item) ? 'rounded-s-xl rounded-ee-xl' : 'rounded-e-xl rounded-es-xl'">
-          <p class="font-normal text-sm text-gray-900 dark:text-white"> {{ getData(item) }}</p>
+          <p class="font-normal text-sm text-gray-900 dark:text-white break-words"> {{ getData(item) }}</p>
         </div>
         <span v-if="item.isPending" class="flex font-normal text-sm text-gray-500 justify-start items-center dark:text-gray-400">
           <Loading class="h-5 mr-2 w-5" />
