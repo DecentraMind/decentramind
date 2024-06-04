@@ -76,11 +76,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 const { addCommunity, communityCreate, makecommunityChat } = $(aocommunityStore())
 let createCommunity = $ref('')
 let isLoading = $ref(false)
-
+let createSuccess = $ref(false)
 const CreateCommunity = async () => {
   if (isLoading) return
   isLoading = true
-
+  isCreated = true
   try {
     state.communityChatid = await makecommunityChat();
 
@@ -126,15 +126,18 @@ const CreateCommunity = async () => {
       token.tokenSupply, // 社区token分配比例详情
       state.communityChatid
     );
-
+    createSuccess = true
     isCreated = true;
   } catch (error) {
     console.error('Error creating community:', error.message);
+    isCreated = false
     alert('Failed to create community!')
     // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
   } finally {
     isLoading = false;
+    createSuccess = true
   }
+  createSuccess = true
   isCreated = true
   isLoading = false
 }
@@ -511,6 +514,7 @@ let settingInfo = $ref(true)
           </UButton>
         </div>
       </UForm>
+      <!--
       <UModal v-model="isCreated" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
@@ -522,6 +526,27 @@ let settingInfo = $ref(true)
             </div>
           </template>
           <UContainer class="w-full flex justify-around">
+            <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
+            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
+            </UButton>
+          </UContainer>
+        </UCard>
+      </UModal>
+      -->
+      <UModal v-model="isCreated" prevent-close>
+        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                Modal
+              </h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />
+            </div>
+          </template>
+          <UContainer v-if="!createSuccess" class="w-full flex justify-around">
+            <UIcon name="svg-spinners:6-dots-scale" />
+          </UContainer>
+          <UContainer v-else class="w-full flex justify-around">
             <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
             <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
             </UButton>

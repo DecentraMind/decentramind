@@ -76,50 +76,61 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 const { addCommunity, settingCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
 let createCommunity = $ref('')
 let isLoading = $ref(false)
-
+let createSuccess = $ref(false)
 const CreateCommunity = async () => {
   if (isLoading) return
   isLoading = true
+  isCreated = true
+  try {
+    let communitySubmit = [
+      {
+        "name": state.Name,
+        "desc": state.Inbro,
+        "website": state.Website,
+        "whitebook": state.Whitebook,
+        "allreward": state.Allreward,
+      }
+    ]
+    const jsonString = JSON.stringify(communitySubmit);
+    createCommunity = await settingCommunity(
+      state.logobase64Data, 
+      state.banner, 
+      state.Name, 
+      state.Inbro, 
+      state.Website, 
+      state.showWebsite,
+      state.Twitter, 
+      state.showTwitter,
+      state.Whitebook, 
+      state.showWhitebook,
+      state.Github,
+      state.showGithub,
+      state.Buildernum,
+      state.showBuildernum, //builder人数
+      state.showAllreward, //所有总奖励
+      tokenselected, //选择的token类型
+      state.showTypereward, //奖励的token类型
+      state.showDetail, //是否显示细节token分配额度比例
+      state.isPublished, //是否有发行token
+      token.communityToken, //社区token分配比例额度
+      state.isTradable, //是否可以交易
+      supportSelected, //交易得平台
+      state.showAlltoken, //是否显示分配的总token
+      state.Alltoken, //分配得token总量
+      token.tokenSupply, //社区token分配比例详情
+      state.communityChatid,
+      state.time
+    )
+  } catch (error) {
+    console.error('Error setting community:', error.message);
+    isCreated = false
+    alert('Failed to setting community!')
+    // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
+  } finally {
+    isLoading = false;
+    createSuccess = true
+  }
 
-  let communitySubmit = [
-    {
-      "name": state.Name,
-      "desc": state.Inbro,
-      "website": state.Website,
-      "whitebook": state.Whitebook,
-      "allreward": state.Allreward,
-    }
-  ]
-  const jsonString = JSON.stringify(communitySubmit);
-  createCommunity = await settingCommunity(
-    state.logobase64Data, 
-    state.banner, 
-    state.Name, 
-    state.Inbro, 
-    state.Website, 
-    state.showWebsite,
-    state.Twitter, 
-    state.showTwitter,
-    state.Whitebook, 
-    state.showWhitebook,
-    state.Github,
-    state.showGithub,
-    state.Buildernum,
-    state.showBuildernum, //builder人数
-    state.showAllreward, //所有总奖励
-    tokenselected, //选择的token类型
-    state.showTypereward, //奖励的token类型
-    state.showDetail, //是否显示细节token分配额度比例
-    state.isPublished, //是否有发行token
-    token.communityToken, //社区token分配比例额度
-    state.isTradable, //是否可以交易
-    supportSelected, //交易得平台
-    state.showAlltoken, //是否显示分配的总token
-    state.Alltoken, //分配得token总量
-    token.tokenSupply, //社区token分配比例详情
-    state.communityChatid,
-    state.time
-  )
   isCreated = true
   isLoading = false
 }
@@ -498,6 +509,7 @@ onMounted(async () => {
           </UButton>
         </div>
       </UForm>
+      <!--
       <UModal v-model="isCreated" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
@@ -509,6 +521,27 @@ onMounted(async () => {
             </div>
           </template>
           <UContainer class="w-full flex justify-around">
+            <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
+            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
+            </UButton>
+          </UContainer>
+        </UCard>
+      </UModal>
+      -->
+      <UModal v-model="isCreated" prevent-close>
+        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                Modal
+              </h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />
+            </div>
+          </template>
+          <UContainer v-if="!createSuccess" class="w-full flex justify-around">
+            <UIcon name="svg-spinners:6-dots-scale" />
+          </UContainer>
+          <UContainer v-else class="w-full flex justify-around">
             <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
             <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
             </UButton>
