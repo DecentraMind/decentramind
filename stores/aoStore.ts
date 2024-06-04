@@ -32,7 +32,7 @@ export const aoStore = defineStore('aoStore', () => {
   const tokenMap = $ref({
     CRED: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
     AOCoin: 'rxl5oOyCuzrUUVB1edjrcHpcn9s9czhj4rsq4ACQGv4',
-    WrappedAR: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
+    AR: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
     FIZI: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
     Arena: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
     DepositService: 'kzcVZhdcZOpM90eeKb-JRX3AG7TGH__S7p5I6PsqA3g',
@@ -50,7 +50,7 @@ export const aoStore = defineStore('aoStore', () => {
   let tokenBalances = $ref({
     //CRED: 0,
     AOCOIN: 0,
-    WrappedAR: 0,
+    AR: 0,
     FIZI: 0,
     BRKTST: 0,
     TRUNK: 0,
@@ -213,7 +213,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (!address) return
     //tokenBalances.CRED = (await getBalance('CRED')) / 1e3
     tokenBalances.AOCOIN = (await getBalance('AOCoin')) // / 1e3
-    tokenBalances.WrappedAR = (await getBalance('WrappedAR'))
+    tokenBalances.AR = (await getBalance('AR'))
     tokenBalances.FIZI = (await getBalance('FIZI')) // / 1e3
     tokenBalances.BRKTST = (await getBalance('BRKTST')) // / 1e3
     tokenBalances.TRUNK = (await getBalance('TRUNK'))//  / 1e3

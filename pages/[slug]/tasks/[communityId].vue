@@ -40,7 +40,7 @@ function onChange(index) {
 const schema = z.object({
   taskName: z.string().min(2).max(10),
   taskInfo: z.string().min(3).max(30),
-
+  //rewardTotal
   /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
@@ -460,7 +460,7 @@ const copyText = async () => {
 
       <div class="flex-1" />
       <div v-if="communityInfo.creater == address" class="flex">
-        <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
+        <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="communitySetting = true" />
       </div>
       <UPopover mode="hover" :popper="{ placement: 'top' }">
         <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->

@@ -123,7 +123,7 @@ const Logout = async() => {
               <div class="flex flex-col space-y-2">
                 <div class="flex flex-col min-h-[50px]">
                   <div class="text-2xl">
-                    builder: 100
+                    builder: {{ community.buildnum }}
                   </div>
                   <div class="text-2xl">
                     {{ community.desc }}

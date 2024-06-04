@@ -90,7 +90,9 @@ const Logout = async() => {
             Connect Wallet
           </UButton>
         </UBadge>
-        <UButton color="white" @click="gettoken">{{ $t('twitter.link')}}</UButton>
+        <!--
+          <UButton color="white" @click="gettoken">{{ $t('twitter.link')}}</UButton>
+          -->
         <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>

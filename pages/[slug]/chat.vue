@@ -238,8 +238,8 @@ const copyText = async () => {
         <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
         <div class="flex-1" />
-        <div class="flex">
-          <UButton class="ml-auto" variant="ghost" icon="lucide:bolt" @click="communitySetting = true" />
+        <div v-if="communityInfo.creater == address" class="flex">
+          <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="communitySetting = true" />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->

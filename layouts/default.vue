@@ -214,7 +214,7 @@ const test = ()=> {
                 <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
               </template>
               <template v-else>
-                <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                <UAvatar src="/community/chatavatar.jpg" alt="Avatar" size="2xl" />
               </template>
             </NuxtLink>
             <template #panel>
@@ -223,8 +223,13 @@ const test = ()=> {
                   <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
                 </template>
                 <template v-else>
-                  <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" alt="Avatar" size="2xl" />
+                  <UAvatar src="/community/chatavatar.jpg" alt="Avatar" size="2xl" />
                 </template>
+                <div class="border">
+                  <UIcon name="ei:sc-twitter" />
+                  <UIcon name="quill:mail" />
+                  <UIcon name="ei:sc-telegram" />
+                </div>
                 <div>
                   <Text v-if="userInfo.length && userInfo[0]">{{ userInfo[0].username }}</Text>
                 </div>
