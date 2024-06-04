@@ -40,7 +40,10 @@ function onChange(index) {
 const schema = z.object({
   taskName: z.string().min(2).max(10),
   taskInfo: z.string().min(3).max(30),
-  //rewardTotal
+  rewardTotal: z.string().min(0, { message: 'Must be more than 0' }).refine((value: string) => {
+    const num = parseInt(value)
+    return !isNaN(num) && num > 0
+  }, { message: 'Must be a valid number more than 0' }),
   /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
