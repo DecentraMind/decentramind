@@ -34,7 +34,7 @@ function openModal() {
 function onChange(index) {
   const item = items[index]
 
-  alert(`${item.label} was clicked!此处应该刷新下方列表数据，重新渲染，待完善`)
+  alert(`${item.label} was clicked!This quest template is being prepared!`)
 }
 
 const schema = z.object({
