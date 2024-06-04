@@ -12,10 +12,12 @@ const { address } = $(aoStore())
 const route = useRoute()
 const taskId = $computed(() => route.params.taskId)
 
-let blogPost = await getTaskById(taskId)
+let blogPost = $ref({})
+blogPost = await getTaskById(taskId)
 let communityId = blogPost.communityId
 let isOwner = blogPost.ownerId === address
-let taskJoinRecord = await getTaskJoinRecord(taskId)
+let taskJoinRecord = $ref({})
+taskJoinRecord = await getTaskJoinRecord(taskId)
 let checkJoin = () => {
   for (let index = 0; index < taskJoinRecord.length; index++) {
     let element = taskJoinRecord[index]
@@ -25,8 +27,10 @@ let checkJoin = () => {
   }
   return false
 }
-let isJoined = checkJoin()
-let joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
+let isJoined = $ref()
+isJoined = checkJoin()
+let joinStatus = $ref('')
+joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 let spaceTaskSubmitInfo = $ref({})
 spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
 // let chatProcessId = await makecommunityChat()
@@ -140,7 +144,11 @@ function openJoin() {
 async function onClick() {
   //  调用参与任务方法，只计数不提交
   await joinTask(taskId, address)
+  blogPost = await getTaskById(taskId)
+  taskJoinRecord = await getTaskJoinRecord(taskId)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
+  isJoined = checkJoin()
+  joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
   isOpenJoin = false
 }
 function isNullOrEmpty(str: string | null | undefined): boolean {
@@ -155,6 +163,12 @@ const emit = defineEmits(['success'])
 const addr = $ref('')
 const url = $ref('')
 async function submitTask() {
+  for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
+    if(spaceTaskSubmitInfo[i].address === address){
+      alert('You have submitted this quest.')
+      return
+    }
+  }
   // TODO 调用提交space链接并解析方法
   await submitSpaceTask(taskId, address, url)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
@@ -177,9 +191,6 @@ function select (row) {
   }
   console.log("selected = " + JSON.stringify(selected))
 
-}
-function returnBackPage() {
-  route.back()
 }
 </script>
 
