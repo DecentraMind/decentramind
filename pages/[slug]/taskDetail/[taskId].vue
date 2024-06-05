@@ -220,7 +220,7 @@ function select (row) {
                     {{ blogPost.status == 'Y'? $t('Ing') : $t('End')}}
                   </UBadge>
                 </div>
-                <div class="mx-2">
+                <div v-if="isJoined" class="mx-2">
                   <UBadge color="black" variant="solid">
                     {{ joinStatus }}
                   </UBadge>

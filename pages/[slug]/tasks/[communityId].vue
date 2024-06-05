@@ -9,7 +9,7 @@ import { z } from 'zod'
 import {linktwitter} from '~/stores/linktwitter'
 
 const { t } = useI18n()
-const { createTask, getAllTasks, respArray, makecommunityChat, joinTask } = $(taskStore())
+const { testCallJava, createTask, getAllTasks, respArray, makecommunityChat, joinTask } = $(taskStore())
 const { searchSpaceById } = $(linktwitter())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { add } = $(inboxStore())
@@ -322,34 +322,8 @@ const quitCommunity = async(communityuuid: any) => {
   router.push(`/${slug}/discovery`);
 }
 
-
-const token = process.env.BEARER_TOKEN
-
-const endpointUrl = "https://api.twitter.com/2/spaces/search";
-// async function getRequest() {
-//
-//   // Edit query parameters below and specify a search query
-//   // optional params: host_ids,conversation_controls,created_at,creator_id,id,invited_user_ids,is_ticketed,lang,media_key,participants,scheduled_start,speaker_ids,started_at,state,title,updated_at
-//   const params = {
-//     'query': 'NBA', // Replace the value with your search term
-//     'space.fields': 'title,created_at',
-//     'expansions': 'creator_id'
-//   }
-//   console.log('token = ' + token)
-//   const res = await needle('get', endpointUrl, params, {
-//     headers: {
-//       "User-Agent": "v2SpacesSearchJS",
-//       "authorization": `Bearer ${token}`
-//     }
-//   })
-//
-//   if (res.body) {
-//     return res.body
-//   } else {
-//     throw new Error('Unsuccessful request')
-//   }
-// }
 async function testAO() {
+  await testCallJava()
   // const url = '/spaces/1kvJpveMAnQKE'
   //
   // // 配置 headers
@@ -367,8 +341,9 @@ async function testAO() {
   // const data = new URLSearchParams()
   // data.append('grant_type', 'client_credentials')
 
-  const res = useFetch('/api/twitter')
-  console.log(JSON.stringify(res))
+  // const {data} = useFetch('/api/twitter')
+  // console.log(JSON.stringify(data._rawValue.data))
+  // console.log(JSON.stringify(data._rawValue.includes))
 
   // try {
   //   const response = await axios.post(url, null, { headers, params })
@@ -526,7 +501,7 @@ const copyText = async () => {
           </div>
           <div class="flex">
             <div>
-              <!--<UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
+              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>

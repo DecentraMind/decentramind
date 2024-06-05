@@ -160,8 +160,28 @@ export const taskStore = defineStore('taskStore', () => {
     return TaskJoinRecords
   }
 
+  const testCallJava = async() => {
+    const {data} = useFetch('/api/twitter')
+    // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
+    const spaceStartedAt = data._rawValue.data.started_at
+    // space参与人数
+    const participanted = data._rawValue.data.participant_count
+    // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
+    const userAvatar = data._rawValue.includes.users[0].profile_image_url
+    // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
+    const userCreatedAt = data._rawValue.includes.users[0].created_at
+    console.log(spaceStartedAt)
+    console.log(participanted)
+    console.log(userAvatar)
+    console.log(userCreatedAt)
+
+  }
+
+
+
   const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string) => {
     // TODO 1.解析 space url 获取 Twitter space 信息，2.比对头像确权
+
     let data = {
       taskId: taskId,
       address: walletAddress,
@@ -264,7 +284,7 @@ export const taskStore = defineStore('taskStore', () => {
     return processId2
   }
 
-  return $$({ createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

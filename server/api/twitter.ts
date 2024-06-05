@@ -20,13 +20,9 @@ export default eventHandler(async () => {
   // const data = new URLSearchParams()
   // data.append('grant_type', 'client_credentials')
 
-  // const response = await $fetch(url, {
-  //   headers: {
-  //     Authorization: `Bearer ${token}`,
-  //   },
-  // })
+  const response = await $fetch('http://localhost:8080/api/course/getSpaceById')
 
-  const response = await axios.post(url, null, { headers })
+  // const response = await axios.post('http://localhost:8080/api/course/getSpaceById', null)
   console.log(response)
   return response
 })
