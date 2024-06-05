@@ -314,7 +314,7 @@ function select (row) {
                 </div>
               </div>
               <div v-if="!isJoined" class="flex justify-center ">
-                <UButton color="white" :label="$t('Join Task')" @click="openJoin" />
+                <UButton color="white" :label="$t('Join Quest')" @click="openJoin" />
               </div>
             </div>
 <!--            <UDivider class="mt-4" />-->
@@ -376,28 +376,32 @@ function select (row) {
     </UPage>
     <UModal v-model="isOpenJoin">
       <UCard>
-        <template #header>
-          <div class="flex items-center justify-center">
-            <div class="flex justify-center">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                {{ $t("Join Task") }}
-              </h3>
-            </div>
-            <!--
-              <UButton
-                color="gray"
-                variant="ghost"
-                icon="i-heroicons-x-mark-20-solid"
-                class="-my-1"
-                @click="isOpenJoin = false"
-              />
-              -->
-          </div>
-        </template>
+<!--        <template #header>-->
+<!--          <div class="flex items-center justify-center">-->
+<!--            <div class="flex justify-center">-->
+<!--              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">-->
+<!--                {{ $t("Join Quest") }}-->
+<!--              </h3>-->
+<!--            </div>-->
+<!--            &lt;!&ndash;-->
+<!--              <UButton-->
+<!--                color="gray"-->
+<!--                variant="ghost"-->
+<!--                icon="i-heroicons-x-mark-20-solid"-->
+<!--                class="-my-1"-->
+<!--                @click="isOpenJoin = false"-->
+<!--              />-->
+<!--              &ndash;&gt;-->
+<!--          </div>-->
+<!--        </template>-->
         <div class="space-y-2">
-          <p>
-            {{ $t("We appreciate your support,Please follow the rules of the quest and submit the URL back to this page") }}
-          </p>
+          <div class="flex flex-col justify-center">
+            <div class="flex justify-center items-center">Thank u for your support.</div>
+            <div class="flex justify-center items-center" style="text-align: center;">
+              {{ $t("We appreciate your support,Please follow the rules of the quest and submit the URL back to this page") }}
+            </div>
+          </div>
+
           <div class="flex justify-center">
             <UButton color="white" @click="onClick">
               {{ $t('I have read all rules') }}

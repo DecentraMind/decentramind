@@ -61,5 +61,5 @@ const members = [{
 }]
 
 export default eventHandler(async () => {
-  return members
+  return 'members'
 })

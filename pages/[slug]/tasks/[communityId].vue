@@ -6,9 +6,11 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 import axios from 'axios';
 
 import { z } from 'zod'
+import {linktwitter} from '~/stores/linktwitter'
 
 const { t } = useI18n()
 const { createTask, getAllTasks, respArray, makecommunityChat, joinTask } = $(taskStore())
+const { searchSpaceById } = $(linktwitter())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
@@ -340,19 +342,32 @@ const endpointUrl = "https://api.twitter.com/2/spaces/search";
 //   }
 // }
 async function testAO() {
-  axios.get(endpointUrl, {
-    params : {
-      query: 'NBA', // Replace the value with your search term
-      'space.fields': 'title,created_at',
-      expansions: 'creator_id'
-    },
-    headers: {
-      'User-Agent': 'v2SpacesSearchJS',
-      authorization: `Bearer ${token}`
-    }
-  }).then(function (response){
-    console.log('response = ' + response)
-  })
+  // const url = '/spaces/1kvJpveMAnQKE'
+  //
+  // // 配置 headers
+  // const headers = {
+  //   // 'User-Agent': 'v2RecentTweetCountsJS',
+  //   Authorization: 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAADQWNx%2FmfyBHNT4V71rSuwhzi4z0%3DQd5oXywZLlTyPArAnUVJMD6IuaBJrTuA3339oPjomyMKl4grXN',
+  // }
+  // const params = {
+  //   'space.fields': 'creator_id,speaker_ids',
+  //   'expansions': 'creator_id',
+  //   'topic.fields': 'name'
+  // }
+  //
+  // // 配置 body (data)
+  // const data = new URLSearchParams()
+  // data.append('grant_type', 'client_credentials')
+
+  const res = useFetch('/api/twitter')
+  console.log(JSON.stringify(res))
+
+  // try {
+  //   const response = await axios.post(url, null, { headers, params })
+  //   console.log(response.data)
+  // } catch (error) {
+  //   console.error('Error posting token:', error)
+  // }
 }
 
 
@@ -503,7 +518,7 @@ const copyText = async () => {
           </div>
           <div class="flex">
             <div>
-              <!--<UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
+              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>

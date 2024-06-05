@@ -3,7 +3,23 @@ export default defineNuxtConfig({
   extends: [process.env.WEB3_FULL_STACK_LAYER_PATH || '@web3-fullstack/layer'],
   modules: [
     '@nuxtjs/i18n',
+    // '@nuxtjs/axios',
+    // '@nuxtjs/proxy'
   ],
+  // nitro: {
+  //   devProxy: {
+  //     "/user": {
+  //       target: "https://api.twitter.com", // 这里是接口地址
+  //       changeOrigin: true
+  //     },
+  //   },
+  //
+  //   routeRules: {
+  //     '/user': {
+  //       proxy: 'https://api.twitter.com'
+  //     }
+  //   }
+  // },
   i18n: {
     legacy: false,
     globalInjection: true,

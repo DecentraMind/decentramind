@@ -5,6 +5,17 @@ SpaceTaskSubmittedTable = SpaceTaskSubmittedTable or {}
 TaskJoidRecord = TaskJoidRecord or {}
 
 Handlers.add(
+    "DeleteAll",
+    Handlers.utils.hasMatchingTag("Action", "DeleteAll"),
+    function (msg)
+        TasksForTable = {}
+        SpaceTaskSubmittedTable = {}
+        TaskJoidRecord = {}
+        Handlers.utils.reply("Delete TasksForTable SpaceTaskSubmittedTable and TaskJoidRecord success.")(msg)
+    end
+)
+
+Handlers.add(
     "CreateTask",
     Handlers.utils.hasMatchingTag("Action", "CreateTask"),
     function (msg)
