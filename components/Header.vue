@@ -50,7 +50,7 @@ const wallet = [
 
 <template>
   <UHeader :links="links">
-    <template #logo>DecentralMind
+    <template #logo>DecentraMind
 <!--      <UBadge label="Beta" variant="subtle" class="mb-0.5" />-->
     </template>
 

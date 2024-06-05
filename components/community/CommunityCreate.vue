@@ -49,8 +49,8 @@ let state = $ref({
 })
 
 const schema = z.object({
-  Name: z.string().min(2).max(10),
-  Inbro: z.string().min(3).max(30),
+  Name: z.string().min(2).max(20),
+  Inbro: z.string().min(3).max(100),
 
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
@@ -536,18 +536,18 @@ let settingInfo = $ref(true)
       <UModal v-model="isCreated" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-center">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                Modal
+                Create Community
               </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />
+              <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
             </div>
           </template>
           <UContainer v-if="!createSuccess" class="w-full flex justify-around">
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
+            <UButton :to="`/${slug}/create-community`" @click="isCreated = false">{{ $t('community.continue') }}</UButton>
             <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
             </UButton>
           </UContainer>

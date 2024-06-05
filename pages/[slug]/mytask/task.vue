@@ -2,9 +2,16 @@
 
 const {t} = useI18n()
 
+const items1 = [
+  {
+    slot: 'Published',
+    label: 'Published 3'
+  }
+]
+
 const items = [{
   slot: 'join',
-  label: `${t('task.isjoin')} 40`
+  label: `${t('task.isjoin')} 3`
 }, {
   slot: 'reward',
   label: t('task.reward')
@@ -61,7 +68,24 @@ const { data: Wallettoken, pending } = await useFetch<Tasks[]>('/api/task', { qu
 const selectedrewardColumns = ref(rewardColumns)
 const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedrewardColumns.value.includes(column)))
 
+const { communityList } = $(aocommunityStore())
+const { address } = $(aoStore())
 
+let CommunityCreater = $ref(false)
+const checkCreater = async () => {
+  const isCreatorPresent = communityList.some(item => item.creater === address);
+  if (isCreatorPresent) {
+    CommunityCreater = true
+    // 这里替换成你要执行的函数
+    // executeYourFunction();
+  } else {
+    console.log("Creator not found!");
+  }
+}
+
+onMounted( () => {
+  checkCreater()
+})
 </script>
 
 <template>
@@ -69,11 +93,28 @@ const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedre
     <UCard>
       <template #header>
         <UBadge>
-          {{ $t('task.public')}}
+          Public Quests
         </UBadge>
       </template>
-
-      <UTabs :items="items" class="w-1/2">
+      <UTabs v-if="CommunityCreater" :items="items1" class="w-1/2 mt-10">
+        <template #Published>
+          <UCard>
+            <UTable
+              v-model:sort="sort"
+              :rows="Wallettoken"
+              :columns="rewardcolumns"
+              :loading="pending"
+              sort-mode="manual"
+              class="pl-10"
+              :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
+            />
+          </UCard>
+        </template>
+      </UTabs>
+      <div class="flex pl-10 mt-6">
+        {{ $t('task.allsum')}}：111U
+      </div>
+      <UTabs :items="items" class="w-1/2 mt-16">
         <template #join>
           <UCard>
             <UTable

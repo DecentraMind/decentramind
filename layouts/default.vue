@@ -225,16 +225,16 @@ const test = ()=> {
                 <template v-else>
                   <UAvatar src="/community/chatavatar.jpg" alt="Avatar" size="2xl" />
                 </template>
-                <div class="border">
+                <div>
+                  <Text v-if="userInfo.length && userInfo[0]" class="text-2xl">{{ userInfo[0].name }}</Text>
+                </div>
+                <UDivider />
+                <Text class="pt-10">This man is mysterious. left nothing behind.</Text>
+                <div class="mt-3">
                   <UIcon name="ei:sc-twitter" />
                   <UIcon name="quill:mail" />
                   <UIcon name="ei:sc-telegram" />
                 </div>
-                <div>
-                  <Text v-if="userInfo.length && userInfo[0]">{{ userInfo[0].username }}</Text>
-                </div>
-                <UDivider />
-                <Text class="pt-10">This man is mysterious. left nothing behind.</Text>
               </div>
             </template>
           </UPopover>

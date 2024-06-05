@@ -45,6 +45,7 @@ const handleButtonClick = async () => {
     <UMain>
       <!--<slot />-->
       <div class="flex flex-col h-screen items-center gap-4 justify-center">
+        <UColorModeImage src="DMLogo.png" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-[600px] mb-6" />
         <Text class="text-7xl font-bold">Start your real community journey</Text>
         <Text class="mt-3 mb-6">Try a better way than airdrop to build your community.</Text>
         <UButton size="xl" color="black" @click="handleButtonClick">

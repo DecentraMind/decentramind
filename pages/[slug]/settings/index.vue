@@ -61,6 +61,8 @@ onMounted(async () => {
   }
 });
 
+const { gettoken } = $(linktwitter())
+
 const logoupload = () => {
   const input = document.querySelector('#logoupload') as any
   input.click()
@@ -118,7 +120,7 @@ const handleUp = (event) => {
           {{ $t('setting.person.twitter') }}
         </template>
         <div class="flex items-center space-x-3">
-          <UInput v-model="accountForm.twitter" />
+          <UButton color="white" class="mr-20 w-[90px]" @click="gettoken">{{ $t('twitter.link')}}</UButton>
           <UToggle v-model="accountForm.showtwitter" />
           <div>{{ $t('show') }}</div>
         </div>

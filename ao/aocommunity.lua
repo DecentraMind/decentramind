@@ -396,9 +396,9 @@ Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTe
   --  print(i)
   --end
 
-  for k, _ in pairs(userinfo) do
+  for k, _ in pairs(community) do
     print()
-    userinfo[k] = nil
+    community[k] = nil
   end
 
   -- for k, _ in pairs(userinfo) do
