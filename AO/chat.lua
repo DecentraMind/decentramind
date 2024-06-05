@@ -1,4 +1,3 @@
--- refs && credit : https://github.com/mayurmarvel/aos-unbox
 Handlers.add('inboxCount', Handlers.utils.hasMatchingTag('Action', '#Inbox'), function(msg)
   -- Assuming Inbox is an array containing the messages
   local inboxCount = #Inbox
