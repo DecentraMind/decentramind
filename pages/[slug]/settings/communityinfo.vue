@@ -40,7 +40,7 @@ onMounted(async () => {
   <UDashboardPanelContent class="pb-24">
     <UCard @submit.prevent="onSubmit">
       <template #header>
-        <div class="flex justify-between pl-10 pr-20 items-center">
+        <div class="flex justify-between pl-5 pr-20 items-center">
           <h3 class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white">
             {{ $t('setting.community.list') }}
           </h3>
@@ -57,7 +57,7 @@ onMounted(async () => {
       <div class="flex flex-wrap">
         <div v-for="(item, index) in joincommunityList" :key="index" class="w-1/2 pl-5">
           <div class="flex items-center mb-5">
-            <UColorModeImage :src="item.logo" :light="light" :dark="dark" class="h-[100px] w-[100px] rounded-lg" />
+            <UColorModeImage :src="item.logo" :light="light" :dark="dark" class="h-[100px] w-[100px] rounded-lg border" />
             <UFormGroup :label="item.label" :name="item.name" class="ml-5 w-[300px]">
               <template #label>
                 <div class="text-xl">
@@ -77,7 +77,7 @@ onMounted(async () => {
         <template #label>
           <div class="mt-20 text-xl flex items-center pl-5">
             <Text class="w-[420px]">
-              {{ $t('setting.community.isjoin') }}： 50
+              {{ $t('setting.community.isjoin') }}： 2
             </Text>
             <UToggle v-model="communityForm.showCommunitynum" class="ml-10" size="xl" />
             <div class="ml-3">{{ $t('show') }}</div>

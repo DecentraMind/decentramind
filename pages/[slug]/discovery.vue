@@ -127,7 +127,7 @@ const Logout = async() => {
                   <div class="text-2xl">
                     builder: {{ community.buildnum }}
                   </div>
-                  <div class="text-2xl">
+                  <div class="text-2xl overflow-hidden whitespace-nowrap overflow-ellipsis">
                     {{ community.desc }}
                   </div>
                 </div>

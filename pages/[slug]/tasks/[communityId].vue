@@ -42,7 +42,10 @@ function onChange(index) {
 const schema = z.object({
   taskName: z.string().min(2).max(10),
   taskInfo: z.string().min(3).max(30),
-  //rewardTotal
+  rewardTotal: z.string().min(0, { message: 'Must be more than 0' }).refine((value: string) => {
+    const num = parseInt(value)
+    return !isNaN(num) && num > 0
+  }, { message: 'Must be a valid number more than 0' }),
   /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
@@ -54,7 +57,7 @@ const schema = z.object({
 type Schema = z.infer<typeof schema>
 
 const tokenOptions = [
-//  { label: 'AR', value: 'AR' },
+  { label: 'AR', value: 'AR' },
   { label: 'AOCRED', value: 'AOCRED' },
   { label: 'Bark', value: 'Bark' },
   { label: 'TRUNK', value: 'TRUNK' },
@@ -182,6 +185,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   await joinTask(transData.taskId, address)
 
   await getAllTasks(String(communityId))
+  if(respArray.length === 0){
+    taskListIsEmpty = true
+  } else {
+    taskListIsEmpty = false
+  }
   isOpen = false
 }
 const ranges = [
@@ -518,8 +526,8 @@ const copyText = async () => {
           </div>
           <div class="flex">
             <div>
-              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
-              <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
+              <!--<UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
+              <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>
             </div>
@@ -540,7 +548,7 @@ const copyText = async () => {
               </template>
               <template #description>
                 <div class="flex mt-10 justify-center items-center">
-                  <div class="flex justify-center items-center">
+                  <div class="flex justify-center items-center" v-if="communityInfo.creater == address" >
                     <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                       <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
                     </UDropdown>

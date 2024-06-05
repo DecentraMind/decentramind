@@ -25,8 +25,8 @@ useHead({
   }
 })
 
-const title = 'DecentralMind'
-const description = 'DecentralMind'
+const title = 'DecentraMind'
+const description = 'DecentraMind'
 
 useSeoMeta({
   title,
