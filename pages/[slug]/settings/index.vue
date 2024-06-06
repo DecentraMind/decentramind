@@ -38,6 +38,10 @@ const saveInfo = async () => {
   toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
   await getInfo()
 }
+const { gettoken } = $(linktwitter())
+const gettwitter = async () => {
+  await gettoken()
+}
 
 onMounted(async () => {
   try {
@@ -61,7 +65,7 @@ onMounted(async () => {
   }
 });
 
-const { gettoken } = $(linktwitter())
+
 
 const logoupload = () => {
   const input = document.querySelector('#logoupload') as any
@@ -120,7 +124,7 @@ const handleUp = (event) => {
           {{ $t('setting.person.twitter') }}
         </template>
         <div class="flex items-center space-x-3">
-          <UButton color="white" class="mr-20 w-[90px]" @click="gettoken">{{ $t('twitter.link')}}</UButton>
+          <UButton color="white" class="mr-20 w-[90px]" @click="gettwitter">{{ $t('twitter.link')}}</UButton>
           <UToggle v-model="accountForm.showtwitter" />
           <div>{{ $t('show') }}</div>
         </div>

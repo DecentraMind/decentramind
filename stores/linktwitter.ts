@@ -6,8 +6,8 @@ import { Client, auth } from "twitter-api-sdk";
 
 
 const authClient = new auth.OAuth2User({
-    client_id: "SzFvUDZjd1Z5RUdIR1RXOXduYXA6MTpjaQ" as string,
-    client_secret: "YUOQkL6NUbbWCtVghkXsTvaH753Pnre6KOcur4O2h5cCRpGQr0" as string,
+    client_id: "XzBHZjk5d3lKbjVuUDNHS2JKYm06MTpjaQ" as string,
+    client_secret: "oeoEyYDBViAmODitZuMlh_IfcbnFB78QZsj2_pHdbFkUsS83_0" as string,
     callback: "http://localhost:3000/callback",
     scopes: ["tweet.read", "users.read", "offline.access"],
 });
@@ -17,6 +17,7 @@ const client = new Client(authClient);
 const STATE = "state";
 
 export const linktwitter = defineStore('linktwitter', () => {
+    let connectTwitter = $ref('')
 
     const callbackUrl = 'http://localhost:3000/callback'; // 回调 URL
     const consumerKey = 'XzBHZjk5d3lKbjVuUDNHS2JKYm06MTpjaQ'; // 客户端标识
@@ -57,32 +58,32 @@ export const linktwitter = defineStore('linktwitter', () => {
         }
     }
 
-  const searchSpaceById = async () => {
+    const searchSpaceById = async () => {
 
-    const url = '/spaces/1kvJpveMAnQKE'
+        const url = '/spaces/1kvJpveMAnQKE'
 
-    // 配置 headers
-    const headers = {
-      // 'User-Agent': 'v2RecentTweetCountsJS',
-      Authorization: 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAADQWNx%2FmfyBHNT4V71rSuwhzi4z0%3DQd5oXywZLlTyPArAnUVJMD6IuaBJrTuA3339oPjomyMKl4grXN',
+        // 配置 headers
+        const headers = {
+            // 'User-Agent': 'v2RecentTweetCountsJS',
+            Authorization: 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAADQWNx%2FmfyBHNT4V71rSuwhzi4z0%3DQd5oXywZLlTyPArAnUVJMD6IuaBJrTuA3339oPjomyMKl4grXN',
+        }
+        const params = {
+            'space.fields': 'creator_id,speaker_ids',
+            'expansions': 'creator_id',
+            'topic.fields': 'name'
+        }
+
+        // 配置 body (data)
+        const data = new URLSearchParams()
+        data.append('grant_type', 'client_credentials')
+
+        try {
+            const response = await axios.post(url, null, { headers, params })
+            console.log(response.data)
+        } catch (error) {
+            console.error('Error posting token:', error)
+        }
     }
-    const params = {
-      'space.fields': 'creator_id,speaker_ids',
-      'expansions': 'creator_id',
-      'topic.fields': 'name'
-    }
-
-    // 配置 body (data)
-    const data = new URLSearchParams()
-    data.append('grant_type', 'client_credentials')
-
-    try {
-      const response = await axios.post(url, null, { headers, params })
-      console.log(response.data)
-    } catch (error) {
-      console.error('Error posting token:', error)
-    }
-  }
     return $$({ gettoken, postToken, searchSpaceById })
 })
 
