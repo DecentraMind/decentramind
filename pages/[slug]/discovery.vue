@@ -11,6 +11,7 @@ const router = useRouter();
 const slug = $computed(() => route.params.slug)
 let communityLoading = $ref(true)
 
+let LinktoTwitter = $ref(false)
 const blogPosts = [
   {
     id: 1,
@@ -19,22 +20,26 @@ const blogPosts = [
     description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.'
   }
 ]
-const { communityList, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
+const { communityList, userInfo, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
 const { gettoken } = $(linktwitter())
 let result = $ref()
 
 const getCommunity = async () => {
-
   result = await getCommunitylist()
   communityLoading = false
 }
 
 const communityJoin = async (uuid: any) => {
-  const invite = "none"
-  await joinCommunity(uuid, invite)
+  if(!userInfo[0].twitter || userInfo[0].twitter !== 'Success'){
+    LinktoTwitter = true
+  } else {
 
-  toast.add({ title: 'joined success' })
-  await getCommunity()
+    const invite = "none"
+    await joinCommunity(uuid, invite)
+
+    toast.add({ title: 'joined success' })
+    await getCommunity()
+  }
 }
 
 onMounted(async () => {
@@ -42,6 +47,7 @@ onMounted(async () => {
     if (Array.isArray(communityList) && communityList.length !== 0) {
       communityLoading = false
     }
+    await getInfo()
     await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -151,5 +157,13 @@ const Logout = async() => {
         </div>
       </div>
     </div>
+    <UModal v-model="LinktoTwitter">
+      <div class="h-[200px] flex flex-col items-center justify-center">
+        <Text class="text-2xl">No link to twitter</Text>
+        <NuxtLink :to="`/${slug}/settings`">
+          <UButton class="mt-10">go to link</UButton>
+        </NuxtLink>
+      </div>
+    </UModal>
   </div>
 </template>
