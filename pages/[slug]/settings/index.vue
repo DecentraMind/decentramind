@@ -43,6 +43,7 @@ const gettwitter = async () => {
   await gettoken()
 }
 
+let connectTwitter = $ref(false)
 onMounted(async () => {
   try {
     //info = await getInfo();
@@ -60,6 +61,9 @@ onMounted(async () => {
     accountForm.showmail = userInfo[0].showmail;
     accountForm.phone = userInfo[0].phone;
     accountForm.showtelegram = userInfo[0].showphone;
+    if (accountForm.twitter == 'Success') {
+      connectTwitter = true
+    }
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -124,7 +128,8 @@ const handleUp = (event) => {
           {{ $t('setting.person.twitter') }}
         </template>
         <div class="flex items-center space-x-3">
-          <UButton color="white" class="mr-20 w-[90px]" @click="gettwitter">{{ $t('twitter.link')}}</UButton>
+          <UButton v-if="connectTwitter" color="white" class="mr-5 w-[150px]" disabled>Connected Twitter</UButton>
+          <UButton v-else color="white" class="mr-20 w-[90px]" @click="gettwitter">{{ $t('twitter.link')}}</UButton>
           <UToggle v-model="accountForm.showtwitter" />
           <div>{{ $t('show') }}</div>
         </div>

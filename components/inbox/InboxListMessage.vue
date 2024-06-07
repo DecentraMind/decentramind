@@ -28,7 +28,7 @@ const playAudio = () => {
 
 let interval = null
 onMounted(async () => {
-  await getActiveAddress()
+  //await getActiveAddress()
   interval = setInterval(async () => {
     const oldCount = state[id].inboxCount
     const newCount = await getInboxCount(id, true)
