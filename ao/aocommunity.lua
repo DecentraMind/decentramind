@@ -5,24 +5,24 @@ userinfo = userinfo or {}
 
 local json = require("json")
 
--- 创建新的社区
+-- Creating new communities
 Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg)
   local testData = json.decode(msg.Data)
-  local newColumn = msg.Tags.userAddress
-  -- 检查是否已经存在相同名字的列
+  local newColumn = msg.From
+  -- Check if a column with the same name already exists
   if not userinfo[newColumn] then
-    -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
+    -- Create a new column with the msg.Id value as its name and assign it to an empty table
     userinfo[newColumn] = {}
   end
   for i, item in ipairs(testData) do
     if not usercommunity[newColumn] then
-      -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
+      -- Create a new column with the msg.Id value as its name and assign it to an empty table
       usercommunity[newColumn] = {}
     end
 
-    -- 检查 usercommunity[newColumn] 是否存在 uuid
+    -- Check if uuid exists in usercommunity[newColumn].
     if not usercommunity[newColumn][item.uuid] then
-      -- 如果不存在 uuid，则添加新条目
+      -- If the uuid does not exist, add a new entry
       usercommunity[newColumn][item.uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
     end
   end
@@ -31,55 +31,57 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
   Handlers.utils.reply("add")(msg)
 end)
 
--- 查找刀这个uuid的社区列
+-- Find the community column for this uuid
 local function findCommunityIndexByUUID(community, uuid)
-  print(uuid)
   for index, entry in ipairs(community) do
     local dCom = json.decode(entry)
     if dCom[1].uuid == uuid then
-      print("--------", entry)
       return index
     end
   end
   return nil
 end
 
--- 修改社区信息
+-- Modifying Community Information
 Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "communitysetting"), function(msg)
   local testData = json.decode(msg.Data)
   local newColumn = msg.Tags.userAddress
-  -- 找到 testData 的 uuid
+  -- Find the uuid of testData
   local testDataUUID = testData[1].uuid
-  -- 找到 community 中与 testDataUUID 匹配的列
+  -- Find the column in community that matches testDataUUID
   local communityIndex = findCommunityIndexByUUID(community, testDataUUID)
-
-  -- 如果找到匹配的列
-  if communityIndex then
-    -- 替换该列的数据为 testData 中对应的数据
-    community[communityIndex] = msg.Data
+  -- Ensure modifiers are community owners
+  if testData[1].creater == msg.From then
+    -- Find the column in community that matches testDataUUID
+    if communityIndex then
+      -- Replace the data in this column with the corresponding data in testData.
+      community[communityIndex] = msg.Data
+    else
+      -- 如果未找到匹配的列，则将 testData 添加到 community 中
+      -- table.insert(community, testData[1])
+      print("is null")
+    end
   else
-    -- 如果未找到匹配的列，则将 testData 添加到 community 中
-    -- table.insert(community, testData[1])
-    print("is null")
+    print("you are not owner")
   end
   -- table.insert(community, msg.Data)
 
   Handlers.utils.reply("communitysetting")(msg)
 end)
 
--- 加入社区方法
+-- join community
 Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(msg)
   local newColumn = msg.Tags.userAddress
   local uuid = msg.Data
-  -- 检查是否已经存在相同名字的列
+  -- Check if a column with the same name already exists
   if not usercommunity[newColumn] then
-    -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
+    -- Create a new column with the msg.Id value as its name and assign it to an empty table
     usercommunity[newColumn] = {}
   end
 
-  -- 检查 usercommunity[newColumn] 是否存在 uuid
+  -- Check if uuid exists in usercommunity[newColumn].
   if not usercommunity[newColumn][uuid] then
-    -- 如果不存在 uuid，则添加新条目
+    -- If the uuid does not exist, add a new entry
     usercommunity[newColumn][uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
   end
 
@@ -109,14 +111,14 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
   ]]
 end)
 
--- 退出社区的方法
+-- exit community
 Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(msg)
-  local newColumn = msg.Tags.userAddress
+  local newColumn = msg.From
   print(msg.Tags.userAddress)
 
-  -- 检查是否存在 usercommunity[newColumn]
+  -- Check for the presence of usercommunity[newColumn]
   if usercommunity[newColumn] then
-    -- 检查是否存在 usercommunity[newColumn].joined
+    -- Check for the presence of usercommunity[newColumn].joined
     if usercommunity[newColumn][msg.Data] then
       -- 遍历 usercommunity[newColumn].joined
       usercommunity[newColumn][msg.Data] = nil
@@ -128,9 +130,9 @@ Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(m
   end
 end)
 
--- 获取所有社区信息
+-- Get all the community information
 Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "communitylist"), function(msg)
-  -- 创建 communityCopy 数组
+  -- Creating the communityCopy array
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
     local dCom = json.decode(communityItem)
@@ -341,7 +343,7 @@ end)
 
 -- 个人信息修改
 Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalInfo"), function(msg)
-  local newColumn = msg.Tags.userAddress
+  local newColumn = msg.From
   -- 检查是否已经存在相同名字的列
   if not userinfo[newColumn] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
@@ -353,7 +355,7 @@ end)
 
 -- 注册个人信息
 Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo"), function(msg)
-  local newColum = msg.Tags.userAddress
+  local newColum = msg.From
   local jsonColum = {
     avatar = "N/A",
     name = "N/A",

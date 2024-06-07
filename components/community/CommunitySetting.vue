@@ -15,6 +15,8 @@ let tokenselected = $ref([])
 let isCreated = $ref(false)
 
 let state = $ref({
+  owner: undefined,
+  creater: undefined,
   logobase64Data: undefined,
   banner: 'banner6',
   input: undefined,
@@ -93,6 +95,8 @@ const CreateCommunity = async () => {
     ]
     const jsonString = JSON.stringify(communitySubmit);
     createCommunity = await settingCommunity(
+      state.creater,
+      state.owner,
       state.logobase64Data, 
       state.banner, 
       state.Name, 
@@ -231,7 +235,8 @@ const removeSupplyGroup = (index) => {
 const setcommunitycurrent = async() => {
   const communityInfo = await getLocalcommunityInfo(currentUuid)
   //state.banner = a.banner;
-
+  state.creater = communityInfo.creater
+  state.owner = communityInfo.owner
   state.logobase64Data = communityInfo.logo
   state.banner = communityInfo.banner
   state.Name = communityInfo.name
@@ -403,7 +408,7 @@ onMounted(async () => {
             <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu class="w-[130px] mr-10" v-model="tokenselected" :options="tokenselect" multiple placeholder="Select Token" />
+            <USelectMenu v-model="tokenselected" class="w-[130px] mr-10" :options="tokenselect" multiple placeholder="Select Token" />
             <UToggle v-model="state.showTypereward" />
             <Text>{{ state.showTypereward ? $t('show') : $t('hide') }}</Text>
           </div>
@@ -440,7 +445,7 @@ onMounted(async () => {
               </template>
               <div class="flex flex-row items-center space-x-3">
                 <div class="flex min-w-[477px]">
-                  <UInput v-model="formGroup.tokenName" placeholder="" />
+                  <USelect v-model="formGroup.tokenName" :options="tokenselect" />
                   <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
                 </div>
                 <UToggle v-model="formGroup.showTokenName" />

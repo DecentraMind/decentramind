@@ -30,7 +30,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     currentUuid = uuid
   }
 
-  //用户注册方法
+  //User registration method
   const registInfo = async () => {
     if (isLoading) return
     isLoading = true
@@ -45,7 +45,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     });
     isLoading = false
   }
-  //创建社区方法
+  //Creating a community approach
   const addCommunity = async (
     logo,
     Banner,
@@ -85,6 +85,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "name": Name,
         "desc": Inbro,
         "creater": address,
+        "owner": address,
         "website": Website,
         "showwebsite": ShowWebsite,
         "twitter": Twitter,
@@ -127,8 +128,10 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
 
-  //修改社区方法
+  //Modifying the community approach
   const settingCommunity = async (
+    Creater,
+    Owner,
     logo,
     Banner,
     Name,
@@ -168,8 +171,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "banner": Banner,
         "name": Name,
         "desc": Inbro,
-        "creater": address,
-        "owner": address,
+        "creater": Creater,
+        "owner": Owner,
         "website": Website,
         "showwebsite": ShowWebsite,
         "twitter": Twitter,
@@ -209,7 +212,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
 
-  //获取社区列表方法(会产生社区表，以及一个加入了的社区表)
+  //Get community list method (which generates a community table, and a joined community table)
   const getCommunitylist = async () => {
     //if (isLoading) return
     //isLoading = true
@@ -257,7 +260,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     }
   }
 
-  //获取指定社区中得加入用户
+  //Get joined users in a given community
   const getCommunityuser = async (uuid: any) => {
     if (isLoading) return
     isLoading = true
@@ -272,7 +275,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return result
   }
 
-  //获取已加入得社区列表
+  //Get a list of communities you've joined
   const getCommunityjoined = async () => {
     if (isLoading) return
     isLoading = true
@@ -288,7 +291,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return result
   }
 
-  //通过缓存的社区list来获取指定社区信息
+  //Getting information about a specific community from a cached community list
   const getLocalcommunityInfo = async (uuid: any) => {
     //if (isLoading) return
     //isLoading = true
@@ -297,7 +300,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return communityInfo
   }
 
-  //获取指定社区信息
+  //Getting information about a specific community
   const getCommunityInfo = async (uuid: any) => {
     if (isLoading) return
     isLoading = true
@@ -313,7 +316,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return result
   }
 
-  //加入社区方法
+  //How to join the community
   const joinCommunity = async (uuid, invite) => {
     if (isLoading) return
     isLoading = true
@@ -333,7 +336,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return join
   }
 
-  //退出社区方法
+  //Methods of withdrawing from the community
   const exitCommunity = async (uuid) => {
     if (isLoading) return
     isLoading = true
@@ -351,7 +354,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return exit
   }
 
-  //修改个人信息
+  //Modification of personal information
   const personalInfo = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone) => {
     //if (isLoading) return
     //isLoading = true
@@ -381,7 +384,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     return Info
   }
 
-  //获取个人信息
+  //Obtaining Personal Information
   const getInfo = async () => {
     if (isLoading) return
     isLoading = true
@@ -392,35 +395,26 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         { name: 'userAddress', value: address }
       ]
     })
-    // 检查是否成功获取到了 Info
+    // Check if you have successfully obtained the Info
     const jsonData = Info.Messages[0].Data;
-
     const jsonObjects = jsonData.match(/\{.*?\}/g);
     const infoJson = jsonObjects.map(item => JSON.parse(item));
-    // 赋值给 userInfo
     userInfo = infoJson
 
     isLoading = false
     return Info
   }
 
-  //创建社区聊天室
+  //Create a community chat room
   const makecommunityChat = async () => {
     let processId2 = await spawn({
       module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
       scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    // const processId2 = 'eCQysY6Vgxz-A5z1_LHFnknLUmsRseYPBJ9mIzQ-yVs'
-    //const luaCode = 'Handlers.add("inboxCount", Handlers.utils.hasMatchingTag("Action", "#Inbox"), function(msg) local inboxCount = #Inbox ao.send({ Target = msg.From, Tags = { InboxCount = tostring(inboxCount) } }) end) Handlers.add("inboxMessage", Handlers.utils.hasMatchingTag("Action", "CheckInbox"), function(msg) local index = tonumber(msg.Tags.Index) if index and index > 0 and index <= #Inbox then local message = Inbox[index] ao.send({ Target = msg.From, Tags = { Action = "Inbox", Index = tostring(index), MessageDetails = message } }) else ao.send({ Target = msg.From, Tags = { Error = "Invalid inbox message index" } }) end end)';
-
-    //成功第一次
-    //const luaCode = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local inboxCount = #Inbox      ao.send({      Target = msg.From,      Tags = {      InboxCount = tostring(inboxCount)      }      })      Handlers.utils.reply("Echo back")(msg)    end  )'
 
     const luaCode = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local inboxCount = #Inbox      ao.send({      Target = msg.From,      Tags = {      InboxCount = tostring(inboxCount)      }      })      Handlers.utils.reply("Echo back")(msg)    end  )      Handlers.add(    "inboxMessage",    Handlers.utils.hasMatchingTag("Action", "CheckInbox"),    function (msg)      local index = tonumber(msg.Tags.Index)      if index and index > 0 and index <= #Inbox then      local message = Inbox[index]      ao.send({      Target = msg.From,      Tags = {      Action = "Inbox",      Index = tostring(index),      MessageDetails = message      }      }) else      ao.send({      Target = msg.From,      Tags = {      Error = "Invalid inbox message index"      }      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
 
-
-    //const luaCode = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
       process: processId2,
       tags: [

@@ -19,9 +19,9 @@ const STATE = "state";
 export const linktwitter = defineStore('linktwitter', () => {
     let connectTwitter = $ref('')
 
-    const callbackUrl = 'http://localhost:3000/callback'; // 回调 URL
-    const consumerKey = 'XzBHZjk5d3lKbjVuUDNHS2JKYm06MTpjaQ'; // 客户端标识
-    const consumerSecret = 'iq5S97n0VwrcpOu95xXiO6AC0wZgfZTIoYAubUj20KNF5p0_Hp'; // 客户端密钥
+    const callbackUrl = 'http://localhost:3000/callback'; // callback URL
+    const consumerKey = 'XzBHZjk5d3lKbjVuUDNHS2JKYm06MTpjaQ'; // client identifier
+    const consumerSecret = 'iq5S97n0VwrcpOu95xXiO6AC0wZgfZTIoYAubUj20KNF5p0_Hp'; // Client Key
 
     const gettoken = () => {
         const authUrl = authClient.generateAuthURL({
@@ -38,7 +38,7 @@ export const linktwitter = defineStore('linktwitter', () => {
 
         const url = 'https://api.twitter.com/oauth2/token';
 
-        // 配置 headers
+        // Configuring headers
         const headers = {
             'User-Agent': 'v2SpacesSearchJS',
             Authorization: 'Basic eHZ6MWV2RlM0d0VFUFRHRUZQSEJvZzpMOHFxOVBaeVJn NmllS0dFS2hab2xHQzB2SldMdzhpRUo4OERSZHlPZw==',
@@ -46,7 +46,7 @@ export const linktwitter = defineStore('linktwitter', () => {
             'Content-Length': '29'
         };
 
-        // 配置 body (data)
+        // Configuring body (data)
         const data = new URLSearchParams();
         data.append('grant_type', 'client_credentials');
 
@@ -62,7 +62,7 @@ export const linktwitter = defineStore('linktwitter', () => {
 
         const url = '/spaces/1kvJpveMAnQKE'
 
-        // 配置 headers
+        // Configuring headers
         const headers = {
             // 'User-Agent': 'v2RecentTweetCountsJS',
             Authorization: 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAADQWNx%2FmfyBHNT4V71rSuwhzi4z0%3DQd5oXywZLlTyPArAnUVJMD6IuaBJrTuA3339oPjomyMKl4grXN',
@@ -73,7 +73,7 @@ export const linktwitter = defineStore('linktwitter', () => {
             'topic.fields': 'name'
         }
 
-        // 配置 body (data)
+        // Configuring body (data)
         const data = new URLSearchParams()
         data.append('grant_type', 'client_credentials')
 
