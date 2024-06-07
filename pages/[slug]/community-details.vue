@@ -7,22 +7,6 @@ const { t } = useI18n()
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
-
-const itemsbadge = [
-  { label: '网站', badges: ['ethereum.org'] },
-  { label: '社交媒体', badges: ['Twitter'] },
-  { label: '社区代币', badges: ['PERMA', 'USDT'] },
-  { label: '交易平台', badges: ['Twitter'] },
-  { label: '贡献社区代币类型', badges: ['PERMA'] }
-]
-
-const itemsbadge2 = [
-  { label: 'GitHub', badges: ['ethereum.org'] },
-  { label: 'Builder数量', badges: ['514'] },
-  { label: '项目已发放激励', badges: ['5000', 'USDT'] }
-]
-
-
 const columns = [{
   key: 'name',
   label: t('community.detail.contribute.rank'),
@@ -128,7 +112,7 @@ const initChart = (tokensupply) => {
     chartInstance = echarts.init(chart.value);
 
     if (tokensupply && Array.isArray(tokensupply)) {
-      // 将 communityInfo.supply 转换为 ECharts 所需的格式
+      // Convert communityInfo.supply to the format required by ECharts
       const a = JSON.parse(JSON.stringify(communityInfo.tokensupply))
 
       const data = a.map(item => ({
@@ -184,7 +168,6 @@ onBeforeUnmount(() => {
 
 <template>
   <UDashboardPage>
-
     <!--<div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">-->
     <div class="w-full px-50 pt-16">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
@@ -266,10 +249,6 @@ onBeforeUnmount(() => {
                     </div>
                   </div>
                 </div>
-                <!--
-                </ULandingCard>
-                <ULandingCard class="col-span-4 row-span-2">
-                  -->
                 <div class="" style="flex: 1;">
                   <div class="flex justify-between px-16">
                     <div>Github</div>
@@ -314,12 +293,6 @@ onBeforeUnmount(() => {
               </UTable>
             </ULandingCard>
             <ULandingCard class="col-span-8 row-span-2">
-              <!--
-              <div class="px-12">
-                {{ $t('community.economics') }}<br>
-                {{ $t('community.token.all') }} 2100000
-              </div>
-              -->
               <div ref="chart" :style="{ width: '100%', height: '400px' }"></div>
             </ULandingCard>
           </ULandingGrid>
