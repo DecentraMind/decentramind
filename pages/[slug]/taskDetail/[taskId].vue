@@ -5,15 +5,17 @@ import {taskStore} from '../../../stores/taskStore'
 import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
 import {shortAddress} from "../../../utils/web3";
 const { t } = useI18n()
-const { getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
-const { userInfo } = $(aocommunityStore())
+const { makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { getLocalcommunityInfo, userInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
 const route = useRoute()
 const taskId = $computed(() => route.params.taskId)
+const slug = $computed(() => route.params.slug)
 
 let blogPost = $ref({})
 blogPost = await getTaskById(taskId)
+console.log('blogPost = ' + JSON.stringify(blogPost))
 let communityId = blogPost.communityId
 let isOwner = blogPost.ownerId === address
 let taskJoinRecord = $ref({})
@@ -32,38 +34,77 @@ isJoined = checkJoin()
 let joinStatus = $ref('')
 joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 let spaceTaskSubmitInfo = $ref({})
+const communityInfo = await getLocalcommunityInfo(communityId)
 spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-// let chatProcessId = await makecommunityChat()
-// console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
+console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
 
 // console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
 // console.log('isJoined = ' + isJoined)
 // console.log('chatProcessId = ' + chatProcessId)
 
-// onMounted(async () => {
-//
-//   blogPost = await getTaskById(taskId)
-//   console.log('blogPost = ' + JSON.stringify(blogPost))
-//   console.log(blogPost.name)
-// })
+onMounted(async () => {
+  let isBegin = blogPost.isBegin
+  let isSettle = blogPost.isSettle
+  let isCal = blogPost.isCal
+  if(isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N'){
+    // 计算分数
+    if(spaceTaskSubmitInfo.length != 0){
+      calculateScore()
+      console.log(taskId)
+      // 更新任务状态和已提交信息
+      await updateTaskAfterCal(taskId)
+      await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+    }
+  }
+  // calculateScore()
+  // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+  // blogPost = await getTaskById(taskId)
+  // console.log('blogPost = ' + JSON.stringify(blogPost))
+  console.log(isBegin)
+  console.log(isSettle)
+  console.log(isCal)
+})
+// spaceTaskSubmitInfo = people
+function calculateScore(){
+  console.log(spaceTaskSubmitInfo.length)
 
-function calculateScore(spaceTaskSubmitInfo){
   // 找到friends和audience的最大值
-  spaceTaskSubmitInfo.sort((a, b) => a.getPerson - b.getPerson)
+  spaceTaskSubmitInfo.sort((a, b) => b.getPerson - a.getPerson)
   let getPersionMax = spaceTaskSubmitInfo[0].getPerson
-  spaceTaskSubmitInfo.sort((a, b) => a.audience - b.audience)
+  spaceTaskSubmitInfo.sort((a, b) => b.audience - a.audience)
   let audienceMax = spaceTaskSubmitInfo[0].audience
+  console.log('getPersionMax = ' + getPersionMax)
+  console.log('audienceMax = ' + audienceMax)
   let totalScore = 0
+  let totalReward = 1000
   for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
     let friendScore = spaceTaskSubmitInfo[i].getPerson / getPersionMax * 40
     let audienceScore = spaceTaskSubmitInfo[i].audience / audienceMax * 50
-    spaceTaskSubmitInfo[i].score = friendScore + audienceScore + spaceTaskSubmitInfo[i].brandEffect
+    let brandScore = 0
+    if(spaceTaskSubmitInfo[i].brandEffect === 10){
+      brandScore = 10
+    }
+    // console.log('friendScore = ' + friendScore)
+    // console.log('audienceScore = ' + audienceScore)
+    // console.log('brandScore = ' + brandScore)
+    spaceTaskSubmitInfo[i].score = friendScore + audienceScore + brandScore
     totalScore += spaceTaskSubmitInfo[i].score
   }
   for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
-    spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i] / totalScore * 100).toFixed(2) + '%'
+    spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber)).toFixed(4)
+    spaceTaskSubmitInfo[i].bountyType1 = blogPost.tokenType
+    spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber1)).toFixed(4)
+    spaceTaskSubmitInfo[i].bountyType2 = blogPost.tokenType1
+    spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty1.toString() + spaceTaskSubmitInfo[i].bountyType1 + '+' + spaceTaskSubmitInfo[i].bounty2.toString() + spaceTaskSubmitInfo[i].bountyType2
+    // console.log('bounty = ' + spaceTaskSubmitInfo[i].score / totalScore * 100)
   }
   // 计算完成后更新AO侧数据和前端表单数据
+  console.log(JSON.stringify(spaceTaskSubmitInfo))
+}
+
+async function calculate() {
+  // await makecommunityChat(blogPost.processId)
+  await makecommunityChat('4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw ')
 }
 
 const columns = [
@@ -163,23 +204,70 @@ const emit = defineEmits(['success'])
 const addr = $ref('')
 const url = $ref('')
 async function submitTask() {
-  for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
-    if(spaceTaskSubmitInfo[i].address === address){
-      alert('You have submitted this quest.')
-      return
-    }
-  }
+  // for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
+  //   if(spaceTaskSubmitInfo[i].address === address){
+  //     alert('You have submitted this quest.')
+  //     return
+  //   }
+  // }
   // TODO 调用提交space链接并解析方法
-  await submitSpaceTask(taskId, address, url)
+  var splitted = url.split('/', 6)
+  console.log(splitted)
+  // await testCallJava()
+  // 直接在vue中请求api接口 拿到需要的信息
+  const query = computed(() => ({ spaceId: splitted[splitted.length - 1]}))
+  const {data} = useFetch('/api/twitter', {query})
+  // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
+  const spaceStartedAt = data._rawValue.data.started_at
+  // space参与人数
+  const participanted = data._rawValue.data.participant_count
+  // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
+  const userAvatar = data._rawValue.includes.users[0].profile_image_url
+  // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
+  const userCreatedAt = data._rawValue.includes.users[0].created_at
+  const userAvatarBase64 = await url2Base64(userAvatar)
+  // 品牌效应
+  const brandEffect = userAvatarBase64 === communityInfo.logo ? 10 : 0
+  // 听众
+  const audience = participanted
+  // 邀请人数 TODO 待完善方法，先设置默认值走下去
+  const getPersion = 10
+  console.log(spaceStartedAt)
+  console.log(participanted)
+  console.log(userAvatar)
+  console.log(userCreatedAt)
+  // console.log('brand = ' + brandEffect)
+  // console.log(communityInfo.logo)
+  // console.log(userAvatarBase64)
+  await submitSpaceTask(taskId, address, url, brandEffect, getPersion, audience)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isOpen = false
 }
-async function sendBountyByAo() {
-  await sendBounty(["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg", "jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"],
-    "10",
-    "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw"
-  );
+function url2Base64(url, type = 'image/jpeg') {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const canvas = document.createElement('canvas')
+    img.crossOrigin = '*'
+    img.onload = function () {
+      const width = img.width, height = img.height
+      canvas.width = width
+      canvas.height = height
+
+      const ctx = canvas.getContext('2d')
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0, width, height)
+      const base64 = canvas.toDataURL(type)
+      resolve(base64)
+    }
+    img.onerror = function () {
+      reject(new Error('message'));
+    }
+    img.src = url
+  })
 }
+
+
 const selected = $ref([])
 
 function select (row) {
@@ -189,8 +277,37 @@ function select (row) {
   } else {
     selected.splice(index, 1)
   }
-  console.log("selected = " + JSON.stringify(selected))
 
+
+}
+
+
+async function sendBountyByAo() {
+  let bounties = []
+  if(selected.length != 0){
+
+    for(let i = 0; i < selected.length; ++i){
+      let address = selected[i].address
+      for(let j = 0; j < spaceTaskSubmitInfo.length; ++j){
+        if(address === spaceTaskSubmitInfo[j].address){
+          console.log(spaceTaskSubmitInfo[j].bounty1)
+          console.log(spaceTaskSubmitInfo[j].bounty2)
+          const bountyData = {
+            walletAddress: address,
+            tokenNumber: spaceTaskSubmitInfo[j].bounty1,
+            tokenType: spaceTaskSubmitInfo[j].bountyType1,
+            tokenNumber1: spaceTaskSubmitInfo[j].bounty2,
+            tokenType1: spaceTaskSubmitInfo[j].bountyType2
+          }
+          bounties.push(bountyData)
+          break
+        }
+      }
+    }
+  }
+
+  console.log('selected = ' + JSON.stringify(bounties))
+  await sendBounty(blogPost.processId, bounties)
 }
 </script>
 
@@ -213,7 +330,7 @@ function select (row) {
         <UBlogPost :key="blogPost.id" :description="blogPost.description" class="p-10">
           <template #title>
             <div class="flex justify-start">
-              <div class="flex-none w-60"><Text>{{ blogPost.name }}</Text></div>
+              <div class="flex-none w-60"><div>{{ blogPost.name }}</div></div>
               <div class="flex justify-start">
                 <div>
                   <UBadge color="black" variant="solid">
@@ -238,79 +355,79 @@ function select (row) {
           </template>
           <template #description>
             <div class="flex flex-col space-y-2">
-              <Text>
+              <div>
                 {{ blogPost.description }}
-              </Text>
+              </div>
               <div class="flex ...">
                 <div class="flex-none w-60">
-                  <Text>
+                  <div>
                     {{ $t("Time Zone") }}:
-                  </Text>
+                  </div>
                 </div>
                 <div>
-                  <Text>
+                  <div>
                     {{ blogPost.zone }}
-                  </Text>
+                  </div>
                 </div>
               </div>
               <div class="flex ...">
                 <div class="flex-none w-60">
-                  <Text>
+                  <div>
                     {{ $t("Time") }}:
-                  </Text>
+                  </div>
                 </div>
                 <div>
-                  <Text>
+                  <div>
                     {{ blogPost.startTime }} - {{ blogPost.endTime }}
-                  </Text>
+                  </div>
                 </div>
               </div>
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
-                  <Text>
+                  <div>
                     {{ $t("Bounty") }}:
-                  </Text>
+                  </div>
                 </div>
                 <div>
-                  <Text>
+                  <div>
                     {{ blogPost.reward }}
-                  </Text>
+                  </div>
                 </div>
               </div>
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
-                  <Text>
+                  <div>
                     {{ $t("Total Chances") }}:
-                  </Text>
+                  </div>
                 </div>
                 <div>
-                  <Text>
+                  <div>
                     {{ blogPost.rewardTotal }}
-                  </Text>
+                  </div>
                 </div>
               </div>
               <div class="flex justify-start ...">
                 <div class="flex-none w-60">
-                  <Text>
+                  <div>
                     {{ $t("builders now") }}:
-                  </Text>
+                  </div>
                 </div>
                 <div>
-                  <Text>
+                  <div>
                     {{ blogPost.joined }}
-                  </Text>
+                  </div>
                 </div>
               </div>
               <div class="flex justify-start">
                 <div class="flex-none w-60 ">
-                  <Text>
+                  <div>
                     {{ $t("Rules of the Quest") }}:
-                  </Text>
+                  </div>
                 </div>
                 <div>
-                  <Text style="white-space: pre-line">
+                  <div style="white-space: pre-line">
                     {{ blogPost.taskRule }}
-                  </Text>
+                  </div>
                 </div>
               </div>
               <div v-if="!isJoined" class="flex justify-center ">
@@ -321,9 +438,9 @@ function select (row) {
             <div class="mt-8">
               <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex ">
-                  <Text class=" mr-8">
+                  <div class=" mr-8">
                     {{ $t("Quests Form") }}:
-                  </Text>
+                  </div>
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
               </div>
@@ -338,7 +455,10 @@ function select (row) {
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
               <div class="mx-4">
-                <UButton color="white" :label="$t('Submit')" @click="openModal" />
+                <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
+              </div>
+              <div class="mx-4">
+                <UButton color="white" label="load lua" @click="calculate" />
               </div>
               <div v-if="isOwner" class="mx-4">
                 <UButton color="white" :label="$t('Send Bounty')" @click="sendBountyByAo"/>
@@ -346,12 +466,12 @@ function select (row) {
             </div>
             <div class="flex mt-4">
               <div class="flex-none w-60">
-                <Text>
+                <div>
                   {{ $t("Rules of Judgment") }}:
-                </Text>
+                </div>
               </div>
               <div>
-                <Text>
+                <div>
                   <p> 1 Total score is 100 including Brand 10%, Friends 40%, Audience 50% </p>
 
                   <p> 2 Brand is decided by your avatar,  change it you’ll get 10, not change get 0 </p>
@@ -367,7 +487,7 @@ function select (row) {
                   <p> 7 If the total chances are 20 but you are in 21st, sorry you can get nothing </p>
 
                   <p> 8 Yout only have 1 chance for this quest </p>
-                </Text>
+                </div>
               </div>
             </div>
           </template>
@@ -435,7 +555,7 @@ function select (row) {
           </div>
           <div class="flex justify-center my-8">
             <UButton @click="submitTask">
-              {{ $t("Submit") }}
+              {{ $t("Submit Quest") }}
             </UButton>
           </div>
         </div>

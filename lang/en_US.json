@@ -101,7 +101,7 @@
   "Total Score": "Total Score",
   "Quests Form": "Quests Form",
   "We appreciate your support,Please follow the rules of the quest and submit the URL back to this page": "Please follow the rules of the quest and fill the URL of your space to the firm.",
-  "Submit": "Submit",
+  "Submit Quest": "Submit",
   "Quests Home": "Quests Home",
   "Unsettled": "Unsettled",
   "Settled": "Settled",
@@ -128,5 +128,6 @@
   "More Quests Soon": "More Quests Soon",
   "Quit": "Left",
   "Not Join": "Not Join",
-  "taskRule": "1.You will help the community to do a Twitter space by using your Twitter account.\n2.Please use the community’s logo as your avatar of linked account before you start your space and keep it until 15 mins after you return back your space’s URL.\n3.Please pin your invitation of this community in your space when you doing it."
+  "taskRule": "1.You will help the community to do a Twitter space by using your Twitter account.\n2.Please use the community’s logo as your avatar of linked account before you start your space and keep it until 15 mins after you return back your space’s URL.\n3.Please pin your invitation of this community in your space when you doing it.",
+  "Space Url": "Space Url"
 }

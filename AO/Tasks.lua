@@ -91,7 +91,15 @@ Handlers.add(
     Handlers.utils.hasMatchingTag("Action", "SubmitSpaceTask"),
     function (msg)
         -- 将参与任务信息保存在表中
-        table.insert(SpaceTaskSubmittedTable, msg.Data)
+        local req = json.decode(msg.Data)
+        local taskId = req.taskId
+        if not SpaceTaskSubmittedTable[taskId] then
+          -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
+          SpaceTaskSubmittedTable[taskId] = {}
+        end
+        local temp = SpaceTaskSubmittedTable[taskId]
+        table.insert(temp, msg.Data)
+        SpaceTaskSubmittedTable[taskId] = temp
         Handlers.utils.reply("Joined in space task.")(msg)
     end
 )
@@ -103,10 +111,9 @@ Handlers.add(
         local taskId = msg.Tags.taskId
         local resp = {}
         for key, value in pairs(SpaceTaskSubmittedTable) do
-            local v = json.decode(value)
-            if(v.taskId == taskId) then
-                table.insert(resp, value)
-            end
+          if(key == taskId) then
+            resp = value
+          end
         end
         if next(resp) == nil then
           Handlers.utils.reply("null")(msg)
@@ -132,23 +139,84 @@ Handlers.add(
 --)
 
 Handlers.add(
+    "updateTaskAfterCal",
+    Handlers.utils.hasMatchingTag("Action", "updateTaskAfterCal"),
+    function (msg)
+        -- 通过id获取该任务对应参与信息
+        local taskId = msg.Data
+        for i = 1, #TasksForTable do
+            local v = json.decode(TasksForTable[i])
+            if(v.taskId == taskId) then
+                v.isCal = 'Y'
+            end
+            TasksForTable[i] = json.encode(v)
+        end
+        Handlers.utils.reply("update task success")(msg)
+    end
+)
+
+Handlers.add(
+    "updateTaskSubmitInfoAfterCal",
+    Handlers.utils.hasMatchingTag("Action", "updateTaskSubmitInfoAfterCal"),
+    function (msg)
+        -- 通过id获取该任务对应参与信息
+        local temp = {}
+        local req = split(msg.Data, ';')
+        for i = 1, #req do
+        	table.insert(temp, req[i])
+        end
+        local taskId = msg.Tags.taskId
+        for  key, value in pairs(SpaceTaskSubmittedTable) do
+            if(key == taskId) then
+            	SpaceTaskSubmittedTable[key] = temp
+            end
+        end
+        Handlers.utils.reply("update task success")(msg)
+    end
+)
+
+function split(input, delimiter)
+    input = tostring(input)
+    delimiter = tostring(delimiter)
+    if (delimiter == "") then return false end
+    local pos, arr = 0, {}
+    for st, sp in function() return string.find(input, delimiter, pos, true) end do
+        table.insert(arr, string.sub(input, pos, st - 1))
+        pos = sp + 1
+    end
+    table.insert(arr, string.sub(input, pos))
+    return arr
+end
+Handlers.add(
     "sendBounty",
     Handlers.utils.hasMatchingTag("Action", "sendBounty"),
     function (msg)
         -- 通过id获取该任务对应参与信息
         local req = json.decode(msg.Data)
-        local wallets = req.wallets
-        local tokenNumber = req.tokenNumber
-        local tokenType = req.tokenType
-        for _, value in pairs(wallets) do
+        --print(msg.From)
+        for _, value in pairs(req) do
+            --print(value.tokenType)
+            --print(value.walletAddress)
+            --print(value.tokenNumber)
             ao.send({
-              Target = tokenType,
+              Target = value.tokenType,
               Action = "Transfer",
-              Recipient = value,
-              Quantity = tokenNumber
+              Recipient = value.walletAddress,
+              Quantity = value.tokenNumber
             })
         end
-        Handlers.utils.reply("Send bounty success")(msg)
+        for _, value in pairs(req) do
+            --print(value.tokenType)
+            --print(value.walletAddress)
+            --print(value.tokenNumber)
+            ao.send({
+              Target = value.tokenType1,
+              Action = "Transfer",
+              Recipient = value.walletAddress,
+              Quantity = value.tokenNumber1
+            })
+        end
+        Handlers.utils.reply(msg.From)(msg)
     end
 )
 

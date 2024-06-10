@@ -1,8 +1,9 @@
-import axios from 'axios'
 
-export default eventHandler(async () => {
+export default eventHandler(async (event) => {
   console.log('in twitter.ts')
-  const url = 'https://api.twitter.com/2/spaces/1kvJpveMAnQKE?space.fields=creator_id,speaker_ids&expansions=creator_id&topic.fields=name'
+  const {spaceId} = getQuery(event) as { spaceId?: string }
+  console.log('spaceId in twtitter.ts = ' + spaceId)
+  const url = 'https://api.twitter.com/2/spaces/' + spaceId + '?space.fields=creator_id,speaker_ids&expansions=creator_id&topic.fields=name'
 
   // 配置 headers
   const headers = {

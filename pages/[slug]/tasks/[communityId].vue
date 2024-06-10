@@ -3,14 +3,11 @@ import { sub, format, isSameDay, type Duration } from 'date-fns'
 import type { FormSubmitEvent } from '#ui/types'
 import {taskStore} from '../../../stores/taskStore';
 import {aocommunityStore} from '../../../stores/aocommunityStore';
-import axios from 'axios';
 
 import { z } from 'zod'
-import {linktwitter} from '~/stores/linktwitter'
 
 const { t } = useI18n()
-const { testCallJava, createTask, getAllTasks, respArray, makecommunityChat, joinTask } = $(taskStore())
-const { searchSpaceById } = $(linktwitter())
+const { testTransfer, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
@@ -57,6 +54,7 @@ const schema = z.object({
 type Schema = z.infer<typeof schema>
 
 const tokenOptions = [
+  { label: 'FIZI', value: 'FIZI' },
   { label: 'AR', value: 'AR' },
   { label: 'AOCRED', value: 'AOCRED' },
   { label: 'Bark', value: 'Bark' },
@@ -142,7 +140,8 @@ const transData = {
   communityId: '',
   isBegin: '',
   isCal: 'N',
-  isSettle: 'N'
+  isSettle: 'N',
+  processId: 'N'
 }
 const form = $ref()
 function uuid() {
@@ -154,20 +153,20 @@ function uuid() {
   })
 }
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  // Do something with event.data
+  // Do something with state
   transData.taskId = uuid()
-  transData.taskLogo = event.data.taskLogo
-  transData.taskName = event.data.taskName
-  transData.taskInfo = event.data.taskInfo
+  transData.taskLogo = state.taskLogo
+  transData.taskName = state.taskName
+  transData.taskInfo = state.taskInfo
   transData.taskRule = t('taskRule')
-  transData.tokenNumber = event.data.tokenNumber
-  transData.tokenType = event.data.tokenType.value
-  transData.tokenChain = event.data.tokenChain.value
-  transData.tokenNumber1 = event.data.tokenNumber1
-  transData.tokenType1 = event.data.tokenType1.value
-  transData.tokenChain1 = event.data.tokenChain1.value
-  transData.rewardTotal = event.data.rewardTotal
-  transData.zone = event.data.zone
+  transData.tokenNumber = state.tokenNumber ? state.tokenNumber : 0
+  transData.tokenType = state.tokenType ? state.tokenType.value : 'none'
+  transData.tokenChain = state.tokenChain ? state.tokenChain.value : 'none'
+  transData.tokenNumber1 = state.tokenNumber1 ? state.tokenNumber1 : 0
+  transData.tokenType1 = state.tokenType1 ? state.tokenType1.value : 'none'
+  transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1.value : 'none'
+  transData.rewardTotal = state.rewardTotal
+  transData.zone = state.zone
   transData.startTime = selected.value.start.toLocaleString()
   transData.endTime = selected.value.end.toLocaleString()
   transData.ownerId = address
@@ -323,34 +322,8 @@ const quitCommunity = async(communityuuid: any) => {
 }
 
 async function testAO() {
-  await testCallJava()
-  // const url = '/spaces/1kvJpveMAnQKE'
-  //
-  // // 配置 headers
-  // const headers = {
-  //   // 'User-Agent': 'v2RecentTweetCountsJS',
-  //   Authorization: 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAADQWNx%2FmfyBHNT4V71rSuwhzi4z0%3DQd5oXywZLlTyPArAnUVJMD6IuaBJrTuA3339oPjomyMKl4grXN',
-  // }
-  // const params = {
-  //   'space.fields': 'creator_id,speaker_ids',
-  //   'expansions': 'creator_id',
-  //   'topic.fields': 'name'
-  // }
-  //
-  // // 配置 body (data)
-  // const data = new URLSearchParams()
-  // data.append('grant_type', 'client_credentials')
+  await testTransfer()
 
-  // const {data} = useFetch('/api/twitter')
-  // console.log(JSON.stringify(data._rawValue.data))
-  // console.log(JSON.stringify(data._rawValue.includes))
-
-  // try {
-  //   const response = await axios.post(url, null, { headers, params })
-  //   console.log(response.data)
-  // } catch (error) {
-  //   console.error('Error posting token:', error)
-  // }
 }
 
 
