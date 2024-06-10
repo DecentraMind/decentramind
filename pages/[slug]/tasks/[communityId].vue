@@ -55,6 +55,7 @@ type Schema = z.infer<typeof schema>
 
 const tokenOptions = [
   { label: 'FIZI', value: 'FIZI' },
+  { label: 'LINUX', value: 'LINUX' },
   { label: 'AR', value: 'AR' },
   { label: 'AOCRED', value: 'AOCRED' },
   { label: 'Bark', value: 'Bark' },
@@ -474,7 +475,7 @@ const copyText = async () => {
           </div>
           <div class="flex">
             <div>
-              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
+<!--              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>

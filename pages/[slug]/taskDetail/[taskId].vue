@@ -294,9 +294,9 @@ async function sendBountyByAo() {
           console.log(spaceTaskSubmitInfo[j].bounty2)
           const bountyData = {
             walletAddress: address,
-            tokenNumber: spaceTaskSubmitInfo[j].bounty1,
+            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
             tokenType: spaceTaskSubmitInfo[j].bountyType1,
-            tokenNumber1: spaceTaskSubmitInfo[j].bounty2,
+            tokenNumber1: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
             tokenType1: spaceTaskSubmitInfo[j].bountyType2
           }
           bounties.push(bountyData)
@@ -457,9 +457,9 @@ async function sendBountyByAo() {
               <div class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-              <div class="mx-4">
-                <UButton color="white" label="load lua" @click="calculate" />
-              </div>
+<!--              <div class="mx-4">-->
+<!--                <UButton color="white" label="load lua" @click="calculate" />-->
+<!--              </div>-->
               <div v-if="isOwner" class="mx-4">
                 <UButton color="white" :label="$t('Send Bounty')" @click="sendBountyByAo"/>
               </div>

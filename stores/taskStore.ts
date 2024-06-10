@@ -23,6 +23,7 @@ export const taskStore = defineStore('taskStore', () => {
     AOCoin: 'rxl5oOyCuzrUUVB1edjrcHpcn9s9czhj4rsq4ACQGv4',
     AR: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
     FIZI: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
+    LINUX: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
     Arena: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
     DepositService: 'kzcVZhdcZOpM90eeKb-JRX3AG7TGH__S7p5I6PsqA3g',
     BRKTST: '8p7ApPZxC_37M06QHVejCQrKsHbcJEerd3jWNkDUWPQ',
@@ -88,6 +89,19 @@ export const taskStore = defineStore('taskStore', () => {
         console.log(error)
       }
     }
+    // 向新的process里写入sendBounty方法
+    const luaCode = 'Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
+
+    const luaCode1 = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = value.tokenNumber      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
+    let buildLua = await message({
+      // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+      process: newProcessId,
+      tags: [
+        { name: 'Action', value: 'Eval' }
+      ],
+      data: luaCode,
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
 
     try {
       const messageId = await message({
@@ -387,7 +401,7 @@ export const taskStore = defineStore('taskStore', () => {
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
-        process: processId,
+        process: taskProcessId,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'sendBounty' }],
         data: JSON.stringify(bounties)
@@ -402,15 +416,27 @@ export const taskStore = defineStore('taskStore', () => {
 
   const makecommunityChat = async (taskProcessId: string) => {
     // const luaCode  = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
-    const luaCode = 'Handlers.add(    "sBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = value.tokenNumber      })      end      Handlers.utils.reply(msg.From)(msg)    end  )'
+    const luaCode = 'Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
+
+    const luaCode1 = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = value.tokenNumber      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
-      process: taskProcessId,
+      // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+      process: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
       tags: [
         { name: 'Action', value: 'Eval' }
       ],
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),
     })
+
+    // const testBuild = await message({
+    //   process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+    //   tags: [
+    //     { name: 'Action', value: 'Echo' }
+    //   ],
+    //   signer: createDataItemSigner(window.arweaveWallet),
+    // })
+    // console.log(JSON.stringify(testBuild))
   }
 
   return $$({ updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })

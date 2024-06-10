@@ -193,30 +193,54 @@ Handlers.add(
     function (msg)
         -- 通过id获取该任务对应参与信息
         local req = json.decode(msg.Data)
-        --print(msg.From)
         for _, value in pairs(req) do
-            --print(value.tokenType)
-            --print(value.walletAddress)
-            --print(value.tokenNumber)
             ao.send({
               Target = value.tokenType,
               Action = "Transfer",
               Recipient = value.walletAddress,
-              Quantity = value.tokenNumber
+              Quantity = tostring(value.tokenNumber)
             })
         end
         for _, value in pairs(req) do
-            --print(value.tokenType)
-            --print(value.walletAddress)
-            --print(value.tokenNumber)
             ao.send({
               Target = value.tokenType1,
               Action = "Transfer",
               Recipient = value.walletAddress,
-              Quantity = value.tokenNumber1
+              Quantity = tostring(value.tokenNumber1)
             })
         end
-        Handlers.utils.reply(msg.From)(msg)
+        Handlers.utils.reply("success")(msg)
+    end
+)
+Handlers.add(
+    "testSend",
+    Handlers.utils.hasMatchingTag("Action", "testSend"),
+    function (msg)
+        local req = json.decode(msg.Data)
+        local tokenType = "x"
+        local receipt = "x"
+        local tokenNumber = "x"
+        --print(req[0].tokenType)
+        for _, value in pairs(req) do
+            tokenType = value.tokenType
+            receipt = value.walletAddress
+            tokenNumber = value.tokenNumber
+            print(tokenType)
+            print(receipt)
+            print(tokenNumber)
+            ao.send({
+            Target = tokenType,
+            Action = "Transfer",
+            Recipient = receipt,
+            Quantity = tostring(tokenNumber)
+            })
+        end
+
+        --local tokenType = "Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I"
+        --local receipt = "bOTVb61Rq91cVesuxZ_0fBk4Ii-GNsEbT3Iu5KD3HWg"
+        --local tokenNumber = 1000.1
+
+        Handlers.utils.reply("success")(msg)
     end
 )
 
