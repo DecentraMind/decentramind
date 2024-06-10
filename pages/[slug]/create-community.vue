@@ -86,9 +86,9 @@ const CreateCommunity = async () => {
     createCommunity = await addCommunity(state.Name, state.Inbro, state.Twitter, state.Website, state.Whitebook, state.Allreward)
     isCreateed = true
   } catch (error) {
-    // 在这里处理错误
-    console.error('添加社区时出错：', error)
-    // 这里可以根据具体情况执行适当的操作，比如显示错误信息给用户
+    // Handle errors here
+    console.error('Create Community error：', error)
+    // Here you can perform appropriate actions depending on the situation, such as displaying an error message to the user
   } finally {
     isLoading = false
   }
@@ -124,8 +124,7 @@ const bannerupload = () => {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.logo') }}</div>
           </template>
-          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]"
-            @click="logoupload" />
+          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
           <UInput id="logoupload" v-model="state.input" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
 
@@ -133,10 +132,8 @@ const bannerupload = () => {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.banner') }}</div>
           </template>
-          <UButton :label="`${$t('community.banner.submit')}`" size="xl" square variant="outline"
-            class="flex justify-center w-[420px] h-[80px]" @click="bannerupload" />
-          <UInput id="bannerupload" v-model="state.inputMenu" type="file" size="sm" class="opacity-0"
-            @change="handleUp" />
+          <UButton :label="`${$t('community.banner.submit')}`" size="xl" square variant="outline" class="flex justify-center w-[420px] h-[80px]" @click="bannerupload" />
+          <UInput id="bannerupload" v-model="state.inputMenu" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
 
         <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
@@ -150,8 +147,7 @@ const bannerupload = () => {
           <template #label>
             <div class="text-sky-400 w-[300px]">{{ $t('community.intro') }}</div>
           </template>
-          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`"
-            class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
@@ -323,8 +319,7 @@ const bannerupload = () => {
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                 Modal
               </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-                @click="isCreateed = false" />
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreateed = false" />
             </div>
           </template>
           <UContainer class="w-full flex justify-around">

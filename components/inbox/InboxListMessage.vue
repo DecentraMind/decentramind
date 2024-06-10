@@ -8,7 +8,8 @@ import audioFile from '@/assets/notify.mp3'; // Adjust the path accordingly
 const emitLoaded = defineEmit('loaded')
 
 const { state, itemsCache, loadInboxList, isInboxLoading: isLoading, getInboxCount } = $(inboxStore())
-const { address, getActiveAddress } = $(arweaveWalletStore())
+//const { address, getActiveAddress } = $(arweaveWalletStore())
+const { address } = $(aoStore())
 const items = $computed(() => {
   return useSortBy(useFilter(itemsCache[id], item => !!item.Data), item => parseInt(item.index))
 })
@@ -28,7 +29,7 @@ const playAudio = () => {
 
 let interval = null
 onMounted(async () => {
-  await getActiveAddress()
+  //await getActiveAddress()
   interval = setInterval(async () => {
     const oldCount = state[id].inboxCount
     const newCount = await getInboxCount(id, true)

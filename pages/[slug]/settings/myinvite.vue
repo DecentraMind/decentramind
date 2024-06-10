@@ -1,4 +1,7 @@
 <script setup lang="ts">
+
+const { joincommunityList, getCommunitylist } = $(aocommunityStore())
+
 const state = $ref<{ [key: string]: boolean }>({
   email: true,
   desktop: false,
@@ -29,60 +32,12 @@ function onSubmit() {
 const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
-const formItems = $ref([
-  {
-    light: light,
-    dark: dark,
-    label: '社区A',
-    name: 'current',
-    value: communityForm.communityName,
-    show: true
-  }, {
-    light: light,
-    dark: dark,
-    label: '社区A',
-    name: 'current',
-    value: communityForm.communityName,
-    show: true
-  }, {
-    light: light,
-    dark: dark,
-    label: '社区A',
-    name: 'current',
-    value: communityForm.communityName,
-    show: true
-  }, {
-    light: light,
-    dark: dark,
-    label: '社区A',
-    name: 'current',
-    value: communityForm.communityName,
-    show: true
-  }, {
-    light: light,
-    dark: dark,
-    label: '社区A',
-    name: 'current',
-    value: communityForm.communityName,
-    show: true
-  }, {
-    light: light,
-    dark: dark,
-    label: '社区A',
-    name: 'current',
-    value: communityForm.communityName,
-    show: true
-  },
-  // 其他表单项
-]);
 
-const { joincommunityList, getCommunitylist } = $(aocommunityStore())
 
 let communityLoading = $ref(true)
 
 let result = $ref()
 const getCommunity = async () => {
-
   result = await getCommunitylist()
   communityLoading = false
 }
@@ -98,6 +53,7 @@ onMounted(async () => {
     console.error('Error fetching data:', error);
   }
 });
+
 let inviteDetail = $ref(false)
 const detail = () => {
   inviteDetail = true

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
+const { currentUuid, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
+let communityInfo = $ref({})
+let communityInfoJson = $ref({})
+
 const { t } = useI18n()
 
 useSeoMeta({
@@ -28,7 +32,6 @@ const dropdownItems = [[{
   icon: 'i-heroicons-pause-circle'
 }]]
 
-// const { data: mails } = await useFetch<Mail[]>('/api/mails', { default: () => [] })
 
 const { stateArr: mails } = $(inboxStore())
 
@@ -94,9 +97,6 @@ const footerLinks = $computed(() => {
   ]
 })
 
-const { currentUuid, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
-let communityInfo = $ref({})
-let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
   try {
     communityInfo = await getLocalcommunityInfo(pid)
@@ -108,10 +108,7 @@ const loadCommunityInfo = async (pid) => {
 let communityuser = $ref({})
 
 let chatID = $ref<string | string[] | null>(null)
-const test = () => {
-  if (!route.params.pid) return
-  const a = getCommunityuser(communityInfo.uuid)
-}
+
 onMounted( () => {
   if (!route.params.pid) return
   chatID = route.params.pid
@@ -124,7 +121,7 @@ onMounted(async () => {
     
     try {
       communityuser = JSON.parse(dataStr);
-      // 你可以在这里进一步处理 dataJson
+      // You can further process the dataJson here
     } catch (error) {
       console.error('Error parsing JSON:', error);
     }
@@ -139,11 +136,11 @@ const copySuccess = $ref(false);
 
 const copyText = async () => {
   try {
-    // 使用 navigator.clipboard.writeText 复制文本
+    // Copy text with navigator.clipboard.writeText
     await navigator.clipboard.writeText(textToCopy.innerText);
-    // 复制成功后设置一段时间后隐藏提示信息
+    // Hide the alert message after a certain period of time after successful copying
   } catch (err) {
-    console.error('复制失败: ', err);
+    console.error('Code Failed: ', err);
   }
 };
 </script>
@@ -234,9 +231,6 @@ const copyText = async () => {
         </div>
         <UDivider />
 
-        <!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
-        <!--        @update:links="(colors) => (defaultColors = colors)" />-->
-
         <div class="flex-1" />
         <div v-if="communityInfo.creater == address" class="flex">
           <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="communitySetting = true" />
@@ -260,85 +254,17 @@ const copyText = async () => {
           <Button class="center-text border rounded-lg w-full">Quests Home</Button>
         </NuxtLink>
         <Button class="center-text border rounded-lg bg-black text-white">Chatroom</Button>
-        <!--<UDashboardSidebarLinks :links="footerLinks" />-->
 
         <UDivider class="bottom-0 sticky" />
-          <!--
-        <template #footer>
-          <UserDropdown />
-        </template>
-        -->
-
       </UDashboardSidebar>
     </UDashboardPanel>
     <UPage class="w-full">
       <!--<UContainer class="w-full">-->
-      <UPageGrid class="w-full h-full">
-        <!--
-        <UAside class="border rounded-md  border-1 border-gray-600">
-          <InboxList v-model="selectedMail" :mails="filteredMails" />
-        </UAside>
-        -->
-        
-    
+      <UPageGrid class="w-full h-full">  
         <div class="flex xl:col-span-2 w-full h-full ml-10">
           <div v-if="chatID" class="w-full">
-            <!--
-              <UDashboardNavbar v-if="false">
-                <template #toggle>
-                  <UDashboardNavbarToggle icon="i-heroicons-x-mark" />
-
-                  <UDivider orientation="vertical" class="mx-1.5 lg:hidden" />
-                </template>
-
-                <template #left>
-                  <UTooltip text="Archive">
-                    <UButton icon="i-heroicons-archive-box" color="gray" variant="ghost" />
-                  </UTooltip>
-
-                  <UTooltip text="to Move junk">
-                    <UButton icon="i-heroicons-archive-box-x-mark" color="gray" variant="ghost" />
-                  </UTooltip>
-
-                  <UDivider orientation="vertical" class="mx-1.5" />
-
-                  <UPopover :popper="{ placement: 'bottom-start' }">
-                    <template #default="{ open }">
-                      <UTooltip text="Snooze" :prevent="open">
-                        <UButton icon="i-heroicons-clock" color="gray" variant="ghost" :class="[open && 'bg-gray-50 dark:bg-gray-800']" />
-                      </UTooltip>
-                    </template>
-
-                    <template #panel="{ close }">
-                      <DatePicker @close="close" />
-                    </template>
-                  </UPopover>
-                </template>
-
-                <template #right>
-                  <UTooltip text="Reply">
-                    <UButton icon="i-heroicons-arrow-uturn-left" color="gray" variant="ghost" />
-                  </UTooltip>
-
-                  <UTooltip text="Forward">
-                    <UButton icon="i-heroicons-arrow-uturn-right" color="gray" variant="ghost" />
-                  </UTooltip>
-
-                  <UDivider orientation="vertical" class="mx-1.5" />
-
-                  <UDropdown :items="dropdownItems">
-                    <UButton icon="i-heroicons-ellipsis-vertical" color="gray" variant="ghost" />
-                  </UDropdown>
-                </template>
-              </UDashboardNavbar>
-              -->
             <InboxMail :mail="chatID" class="" />
           </div>
-          <!--
-          <UMain v-else class="flex-1 hidden items-center justify-center lg:flex">
-            <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
-          </UMain>
-          -->
         </div>
         <div class="pt-10 pr-10 pl-32">
           <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="communityuser.length">

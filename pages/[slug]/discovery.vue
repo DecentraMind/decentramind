@@ -5,36 +5,33 @@ const {
   credBalance,
   init, doLogout, doLogin } = $(aoStore())
 
+const { communityList, userInfo, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
+const { gettoken } = $(linktwitter())
+
 const toast = useToast()
 const route = useRoute()
 const router = useRouter();
 const slug = $computed(() => route.params.slug)
-let communityLoading = $ref(true)
 
-const blogPosts = [
-  {
-    id: 1,
-    title: 'nxDAO',
-    image: 'https://picsum.photos/640/360',
-    description: 'Nuxt 3.9 is out - a Christmas gift from the Nuxt team bringing Vite 5, a new loading API and more.'
-  }
-]
-const { communityList, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
-const { gettoken } = $(linktwitter())
+let communityLoading = $ref(true)
+let LinktoTwitter = $ref(false)
+
 let result = $ref()
 
 const getCommunity = async () => {
-
   result = await getCommunitylist()
   communityLoading = false
 }
 
 const communityJoin = async (uuid: any) => {
-  const invite = "none"
-  await joinCommunity(uuid, invite)
-
-  toast.add({ title: 'joined success' })
-  await getCommunity()
+  if(!userInfo[0].twitter || userInfo[0].twitter !== 'Success'){
+    LinktoTwitter = true
+  } else {
+    const invite = "none"
+    await joinCommunity(uuid, invite)
+    toast.add({ title: 'joined success' })
+    await getCommunity()
+  }
 }
 
 onMounted(async () => {
@@ -42,6 +39,7 @@ onMounted(async () => {
     if (Array.isArray(communityList) && communityList.length !== 0) {
       communityLoading = false
     }
+    await getInfo()
     await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -56,10 +54,6 @@ const translate = [
   }]
 ]
 const { t, locale , defaultLocale } = useI18n()
-const test = async () => {
-  const uuidt = "798e6573-7cac-4575-8ed1-e638bd2a4e41"
-  const a = await getLocalcommunityInfo(uuidt)
-}
 
 const Logout = async() => {
   await doLogout()
@@ -90,9 +84,6 @@ const Logout = async() => {
             Connect Wallet
           </UButton>
         </UBadge>
-        <!--
-          <UButton color="white" @click="gettoken">{{ $t('twitter.link')}}</UButton>
-          -->
         <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>
@@ -100,13 +91,6 @@ const Logout = async() => {
       </template>
     </UDashboardNavbar>
     <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">
-      <!--<UButton @click="test">test12</UButton>-->
-      <!--
-      测试按钮
-      <UButton color="white" @click="doLogin">Arconnect</UButton>
-      <UButton color="white" @click="getCommunitylist">test</UButton>
-      <UButton color="white" @click="joinC">test2</UButton>
-    -->
       <div v-if="communityLoading" class="w-full flex justify-center">
         <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
       </div>
@@ -133,13 +117,13 @@ const Logout = async() => {
                 </div>
                 <div>
                   <template v-if="community.isJoined">
-                    <!-- 显示文本“已加入” -->
+                    <!-- Show text "Added" -->
                     <UButton class="absolute right-0 w-[65px]" color="white" variant="outline" disabled>
                       {{ $t('community.list.isjoin') }}
                     </UButton>
                   </template>
                   <template v-else>
-                    <!-- 显示 UButton 组件 -->
+                    <!-- Show UButton Component -->
                     <UButton class="absolute right-0 w-[60px]" :ui="{ font: 'font-medium'}" color="white" variant="outline" @click="() => communityJoin(community.uuid)">
                       {{ $t('community.list.join') }}
                     </UButton>
@@ -151,5 +135,13 @@ const Logout = async() => {
         </div>
       </div>
     </div>
+    <UModal v-model="LinktoTwitter">
+      <div class="h-[200px] flex flex-col items-center justify-center">
+        <Text class="text-2xl">No link to twitter</Text>
+        <NuxtLink :to="`/${slug}/settings`">
+          <UButton class="mt-10">go to link</UButton>
+        </NuxtLink>
+      </div>
+    </UModal>
   </div>
 </template>

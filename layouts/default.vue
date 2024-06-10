@@ -138,8 +138,8 @@ onMounted(async () => {
     if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
       communityLoading = false
     }
-    await getInfo()
-    await getCommunity()
+    //await getInfo()
+    //await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error)
   }
