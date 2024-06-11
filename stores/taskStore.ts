@@ -143,6 +143,13 @@ export const taskStore = defineStore('taskStore', () => {
         // console.log('communityId = ' + element.communityId)
         continue
       }
+      let reward = ''
+      if(element.tokenNumber != '0'){
+        reward = element.tokenNumber + ' ' + element.tokenType
+      }
+      if(element.tokenNumber1 != '0'){
+        reward = reward +  '+' + element.tokenNumber1 + ' ' + element.tokenType1
+      }
       const respData = {
         id: element.taskId,
         name: element.taskName,
@@ -154,7 +161,7 @@ export const taskStore = defineStore('taskStore', () => {
         rewardTotal: element.rewardTotal,
         buildNumber: element.buildNumber,
         taskRule: element.taskRule,
-        reward: element.tokenNumber + ' ' + element.tokenType + '+' + element.tokenNumber1 + ' ' + element.tokenType1,
+        reward: reward,
         tokenNumber: element.tokenNumber,
         tokenType: element.tokenType,
         tokenNumber1: element.tokenNumber1,
