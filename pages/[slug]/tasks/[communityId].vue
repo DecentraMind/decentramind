@@ -103,12 +103,12 @@ const timeZoneOptions = [
   { label: 'GMT+13:00', value: 'GMT+13:00' },
   { label: 'GMT+14:00', value: 'GMT+14:00' },
 ]
-const selected = ref({ start: sub(new Date(), { days: 14 }), end: new Date() })
+const selected = ref({ start: sub(new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime(), { days: 14 }), end: new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime() })
 function isRangeSelected(duration: Duration) {
   return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
 }
 function selectRange(duration: Duration) {
-  selected.value = { start: sub(new Date(), duration), end: new Date() }
+  selected.value = { start: sub(new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime(), duration), end: new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime() }
 }
 const state = $ref({
   taskLogo: 'banner1',
