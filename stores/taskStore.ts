@@ -90,8 +90,8 @@ export const taskStore = defineStore('taskStore', () => {
       }
     }
     // 向新的process里写入sendBounty方法
-    const luaCode = 'Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
-
+    const x = 'TaskOwnerWallet = "' + newProcessId + '"'
+    const luaCode = x + '      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      if(msg.From ~= TaskOwnerWallet) then      Handlers.utils.reply("notMatch")(msg)      end      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
     const luaCode1 = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = value.tokenNumber      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
       // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
@@ -415,9 +415,11 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   const makecommunityChat = async (taskProcessId: string) => {
+    const x = 'TaskOwnerWallet = "' + taskProcessId + '"'
     // const luaCode  = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
-    const luaCode = 'Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
+    const luaCode = x + '      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      if(msg.From ~= TaskOwnerWallet) then      Handlers.utils.reply("notMatch")(msg)      end      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
 
+    console.log(luaCode)
     const luaCode1 = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = value.tokenNumber      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
       // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',

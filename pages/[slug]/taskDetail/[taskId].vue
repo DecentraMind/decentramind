@@ -104,7 +104,7 @@ function calculateScore(){
 
 async function calculate() {
   // await makecommunityChat(blogPost.processId)
-  await makecommunityChat('4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw ')
+  await makecommunityChat('4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw')
 }
 
 const columns = [
@@ -294,9 +294,9 @@ async function sendBountyByAo() {
           console.log(spaceTaskSubmitInfo[j].bounty2)
           const bountyData = {
             walletAddress: address,
-            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
+            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1) * 1000),
             tokenType: spaceTaskSubmitInfo[j].bountyType1,
-            tokenNumber1: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+            tokenNumber1: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2) * 1000),
             tokenType1: spaceTaskSubmitInfo[j].bountyType2
           }
           bounties.push(bountyData)

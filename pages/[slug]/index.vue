@@ -137,7 +137,7 @@ const Logout = async() => {
     </div>
     <UModal v-model="LinktoTwitter">
       <div class="h-[200px] flex flex-col items-center justify-center">
-        <Text class="text-2xl">No link to twitter</Text>
+        <div class="text-2xl">No link to twitter</div>
         <NuxtLink :to="`/${slug}/settings`">
           <UButton class="mt-10">go to link</UButton>
         </NuxtLink>

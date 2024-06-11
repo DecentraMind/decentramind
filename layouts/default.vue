@@ -226,10 +226,10 @@ const test = ()=> {
                   <UAvatar src="/community/chatavatar.jpg" alt="Avatar" size="2xl" />
                 </template>
                 <div>
-                  <Text v-if="userInfo.length && userInfo[0]" class="text-2xl">{{ userInfo[0].name }}</Text>
+                  <div v-if="userInfo.length && userInfo[0]" class="text-2xl">{{ userInfo[0].name }}</div>
                 </div>
                 <UDivider />
-                <Text class="pt-10">This man is mysterious. left nothing behind.</Text>
+                <div class="pt-10">This man is mysterious. left nothing behind.</div>
                 <div class="mt-3">
                   <UIcon name="ei:sc-twitter" />
                   <UIcon name="quill:mail" />

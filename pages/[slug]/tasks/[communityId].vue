@@ -513,7 +513,7 @@ const copyText = async () => {
                        :description="blogPost.description">
               <template #title>
                 <div class="flex justify-between ...">
-                  <Text>{{ blogPost.name }}</Text>
+                  <div>{{ blogPost.name }}</div>
                   <UBadge size="xs" color="black" variant="solid">
                     {{ blogPost.status == 'Y'? $t('Ing') : $t('End')}}
                   </UBadge>
@@ -521,31 +521,31 @@ const copyText = async () => {
               </template>
               <template #description>
                 <div class="flex flex-col space-y-2">
-                  <Text >
+                  <div >
                     {{ blogPost.description }}
-                  </Text>
+                  </div>
                   <div class="flex justify-between ...">
                     <div>
-                      <Text >
+                      <div >
                         {{ $t("Bounty") }}:
-                      </Text>
+                      </div>
                     </div>
                     <div>
-                      <Text >
+                      <div >
                         {{ blogPost.reward }}
-                      </Text>
+                      </div>
                     </div>
                   </div>
                   <div class="flex justify-between ...">
                     <div>
-                      <Text >
+                      <div >
                         {{ $t("builders now") }}:
-                      </Text>
+                      </div>
                     </div>
                     <div>
-                      <Text >
+                      <div >
                         {{ blogPost.builderNum }}
-                      </Text>
+                      </div>
                     </div>
                   </div>
                 </div>

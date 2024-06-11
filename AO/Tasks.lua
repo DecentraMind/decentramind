@@ -187,10 +187,14 @@ function split(input, delimiter)
     table.insert(arr, string.sub(input, pos))
     return arr
 end
+TaskOwnerWallet = "xxx"
 Handlers.add(
     "sendBounty",
     Handlers.utils.hasMatchingTag("Action", "sendBounty"),
     function (msg)
+        if(msg.From ~= TaskOwnerWallet) then
+        	Handlers.utils.reply("notMatch")(msg)
+        end
         -- 通过id获取该任务对应参与信息
         local req = json.decode(msg.Data)
         for _, value in pairs(req) do
@@ -241,6 +245,13 @@ Handlers.add(
         --local tokenNumber = 1000.1
 
         Handlers.utils.reply("success")(msg)
+    end
+)
+Handlers.add(
+    "getMsgFrom",
+    Handlers.utils.hasMatchingTag("Action", "getMsgFrom"),
+    function (msg)
+        Handlers.utils.reply(msg.From)(msg)
     end
 )
 
