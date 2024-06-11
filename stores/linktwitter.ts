@@ -6,9 +6,9 @@ import { Client, auth } from "twitter-api-sdk";
 
 
 const authClient = new auth.OAuth2User({
-    client_id: "XzBHZjk5d3lKbjVuUDNHS2JKYm06MTpjaQ" as string,
-    client_secret: "oeoEyYDBViAmODitZuMlh_IfcbnFB78QZsj2_pHdbFkUsS83_0" as string,
-    callback: "http://localhost:3000/callback",
+    client_id: "ZkJXajNiRUdwanFQTkZOenZBUzA6MTpjaQ" as string,
+    client_secret: "H29N3gUVa0CwQkZ0Ky9tNqXRu1QzgpISaH9GIGQ5poArbPsdfE" as string,
+    callback: "https://dm-demo.vercel.app/callback",
     scopes: ["tweet.read", "users.read", "offline.access"],
 });
 

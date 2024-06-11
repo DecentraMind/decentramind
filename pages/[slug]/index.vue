@@ -90,7 +90,7 @@ const Logout = async() => {
         <UColorModeButton />
       </template>
     </UDashboardNavbar>
-    <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">
+    <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-10 pr-10 pt-3">
       <div v-if="communityLoading" class="w-full flex justify-center">
         <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
       </div>
@@ -137,7 +137,7 @@ const Logout = async() => {
     </div>
     <UModal v-model="LinktoTwitter">
       <div class="h-[200px] flex flex-col items-center justify-center">
-        <div class="text-2xl">No link to twitter</div>
+        <Text class="text-2xl">No link to twitter</Text>
         <NuxtLink :to="`/${slug}/settings`">
           <UButton class="mt-10">go to link</UButton>
         </NuxtLink>
