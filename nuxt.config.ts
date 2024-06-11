@@ -20,6 +20,9 @@ export default defineNuxtConfig({
   //     }
   //   }
   // },
+  colorMode: {
+    preference: 'light'
+  },
   i18n: {
     legacy: false,
     globalInjection: true,
