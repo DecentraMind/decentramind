@@ -49,12 +49,23 @@ let state = $ref({
 })
 
 const schema = z.object({
+  Alltoken: z.string()
+    .min(0, { message: 'Must be more than 0' })
+    .refine((value: string) => {
+      const num = parseFloat(value);
+      return !isNaN(num) && num > 0;
+    }, { message: 'Must be a valid number more than 0' })
+    .refine((value: string) => {
+      const regex = /^\d+(\.\d{1,3})?$/;
+      return regex.test(value);
+    }, { message: 'Must be a valid number with up to 3 decimal places' }),
   Name: z.string().min(2).max(20),
   Inbro: z.string().min(3).max(100),
 
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
   }),
+  
   /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
@@ -487,7 +498,7 @@ let settingInfo = $ref(true)
               </div>
             </UFormGroup>
             <div v-show="state.showAlltoken">
-              <UFormGroup name="range" class="mb-2">
+              <UFormGroup name="Alltoken" class="mb-2">
                 <div class="flex flex-row items-center space-x-3">
                   <UInput v-model="state.Alltoken" placeholder="" class="w-[120px]" />
                 </div>
