@@ -17,8 +17,9 @@ async function join() {
   await doLogin()
 
   await joinCommunity(communityId)
+  const p = '/' + slug + '/discovery'
   console.log('join success')
-  await useRouter().push({path: '/${slug}/discovery'})
+  await useRouter().push({path: p})
 }
 
 </script>
@@ -31,7 +32,7 @@ async function join() {
       </template>
       <div class="flex justify-between">
         <div><Text>Invite to community:</Text></div>
-        <div>{{ communityName }}</div>
+        <div>{{ communityId }}</div>
       </div>
 
       <template #footer>

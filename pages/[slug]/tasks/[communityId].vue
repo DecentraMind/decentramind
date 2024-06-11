@@ -459,7 +459,7 @@ const finalStatus = (isBegin: string) => {
             <div>Invite Url: </div>
             <div class="flex items-center">
               <p ref="textToCopy">
-                www.dm.com/invite/?{{ communityId }}
+                dm-demo.vercel.app/{{ slug }}/invite/{{ communityId }}
               </p>
               <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
             </div>
