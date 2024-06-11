@@ -309,6 +309,19 @@ async function sendBountyByAo() {
   console.log('selected = ' + JSON.stringify(bounties))
   await sendBounty(blogPost.processId, bounties)
 }
+const finalStatus = (isBegin: string) => {
+  console.log('isB = ' + isBegin)
+  let res = ''
+  if(isBegin === 'NS')
+    res = t('Not Start')
+  else if(isBegin === 'Y'){
+    res = t('Ing')
+  }else {
+    res = t('End')
+  }
+  console.log('res = ' + res)
+  return res
+}
 </script>
 
 <template>
@@ -334,7 +347,7 @@ async function sendBountyByAo() {
               <div class="flex justify-start">
                 <div>
                   <UBadge color="black" variant="solid">
-                    {{ blogPost.status == 'Y'? $t('Ing') : $t('End')}}
+                    {{ finalStatus(blogPost.isBegin)}}
                   </UBadge>
                 </div>
                 <div v-if="isJoined" class="mx-2">

@@ -15,7 +15,6 @@ const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 
 let communitySetting = $ref(false)
-
 const items = [
   {
     label: t('Public Quests'),
@@ -179,7 +178,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
-  let isBegin = t('N')
+  let isBegin = 'NS'
   if (currentDate <= selected.value.end && currentDate >= selected.value.start) {
     isBegin = 'Y'
   } else if (currentDate > selected.value.end) {
@@ -346,7 +345,19 @@ const copyText = async () => {
     console.error('复制失败: ', err);
   }
 };
-
+const finalStatus = (isBegin: string) => {
+  console.log('isB = ' + isBegin)
+  let res = ''
+  if(isBegin === 'NS')
+    res = t('Not Start')
+  else if(isBegin === 'Y'){
+    res = t('Ing')
+  }else {
+    res = t('End')
+  }
+  console.log('res = ' + res)
+  return res
+}
 </script>
 <template>
   <UDashboardPanel :width="420" collapsible>
@@ -521,7 +532,7 @@ const copyText = async () => {
                 <div class="flex justify-between ...">
                   <div>{{ blogPost.name }}</div>
                   <UBadge size="xs" color="black" variant="solid">
-                    {{ blogPost.status == 'Y'? $t('Ing') : $t('End')}}
+                    {{ finalStatus(blogPost.isBegin)}}
                   </UBadge>
                 </div>
               </template>
