@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '#ui/types'
 
+import { z } from 'zod'
+
 const toast = useToast()
 
 let info = $ref({})
@@ -16,6 +18,13 @@ let accountForm = $ref({
   showtelegram: true,
 })
 let isLoading = $ref(false)
+
+
+const schema = z.object({
+  name: z.string().min(2).max(10),
+})
+
+type Schema = z.infer<typeof schema>
 
 function onSubmitAccount() {
   console.log('Submitted form:', accountForm)
@@ -91,35 +100,34 @@ const handleUp = (event) => {
 <template>
   <UDashboardPanelContent class="pb-24">
     <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
-    <UCard @submit.prevent="onSubmitAccount">
-      <template #header>
-        <div class="flex">
-          <div @click="logoupload">
-            <UAvatar
-              v-if="accountForm.avatar === 'N/A'"
-              src="/community/chatavatar.jpg" 
-              alt="Avatar" 
-              class="ml-5" 
-              size="3xl" 
-            />
-            <UAvatar
-              v-else
-              :src="accountForm.avatar"
-              alt="Avatar" 
-              class="ml-5" 
-              size="3xl" 
-            />
-          </div>
-          <div class="flex items-center p-3 ml-5">
-            <UFormGroup name="name" class="mb-3">
-              <template #label>
-                {{ $t('setting.person.name') }}
-              </template>
-              <UInput v-model="accountForm.name" />
-            </UFormGroup>
-          </div>
+    <UForm ref="form" :schema="schema" :state="accountForm" @submit.prevent="onSubmitAccount">
+      <div class="flex mb-10 mt-3">
+        <div @click="logoupload">
+          <UAvatar
+            v-if="accountForm.avatar === 'N/A'"
+            src="/community/chatavatar.jpg" 
+            alt="Avatar" 
+            class="ml-5" 
+            size="3xl" 
+          />
+          <UAvatar
+            v-else
+            :src="accountForm.avatar"
+            alt="Avatar" 
+            class="ml-5" 
+            size="3xl" 
+          />
         </div>
-      </template>
+        <div class="flex items-center p-3 ml-5">
+          <UFormGroup name="name" class="mb-3">
+            <template #label>
+              {{ $t('setting.person.name') }}
+            </template>
+            <UInput v-model="accountForm.name" />
+          </UFormGroup>
+        </div>
+      </div>
+
 
       <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">{{ $t('setting.person.social') }}
       </div>
@@ -162,6 +170,6 @@ const handleUp = (event) => {
           </UButton>
         </div>
       </template>
-    </UCard>
+    </UForm>
   </UDashboardPanelContent>
 </template>
