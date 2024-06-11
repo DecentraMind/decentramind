@@ -262,7 +262,7 @@ let settingInfo = $ref(true)
     <DashboardPanelContent class="w-full overflow-y-auto pl-20 pt-10">
       <UAlert>
         <template #title>
-          <div class="text-3xl p-2">{{ $t('community.create') }}</div>
+          <div class="text-3xl p-2 flex justify-center">{{ $t('community.create') }}</div>
         </template>
       </UAlert>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">

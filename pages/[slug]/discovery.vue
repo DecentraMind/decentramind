@@ -90,7 +90,7 @@ const Logout = async() => {
         <UColorModeButton />
       </template>
     </UDashboardNavbar>
-    <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-20">
+    <div class=" bg-red-1900 w-full overflow-y-auto h-[90%] pl-10 pr-10 pt-3">
       <div v-if="communityLoading" class="w-full flex justify-center">
         <UIcon name="svg-spinners:blocks-scale" class="mt-80 w-[250px]" size="xl" dynamic v-bind="$attrs" />
       </div>

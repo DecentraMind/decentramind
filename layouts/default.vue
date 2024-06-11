@@ -229,7 +229,7 @@ const test = ()=> {
                   <div v-if="userInfo.length && userInfo[0]" class="text-2xl">{{ userInfo[0].name }}</div>
                 </div>
                 <UDivider />
-                <div class="pt-10">This man is mysterious. left nothing behind.</div>
+
                 <div class="mt-3">
                   <UIcon name="ei:sc-twitter" />
                   <UIcon name="quill:mail" />
