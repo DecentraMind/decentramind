@@ -67,7 +67,8 @@ export const taskStore = defineStore('taskStore', () => {
           ]
         })
       }catch(error){
-        console.log(error)
+        // alertMessage('sendBounty error, create quest failed')
+        // return
       }
     }
 
@@ -145,10 +146,10 @@ export const taskStore = defineStore('taskStore', () => {
       }
       let reward = ''
       if(element.tokenNumber != '0'){
-        reward = element.tokenNumber + ' ' + element.tokenType
+        reward = Number(element.tokenNumber) / 1e12 + ' ' + element.tokenType
       }
       if(element.tokenNumber1 != '0'){
-        reward = reward +  '+' + element.tokenNumber1 + ' ' + element.tokenType1
+        reward = reward +  '+' + Number(element.tokenNumber1) / 1e12 + ' ' + element.tokenType1
       }
       const respData = {
         id: element.taskId,

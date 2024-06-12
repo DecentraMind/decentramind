@@ -20,24 +20,37 @@ let communityId = blogPost.communityId
 let isOwner = blogPost.ownerId === address
 let taskJoinRecord = $ref({})
 taskJoinRecord = await getTaskJoinRecord(taskId)
+
+let spaceTaskSubmitInfo = $ref({})
+const communityInfo = await getLocalcommunityInfo(communityId)
+spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
+console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
+let checkSubmit = () => {
+  for (let index = 0; index < spaceTaskSubmitInfo.length; index++) {
+    const element = spaceTaskSubmitInfo[index]
+    if(element.address === address){
+      return true
+    }
+  }
+  return false
+}
 let checkJoin = () => {
   for (let index = 0; index < taskJoinRecord.length; index++) {
-    let element = taskJoinRecord[index]
+    const element = taskJoinRecord[index]
     if(element.joinedAddress === address){
       return true
     }
   }
   return false
 }
+let isSubmitted = $ref()
 let isJoined = $ref()
 isJoined = checkJoin()
+isSubmitted = checkSubmit()
 let joinStatus = $ref('')
+let submiteStatus = $ref('')
+submiteStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
 joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
-let spaceTaskSubmitInfo = $ref({})
-const communityInfo = await getLocalcommunityInfo(communityId)
-spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
-
 // console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
 // console.log('isJoined = ' + isJoined)
 // console.log('chatProcessId = ' + chatProcessId)
@@ -188,8 +201,8 @@ async function onClick() {
   blogPost = await getTaskById(taskId)
   taskJoinRecord = await getTaskJoinRecord(taskId)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-  isJoined = checkJoin()
-  joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
+  isSubmitted = checkJoin()
+  joinStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
   isOpenJoin = false
 }
 function isNullOrEmpty(str: string | null | undefined): boolean {
@@ -350,9 +363,9 @@ const finalStatus = (isBegin: string) => {
                     {{ finalStatus(blogPost.isBegin)}}
                   </UBadge>
                 </div>
-                <div v-if="isJoined" class="mx-2">
+                <div v-if="isSubmitted" class="mx-2">
                   <UBadge color="black" variant="solid">
-                    {{ joinStatus }}
+                    {{ submiteStatus }}
                   </UBadge>
                 </div>
                 <div v-if="isOwner" class="mx-2">

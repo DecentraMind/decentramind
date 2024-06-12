@@ -4,15 +4,15 @@ export default eventHandler(async (event) => {
   const {spaceId} = getQuery(event) as { spaceId?: string }
   console.log('spaceId in twtitter.ts = ' + spaceId)
   const url = 'https://api.twitter.com/2/spaces/' + spaceId + '?space.fields=creator_id,speaker_ids&expansions=creator_id&topic.fields=name'
-
+  console.log('ask twitter url = ' + url)
   // 配置 headers
 
   const token = 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAADQWNx%2FmfyBHNT4V71rSuwhzi4z0%3DQd5oXywZLlTyPArAnUVJMD6IuaBJrTuA3339oPjomyMKl4grXN'
-  const params = {
-    'space.fields': 'creator_id,speaker_ids',
-    'expansions': 'creator_id',
-    'topic.fields': 'name'
-  }
+  // const params = {
+  //   'space.fields': 'creator_id,speaker_ids',
+  //   'expansions': 'creator_id',
+  //   'topic.fields': 'name'
+  // }
 
   // 配置 body (data)
   // const data = new URLSearchParams()
@@ -27,6 +27,6 @@ export default eventHandler(async (event) => {
     }
   })
 
-  console.log(response)
+  console.log(JSON.stringify(response))
   return response
 })
