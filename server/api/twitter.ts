@@ -19,14 +19,14 @@ export default eventHandler(async (event) => {
   // data.append('grant_type', 'client_credentials')
 
   // const response = await $fetch('http://localhost:8080/api/course/getSpaceById')
-  const response = useFetch(url, {
+  const response = await $fetch(url, {
     baseURL: url,
     method: 'get',
     headers: {
-      Authorization: token
+      'Authorization': token
     }
   })
 
-  console.log(JSON.stringify(response))
+  // console.log(JSON.stringify(response))
   return response
 })

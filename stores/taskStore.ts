@@ -251,8 +251,10 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   const testCallJava = async(spaceId: string) => {
-    const query = computed(() => ({ spaceId: spaceId}))
-    const {data} = useFetch('/api/twitter', {query})
+    const query = computed(() => ({ spaceId: spaceId }))
+    const {data, pending} = await useFetch('/api/twitter', { query })
+    console.log('pending = ' + JSON.stringify(pending))
+    console.log('data = ' + JSON.stringify(data))
     // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
     const spaceStartedAt = data._rawValue.data.started_at
     // space参与人数
@@ -265,7 +267,6 @@ export const taskStore = defineStore('taskStore', () => {
     console.log(participanted)
     console.log(userAvatar)
     console.log(userCreatedAt)
-
   }
   const testTransfer = async() => {
     await window.arweaveWallet.connect(permissions)

@@ -7,7 +7,7 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 import { z } from 'zod'
 
 const { t } = useI18n()
-const { testTransfer, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
+const { testCallJava, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
@@ -328,7 +328,7 @@ const quitCommunity = async(communityuuid: any) => {
 }
 
 async function testAO() {
-  await testTransfer()
+  await testCallJava('1kvJpveMAnQKE')
 
 }
 
