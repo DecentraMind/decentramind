@@ -165,10 +165,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.taskName = state.taskName
   transData.taskInfo = state.taskInfo
   transData.taskRule = t('taskRule')
-  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * 1e10 : 0
+  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * 1e12 : 0
   transData.tokenType = state.tokenType ? state.tokenType.value : 'none'
   transData.tokenChain = state.tokenChain ? state.tokenChain.value : 'none'
-  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * 1e10 : 0
+  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * 1e12 : 0
   transData.tokenType1 = state.tokenType1 ? state.tokenType1.value : 'none'
   transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1.value : 'none'
   transData.rewardTotal = state.rewardTotal
