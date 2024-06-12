@@ -395,9 +395,9 @@ const finalStatus = (isBegin: string) => {
         </div>
         <div class="flex justify-between my-3 mt-10 items-center">
           <div >{{ $t('TokenOfCommunityDetail') }}</div>
-          <div class="flex space-x-3">
+          <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="flex space-x-3">
             <div
-              v-for="(token, index) in communityInfo.communitytoken"
+              v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
               :key="index"
               class="flex justify-center border rounded-lg w-full pl-2 pr-2"
             >
@@ -407,9 +407,9 @@ const finalStatus = (isBegin: string) => {
         </div>
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('Trading Support') }}</div>
-          <div class="flex space-x-3">
+          <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex space-x-3">
             <div
-              v-for="(token, index) in communityInfo.support"
+              v-for="(token, index) in communityInfo.support.slice(0,2)"
               :key="index"
               class="flex justify-center border rounded-lg w-full pl-2 pr-2"
             >

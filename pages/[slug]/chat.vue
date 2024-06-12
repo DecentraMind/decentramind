@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
+const { currentUuid, communityUser, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 
@@ -116,11 +116,26 @@ onMounted( () => {
 onMounted(async () => {
   await loadCommunityInfo(currentUuid)
   const result = await getCommunityuser(communityInfo.uuid)
+  console.log(result)
   if (result && result.Messages && result.Messages.length > 0) {
     const dataStr = result.Messages[0].Data;
     
     try {
+      
       communityuser = JSON.parse(dataStr);
+      console.log(communityuser)
+      for (let key in communityuser) {
+        if (communityuser.hasOwnProperty(key)) {
+          try {
+            // 解析每个键的JSON字符串
+            communityuser[key] = JSON.parse(communityuser[key]);
+          } catch (e) {
+            console.error(`Failed to parse JSON for key ${key}:`, e);
+          }
+        }
+      }
+      console.log("----------")
+      console.log(communityuser)
       // You can further process the dataJson here
     } catch (error) {
       console.error('Error parsing JSON:', error);
@@ -143,6 +158,11 @@ const copyText = async () => {
     console.error('Code Failed: ', err);
   }
 };
+
+const test = () => {
+  console.log("---------")
+  console.log(communityUser['8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw'])
+}
 </script>
 
 <template>
@@ -182,9 +202,9 @@ const copyText = async () => {
           </div>
           <div class="flex justify-between my-3 mt-10 items-center">
             <div >{{ $t('TokenOfCommunityDetail') }}</div>
-            <div class="flex space-x-3">
+            <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="flex space-x-3">
               <div 
-                v-for="(token, index) in communityInfo.communitytoken" 
+                v-for="(token, index) in communityInfo.communitytoken.slice(0,2)" 
                 :key="index" 
                 class="flex justify-center border rounded-lg w-[80px]"
               >
@@ -194,9 +214,9 @@ const copyText = async () => {
           </div>
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('Trading Support') }}</div>
-            <div class="flex space-x-3">
+            <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex space-x-3">
               <div 
-                v-for="(token, index) in communityInfo.support" 
+                v-for="(token, index) in communityInfo.support.slice(0,2)" 
                 :key="index"
                 class="flex justify-center border rounded-lg w-[80px]"
               >
@@ -275,18 +295,24 @@ const copyText = async () => {
             </template>
           </UDashboardNavbar>
           <ULandingCard class="">
-            <div v-for="(user, index) in communityuser" :key="index">
+            <div v-for="(user, index) in communityUser" :key="index">
               <UDashboardSection
                 icon="i-heroicons-user"
                 title=""
-                :description="user"
                 orientation="vertical"
+                class="flex item-center items-cente"
               >
+                <template #description>
+                  <div v-if="user[0].name == 'N/A'" class="flex text-center item-center text-4xl">User</div>
+                  <div v-else class="flex text-center item-center text-4xl">{{ user[0].name }}</div>
+                </template>
                 <template #icon>
-                  <UAvatar src="/community/chatavatar.jpg"/>
+                  <UAvatar v-if="user[0].avatar == 'N/A'" size="2xl" src="/community/chatavatar.jpg"/>
+                  <UAvatar v-else size="2xl" :src="user[0].avatar"/>
                 </template>
               </UDashboardSection>
             </div>
+            <!--<UButton @click="test">test</UButton>-->
           </ULandingCard>
         </div>
       </UPageGrid>

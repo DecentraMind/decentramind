@@ -124,7 +124,7 @@ const Logout = async() => {
                   </template>
                   <template v-else>
                     <!-- Show UButton Component -->
-                    <UButton class="absolute right-0 w-[60px]" :ui="{ font: 'font-medium'}" color="white" variant="outline" @click="() => communityJoin(community.uuid)">
+                    <UButton class="absolute right-0 w-[60px]" block :ui="{ font: 'font-medium'}" color="white" variant="outline" @click="() => communityJoin(community.uuid)">
                       {{ $t('community.list.join') }}
                     </UButton>
                   </template>

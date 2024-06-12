@@ -8,6 +8,7 @@ import audioFile from '@/assets/notify.mp3'; // Adjust the path accordingly
 const emitLoaded = defineEmit('loaded')
 
 const { state, itemsCache, loadInboxList, isInboxLoading: isLoading, getInboxCount } = $(inboxStore())
+const { communityUser } = $(aocommunityStore())
 //const { address, getActiveAddress } = $(arweaveWalletStore())
 const { address } = $(aoStore())
 const items = $computed(() => {

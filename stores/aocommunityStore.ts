@@ -20,6 +20,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const processID = 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU'
   let communityList = $ref({})
   let userInfo = $ref({})
+  let communityUser = $ref({})
   let joincommunityList = $ref({})
   let isLoading = $ref(false)
   let currentUuid = $ref('')
@@ -271,6 +272,22 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         { name: 'uuid', value: uuid }
       ],
     });
+    if (result && result.Messages && result.Messages.length > 0) {
+      const dataStr = result.Messages[0].Data;
+
+      communityUser = JSON.parse(dataStr);
+      console.log(communityUser)
+      for (let key in communityUser) {
+        if (communityUser.hasOwnProperty(key)) {
+          try {
+            // 解析每个键的JSON字符串
+            communityUser[key] = JSON.parse(communityUser[key]);
+          } catch (e) {
+            console.error(`Failed to parse JSON for key ${key}:`, e);
+          }
+        }
+      }
+    }
     isLoading = false
     return result
   }
@@ -427,6 +444,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
   return $$({
     userInfo,
+    communityUser,
     communityList,
     joincommunityList,
     communityCreate,
