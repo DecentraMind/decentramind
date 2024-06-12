@@ -71,9 +71,25 @@ end)
 
 -- join community
 Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(msg)
-  local newColumn = msg.Tags.userAddress
+  local newColumn = msg.From
   local uuid = msg.Data
   -- Check if a column with the same name already exists
+  if community then
+    for key, value in pairs(community) do
+      local data = json.decode(value)
+      if data[1] and data[1].uuid == uuid then
+        if data[1].buildnum then
+          data[1].buildnum = data[1].buildnum + 1
+        end
+        community[key] = json.encode(data)
+        break
+      end
+    end
+  else
+    print("community is nil or not a table")
+  end
+
+
   if not usercommunity[newColumn] then
     -- Create a new column with the msg.Id value as its name and assign it to an empty table
     usercommunity[newColumn] = {}
@@ -115,6 +131,24 @@ end)
 Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(msg)
   local newColumn = msg.From
   print(msg.Tags.userAddress)
+
+  if community then
+    for key, value in pairs(community) do
+      local data = json.decode(value)
+      if data[1] and data[1].uuid == msg.Data then
+        if data[1].buildnum then
+          data[1].buildnum = data[1].buildnum - 1
+          if data[1].buildnum <= 0 then
+            data[1].buildnum = 0
+          end
+        end
+        community[key] = json.encode(data)
+        break
+      end
+    end
+  else
+    print("community is nil or not a table")
+  end
 
   -- Check for the presence of usercommunity[newColumn]
   if usercommunity[newColumn] then
@@ -195,13 +229,17 @@ Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "community
 
   -- 遍历 usercommunity 表
   for key, value in pairs(usercommunity) do
-    -- 遍历 joined 列表
-    print(usercommunity)
+    -- 遍历 joined 列表，查看当前用户加入得社区列
     for subkey, subvalue in pairs(value) do
-      -- 访问 invite 参数
-
+      -- 访问 invite 参数，如果他加入得社区中有指定得uuid
       if subkey == target_uuid then
-        table.insert(matching_keys, key)
+        -- table.insert(matching_keys, key)
+        -- 加入过这个社区得用户，获取他userinfo中的用户名和头像
+        for info_key, info_value in pairs(userinfo) do
+          if info_key == key then
+            matching_keys[info_key] = info_value
+          end
+        end
       end
     end
   end

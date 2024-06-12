@@ -214,9 +214,9 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.detail.token') }}</div>
-                    <div class="w-36 flex justify-around items-center space-x-1">
+                    <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="w-36 flex justify-around items-center space-x-1">
                       <div 
-                        v-for="(token, index) in communityInfo.communitytoken" 
+                        v-for="(token, index) in communityInfo.communitytoken.slice(0,2)" 
                         :key="index" 
                         class="flex justify-center border rounded-lg w-[350px]"
                       >
@@ -224,11 +224,11 @@ onBeforeUnmount(() => {
                       </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16 pt-2">
+                  <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.token.platforms') }}</div>
                     <div class="w-36 flex justify-around items-center space-x-1">
                       <div 
-                        v-for="(token, index) in communityInfo.support" 
+                        v-for="(token, index) in communityInfo.support.slice(0,2)" 
                         :key="index"
                         class="flex justify-center border rounded-lg w-[350px]"
                       >
@@ -236,11 +236,11 @@ onBeforeUnmount(() => {
                       </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16 pt-2">
+                  <div v-if="communityInfo.bounty && communityInfo.bounty.length > 0" class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.typereward') }}</div>
                     <div class="w-36 flex justify-around items-center space-x-1">
                       <div 
-                        v-for="(token, index) in communityInfo.bounty" 
+                        v-for="(token, index) in communityInfo.bounty.slice(0,2)" 
                         :key="index"
                         class="flex justify-center border rounded-lg w-[350px]"
                       >

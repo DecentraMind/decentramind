@@ -62,6 +62,11 @@ const schema = z.object({
   Name: z.string().min(2).max(20),
   Inbro: z.string().min(3).max(100),
 
+  Website: z.string().max(20).optional(),
+  Twitter: z.string().max(20).optional(),
+  Whitebook: z.string().max(20).optional(),
+  Gihub: z.string().max(20).optional(),
+
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
   }),

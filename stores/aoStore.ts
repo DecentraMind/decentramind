@@ -211,18 +211,18 @@ export const aoStore = defineStore('aoStore', () => {
 
   const init = async () => {
     if (!address) return
-    //tokenBalances.CRED = (await getBalance('CRED')) / 1e3
-    tokenBalances.AOCOIN = (await getBalance('AOCoin')) // / 1e3
+    //tokenBalances.CRED = (await getBalance('CRED')) / 1e12
+    tokenBalances.AOCOIN = (await getBalance('AOCoin')) // / 1e12
     tokenBalances.AR = (await getBalance('AR'))
-    tokenBalances.FIZI = (await getBalance('FIZI')) // / 1e3
-    tokenBalances.BRKTST = (await getBalance('BRKTST')) // / 1e3
-    tokenBalances.TRUNK = (await getBalance('TRUNK'))//  / 1e3
-    tokenBalances.EXP = (await getBalance('EXP')) // / 1e3
-    tokenBalances.ORBT = (await getBalance('ORBT')) // / 1e3
-    tokenBalances.EARTH = (await getBalance('EARTH')) // / 1e3
-    tokenBalances.FIRE = (await getBalance('FIRE')) // / 1e3
-    tokenBalances.AIR = (await getBalance('AIR')) // / 1e3
-    tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) // / 1e3
+    tokenBalances.FIZI = (await getBalance('FIZI')) // / 1e12
+    tokenBalances.BRKTST = (await getBalance('BRKTST')) // / 1e12
+    tokenBalances.TRUNK = (await getBalance('TRUNK'))//  / 1e12
+    tokenBalances.EXP = (await getBalance('EXP')) // / 1e12
+    tokenBalances.ORBT = (await getBalance('ORBT')) // / 1e12
+    tokenBalances.EARTH = (await getBalance('EARTH')) // / 1e12
+    tokenBalances.FIRE = (await getBalance('FIRE')) // / 1e12
+    tokenBalances.AIR = (await getBalance('AIR')) // / 1e12
+    tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) // / 1e12
     totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0);
 
 

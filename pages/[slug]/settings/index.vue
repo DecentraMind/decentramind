@@ -163,13 +163,12 @@ const handleUp = (event) => {
         </div>
       </UFormGroup>
 
-      <template #footer>
-        <div class="flex justify-center">
-          <UButton type="submit" color="black" @click="saveInfo">
-            {{ $t('setting.save')}}
-          </UButton>
-        </div>
-      </template>
+
+      <div class="flex justify-center">
+        <UButton type="submit" color="black" @click="saveInfo">
+          {{ $t('setting.save')}}
+        </UButton>
+      </div>
     </UForm>
   </UDashboardPanelContent>
 </template>
