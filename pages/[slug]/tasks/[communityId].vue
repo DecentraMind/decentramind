@@ -130,10 +130,10 @@ const transData = {
   taskName: undefined,
   taskInfo: undefined,
   taskRule: '',
-  tokenNumber: undefined,
+  tokenNumber: 0,
   tokenType: undefined,
   tokenChain: undefined,
-  tokenNumber1: undefined,
+  tokenNumber1: 0,
   tokenType1: undefined,
   tokenChain1: undefined,
   rewardTotal: undefined,
@@ -165,10 +165,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.taskName = state.taskName
   transData.taskInfo = state.taskInfo
   transData.taskRule = t('taskRule')
-  transData.tokenNumber = state.tokenNumber ? state.tokenNumber : 0
+  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * 1e10 : 0
   transData.tokenType = state.tokenType ? state.tokenType.value : 'none'
   transData.tokenChain = state.tokenChain ? state.tokenChain.value : 'none'
-  transData.tokenNumber1 = state.tokenNumber1 ? state.tokenNumber1 : 0
+  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * 1e10 : 0
   transData.tokenType1 = state.tokenType1 ? state.tokenType1.value : 'none'
   transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1.value : 'none'
   transData.rewardTotal = state.rewardTotal
