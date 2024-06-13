@@ -463,7 +463,7 @@ const finalStatus = (isBegin: string) => {
         <Button class="center-text border rounded-lg w-full">Invite people</Button>
         <template #panel>
           <div class="p-4 ">
-            <div>Invite Url: </div>
+            <div>Invite URL: </div>
             <div class="flex items-center">
               <p ref="textToCopy">
                 dm-demo.vercel.app/{{ slug }}/invite/{{ communityId }}
@@ -515,7 +515,7 @@ const finalStatus = (isBegin: string) => {
               align="bottom"
             >
               <template #title>
-                <div class="text-2xl pt-16 " style="white-space: pre-line">
+                <div class="flex justify-center items-center text-2xl pt-16 " style="white-space: pre-line">
                   {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
                 </div>
               </template>

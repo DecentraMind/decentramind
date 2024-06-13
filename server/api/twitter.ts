@@ -7,7 +7,7 @@ export default eventHandler(async (event) => {
   console.log('ask twitter url = ' + url)
   // 配置 headers
 
-  const token = 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAADQWNx%2FmfyBHNT4V71rSuwhzi4z0%3DQd5oXywZLlTyPArAnUVJMD6IuaBJrTuA3339oPjomyMKl4grXN'
+  const token = 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAAsHa0%2F76ticMwaliNA8bkU5G7Syw%3DSBCZ8LgCt5ka6jD68atZfyPAsHgUjuhQPSD5tXMaLg1Jcaqpd2'
   // const params = {
   //   'space.fields': 'creator_id,speaker_ids',
   //   'expansions': 'creator_id',
