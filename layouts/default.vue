@@ -178,7 +178,7 @@ const test = ()=> {
         <template #header>
           <NuxtLink :to="`/${slug}/discovery`">
             <div class="w-full flex justify-center items-center">
-              <img src="/export.png" class="h-3/5 w-3/5 transition duration-300 ease-in-out transform hover:brightness-75">
+              <img src="/export.png" class="h-4/5 w-4/5 transition duration-300 ease-in-out transform hover:brightness-75">
             </div>
           </NuxtLink>
         </template>
