@@ -324,14 +324,24 @@ const taskTypes = [
 ]
 
 let exitButton = $ref(false)
-const { exitCommunity } = $(aocommunityStore())
+const { exitCommunity, getCommunitylist } = $(aocommunityStore())
 const router = useRouter();
 
 
 
 const quitCommunity = async(communityuuid: any) => {
-  await exitCommunity(communityuuid)
-  router.push(`/${slug}/discovery`);
+  Leaveout = true
+  try {
+    await exitCommunity(communityuuid);
+    await getCommunitylist()
+    console.log('exitCommunity 操作成功');
+    Leaveout = false;
+    router.push(`/${slug}/discovery`);
+  } catch (error) {
+    alert('exitCommunity Fail:', error);
+  } finally {
+    Leaveout = false;
+  }
 }
 
 async function testAO() {
@@ -365,6 +375,8 @@ const finalStatus = (isBegin: string) => {
   // console.log('res = ' + res)
   return res
 }
+
+let Leaveout = $ref(false)
 </script>
 <template>
   <UDashboardPanel :width="420" collapsible>
@@ -699,9 +711,13 @@ const finalStatus = (isBegin: string) => {
         <div class="w-full flex justify-center text-2xl">
           Sure to exit
         </div>
-        <div class="w-full flex space-x-10 mt-6">
+        <div v-if="!Leaveout" class="w-full flex space-x-10 mt-6">
           <UButton @click="exitButton = false">No</UButton>
           <UButton @click="quitCommunity(communityId)">Yes</UButton>
+        </div>
+        <div v-else class="h-[80px] flex flex-col items-center justify-center">
+          <Text>Leave...</Text>
+          <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>
     </UModal>

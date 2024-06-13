@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, communityUser, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
+const { currentUuid, communityUser, exitCommunity, getCommunitylist, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 
@@ -159,9 +159,26 @@ const copyText = async () => {
   }
 };
 
-const test = () => {
-  console.log("---------")
-  console.log(communityUser['8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw'])
+let Leaveout = $ref(false)
+
+let exitButton = $ref(false)
+const router = useRouter();
+
+
+
+const quitCommunity = async(communityuuid: any) => {
+  Leaveout = true
+  try {
+    await exitCommunity(communityuuid);
+    await getCommunitylist()
+    console.log('exitCommunity 操作成功');
+    Leaveout = false;
+    router.push(`/${slug}/discovery`);
+  } catch (error) {
+    alert('exitCommunity Fail:', error);
+  } finally {
+    Leaveout = false;
+  }
 }
 </script>
 
@@ -175,7 +192,7 @@ const test = () => {
           <div class="flex justify-between  my-3 items-center">
             <div class="text-3xl">{{ communityInfo.name }}</div>
             <div>
-              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
+              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${currentUuid}`">
                 {{ $t('View Details') }}
               </UButton>
             </div>
@@ -311,5 +328,20 @@ const test = () => {
       </UPageGrid>
       <!--</UContainer>-->
     </UPage>
+    <UModal v-model="exitButton" :ui="{ width: w-full }">
+      <UCard class="min-w-[300px] flex justify-center">
+        <div class="w-full flex justify-center text-2xl">
+          Sure to exit
+        </div>
+        <div v-if="!Leaveout" class="w-full flex space-x-10 mt-6">
+          <UButton @click="exitButton = false">No</UButton>
+          <UButton @click="quitCommunity(currentUuid)">Yes</UButton>
+        </div>
+        <div v-else class="h-[80px] flex flex-col items-center justify-center">
+          <Text>Leave...</Text>
+          <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        </div>
+      </UCard>
+    </UModal>
   </div>
 </template>
