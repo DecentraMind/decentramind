@@ -35,6 +35,10 @@ export const taskStore = defineStore('taskStore', () => {
     AIR: '2nfFJb8LIA69gwuLNcFQezSuw4CXPE4--U-j-7cxKOU',
     FIREEARTH: 'NkXX3uZ4oGkQ3DPAWtjLb2sTA-yxmZKdlOlEHqMfWLQ',
   })
+  const Sleep = (ms)=> {
+    return new Promise(resolve=>setTimeout(resolve, ms))
+  }
+
 
   const { showError, showSuccess, alertMessage } = $(notificationStore())
   let respArray = $ref([])
@@ -48,6 +52,7 @@ export const taskStore = defineStore('taskStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
     })
     data.processId = newProcessId
+    await Sleep(1000)
     console.log(JSON.stringify(data))
     console.log('newProcessId = ' + newProcessId)
     // 把此次任务需要的钱转给process两种bounty，转两次，如果不为0的话
