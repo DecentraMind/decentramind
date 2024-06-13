@@ -261,6 +261,22 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     }
   }
 
+  const updataCommunity = async (uuid, joinStatus) => {
+    for (let i = 0; i < communityList.length; i++) {
+      if (communityList[i].uuid === uuid) {
+        if (joinStatus == "join") {
+          console.log("join")
+          communityList[i].isJoined = true;
+        } else {
+          console.log("exit")
+          communityList[i].isJoined = false;
+        }
+        break;
+      }
+    }
+    joincommunityList = communityList.filter((item) => item.isJoined === true);
+  }
+
   //Get joined users in a given community
   const getCommunityuser = async (uuid: any) => {
     if (isLoading) return
@@ -454,6 +470,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     registInfo,
     getLocalcommunityInfo,
     getCommunitylist,
+    updataCommunity,
     addCommunity,
     settingCommunity,
     joinCommunity,

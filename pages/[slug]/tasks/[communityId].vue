@@ -324,7 +324,7 @@ const taskTypes = [
 ]
 
 let exitButton = $ref(false)
-const { exitCommunity, getCommunitylist } = $(aocommunityStore())
+const { exitCommunity, updataCommunity } = $(aocommunityStore())
 const router = useRouter();
 
 
@@ -333,7 +333,7 @@ const quitCommunity = async(communityuuid: any) => {
   Leaveout = true
   try {
     await exitCommunity(communityuuid);
-    await getCommunitylist()
+    await updataCommunity(communityuuid, "exit")
     console.log('exitCommunity 操作成功');
     Leaveout = false;
     router.push(`/${slug}/discovery`);

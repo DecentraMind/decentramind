@@ -5,7 +5,7 @@ const {
   credBalance,
   init, doLogout, doLogin } = $(aoStore())
 
-const { communityList, userInfo, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
+const { communityList, userInfo, updataCommunity, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
 const { gettoken } = $(linktwitter())
 
 const toast = useToast()
@@ -71,7 +71,9 @@ const jointocommunity = async(uuid: any) => {
       const invite = "none"
       await joinCommunity(uuid, invite)
       toast.add({ title: 'joined success' })
-      await getCommunity()
+      // 查找uuid匹配的元素并更新isJoined属性
+      updataCommunity(uuid, "join")
+      joinLoading = false
     }
     joinLoading = true
     // 如果 communityJoin 没有抛出异常，则认为操作成功
@@ -86,12 +88,18 @@ const jointocommunity = async(uuid: any) => {
   }
 
 }
+const test = ()=> {
+  const a = "db69e36a-8267-43bd-9edf-fd246cef7c7c"
+  updataCommunity(a, "exit")
+  console.log(communityList)
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-red-1900 w-full">
     <UDashboardNavbar title="Explore">
       <template #right>
+        <UButton @click="test">test</UButton>
         <UBadge color="white">
           <NuxtLink :to="`/${slug}/mytask`">
             <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>

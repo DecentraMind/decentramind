@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, communityUser, exitCommunity, getCommunitylist, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
+const { currentUuid, communityUser, exitCommunity, updataCommunity, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 
@@ -170,7 +170,7 @@ const quitCommunity = async(communityuuid: any) => {
   Leaveout = true
   try {
     await exitCommunity(communityuuid);
-    await getCommunitylist()
+    await updataCommunity(communityuuid, "exit")
     console.log('exitCommunity 操作成功');
     Leaveout = false;
     router.push(`/${slug}/discovery`);
