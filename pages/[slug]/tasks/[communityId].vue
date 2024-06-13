@@ -508,28 +508,21 @@ const finalStatus = (isBegin: string) => {
         </div>
         <div class="h-full w-full flex justify-center items-center" v-if="taskListIsEmpty">
           <div class=" w-1/3" v-if="taskListIsEmpty">
-            <Card
-              highlight
-              orientation="vertical"
+            <Card highlight orientation="vertical">
 
-            >
-<!--              <template #title>-->
+              <div class="flex justify-center items-center  " style="text-align: center;white-space: pre-line">
+                <div class="text-2xl ">
+                  {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
+                </div>
+              </div>
+              <div class="flex mt-10 justify-center items-center">
+                <div class="flex justify-center items-center" v-if="communityInfo.creater == address" >
+                  <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
+                    <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+                  </UDropdown>
+                </div>
+              </div>
 
-<!--              </template>-->
-              <CardBody>
-                <div class="flex justify-center items-center  " style="text-align: center;white-space: pre-line">
-                  <div class="text-2xl ">
-                    {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
-                  </div>
-                </div>
-                <div class="flex mt-10 justify-center items-center">
-                  <div class="flex justify-center items-center" v-if="communityInfo.creater == address" >
-                    <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
-                      <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
-                    </UDropdown>
-                  </div>
-                </div>
-              </CardBody>
             </Card>
           </div>
         </div>
