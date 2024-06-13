@@ -287,7 +287,7 @@ const test = () => {
           </div>
         </div>
         <div class="pt-10 pr-10 pl-32">
-          <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="communityuser.length">
+          <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="Object.keys(communityUser).length">
             <template #title>
               <Text class="text-3xl">
                 User
@@ -295,22 +295,15 @@ const test = () => {
             </template>
           </UDashboardNavbar>
           <ULandingCard class="">
-            <div v-for="(user, index) in communityUser" :key="index">
-              <UDashboardSection
-                icon="i-heroicons-user"
-                title=""
-                orientation="vertical"
-                class="flex item-center items-cente"
-              >
-                <template #description>
-                  <div v-if="user[0].name == 'N/A'" class="flex text-center item-center text-4xl">User</div>
-                  <div v-else class="flex text-center item-center text-4xl">{{ user[0].name }}</div>
-                </template>
-                <template #icon>
-                  <UAvatar v-if="user[0].avatar == 'N/A'" size="2xl" src="/community/chatavatar.jpg"/>
-                  <UAvatar v-else size="2xl" :src="user[0].avatar"/>
-                </template>
-              </UDashboardSection>
+            <div v-for="(user, index) in communityUser" :key="index" class="flex items-center">
+              <div>
+                <UAvatar v-if="user[0].avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
+                <UAvatar v-else size="xl" :src="user[0].avatar"/>
+              </div>
+              <div>
+                <div v-if="user[0].name == 'N/A'" class="flex text-center item-center text-3xl">User</div>
+                <div v-else class="flex text-center item-center text-3xl">{{ user[0].name }}</div>
+              </div>
             </div>
             <!--<UButton @click="test">test</UButton>-->
           </ULandingCard>
