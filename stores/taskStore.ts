@@ -57,10 +57,15 @@ export const taskStore = defineStore('taskStore', () => {
     console.log('newProcessId = ' + newProcessId)
     // 把此次任务需要的钱转给process两种bounty，转两次，如果不为0的话
     if(data.tokenNumber && data.tokenNumber != 0){
-      console.log(data.tokenNumber)
+      console.log('tokenNumber = ' + data.tokenNumber)
       console.log(data.tokenType)
       console.log(tokenMap[data.tokenType])
-      await window.arweaveWallet.connect(permissions)
+      try{
+        await window.arweaveWallet.connect(permissions)
+      }catch(error){
+        console.log('open error = ' + error)
+        return
+      }
       try{
         const messageId = await message({
           process: tokenMap[data.tokenType],
@@ -68,19 +73,23 @@ export const taskStore = defineStore('taskStore', () => {
           tags: [
             { name: 'Action', value: 'Transfer' },
             {name: 'Recipient', value: newProcessId},
-            {name: 'Quantity', value: data.tokenNumber}
+            {name: 'Quantity', value: String(data.tokenNumber)}
           ]
         })
       }catch(error){
-        // alertMessage('sendBounty error, create quest failed')
-        // return
+        console.log('error = ' + error)
       }
     }
 
     if(data.tokenNumber1 && data.tokenNumber1 != 0){
       console.log(data.tokenNumber1)
       console.log(data.tokenType1)
-      await window.arweaveWallet.connect(permissions)
+      try{
+        await window.arweaveWallet.connect(permissions)
+      }catch(error){
+        console.log('open error = ' + error)
+        return
+      }
       try{
         const messageId = await message({
           process: tokenMap[data.tokenType1],
@@ -88,7 +97,7 @@ export const taskStore = defineStore('taskStore', () => {
           tags: [
             { name: 'Action', value: 'Transfer' },
             {name: 'Recipient', value: newProcessId},
-            {name: 'Quantity', value: data.tokenNumber1 }
+            {name: 'Quantity', value: String(data.tokenNumber1) }
           ]
         })
       }catch(error){
@@ -122,7 +131,22 @@ export const taskStore = defineStore('taskStore', () => {
     }
     showSuccess('Create task success')
   }
-
+  const testTrans = async() => {
+    await window.arweaveWallet.connect(permissions)
+    try{
+      const messageId = await message({
+        process: processId,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [
+          { name: 'Action', value: 'Transfer' },
+          {name: 'Recipient', value: 'tcpbfTrV8PsmAywSa_fl0kz4MDlBd665rZKOayx7OLU'},
+          {name: 'Quantity', value: '111' }
+        ]
+      })
+    }catch(error){
+      console.log(error)
+    }
+  }
   const getAllTasks = async (communityId: string) => {
     let res
     try {
@@ -455,7 +479,7 @@ export const taskStore = defineStore('taskStore', () => {
     // console.log(JSON.stringify(testBuild))
   }
 
-  return $$({ updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ testTrans, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})
