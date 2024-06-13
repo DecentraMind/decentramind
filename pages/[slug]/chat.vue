@@ -175,7 +175,7 @@ const test = () => {
           <div class="flex justify-between  my-3 items-center">
             <div class="text-3xl">{{ communityInfo.name }}</div>
             <div>
-              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${currentUuid}`">
+              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
                 {{ $t('View Details') }}
               </UButton>
             </div>
@@ -186,7 +186,7 @@ const test = () => {
           <div class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
             <div>
-              <div class="flex justify-center border rounded-lg w-[90px]">
+              <div class="flex justify-center border rounded-lg w-full pl-2 pr-2">
                 {{ communityInfo.website }}
               </div>
             </div>
@@ -203,10 +203,10 @@ const test = () => {
           <div class="flex justify-between my-3 mt-10 items-center">
             <div >{{ $t('TokenOfCommunityDetail') }}</div>
             <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="flex space-x-3">
-              <div 
-                v-for="(token, index) in communityInfo.communitytoken.slice(0,2)" 
-                :key="index" 
-                class="flex justify-center border rounded-lg w-[80px]"
+              <div
+                v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
+                :key="index"
+                class="flex justify-center border rounded-lg w-full pl-2 pr-2"
               >
                 {{ token.tokenName }}
               </div>
@@ -215,10 +215,10 @@ const test = () => {
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('Trading Support') }}</div>
             <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex space-x-3">
-              <div 
-                v-for="(token, index) in communityInfo.support.slice(0,2)" 
+              <div
+                v-for="(token, index) in communityInfo.support.slice(0,2)"
                 :key="index"
-                class="flex justify-center border rounded-lg w-[80px]"
+                class="flex justify-center border rounded-lg w-full pl-2 pr-2"
               >
                 {{ token }}
               </div>
@@ -237,12 +237,12 @@ const test = () => {
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
             <div>{{ communityInfo.buildnum }}</div>
           </div>
-          <div class="flex">
-            <UButton 
-              color="white" 
-              variant="solid" 
+          <div v-if="communityInfo.creater !== address" class="flex">
+            <UButton
+              color="white"
+              variant="solid"
               class="ml-auto mt-10"
-              @click="quitCommunity(communityInfo.uuid)"
+              @click="exitButton = true"
             >
               {{ $t('Quit') }}
               <UIcon name="bi:arrow-left-circle" />
