@@ -77,7 +77,7 @@ onMounted(async () => {
         <template #label>
           <div class="mt-20 text-xl flex items-center pl-5">
             <Text class="w-[420px]">
-              {{ $t('setting.community.isjoin') }}： 2
+              {{ $t('setting.community.isjoin') }}： {{ joincommunityList.length }}
             </Text>
             <UToggle v-model="communityForm.showCommunitynum" class="ml-10" size="xl" />
             <div class="ml-3">{{ $t('show') }}</div>
