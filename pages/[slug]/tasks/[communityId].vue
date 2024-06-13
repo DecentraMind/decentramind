@@ -508,18 +508,20 @@ const finalStatus = (isBegin: string) => {
         </div>
         <div class="h-full w-full flex justify-center items-center" v-if="taskListIsEmpty">
           <div class=" w-1/3" v-if="taskListIsEmpty">
-            <UPricingCard
-              :title="$t('Nothing here,click to start your first public quest.')"
+            <Card
               highlight
               orientation="vertical"
-              align="bottom"
+
             >
-              <template #title>
-                <div class="flex justify-center items-center text-2xl pt-16 " style="white-space: pre-line">
-                  {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
+<!--              <template #title>-->
+
+<!--              </template>-->
+              <CardBody>
+                <div class="flex justify-center items-center  " style="text-align: center;white-space: pre-line">
+                  <div class="text-2xl ">
+                    {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
+                  </div>
                 </div>
-              </template>
-              <template #description>
                 <div class="flex mt-10 justify-center items-center">
                   <div class="flex justify-center items-center" v-if="communityInfo.creater == address" >
                     <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
@@ -527,8 +529,8 @@ const finalStatus = (isBegin: string) => {
                     </UDropdown>
                   </div>
                 </div>
-              </template>
-            </UPricingCard>
+              </CardBody>
+            </Card>
           </div>
         </div>
         <div class="mx-auto w-full" v-if="!taskListIsEmpty">

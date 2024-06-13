@@ -238,6 +238,8 @@ async function submitTask() {
   const userAvatar = data._rawValue.includes.users[0].profile_image_url
   // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
   const userCreatedAt = data._rawValue.includes.users[0].created_at
+  // space创办人的ID 用于判断是否是本人提交任务
+  const userId = data._rawValue.includes.users[0].id
   const userAvatarBase64 = await url2Base64(userAvatar)
   // 品牌效应
   const brandEffect = userAvatarBase64 === communityInfo.logo ? 10 : 0
@@ -245,10 +247,11 @@ async function submitTask() {
   const audience = participanted
   // 邀请人数 TODO 待完善方法，先设置默认值走下去
   const getPersion = 10
-  console.log(spaceStartedAt)
-  console.log(participanted)
-  console.log(userAvatar)
-  console.log(userCreatedAt)
+  console.log('spaceStartedAt = ' + spaceStartedAt)
+  console.log('participanted = ' + participanted)
+  console.log('userAvatar = ' + userAvatar)
+  console.log('userCreatedAt = ' + userCreatedAt)
+  console.log('userId = ' + userId)
   // console.log('brand = ' + brandEffect)
   // console.log(communityInfo.logo)
   // console.log(userAvatarBase64)
