@@ -201,8 +201,7 @@ async function onClick() {
   blogPost = await getTaskById(taskId)
   taskJoinRecord = await getTaskJoinRecord(taskId)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-  isSubmitted = checkJoin()
-  joinStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
+  isJoined = checkJoin()
   isOpenJoin = false
 }
 function isNullOrEmpty(str: string | null | undefined): boolean {
@@ -229,7 +228,8 @@ async function submitTask() {
   // await testCallJava()
   // 直接在vue中请求api接口 拿到需要的信息
   const query = computed(() => ({ spaceId: splitted[splitted.length - 1]}))
-  const {data} = useFetch('/api/twitter', {query})
+  const { data } = await useFetch('/api/twitter', { query })
+  console.log('data = ' + JSON.stringify(data))
   // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
   const spaceStartedAt = data._rawValue.data.started_at
   // space参与人数
@@ -254,6 +254,8 @@ async function submitTask() {
   // console.log(userAvatarBase64)
   await submitSpaceTask(taskId, address, url, brandEffect, getPersion, audience)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
+  isSubmitted = checkSubmit()
+  submiteStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
   isOpen = false
 }
 function url2Base64(url, type = 'image/jpeg') {

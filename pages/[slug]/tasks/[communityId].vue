@@ -7,7 +7,7 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 import { z } from 'zod'
 
 const { t } = useI18n()
-const { testTransfer, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
+const { testCallJava, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
@@ -31,8 +31,10 @@ function openModal() {
 }
 function onChange(index) {
   const item = items[index]
-
-  alert(`${item.label} was clicked!This quest template is being prepared!`)
+  // console.log(item)
+  if(item.label === 'Private Quests'){
+    alert(`${item.label} was clicked!This quest template is being prepared!`)
+  }
 }
 
 const schema = z.object({
@@ -241,6 +243,7 @@ const loadCommunityInfo = async (pid) => {
 }
 const taskType = ref()
 let taskListIsEmpty = $ref(false)
+let isCommunityOwner = $ref(false)
 onMounted(async () => {
 
 
@@ -257,7 +260,11 @@ onMounted(async () => {
   if(respArray.length === 0){
     taskListIsEmpty = true
   }
-
+  if(communityInfo.creater === address){
+    isCommunityOwner = true
+  }
+  // console.log('community creater = ' + communityInfo.creater)
+  console.log('isCommunityOwner = ' + isCommunityOwner)
 })
 
 const banners = [
@@ -328,7 +335,7 @@ const quitCommunity = async(communityuuid: any) => {
 }
 
 async function testAO() {
-  await testTransfer()
+  await testCallJava('1kvJpveMAnQKE')
 
 }
 
@@ -346,7 +353,7 @@ const copyText = async () => {
   }
 };
 const finalStatus = (isBegin: string) => {
-  console.log('isB = ' + isBegin)
+  // console.log('isB = ' + isBegin)
   let res = ''
   if(isBegin === 'NS')
     res = t('Not Start')
@@ -355,7 +362,7 @@ const finalStatus = (isBegin: string) => {
   }else {
     res = t('End')
   }
-  console.log('res = ' + res)
+  // console.log('res = ' + res)
   return res
 }
 </script>
@@ -508,8 +515,8 @@ const finalStatus = (isBegin: string) => {
               align="bottom"
             >
               <template #title>
-                <div class="text-2xl pt-16">
-                  {{ $t('Nothing here,click to start your first public quest.') }}
+                <div class="text-2xl pt-16 " style="white-space: pre-line">
+                  {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
                 </div>
               </template>
               <template #description>
