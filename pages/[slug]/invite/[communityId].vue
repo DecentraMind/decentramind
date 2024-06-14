@@ -7,8 +7,11 @@ const { address, doLogin } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 const slug = $computed(() => route.params.slug)
-const invitor = $computed(() => route.params.invitor)
-console.log(route.params)
+//const invitor = $computed(() => route.params.invitor)
+
+let communityIdPart = $ref()
+let inviterAddress = $ref()
+
 // onMounted(async () => {
 //   setCurrentuuid(communityId)
 //   await loadCommunityInfo(communityId)
@@ -16,12 +19,18 @@ console.log(route.params)
 async function join() {
   await doLogin()
 
-  await joinCommunity(communityId)
+  await joinCommunity(communityIdPart, inviterAddress)
   const p = '/' + slug + '/discovery'
   console.log('join success')
   await useRouter().push({path: p})
 }
 
+onMounted( () => {
+  const parts = communityId.split('&')
+  communityIdPart = parts[0]
+  inviterAddress = parts[1]
+
+})
 </script>
 
 <template>
@@ -32,7 +41,7 @@ async function join() {
       </template>
       <div class="flex justify-between">
         <div><Text>Invite to community:</Text></div>
-        <div>{{ communityId }}</div>
+        <div>{{ communityIdPart }}</div>
       </div>
 
       <template #footer>
