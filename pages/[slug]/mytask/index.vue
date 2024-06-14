@@ -56,7 +56,7 @@ const Wallettoken = ref<Wallettoken[]>([
       src: 'https://i.pravatar.cc/128?u=1'
     },
     status: 'subscribed'
-  }, 
+  },
   // 可以添加更多的初始数据
 ]);
 */
@@ -67,7 +67,7 @@ function onSubmitAccount () {
 const { init, tokenBalances, totalBalance, getarbalance } = $(aoStore())
 
 const test = async() => {
-  
+
     await init()
     convertTokenBalances()
 }
@@ -126,7 +126,7 @@ onMounted(async () => {
         </template>
         <template #balance-data="{ row }">
           <div class="flex flex-col">
-            <span class="text-gray-900 dark:text-white font-medium text-xl">{{ parseFloat(row.balance).toFixed(3) }}</span>
+            <span class="text-gray-900 dark:text-white font-medium text-xl">{{ parseFloat(row.balance).toFixed(12) }}</span>
             <!--<span>{{ parseFloat(arbalance).toFixed(3) }}</span>-->
           </div>
         </template>

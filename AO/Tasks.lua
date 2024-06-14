@@ -3,6 +3,7 @@ local ao = require('ao')
 TasksForTable = TasksForTable or {}
 SpaceTaskSubmittedTable = SpaceTaskSubmittedTable or {}
 TaskJoidRecord = TaskJoidRecord or {}
+XData = XData or {}
 
 Handlers.add(
     "DeleteAll",
@@ -12,6 +13,15 @@ Handlers.add(
         SpaceTaskSubmittedTable = {}
         TaskJoidRecord = {}
         Handlers.utils.reply("Delete TasksForTable SpaceTaskSubmittedTable and TaskJoidRecord success.")(msg)
+    end
+)
+
+Handlers.add(
+    "saveXData",
+    Handlers.utils.hasMatchingTag("Action", "saveXData"),
+    function (msg)
+        table.insert(XData, msg.Data)
+        Handlers.utils.reply("Data save success.")(msg)
     end
 )
 

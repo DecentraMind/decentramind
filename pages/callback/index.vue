@@ -29,17 +29,17 @@ onMounted(async () => {
     if (code && state === 'state') {
         try {
             await personalInfo(
-                userInfo[0].avatar, 
-                userInfo[0].name, 
-                connectTwitter, 
+                userInfo[0].avatar,
+                userInfo[0].name,
+                connectTwitter,
                 userInfo[0].showtwitter,
-                userInfo[0].mail, 
+                userInfo[0].mail,
                 userInfo[0].showmail,
                 userInfo[0].phone,
                 userInfo[0].showtelegram
             )
             toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
-            
+
         } catch (error) {
         console.error('错误:', error)
         }

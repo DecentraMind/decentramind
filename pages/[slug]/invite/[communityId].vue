@@ -6,9 +6,9 @@ definePageMeta({
 const { address, doLogin } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
-// const { joinCommunity } = $(aocommunityStore())
 const slug = $computed(() => route.params.slug)
-
+const invitor = $computed(() => route.params.invitor)
+console.log(route.params)
 // onMounted(async () => {
 //   setCurrentuuid(communityId)
 //   await loadCommunityInfo(communityId)

@@ -35,11 +35,11 @@ const { userInfo, getInfo, personalInfo } = $(aocommunityStore())
 const saveInfo = async () => {
 
   await personalInfo(
-    accountForm.avatar, 
-    accountForm.name, 
-    accountForm.twitter, 
+    accountForm.avatar,
+    accountForm.name,
+    accountForm.twitter,
     accountForm.showtwitter,
-    accountForm.mail, 
+    accountForm.mail,
     accountForm.showmail,
     accountForm.phone,
     accountForm.showtelegram
@@ -105,17 +105,17 @@ const handleUp = (event) => {
         <div @click="logoupload">
           <UAvatar
             v-if="accountForm.avatar === 'N/A'"
-            src="/community/chatavatar.jpg" 
-            alt="Avatar" 
-            class="ml-5" 
-            size="3xl" 
+            src="/community/chatavatar.jpg"
+            alt="Avatar"
+            class="ml-5"
+            size="3xl"
           />
           <UAvatar
             v-else
             :src="accountForm.avatar"
-            alt="Avatar" 
-            class="ml-5" 
-            size="3xl" 
+            alt="Avatar"
+            class="ml-5"
+            size="3xl"
           />
         </div>
         <div class="flex items-center p-3 ml-5">
