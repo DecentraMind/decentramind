@@ -313,7 +313,7 @@ const quitCommunity = async(communityuuid: any) => {
           </UDashboardNavbar>
           <ULandingCard class="">
             <div v-for="(user, index) in communityUser" :key="index" class="flex items-center">
-              <div>
+              <div class="mr-3">
                 <UAvatar v-if="user[0].avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
                 <UAvatar v-else size="xl" :src="user[0].avatar"/>
               </div>
