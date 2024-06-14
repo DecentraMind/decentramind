@@ -42,6 +42,8 @@ export const taskStore = defineStore('taskStore', () => {
 
   const { showError, showSuccess, alertMessage } = $(notificationStore())
   let respArray = $ref([])
+  let submitInfo = $ref([])
+  let allTasks = $ref([])
 
   const createTask = async (data: any) => {
     //  创建process 将process ID添加在任务信息中
@@ -207,6 +209,72 @@ export const taskStore = defineStore('taskStore', () => {
         processId: element.processId
       }
       respArray.push(respData)
+
+    }
+    // console.log("respArray = " + respArray)
+    // for (let index = 0; index < respArray.length; index++) {
+    //     const e = respArray[index];
+    //     console.log(e.id)
+    // }
+    showSuccess('Get all tasks success')
+  }
+
+  const getAllTasksNoCommunity = async () => {
+    let res
+    try {
+      res = await dryrun({
+        process: processId,
+        tags: [{ name: 'Action', value: 'GetAllTasks' }],
+      })
+    } catch (error) {
+      alertMessage(error)
+      return ''
+    }
+    if (res.Messages[0].Data === 'null') {
+      respArray = []
+      return ''
+    }
+    let resp = res.Messages[0].Data.split(';')
+    allTasks = []
+    for (let index = 0; index < resp.length; index++) {
+
+      let element = JSON.parse(resp[index])
+      // console.log('communityId = ' + element.communityId)
+      // console.log('trans communityId = ' + communityId)
+      let reward = ''
+      if(element.tokenNumber != '0'){
+        reward = Number(element.tokenNumber) / 1e12 + ' ' + element.tokenType
+      }
+      if(element.tokenNumber1 != '0'){
+        reward = reward +  '+' + Number(element.tokenNumber1) / 1e12 + ' ' + element.tokenType1
+      }
+      const respData = {
+        id: element.taskId,
+        name: element.taskName,
+        image: element.taskLogo,
+        description: element.taskInfo,
+        startTime: element.startTime,
+        endTime: element.endTime,
+        zone: element.zone,
+        rewardTotal: element.rewardTotal,
+        buildNumber: element.buildNumber,
+        taskRule: element.taskRule,
+        reward: reward,
+        tokenNumber: element.tokenNumber,
+        tokenType: element.tokenType,
+        tokenNumber1: element.tokenNumber1,
+        tokenType1: element.tokenType1,
+        builderNum: element.buildNumber,
+        status: element.isBegin,
+        joined: element.joined,
+        ownerId: element.ownerId,
+        communityId: element.communityId,
+        isBegin: element.isBegin,
+        isSettle: element.isSettle,
+        isCal: element.isCal,
+        processId: element.processId
+      }
+      allTasks.push(respData)
 
     }
     // console.log("respArray = " + respArray)
@@ -423,6 +491,45 @@ export const taskStore = defineStore('taskStore', () => {
     }
     return spaceTaskSubmitInfo
   }
+  const getAllTaskSubmitInfo = async () => {
+    let res
+    try {
+      res = await dryrun({
+        process: processId,
+        tags: [{ name: 'Action', value: 'getAllTaskSubmitInfo' }],
+      })
+    } catch (error) {
+      alertMessage(error)
+      return ''
+    }
+    if (res.Messages[0].Data === 'null') {
+      submitInfo = []
+      return ''
+    }
+    const resp = res.Messages[0].Data.split(';')
+    submitInfo = []
+    for (let index = 0; index < resp.length; index++) {
+
+      let element = JSON.parse(resp[index])
+      // console.log('resp = ' + element.address)
+      const respData = {
+        taskId: element.taskId,
+        id: index + 1,
+        address: element.address,
+        brandEffect: element.brandEffect,
+        getPerson: element.getPerson,
+        audience: element.audience,
+        url: element.url,
+        score: element.score,
+        bounty: element.bounty,
+        bounty1: element.bounty1,
+        bountyType1: element.bountyType1,
+        bounty2: element.bounty2,
+        bountyType2: element.bountyType2
+      }
+      submitInfo.push(respData)
+    }
+  }
 
   // wallets: 需要转账的钱包地址 tokenNumber: 每个账户需要转的token数量 tokenType: 转账的token类型的地址
   const sendBounty = async (taskProcessId: string, bounties: any) => {
@@ -479,7 +586,7 @@ export const taskStore = defineStore('taskStore', () => {
     // console.log(JSON.stringify(testBuild))
   }
 
-  return $$({ testTrans, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, testTrans, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

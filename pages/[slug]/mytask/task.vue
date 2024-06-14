@@ -9,10 +9,12 @@ const items1 = [
   }
 ]
 
-const items = [{
-  slot: 'join',
-  label: `${t('task.isjoin')} 3`
-}, {
+const items = [
+//   {
+//   slot: 'join',
+//   label: `${t('task.isjoin')} 3`
+// },
+  {
   slot: 'reward',
   label: t('task.reward')
 }]
@@ -69,6 +71,7 @@ const selectedrewardColumns = ref(rewardColumns)
 const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedrewardColumns.value.includes(column)))
 
 const { communityList } = $(aocommunityStore())
+const { allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getTaskById } = $(taskStore())
 const { address } = $(aoStore())
 
 let CommunityCreater = $ref(false)
@@ -83,8 +86,46 @@ const checkCreater = async () => {
   }
 }
 
-onMounted( () => {
-  checkCreater()
+let did = $ref([])
+// let totalAmount = $ref(0)
+onMounted( async () => {
+  await getAllTaskSubmitInfo()
+  await getAllTasksNoCommunity()
+  await checkCreater()
+  // console.log(JSON.stringify(submitInfo))
+  for(let i = 0; i < submitInfo.length; ++i){
+    const ele = submitInfo[i]
+    if(ele.address === address){
+      let taskName = ''
+      let coummunityId = ''
+      let coummunityName = ''
+      for(let j = 0; j < allTasks.length; ++j){
+        let taskEle = allTasks[j]
+        if(taskEle.id === ele.taskId){
+          taskName = taskEle.name
+          coummunityId = taskEle.communityId
+          break
+        }
+      }
+      for(let k = 0; k < communityList.length; ++k){
+        let community = communityList[k]
+        // console.log('community.id = ' + community.uuid)
+        if(community.uuid === coummunityId){
+          coummunityName = community.name
+          break
+        }
+      }
+      // console.log('taskName = ' + taskName)
+      const didRow = {
+        name: taskName,
+        balance: ele.bounty,
+        from: coummunityName
+      }
+      // console.log('didRow = ' + JSON.stringify(didRow))
+      did.push(didRow)
+    }
+  }
+  console.log(JSON.stringify(did))
 })
 </script>
 
@@ -92,7 +133,7 @@ onMounted( () => {
   <UDashboardPanelContent class="pb-24">
     <UCard>
       <template #header>
-        <UBadge>
+        <UBadge color="white">
           Public Quests
         </UBadge>
       </template>
@@ -101,7 +142,7 @@ onMounted( () => {
           <UCard>
             <UTable
               v-model:sort="sort"
-              :rows="Wallettoken"
+              :rows="did"
               :columns="rewardcolumns"
               :loading="pending"
               sort-mode="manual"
@@ -115,25 +156,25 @@ onMounted( () => {
         {{ $t('task.allsum')}}：111U
       </div>
       <UTabs :items="items" class="w-1/2 mt-16">
-        <template #join>
-          <UCard>
-            <UTable
-              v-model:sort="sort"
-              :rows="Wallettoken"
-              :columns="columns"
-              :loading="pending"
-              sort-mode="manual"
-              class="pl-10"
-              :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
-            />
-          </UCard>
-        </template>
+<!--        <template #join>-->
+<!--          <UCard>-->
+<!--            <UTable-->
+<!--              v-model:sort="sort"-->
+<!--              :rows="Wallettoken"-->
+<!--              :columns="columns"-->
+<!--              :loading="pending"-->
+<!--              sort-mode="manual"-->
+<!--              class="pl-10"-->
+<!--              :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"-->
+<!--            />-->
+<!--          </UCard>-->
+<!--        </template>-->
 
         <template #reward>
           <UCard>
             <UTable
               v-model:sort="sort"
-              :rows="Wallettoken"
+              :rows="did"
               :columns="rewardcolumns"
               :loading="pending"
               sort-mode="manual"
