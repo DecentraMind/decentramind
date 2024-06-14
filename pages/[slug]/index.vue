@@ -72,7 +72,7 @@ const jointocommunity = async(uuid: any) => {
       await joinCommunity(uuid, invite)
       toast.add({ title: 'joined success' })
       // 查找uuid匹配的元素并更新isJoined属性
-      updataCommunity(uuid, "join")
+      await updataCommunity(uuid, "join")
       joinLoading = false
     }
     joinLoading = true
@@ -99,7 +99,7 @@ const test = ()=> {
   <div class="min-h-screen bg-red-1900 w-full">
     <UDashboardNavbar title="Explore">
       <template #right>
-        <UButton @click="test">test</UButton>
+        <!--<UButton @click="test">test</UButton>-->
         <UBadge color="white">
           <NuxtLink :to="`/${slug}/mytask`">
             <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
