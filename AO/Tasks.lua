@@ -131,6 +131,23 @@ Handlers.add(
           Handlers.utils.reply(table.concat(resp, ";"))(msg)
     end
 )
+Handlers.add(
+    "getAllTaskSubmitInfo",
+    Handlers.utils.hasMatchingTag("Action", "getAllTaskSubmitInfo"),
+    function (msg)
+        local resp = {}
+        for key, value in pairs(SpaceTaskSubmittedTable) do
+          for i = 1, #value do
+          	table.insert(resp, value[i])
+          end
+          --print(resp)
+        end
+        if next(resp) == nil then
+          Handlers.utils.reply("null")(msg)
+        end
+          Handlers.utils.reply(table.concat(resp, ";"))(msg)
+    end
+)
 --Handlers.add(
 --    "GetJoinInfoByTaskId",
 --    Handlers.utils.hasMatchingTag("Action", "GetJoinInfoByTaskId"),
