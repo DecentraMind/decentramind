@@ -7,7 +7,7 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 import { z } from 'zod'
 
 const { t } = useI18n()
-const { testCallJava, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
+const { getAllInviteInfo, makecommunityChat, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
@@ -328,7 +328,7 @@ const { exitCommunity, updataCommunity } = $(aocommunityStore())
 const router = useRouter();
 
 
-
+let Leaveout = $ref(false)
 const quitCommunity = async(communityuuid: any) => {
   Leaveout = true
   try {
@@ -345,7 +345,7 @@ const quitCommunity = async(communityuuid: any) => {
 }
 
 async function testAO() {
-  await testCallJava('1kvJpveMAnQKE')
+  await getAllInviteInfo()
 
 }
 
@@ -361,7 +361,7 @@ const copyText = async () => {
   } catch (err) {
     console.error('复制失败: ', err);
   }
-};
+}
 const finalStatus = (isBegin: string) => {
   // console.log('isB = ' + isBegin)
   let res = ''
@@ -376,7 +376,7 @@ const finalStatus = (isBegin: string) => {
   return res
 }
 
-let Leaveout = $ref(false)
+
 </script>
 <template>
   <UDashboardPanel :width="420" collapsible>
@@ -511,7 +511,7 @@ let Leaveout = $ref(false)
           </div>
           <div class="flex">
             <div>
-<!--              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
+              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>

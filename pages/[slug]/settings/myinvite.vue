@@ -1,7 +1,10 @@
 <script setup lang="ts">
 
-const { joincommunityList, getCommunitylist } = $(aocommunityStore())
+import {taskStore} from '~/stores/taskStore'
 
+const { userInfo, communityUser, getCommunityuser, joincommunityList, getCommunitylist } = $(aocommunityStore())
+const { getAllInviteInfo, allInviteInfo } = $(taskStore())
+const { address } = $(aoStore())
 const state = $ref<{ [key: string]: boolean }>({
   email: true,
   desktop: false,
@@ -39,6 +42,7 @@ let communityLoading = $ref(true)
 let result = $ref()
 const getCommunity = async () => {
   result = await getCommunitylist()
+  // console.log('getCommunitylist = ' + JSON.stringify(result))
   communityLoading = false
 }
 
@@ -47,16 +51,55 @@ onMounted(async () => {
     if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
       communityLoading = false
     }
-
+    // console.log(JSON.stringify(joincommunityList))
     await getCommunity()
+    // const res = getCommunityuser(joincommunityList[0].uuid)
+    console.log('getCommunityuser = ' + JSON.stringify(communityUser))
   } catch (error) {
     console.error('Error fetching data:', error);
   }
+  await getAllInviteInfo()
+  console.log('allInviteInfo = ' + allInviteInfo)
+  console.log('userInfo = ' + userInfo)
+  console.log('joincommunityList = ' + JSON.stringify(joincommunityList))
 });
 
 let inviteDetail = $ref(false)
 const detail = () => {
   inviteDetail = true
+}
+
+
+type InviteData = {
+  invited: string;
+  communityId: string;
+  inviteTime: string;
+  userId: string;
+};
+
+type GroupedData = {
+  [communityId: string]: InviteData[];
+};
+
+function groupByCommunityId(data: InviteData[]): GroupedData {
+  return data.reduce((acc, item) => {
+    if (!acc[item.communityId]) {
+      acc[item.communityId] = [];
+    }
+    acc[item.communityId].push(item);
+    return acc;
+  }, {} as GroupedData);
+}
+const findInvitedById = () => {
+  let result = []
+  for (let index = 0; index < allInviteInfo.length; index++) {
+    const temp = allInviteInfo[index]
+    if(temp.invited === address){
+      result.push(temp)
+    }
+  }
+  const groupedData = groupByCommunityId(result);
+  console.log('result = ' + JSON.stringify(groupedData))
 }
 </script>
 

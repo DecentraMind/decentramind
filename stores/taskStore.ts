@@ -44,7 +44,7 @@ export const taskStore = defineStore('taskStore', () => {
   let respArray = $ref([])
   let submitInfo = $ref([])
   let allTasks = $ref([])
-
+  let allInviteInfo = $ref([])
   const createTask = async (data: any) => {
     //  创建process 将process ID添加在任务信息中
     await window.arweaveWallet.connect(permissions)
@@ -133,18 +133,36 @@ export const taskStore = defineStore('taskStore', () => {
     }
     showSuccess('Create task success')
   }
-  const testTrans = async() => {
+  const getAllInviteInfo = async() => {
     await window.arweaveWallet.connect(permissions)
     try{
-      const messageId = await message({
+      const res = await dryrun({
         process: processId,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [
-          { name: 'Action', value: 'Transfer' },
-          {name: 'Recipient', value: 'tcpbfTrV8PsmAywSa_fl0kz4MDlBd665rZKOayx7OLU'},
-          {name: 'Quantity', value: '111' }
+          { name: 'Action', value: 'getAllInviteInfo' }
         ]
       })
+      if (res.Messages[0].Data === 'null') {
+        respArray = []
+        return ''
+      }
+      const resp = res.Messages[0].Data.split(';')
+      allInviteInfo = []
+      for (let index = 0; index < resp.length; index++) {
+        let element = JSON.parse(resp[index])
+        if(element.invited === 'none'){
+          continue
+        }
+        console.log(resp[index])
+        const inviteInfo = {
+          invited: element.invited,
+          communityId: element.communityId,
+          inviteTime: element.inviteTime,
+          userId: element.userId
+        }
+        allInviteInfo.push(inviteInfo)
+      }
     }catch(error){
       console.log(error)
     }
@@ -562,13 +580,12 @@ export const taskStore = defineStore('taskStore', () => {
   const makecommunityChat = async (taskProcessId: string) => {
     const x = 'TaskOwnerWallet = "' + taskProcessId + '"'
     // const luaCode  = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
-    const luaCode = x + '      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      if(msg.From ~= TaskOwnerWallet) then      Handlers.utils.reply("notMatch")(msg)      end      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
+    const luaCode = x + '      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      if(msg.From ~= TaskOwnerWallet) then      Handlers.utils.reply("notMatch")(msg)      end      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply("testloadlua")(msg)    end  )'
 
     console.log(luaCode)
-    const luaCode1 = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = value.tokenNumber      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
     let buildLua = await message({
       // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
-      process: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
+      process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
       tags: [
         { name: 'Action', value: 'Eval' }
       ],
@@ -586,7 +603,9 @@ export const taskStore = defineStore('taskStore', () => {
     // console.log(JSON.stringify(testBuild))
   }
 
-  return $$({ allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, testTrans, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+
+
+  return $$({ allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})
