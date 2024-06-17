@@ -4,11 +4,13 @@ import CommonAlert from '~/components/CommonAlert.vue'
 import {taskStore} from '../../../stores/taskStore'
 import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
 import {shortAddress} from "../../../utils/web3";
+import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
 const { makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, userInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
+const { compareImages } = $(ssimStore())
 const route = useRoute()
 const taskId = $computed(() => route.params.taskId)
 const slug = $computed(() => route.params.slug)
@@ -240,9 +242,10 @@ async function submitTask() {
   const userCreatedAt = data._rawValue.includes.users[0].created_at
   // space创办人的ID 用于判断是否是本人提交任务
   const userId = data._rawValue.includes.users[0].id
-  const userAvatarBase64 = await url2Base64(userAvatar)
+  // const userAvatarBase64 = await url2Base64(userAvatar)
+  const ssim = await compareImages(communityInfo.logo,  userAvatar)
   // 品牌效应
-  const brandEffect = userAvatarBase64 === communityInfo.logo ? 10 : 0
+  const brandEffect = ssim >= 0.8 ? 10 : 0
   // 听众
   const audience = participanted
   // 邀请人数 TODO 待完善方法，先设置默认值走下去
