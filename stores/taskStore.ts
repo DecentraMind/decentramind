@@ -107,9 +107,9 @@ export const taskStore = defineStore('taskStore', () => {
       }
     }
     // 向新的process里写入sendBounty方法
-    const x = 'TaskOwnerWallet = "' + newProcessId + '"'
-    const luaCode = x + '      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      if(msg.From ~= TaskOwnerWallet) then      Handlers.utils.reply("notMatch")(msg)      end      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
-    const luaCode1 = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = value.tokenNumber      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
+    const x = 'TaskOwnerWallet = "' + data.ownerId + '"'
+    const luaCode = x + '      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )'
+    console.log('luacode = ' + luaCode)
     let buildLua = await message({
       // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
       process: newProcessId,
@@ -555,9 +555,6 @@ export const taskStore = defineStore('taskStore', () => {
       if(bounties[i].tokenType){
         bounties[i].tokenType = tokenMap[bounties[i].tokenType]
       }
-      if(bounties[i].tokenType1){
-        bounties[i].tokenType1 = tokenMap[bounties[i].tokenType1]
-      }
     }
     console.log('after token map = ' + JSON.stringify(bounties))
     console.log('taskProcessId = ' + taskProcessId)
@@ -578,14 +575,14 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   const makecommunityChat = async (taskProcessId: string) => {
-    const x = 'TaskOwnerWallet = "' + taskProcessId + '"'
+    const x = 'TaskOwnerWallet = "' + '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw' + '"'
     // const luaCode  = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
-    const luaCode = x + '      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      if(msg.From ~= TaskOwnerWallet) then      Handlers.utils.reply("notMatch")(msg)      end      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      for _, value in pairs(req) do      ao.send({      Target = value.tokenType1,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber1)      })      end      Handlers.utils.reply("Echo back")(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply("testloadlua")(msg)    end  )'
+    const luaCode = x + '      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )'
 
     console.log(luaCode)
     let buildLua = await message({
       // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
-      process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+      process: taskProcessId,
       tags: [
         { name: 'Action', value: 'Eval' }
       ],

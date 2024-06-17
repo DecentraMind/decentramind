@@ -71,8 +71,9 @@ onMounted(async () => {
       await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
     }
   }
-  // calculateScore()
-  // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+  calculateScore()
+  console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
+  await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
   // blogPost = await getTaskById(taskId)
   // console.log('blogPost = ' + JSON.stringify(blogPost))
   console.log(isBegin)
@@ -92,25 +93,39 @@ function calculateScore(){
   console.log('audienceMax = ' + audienceMax)
   let totalScore = 0
   let totalReward = 1000
+  let friendScore = 0
+  let audienceScore = 0
   for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
-    let friendScore = spaceTaskSubmitInfo[i].getPerson / getPersionMax * 40
-    let audienceScore = spaceTaskSubmitInfo[i].audience / audienceMax * 50
+    if(getPersionMax != 0){
+      friendScore = spaceTaskSubmitInfo[i].getPerson / getPersionMax * 40
+    }
+    if(audienceMax != 0){
+      audienceScore = spaceTaskSubmitInfo[i].audience / audienceMax * 50
+    }
     let brandScore = 0
     if(spaceTaskSubmitInfo[i].brandEffect === 10){
       brandScore = 10
     }
-    // console.log('friendScore = ' + friendScore)
-    // console.log('audienceScore = ' + audienceScore)
-    // console.log('brandScore = ' + brandScore)
+    console.log('friendScore = ' + friendScore)
+    console.log('audienceScore = ' + audienceScore)
+    console.log('brandScore = ' + brandScore)
     spaceTaskSubmitInfo[i].score = friendScore + audienceScore + brandScore
+    console.log('spaceTaskSubmitInfo[i].score = ' + spaceTaskSubmitInfo[i].score)
     totalScore += spaceTaskSubmitInfo[i].score
   }
+  console.log('totalScore = ' + totalScore)
   for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
-    spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber)).toFixed(4)
-    spaceTaskSubmitInfo[i].bountyType1 = blogPost.tokenType
-    spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber1)).toFixed(4)
-    spaceTaskSubmitInfo[i].bountyType2 = blogPost.tokenType1
-    spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty1.toString() + spaceTaskSubmitInfo[i].bountyType1 + '+' + spaceTaskSubmitInfo[i].bounty2.toString() + spaceTaskSubmitInfo[i].bountyType2
+    if(blogPost.tokenNumber){
+      spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber)).toFixed(4)
+      spaceTaskSubmitInfo[i].bountyType1 = blogPost.tokenType
+      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / 1e12 ).toString() + spaceTaskSubmitInfo[i].bountyType1
+    }
+    if(blogPost.tokenNumber1){
+      spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber1)).toFixed(4)
+      spaceTaskSubmitInfo[i].bountyType2 = blogPost.tokenType1
+      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / 1e12 ).toString() + spaceTaskSubmitInfo[i].bountyType2
+    }
+
     // console.log('bounty = ' + spaceTaskSubmitInfo[i].score / totalScore * 100)
   }
   // 计算完成后更新AO侧数据和前端表单数据
@@ -264,30 +279,6 @@ async function submitTask() {
   submiteStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
   isOpen = false
 }
-function url2Base64(url, type = 'image/jpeg') {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    const canvas = document.createElement('canvas')
-    img.crossOrigin = '*'
-    img.onload = function () {
-      const width = img.width, height = img.height
-      canvas.width = width
-      canvas.height = height
-
-      const ctx = canvas.getContext('2d')
-      ctx.fillStyle = 'white'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(img, 0, 0, width, height)
-      const base64 = canvas.toDataURL(type)
-      resolve(base64)
-    }
-    img.onerror = function () {
-      reject(new Error('message'));
-    }
-    img.src = url
-  })
-}
-
 
 const selected = $ref([])
 
@@ -313,14 +304,22 @@ async function sendBountyByAo() {
         if(address === spaceTaskSubmitInfo[j].address){
           console.log(spaceTaskSubmitInfo[j].bounty1)
           console.log(spaceTaskSubmitInfo[j].bounty2)
-          const bountyData = {
-            walletAddress: address,
-            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1) * 1000),
-            tokenType: spaceTaskSubmitInfo[j].bountyType1,
-            tokenNumber1: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2) * 1000),
-            tokenType1: spaceTaskSubmitInfo[j].bountyType2
+          if(spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0){
+            const bountyData = {
+              walletAddress: address,
+              tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
+              tokenType: spaceTaskSubmitInfo[j].bountyType1
+            }
+            bounties.push(bountyData)
           }
-          bounties.push(bountyData)
+          if(spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0){
+            const bountyData = {
+              walletAddress: address,
+              tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+              tokenType: spaceTaskSubmitInfo[j].bountyType2,
+            }
+            bounties.push(bountyData)
+          }
           break
         }
       }
@@ -329,6 +328,7 @@ async function sendBountyByAo() {
 
   console.log('selected = ' + JSON.stringify(bounties))
   await sendBounty(blogPost.processId, bounties)
+  // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
 }
 const finalStatus = (isBegin: string) => {
   console.log('isB = ' + isBegin)
