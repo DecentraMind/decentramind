@@ -99,7 +99,7 @@ const test = ()=> {
   <div class="min-h-screen bg-red-1900 w-full">
     <UDashboardNavbar title="Explore">
       <template #right>
-        <UButton @click="test">test</UButton>
+        <!--<UButton @click="test">test</UButton>-->
         <UBadge color="white">
           <NuxtLink :to="`/${slug}/mytask`">
             <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
