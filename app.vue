@@ -27,14 +27,14 @@ useHead({
 
 const title = 'DecentraMind'
 const description = 'DecentraMind'
-
+const ogImage = '/social-card.png'
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: 'https://dashboard-template.nuxt.dev/social-card.png',
-  twitterImage: 'https://dashboard-template.nuxt.dev/social-card.png',
+  ogImage: ogImage,
+  twitterImage: ogImage,
   twitterCard: 'summary_large_image'
 })
 
@@ -59,7 +59,7 @@ const community = async() => {
           test
         </template>
       </NuxtPage>
-      
+
       <!--
       <div class="flex flex-col h-screen items-center gap-4 justify-center">
         <Text class="text-7xl font-bold">Start your real community journey</Text>

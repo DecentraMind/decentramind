@@ -147,19 +147,22 @@ export const taskStore = defineStore('taskStore', () => {
         respArray = []
         return ''
       }
-      const resp = res.Messages[0].Data.split(';')
+      const resp = JSON.parse(res.Messages[0].Data)
       allInviteInfo = []
       for (let index = 0; index < resp.length; index++) {
+        // console.log('resp[index] = ' + JSON.parse(resp[index]).invited)
         let element = JSON.parse(resp[index])
         if(element.invited === 'none'){
           continue
         }
-        console.log(resp[index])
+        // console.log(resp[index])
         const inviteInfo = {
           invited: element.invited,
           communityId: element.communityId,
           inviteTime: element.inviteTime,
-          userId: element.userId
+          userId: element.userId,
+          userName: element.userName,
+          userAvatar: element.userAvatar
         }
         allInviteInfo.push(inviteInfo)
       }

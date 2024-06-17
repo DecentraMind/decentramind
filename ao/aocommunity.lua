@@ -500,28 +500,26 @@ end)
 -- 获取所有invite信息
 Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAllInviteInfo"), function(msg)
   local resp = {}
-  print(usercommunity)
   for key, value in pairs(usercommunity) do
     for subkey, subvalue in pairs(value) do
-      --print(subvalue.invite)
-      for info_key, info_value in pairs(userinfo) do
-        if (info_key == key) then
-          print(info_value.name)
-          userAvatar = info_value.avatar
-          userName = info_value.name
-        end
-      end
       local temp = {
         userId = subvalue.invite,
         communityId = subkey,
         invited = key,
-        inviteTime = subvalue.time
+        inviteTime = subvalue.time,
+        userAvatar = "none",
+        userName = "none"
       }
+      for info_key, info_value in pairs(userinfo) do
+        if info_key == key then
+          local v = json.decode(info_value)
+          temp.userAvatar = v[1].avatar
+          temp.userName = v[1].name
+        end
+      end
       table.insert(resp, json.encode(temp))
     end
   end
-  if next(resp) == nil then
-    Handlers.utils.reply("null")(msg)
-  end
-  Handlers.utils.reply(table.concat(resp, ";"))(msg)
+  local cJson = json.encode(resp)
+  Handlers.utils.reply(cJson)(msg)
 end)

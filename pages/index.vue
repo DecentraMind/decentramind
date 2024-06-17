@@ -34,7 +34,7 @@ useSeoMeta({
 <!--        </UBadge>-->
         <div class="flex justify-center">
           <img
-            
+
             class="w-100 h-40  ring-gray-300 dark:ring-gray-700"
           />
         </div>
