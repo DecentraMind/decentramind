@@ -326,7 +326,7 @@ const taskTypes = [
 ]
 
 let exitButton = $ref(false)
-const { exitCommunity, updataCommunity } = $(aocommunityStore())
+const { exitCommunity, updataCommunity, getCommunitylist } = $(aocommunityStore())
 const router = useRouter();
 
 
@@ -381,7 +381,15 @@ const finalStatus = (isBegin: string) => {
   return res
 }
 
-
+const formattedTwitterLink = (twitter) => {
+  const link = twitter;
+  // Add https:// prefix if the link doesn't start with http:// or https://
+  if (!/^(http|https):\/\//.test(link)) {
+    return `https://${link}`;
+  }
+  console.log("-------",link)
+  return link;
+};
 </script>
 <template>
   <UDashboardPanel :width="420" collapsible>
@@ -411,10 +419,17 @@ const finalStatus = (isBegin: string) => {
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('SocialOfCommunityDetail') }}</div>
           <div>
-            <UButton variant="link">
-              <UIcon name="ri:twitter-fill" class="h-full w-full " />
-              Twitter
-            </UButton>
+            <ULink
+              :to="formattedTwitterLink(communityInfo.twitter)"
+              active-class="text-primary"
+              target="_blank"
+              inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            >
+              <UButton variant="link">
+                <UIcon name="ri:twitter-fill" class="h-full w-full " />
+                Twitter
+              </UButton>
+            </ULink>
           </div>
         </div>
         <div class="flex justify-between my-3 mt-10 items-center">
@@ -444,10 +459,17 @@ const finalStatus = (isBegin: string) => {
         <div class="flex justify-between my-3 items-center">
           <div>{{ $t('GithubOfCommunityDetail') }}</div>
           <div>
-            <UButton to="www.github.com" variant="link">
-              <UIcon name="ri:github-line" class="h-full w-full " />
-              Github
-            </UButton>
+            <ULink
+              :to="formattedTwitterLink(communityInfo.github)"
+              active-class="text-primary"
+              target="_blank"
+              inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            >
+              <UButton variant="link">
+                <UIcon name="ri:github-line" class="h-full w-full " />
+                Github
+              </UButton>
+            </ULink>
           </div>
         </div>
         <div class="flex justify-between my-3 items-center">

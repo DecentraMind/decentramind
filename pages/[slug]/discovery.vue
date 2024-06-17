@@ -89,8 +89,8 @@ const jointocommunity = async(uuid: any) => {
 
 }
 const test = ()=> {
-  const a = "db69e36a-8267-43bd-9edf-fd246cef7c7c"
-  updataCommunity(a, "exit")
+  const a = "06263a46-121b-4027-be33-adbe269ccbd8"
+  updataCommunity(a, "join")
   console.log(communityList)
 }
 </script>
