@@ -89,8 +89,8 @@ const jointocommunity = async(uuid: any) => {
 
 }
 const test = ()=> {
-  const a = "db69e36a-8267-43bd-9edf-fd246cef7c7c"
-  updataCommunity(a, "exit")
+  const a = "06263a46-121b-4027-be33-adbe269ccbd8"
+  updataCommunity(a, "join")
   console.log(communityList)
 }
 </script>
@@ -99,7 +99,7 @@ const test = ()=> {
   <div class="min-h-screen bg-red-1900 w-full">
     <UDashboardNavbar title="Explore">
       <template #right>
-        <!--<UButton @click="test">test</UButton>-->
+        <UButton @click="test">test</UButton>
         <UBadge color="white">
           <NuxtLink :to="`/${slug}/mytask`">
             <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>

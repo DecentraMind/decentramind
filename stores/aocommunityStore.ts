@@ -23,6 +23,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   let communityUser = $ref({})
   let joincommunityList = $ref({})
   let isLoading = $ref(false)
+  let joinisLoading = $ref(false)
+  let exitisLoading = $ref(false)
   let currentUuid = $ref('')
   let communityCreate = $ref(false)
 
@@ -215,8 +217,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //Get community list method (which generates a community table, and a joined community table)
   const getCommunitylist = async () => {
-    //if (isLoading) return
-    //isLoading = true
+    if (isLoading) return
+    isLoading = true
     if (address !== '') {
       let result = await dryrun({
         process: processID,
@@ -351,8 +353,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //How to join the community
   const joinCommunity = async (uuid, invite) => {
-    if (isLoading) return
-    isLoading = true
+    if (joinisLoading) return
+    joinisLoading = true
     const time = Date.now();
     let join = await message({
       process: processID,
@@ -365,15 +367,14 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
       data: uuid,
     });
-    isLoading = false
+    joinisLoading = false
     return join
   }
 
   //Methods of withdrawing from the community
   const exitCommunity = async (uuid) => {
-    if (isLoading) return
-    isLoading = true
-
+    if (exitisLoading) return
+    exitisLoading = true
     let exit = await message({
       process: processID,
       tags: [
@@ -383,7 +384,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
       data: uuid,
     });
-    isLoading = false
+    exitisLoading = false
     return exit
   }
 

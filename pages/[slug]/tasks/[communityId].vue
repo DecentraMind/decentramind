@@ -326,7 +326,7 @@ const taskTypes = [
 ]
 
 let exitButton = $ref(false)
-const { exitCommunity, updataCommunity } = $(aocommunityStore())
+const { exitCommunity, updataCommunity, getCommunitylist } = $(aocommunityStore())
 const router = useRouter();
 
 

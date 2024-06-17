@@ -131,7 +131,7 @@ end)
 Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(msg)
   local newColumn = msg.From
   print(msg.Tags.userAddress)
-
+  local result = 'success'
   if community then
     for key, value in pairs(community) do
       local data = json.decode(value)
@@ -141,9 +141,9 @@ Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(m
           if data[1].buildnum <= 0 then
             data[1].buildnum = 0
           end
+          community[key] = json.encode(data)
+          break
         end
-        community[key] = json.encode(data)
-        break
       end
     end
   else
