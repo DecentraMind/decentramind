@@ -200,7 +200,7 @@ onMounted( async () => {
         <UCard>
           <UTable
             v-model:sort="sort"
-            :rows="created"
+            :rows="cRows"
             :columns="rewardcolumns"
             :loading="pending"
             sort-mode="manual"
