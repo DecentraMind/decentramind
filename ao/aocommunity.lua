@@ -178,24 +178,15 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
       name = dCom[1].name,
       desc = dCom[1].desc,
       website = dCom[1].website,
-      showwebsite = dCom[1].showwebsite,
       twitter = dCom[1].twitter,
-      showtwitter = dCom[1].showtwitter,
       whitebook = dCom[1].whitebook,
-      showwhitebook = dCom[1].showwhitebook,
       github = dCom[1].github,
-      showgithub = dCom[1].showgithub,
       buildnum = dCom[1].buildnum,
-      showbuildnum = dCom[1].showbuildnum,
-      showallreward = dCom[1].showallreward,
       bounty = dCom[1].bounty,
-      showbounty = dCom[1].showbounty,
-      showdetail = dCom[1].showdetail,
       ispublished = dCom[1].ispublished,
       communitytoken = dCom[1].communitytoken,
       istradable = dCom[1].istradable,
       support = dCom[1].support,
-      showalltoken = dCom[1].showalltoken,
       alltoken = dCom[1].alltoken,
       tokensupply = dCom[1].tokensupply,
       creater = dCom[1].creater,
@@ -438,9 +429,9 @@ Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTe
   --end
 
   -- userinfo['-IYO-pLS_lBegYkJOq0ZkWpDwqZ5-d3jgY9rvyWKWCY'] = nil
-  for k, _ in pairs(community) do
-    print()
-    community[k] = nil
+  for k, _ in pairs(usercommunity) do
+    print("---")
+    usercommunity[k] = nil
   end
 
   -- for k, _ in pairs(userinfo) do
@@ -500,6 +491,7 @@ end)
 -- 获取所有invite信息
 Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAllInviteInfo"), function(msg)
   local resp = {}
+
   for key, value in pairs(usercommunity) do
     for subkey, subvalue in pairs(value) do
       local temp = {
@@ -520,6 +512,7 @@ Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAll
       table.insert(resp, json.encode(temp))
     end
   end
+  print(resp)
   local cJson = json.encode(resp)
   Handlers.utils.reply(cJson)(msg)
 end)

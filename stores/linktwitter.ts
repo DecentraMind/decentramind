@@ -10,15 +10,15 @@ import { Client, auth } from "twitter-api-sdk";
 
 
 export const linktwitter = defineStore('linktwitter', () => {
-  const authClient = new auth.OAuth2User({
-    client_id: "ZkJXajNiRUdwanFQTkZOenZBUzA6MTpjaQ" as string,
-    client_secret: "H29N3gUVa0CwQkZ0Ky9tNqXRu1QzgpISaH9GIGQ5poArbPsdfE" as string,
-    callback: "http://localhost:3000/callback",
-    scopes: ["tweet.read", "users.read", "offline.access"],
-  });
-  const client = new Client(authClient);
+    const authClient = new auth.OAuth2User({
+        client_id: "ZkJXajNiRUdwanFQTkZOenZBUzA6MTpjaQ" as string,
+        client_secret: "H29N3gUVa0CwQkZ0Ky9tNqXRu1QzgpISaH9GIGQ5poArbPsdfE" as string,
+        callback: "http://localhost:3000/callback",
+        scopes: ["tweet.read", "users.read", "offline.access"],
+    });
+    const client = new Client(authClient);
 
-  const STATE = "state";
+    const STATE = "state";
     let connectTwitter = $ref('')
 
     const callbackUrl = 'http://localhost:3000/callback'; // callback URL
@@ -36,14 +36,22 @@ export const linktwitter = defineStore('linktwitter', () => {
         return authUrl
     }
     const getAccessToken = async (resCode: string) => {
-      try {
-        const query = computed(() => ({ code: 'getToken' }))
-        const {data} = await useFetch('/api/getAccessToken', { query })
-        console.log('getToken data = ' + JSON.stringify(data._rawValue))
-        window.open(data._rawValue, '_blank')
-      } catch (error) {
-        return error
-      }
+        try {
+            const query = computed(() => ({ code: 'getToken' }))
+            const { data } = await useFetch('/api/getAccessToken', { query })
+            console.log('getToken data = ' + JSON.stringify(data._rawValue))
+            window.open(data._rawValue, '_blank')
+        } catch (error) {
+            return error
+        }
+    }
+
+    const back = async (state, code) => {
+        try {
+            await authClient.requestAccessToken(code as string);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const postToken = async () => {
@@ -96,7 +104,7 @@ export const linktwitter = defineStore('linktwitter', () => {
             console.error('Error posting token:', error)
         }
     }
-    return $$({ authClient, getAccessToken, gettoken, postToken, searchSpaceById })
+    return $$({ authClient, getAccessToken, back, gettoken, postToken, searchSpaceById })
 })
 
 if (import.meta.hot)

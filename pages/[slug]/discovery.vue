@@ -72,7 +72,7 @@ const jointocommunity = async(uuid: any) => {
       await joinCommunity(uuid, invite)
       toast.add({ title: 'joined success' })
       // 查找uuid匹配的元素并更新isJoined属性
-      await updataCommunity(uuid, "join")
+      await getCommunitylist()
       joinLoading = false
     }
     joinLoading = true
