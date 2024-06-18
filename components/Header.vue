@@ -18,7 +18,7 @@ const links = [
   // },
   {
     label: "Docs",
-    to: "/pages/discovery",
+    to: "https://decentramind.gitbook.io/decentramind",
   },
   // {
   //   label: "Pricing",
