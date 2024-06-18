@@ -350,7 +350,7 @@ const test = async() => {
                 <div v-else class="flex text-center item-center text-3xl">{{ user[0].name }}</div>
               </div>
             </div>
-            <UButton @click="test">test</UButton>
+            <!--<UButton @click="test">test</UButton>-->
           </ULandingCard>
         </div>
       </UPageGrid>
