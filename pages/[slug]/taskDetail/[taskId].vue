@@ -6,7 +6,7 @@ import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
 import {shortAddress} from "../../../utils/web3";
 import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
-const { makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, userInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
@@ -71,14 +71,15 @@ onMounted(async () => {
       await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
     }
   }
-  calculateScore()
-  console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
-  await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+  // calculateScore()
+  // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
+  // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
   // blogPost = await getTaskById(taskId)
   // console.log('blogPost = ' + JSON.stringify(blogPost))
   console.log(isBegin)
   console.log(isSettle)
   console.log(isCal)
+  await getAllInviteInfo()
 })
 // spaceTaskSubmitInfo = people
 function calculateScore(){
@@ -227,18 +228,14 @@ function isNullOrEmpty(str: string | null | undefined): boolean {
 
 
 const emit = defineEmits(['success'])
-
-
-
-const addr = $ref('')
 const url = $ref('')
 async function submitTask() {
-  // for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
-  //   if(spaceTaskSubmitInfo[i].address === address){
-  //     alert('You have submitted this quest.')
-  //     return
-  //   }
-  // }
+  for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
+    if(spaceTaskSubmitInfo[i].address === address){
+      alert('You have submitted this quest.')
+      return
+    }
+  }
   // TODO 调用提交space链接并解析方法
   var splitted = url.split('/', 6)
   console.log(splitted)
@@ -248,7 +245,7 @@ async function submitTask() {
   const { data } = await useFetch('/api/twitter', { query })
   console.log('data = ' + JSON.stringify(data))
   // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
-  const spaceStartedAt = data._rawValue.data.started_at
+  const spaceEnded_at = data._rawValue.data.ended_at
   // space参与人数
   const participanted = data._rawValue.data.participant_count
   // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
@@ -264,8 +261,16 @@ async function submitTask() {
   // 听众
   const audience = participanted
   // 邀请人数 TODO 待完善方法，先设置默认值走下去
-  const getPersion = 10
-  console.log('spaceStartedAt = ' + spaceStartedAt)
+  let getPersion = 0
+  if(allInviteInfo && allInviteInfo.length != 0){
+    for(let i = 0; i < allInviteInfo.length; ++i){
+      const temp = allInviteInfo[i]
+      if(temp.userId === address && temp.communityId === communityId && temp.inviteTime < new Date(spaceEnded_at).getTime()){
+        getPersion = getPersion + 1
+      }
+    }
+  }
+  console.log('spaceEnded_at = ' + spaceEnded_at)
   console.log('participanted = ' + participanted)
   console.log('userAvatar = ' + userAvatar)
   console.log('userCreatedAt = ' + userCreatedAt)
@@ -295,40 +300,46 @@ function select (row) {
 
 
 async function sendBountyByAo() {
-  let bounties = []
-  if(selected.length != 0){
+  // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
+  if(blogPost.isCal === 'Y'){
+    let bounties = []
+    if(selected.length != 0){
 
-    for(let i = 0; i < selected.length; ++i){
-      let address = selected[i].address
-      for(let j = 0; j < spaceTaskSubmitInfo.length; ++j){
-        if(address === spaceTaskSubmitInfo[j].address){
-          console.log(spaceTaskSubmitInfo[j].bounty1)
-          console.log(spaceTaskSubmitInfo[j].bounty2)
-          if(spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0){
-            const bountyData = {
-              walletAddress: address,
-              tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
-              tokenType: spaceTaskSubmitInfo[j].bountyType1
+      for(let i = 0; i < selected.length; ++i){
+        let address = selected[i].address
+        for(let j = 0; j < spaceTaskSubmitInfo.length; ++j){
+          if(address === spaceTaskSubmitInfo[j].address){
+            console.log(spaceTaskSubmitInfo[j].bounty1)
+            console.log(spaceTaskSubmitInfo[j].bounty2)
+            if(spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0){
+              const bountyData = {
+                walletAddress: address,
+                tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
+                tokenType: spaceTaskSubmitInfo[j].bountyType1
+              }
+              bounties.push(bountyData)
             }
-            bounties.push(bountyData)
-          }
-          if(spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0){
-            const bountyData = {
-              walletAddress: address,
-              tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
-              tokenType: spaceTaskSubmitInfo[j].bountyType2,
+            if(spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0){
+              const bountyData = {
+                walletAddress: address,
+                tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+                tokenType: spaceTaskSubmitInfo[j].bountyType2,
+              }
+              bounties.push(bountyData)
             }
-            bounties.push(bountyData)
+            break
           }
-          break
         }
       }
     }
+
+    console.log('selected = ' + JSON.stringify(bounties))
+    await sendBounty(blogPost.processId, bounties)
+    // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
+  }else{
+    alert('This quest is not calculate store or has settled.')
   }
 
-  console.log('selected = ' + JSON.stringify(bounties))
-  await sendBounty(blogPost.processId, bounties)
-  // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
 }
 const finalStatus = (isBegin: string) => {
   console.log('isB = ' + isBegin)
