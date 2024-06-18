@@ -335,7 +335,7 @@ const quitCommunity = async(communityuuid: any) => {
   Leaveout = true
   try {
     await exitCommunity(communityuuid);
-    await updataCommunity(communityuuid, "exit")
+    await getCommunitylist()
     console.log('exitCommunity 操作成功');
     Leaveout = false;
     router.push(`/${slug}/discovery`);

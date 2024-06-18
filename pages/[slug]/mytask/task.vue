@@ -30,6 +30,10 @@ function onSubmitAccount () {
   console.log('Submitted form:', communityForm)
 }
 
+const rewardcolumns2 = [
+  { label: 'Bounty Type', key: 'bountyType' },
+  { label: 'Amount', key: 'bounty' }
+]
 
 const defaultColumns = [{
   key: 'id',
@@ -181,9 +185,61 @@ onMounted( async () => {
       // console.log('dLength = ' + dLength)
 
     }
+    publishedBounty = extractBounties(submitInfo, address);
+    didBounty = extractBounties(did, address)
   }
   console.log(JSON.stringify(did))
 })
+
+let publishedQuest = $ref(false)
+let publishedBounty = $ref()
+let didQuest = $ref(false)
+let didBounty = $ref()
+const test = async() => {
+  console.log("---------")
+  const allbounty = extractBounties(submitInfo, address);
+  console.log(allbounty)
+}
+
+const extractBounties = (data, address) => {
+  const allbounty = [];
+
+  data.forEach(item => {
+    if (item.address === address) {
+      if (item.bounty1) {
+        allbounty.push({ bounty: item.bounty1, bountyType: item.bountyType1 });
+      }
+      if (item.bounty2) {
+        allbounty.push({ bounty: item.bounty2, bountyType: item.bountyType2 });
+      }
+    }
+  });
+  const result = mergeBounties(allbounty)
+  return result;
+};
+
+const mergeBounties = (bounties) => {
+  const bountyMap = {};
+
+  bounties.forEach(item => {
+    const { bounty, bountyType } = item;
+    const bountyValue = parseFloat(bounty);
+
+    if (bountyMap[bountyType]) {
+      bountyMap[bountyType] += bountyValue;
+    } else {
+      bountyMap[bountyType] = bountyValue;
+    }
+  });
+
+  const mergedBounties = Object.keys(bountyMap).map(bountyType => ({
+    bounty: bountyMap[bountyType].toFixed(4),
+    bountyType: bountyType
+  }));
+
+  return mergedBounties;
+};
+
 </script>
 
 <template>
@@ -207,7 +263,8 @@ onMounted( async () => {
             class="pl-10"
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           />
-          <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex justify-between px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+            <UButton color="white" @click="publishedQuest=true">Bounty</UButton>
             <UPagination v-model="pageC" :page-count="pageCount" :total="created.length" />
           </div>
         </UCard>
@@ -246,13 +303,39 @@ onMounted( async () => {
             class="pl-10"
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           />
-          <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex justify-between px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+            <UButton color="white" @click="didQuest=true">Bounty</UButton>
             <UPagination v-model="page" :page-count="pageCount" :total="did.length" />
           </div>
         </UCard>
       </div>
 
-
+      <UModal v-model="publishedQuest">
+        <div class="p-4 flex justify-center items-center">
+          <UTable
+            v-model:sort="sort"
+            :rows="publishedBounty"
+            :columns="rewardcolumns2"
+            :loading="pending"
+            sort-mode="manual"
+            class="border"
+            :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
+          />
+        </div>
+      </UModal>
+      <UModal v-model="didQuest">
+        <div class="p-4 flex justify-center items-center">
+          <UTable
+            v-model:sort="sort"
+            :rows="didBounty"
+            :columns="rewardcolumns2"
+            :loading="pending"
+            sort-mode="manual"
+            class="border"
+            :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
+          />
+        </div>
+      </UModal>
 <!--      <template #footer>-->
 <!--        <div class="flex pl-10">-->
 <!--          {{ $t('task.allsum')}}：111U-->
