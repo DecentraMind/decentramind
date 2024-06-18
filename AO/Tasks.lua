@@ -219,27 +219,20 @@ Handlers.add(
     "sendBounty",
     Handlers.utils.hasMatchingTag("Action", "sendBounty"),
     function (msg)
-        if(msg.From ~= TaskOwnerWallet) then
-        	Handlers.utils.reply("notMatch")(msg)
+        if(msg.From == TaskOwnerWallet) then
+        	  local req = json.decode(msg.Data)
+            for _, value in pairs(req) do
+                ao.send({
+                  Target = value.tokenType,
+                  Action = "Transfer",
+                  Recipient = value.walletAddress,
+                  Quantity = tostring(value.tokenNumber)
+                })
+            end
+        else
+        Handlers.utils.reply("NotMatch")(msg)
         end
         -- 通过id获取该任务对应参与信息
-        local req = json.decode(msg.Data)
-        for _, value in pairs(req) do
-            ao.send({
-              Target = value.tokenType,
-              Action = "Transfer",
-              Recipient = value.walletAddress,
-              Quantity = tostring(value.tokenNumber)
-            })
-        end
-        for _, value in pairs(req) do
-            ao.send({
-              Target = value.tokenType1,
-              Action = "Transfer",
-              Recipient = value.walletAddress,
-              Quantity = tostring(value.tokenNumber1)
-            })
-        end
         Handlers.utils.reply("success")(msg)
     end
 )

@@ -502,30 +502,24 @@ Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAll
   local resp = {}
   for key, value in pairs(usercommunity) do
     for subkey, subvalue in pairs(value) do
-      local userAvatar = ""
-      local userName = ""
+      local temp = {
+        userId = subvalue.invite,
+        communityId = subkey,
+        invited = key,
+        inviteTime = subvalue.time,
+        userAvatar = "none",
+        userName = "none"
+      }
       for info_key, info_value in pairs(userinfo) do
-        if (info_key == key) then
-          print(info_value.name)
-          userAvatar = info_value.avatar
-          userName = info_value.name
+        if info_key == key then
+          local v = json.decode(info_value)
+          temp.userAvatar = v[1].avatar
+          temp.userName = v[1].name
         end
       end
-      print(userAvatar)
-      print(userName)
-      local temp = {
-        userId = key,
-        communityId = subkey,
-        invited = subvalue.invite,
-        inviteTime = subvalue.time,
-        userAvatar = userAvatar,
-        userName = userName
-      }
       table.insert(resp, json.encode(temp))
     end
   end
-  if next(resp) == nil then
-    Handlers.utils.reply("null")(msg)
-  end
-  Handlers.utils.reply(table.concat(resp, ";"))(msg)
+  local cJson = json.encode(resp)
+  Handlers.utils.reply(cJson)(msg)
 end)
