@@ -4,7 +4,7 @@ import type { Mail } from '~/types'
 const { currentUuid, communityUser, exitCommunity, updataCommunity, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
-
+const { address } = $(aoStore())
 const { t } = useI18n()
 
 useSeoMeta({
