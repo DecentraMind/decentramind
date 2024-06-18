@@ -229,7 +229,9 @@ function isNullOrEmpty(str: string | null | undefined): boolean {
 
 const emit = defineEmits(['success'])
 const url = $ref('')
+let submitLoading = $ref(false)
 async function submitTask() {
+  submitLoading = true
   for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
     if(spaceTaskSubmitInfo[i].address === address){
       alert('You have submitted this quest.')
@@ -282,6 +284,7 @@ async function submitTask() {
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isSubmitted = checkSubmit()
   submiteStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
+  submitLoading = false
   isOpen = false
 }
 
@@ -295,9 +298,13 @@ function select (row) {
     selected.splice(index, 1)
   }
 
-
 }
-
+// $watch(() => selected, (newValue, oldValue) => {
+//   console.log(selected.length)
+//   if(selected.length > 1){
+//     alert('Your selected is bigger than Total Chances')
+//   }
+// })
 
 async function sendBountyByAo() {
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
@@ -340,6 +347,9 @@ async function sendBountyByAo() {
     alert('This quest is not calculate store or has settled.')
   }
 
+}
+const makeConsole = () => {
+  console.log(JSON.stringify(selected))
 }
 const finalStatus = (isBegin: string) => {
   console.log('isB = ' + isBegin)
@@ -500,6 +510,9 @@ const finalStatus = (isBegin: string) => {
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
               <div class="mx-4">
+                <UButton color="white" label="test1" @click="makeConsole" />
+              </div>
+              <div class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
 <!--              <div class="mx-4">-->
@@ -599,7 +612,7 @@ const finalStatus = (isBegin: string) => {
             <UInput v-model="url" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>
           <div class="flex justify-center my-8">
-            <UButton @click="submitTask">
+            <UButton :disabled="submitLoading" @click="submitTask">
               {{ $t("Submit Quest") }}
             </UButton>
           </div>
