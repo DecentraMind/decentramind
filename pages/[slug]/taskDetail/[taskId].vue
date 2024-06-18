@@ -288,7 +288,7 @@ async function submitTask() {
   isOpen = false
 }
 
-const selected = $ref([])
+let selected = $ref([])
 
 function select (row) {
   const index = selected.findIndex((item) => item.id === row.id)
@@ -364,6 +364,14 @@ const finalStatus = (isBegin: string) => {
   console.log('res = ' + res)
   return res
 }
+const maxSelection = 5;
+// 监视 selected 数组的变化
+watch(() => selected, (newVal) => {
+  if (newVal.length > maxSelection) {
+    alert('Selected items exceed 5!');
+    // 如果选择的数量超过最大值，取消超出的选择项
+  }
+})
 </script>
 
 <template>
@@ -499,7 +507,7 @@ const finalStatus = (isBegin: string) => {
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
               </div>
-              <UTable v-if="isJoined" v-model="selected" :rows="filteredRows" :columns="columns" @select="select">
+              <UTable v-if="isJoined" v-model="selected" :rows="filteredRows" :columns="columns">
                 <template #address-data="{ row }">
                   {{ isOwner ? row.address : shortAddress(row.address)}}
                 </template>

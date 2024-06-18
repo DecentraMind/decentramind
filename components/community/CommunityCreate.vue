@@ -263,191 +263,190 @@ let settingInfo = $ref(true)
           <UButton @click="settingInfo = false">功能设置</UButton>
         </div>
         -->
-        <div v-if="settingInfo" class="space-y-4 p-5 pl-20 pt-10">
-          <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
-            <template #label>
-              <div class=" w-[300px]">{{ $t('community.logo') }}</div>
+        <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class=" w-[300px]">{{ $t('community.logo') }}</div>
+          </template>
+          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
+          <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
+        </UFormGroup>
+
+        <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class=" w-[300px]">{{ $t('community.banner') }}</div>
+          </template>
+          <UCarousel
+            v-model="currentIndex"
+            :items="items"
+            :ui="{
+              item: 'basis-full',
+              container: 'rounded-lg',
+              indicators: {
+                wrapper: 'relative bottom-0 mt-4'
+              }
+            }"
+            indicators
+            class="w-64 mx-auto"
+          >
+            <template #default="{ item }">
+              <img :src="item" class="w-full" draggable="false">
             </template>
-            <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
-            <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
-          </UFormGroup>
 
-          <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
-            <template #label>
-              <div class=" w-[300px]">{{ $t('community.banner') }}</div>
+            <template #indicator="{ onClick, page, active }">
+              <UButton 
+                :label="String(page)" 
+                :variant="active ? 'solid' : 'outline'" 
+                size="2xs" 
+                class="rounded-full min-w-6 justify-center" 
+                @click="() => {
+                  currentIndex = page; // 更新当前索引
+                  updateBanner(page)
+                  onClick(page); // 触发页面点击事件
+                }"
+              />
             </template>
-            <UCarousel
-              v-model="currentIndex"
-              :items="items"
-              :ui="{
-                item: 'basis-full',
-                container: 'rounded-lg',
-                indicators: {
-                  wrapper: 'relative bottom-0 mt-4'
-                }
-              }"
-              indicators
-              class="w-64 mx-auto"
-            >
-              <template #default="{ item }">
-                <img :src="item" class="w-full" draggable="false">
-              </template>
+          </UCarousel>
+        </UFormGroup>
 
-              <template #indicator="{ onClick, page, active }">
-                <UButton 
-                  :label="String(page)" 
-                  :variant="active ? 'solid' : 'outline'" 
-                  size="2xs" 
-                  class="rounded-full min-w-6 justify-center" 
-                  @click="() => {
-                    currentIndex = page; // 更新当前索引
-                    updateBanner(page)
-                    onClick(page); // 触发页面点击事件
-                  }"
-                />
-              </template>
-            </UCarousel>
-          </UFormGroup>
+        <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class="w-[300px]">{{ $t('community.name') }}</div>
+          </template>
+          <UInput v-model="state.Name" placeholder="Name" class="min-w-[100px] w-[430px]" />
+        </UFormGroup>
 
-          <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="Inbro" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class="w-[300px]">{{ $t('community.intro') }}</div>
+          </template>
+          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+        </UFormGroup>
+
+        <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class="w-[300px]">{{ $t('community.website') }}</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Website" placeholder="URL" />
+          </div>
+        </UFormGroup>
+
+        <UFormGroup name="Twitter" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class=" w-[300px]">{{ $t('community.twitter') }}</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Twitter" placeholder="URL" />
+          </div>
+        </UFormGroup>
+        
+        <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class=" w-[300px]">Github</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.Github" placeholder="URL" />
+          </div>
+        </UFormGroup>
+
+        <UFormGroup name="Typereward" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <USelectMenu v-model="tokenselected" class="w-[130px] mr-10" :options="tokenselect" multiple placeholder="Select Token" />
+          </div>
+        </UFormGroup>
+
+        <div class="py-8 text-2xl">{{ $t('community.project') }}</div>
+
+        <UFormGroup name="range" class="flex flex-row items-center space-x-10">
+          <template #label>
+            <div class=" min-w-[450px]">{{ $t('community.token.release') }}</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UToggle v-model="state.isPublished" />
+            <Text>{{ state.isPublished ? $t('yes') : $t('no') }}</Text>
+          </div>
+        </UFormGroup>
+
+        <div v-for="(formGroup, index) in token.communityToken" :key="index">
+          <UFormGroup name="range" label="Range">
             <template #label>
-              <div class="w-[300px]">{{ $t('community.name') }}</div>
-            </template>
-            <UInput v-model="state.Name" placeholder="Name" class="min-w-[100px] w-[430px]" />
-          </UFormGroup>
-
-          <UFormGroup name="Inbro" class="flex flex-row items-center space-x-1">
-            <template #label>
-              <div class="w-[300px]">{{ $t('community.intro') }}</div>
-            </template>
-            <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
-          </UFormGroup>
-
-          <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
-            <template #label>
-              <div class="w-[300px]">{{ $t('community.website') }}</div>
+              <div class=" min-w-[100px]">{{ index+1 }}st Token</div>
             </template>
             <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Website" placeholder="URL" />
-            </div>
-          </UFormGroup>
+              <div class="flex min-w-[477px]">
+                <USelect v-model="formGroup.tokenName" :options="tokenselect" />
 
-          <UFormGroup name="Twitter" class="flex flex-row items-center space-x-1">
-            <template #label>
-              <div class=" w-[300px]">{{ $t('community.twitter') }}</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Twitter" placeholder="URL" />
-            </div>
-          </UFormGroup>
-          
-          <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
-            <template #label>
-              <div class=" w-[300px]">Github</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Github" placeholder="URL" />
-            </div>
-          </UFormGroup>
-
-          <UFormGroup name="Typereward" class="flex flex-row items-center space-x-1">
-            <template #label>
-              <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
-              <USelectMenu v-model="tokenselected" class="w-[130px] mr-10" :options="tokenselect" multiple placeholder="Select Token" />
-            </div>
-          </UFormGroup>
-
-          <div class="py-8 text-2xl">{{ $t('community.project') }}</div>
-
-          <UFormGroup name="range" class="flex flex-row items-center space-x-10">
-            <template #label>
-              <div class=" min-w-[450px]">{{ $t('community.token.release') }}</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
-              <UToggle v-model="state.isPublished" />
-              <Text>{{ state.isPublished ? $t('yes') : $t('no') }}</Text>
-            </div>
-          </UFormGroup>
-
-          <div v-for="(formGroup, index) in token.communityToken" :key="index">
-            <UFormGroup name="range" label="Range">
-              <template #label>
-                <div class=" min-w-[100px]">{{ index+1 }}st Token</div>
-              </template>
-              <div class="flex flex-row items-center space-x-3">
-                <div class="flex min-w-[477px]">
-                  <USelect v-model="formGroup.tokenName" :options="tokenselect" />
-
-                  <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)"/>
-                </div>
-                <UPopover mode="hover" :popper="{ placement: 'right-end' }">
-                  <template #panel>
-                    <div class="w-full w-[160px] h-[25px] flex justify-center">
-                      <ULink
-                        to="https://forms.gle/RwWbeFphvyi8ZEU9A"
-                        active-class="text-primary"
-                        target="_blank"
-                        inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                      >
-                        Add new tokens
-                      </ULink>
-                    </div>
-                  </template>
-                  <UIcon name="gravity-ui:circle-question" />
-                </UPopover>
+                <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)"/>
               </div>
-            </UFormGroup>
-          </div>
-          <UButton v-if="state.isPublished" variant="outline" icon="material-symbols:add" @click="addFormGroup" />
-
-          <UFormGroup name="range" class="flex flex-row items-center space-x-10">
-            <template #label>
-              <div class=" min-w-[452px]">{{ $t('community.token.trade') }}</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
-              <UToggle v-model="state.isTradable" />
-              <Text>{{ state.isTradable ? $t('yes') : $t('no') }}</Text>
+              <UPopover mode="hover" :popper="{ placement: 'right-end' }">
+                <template #panel>
+                  <div class="w-full w-[160px] h-[25px] flex justify-center">
+                    <ULink
+                      to="https://forms.gle/RwWbeFphvyi8ZEU9A"
+                      active-class="text-primary"
+                      target="_blank"
+                      inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      Add new tokens
+                    </ULink>
+                  </div>
+                </template>
+                <UIcon name="gravity-ui:circle-question" />
+              </UPopover>
             </div>
           </UFormGroup>
-          <div v-if="state.isTradable">
-            <UFormGroup name="range" class="flex flex-row items-center space-x-10">
-              <template #label>
-                <div class=" min-w-[270px]">{{ $t('community.token.platforms') }}</div>
-              </template>
-              <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select" />
-            </UFormGroup>
-          </div>
-
-          <div class="py-8 text-2xl">{{ $t('community.economics') }}</div>
-
-
-          <div class="space-y-3">
-            <UFormGroup name="range" class="flex flex-row items-center space-x-10">
-              <template #label>
-                <div class=" min-w-[410px]">{{ $t('community.token.all') }}</div>
-              </template>
-            </UFormGroup>
-            <UFormGroup name="Alltoken" class="mb-2">
-              <div class="flex flex-row items-center space-x-3">
-                <UInput v-model="state.Alltoken" placeholder="" class="w-[120px]" />
-              </div>
-            </UFormGroup>
-
-            <div v-for="(formGroup, index) in token.tokenSupply" :key="index">
-              <UFormGroup name="range" class="mb-2">
-                <div class="flex flex-row items-center space-x-3">
-                  <UInput v-model="formGroup.name" placeholder="community" />
-                  <UInput v-model="formGroup.supply" placeholder="%" class="w-[50px]" />
-                  <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
-                </div>
-              </UFormGroup>
-            </div>
-
-            <UButton variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
-          </div>
         </div>
+        <UButton v-if="state.isPublished" variant="outline" icon="material-symbols:add" @click="addFormGroup" />
+
+        <UFormGroup name="range" class="flex flex-row items-center space-x-10">
+          <template #label>
+            <div class=" min-w-[452px]">{{ $t('community.token.trade') }}</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UToggle v-model="state.isTradable" />
+            <Text>{{ state.isTradable ? $t('yes') : $t('no') }}</Text>
+          </div>
+        </UFormGroup>
+        <div v-if="state.isTradable">
+          <UFormGroup name="range" class="flex flex-row items-center space-x-10">
+            <template #label>
+              <div class=" min-w-[270px]">{{ $t('community.token.platforms') }}</div>
+            </template>
+            <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select" />
+          </UFormGroup>
+        </div>
+
+        <div class="py-8 text-2xl">{{ $t('community.economics') }}</div>
+
+
+        <div class="space-y-3">
+          <UFormGroup name="range" class="flex flex-row items-center space-x-10">
+            <template #label>
+              <div class=" min-w-[410px]">{{ $t('community.token.all') }}</div>
+            </template>
+          </UFormGroup>
+          <UFormGroup name="Alltoken" class="mb-2">
+            <div class="flex flex-row items-center space-x-3">
+              <UInput v-model="state.Alltoken" placeholder="" class="w-[120px]" />
+            </div>
+          </UFormGroup>
+
+          <div v-for="(formGroup, index) in token.tokenSupply" :key="index">
+            <UFormGroup name="range" class="mb-2">
+              <div class="flex flex-row items-center space-x-3">
+                <UInput v-model="formGroup.name" placeholder="community" />
+                <UInput v-model="formGroup.supply" placeholder="%" class="w-[50px]" />
+                <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
+              </div>
+            </UFormGroup>
+          </div>
+
+          <UButton variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
+        </div>
+
 
         <div class="flex justify-center">
           <UButton color="white" type="submit" size="xl" @click="CreateCommunity">
