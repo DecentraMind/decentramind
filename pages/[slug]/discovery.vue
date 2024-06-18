@@ -159,12 +159,12 @@ const test = ()=> {
                   </template>
                   <template v-else>
                     <!-- Show UButton Component -->
-                    <UButton 
-                      class="absolute right-0 w-[60px]" 
-                      block 
-                      :ui="{ font: 'font-medium'}" 
-                      color="white" 
-                      variant="outline" 
+                    <UButton
+                      class="absolute right-0 w-[60px]"
+                      block
+                      :ui="{ font: 'font-medium'}"
+                      color="white"
+                      variant="outline"
                       @click="() => jointocommunity(community.uuid)"
                     >
                       {{ $t('community.list.join') }}
@@ -187,7 +187,7 @@ const test = ()=> {
     </UModal>
     <UModal v-model="joinLoading">
       <div class="h-[200px] flex flex-col items-center justify-center">
-        <Text class="text-2xl">Join...</Text>
+        <div class="text-2xl">Join...</div>
         <UIcon name="svg-spinners:12-dots-scale-rotate" />
       </div>
     </UModal>

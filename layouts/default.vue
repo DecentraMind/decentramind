@@ -288,7 +288,7 @@ const test = ()=> {
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
-    <UModal v-model="communityCreate" :ui="{ width: w-full }">
+    <UModal v-model="communityCreate" class="w-full">
       <UCard>
         <CommunityCreate />
       </UCard>

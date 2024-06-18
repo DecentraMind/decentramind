@@ -137,7 +137,7 @@ export const taskStore = defineStore('taskStore', () => {
     await window.arweaveWallet.connect(permissions)
     try{
       const res = await dryrun({
-        process: processId,
+        process: 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU',
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [
           { name: 'Action', value: 'getAllInviteInfo' }
