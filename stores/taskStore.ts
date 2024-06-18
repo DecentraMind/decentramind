@@ -447,8 +447,23 @@ export const taskStore = defineStore('taskStore', () => {
       return ''
     }
   }
+  const updateTaskAfterSettle = async (taskId: string) => {
+    // 结算之后将任务信息中的是否已结算修改为Y
+    console.log('in updataTask')
+    try {
+      await message({
+        process: processId,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: 'Action', value: 'updateTaskAfterSettle' }],
+        data: taskId
+      })
+    } catch (error) {
+      alertMessage(error)
+      return ''
+    }
+  }
   const updateTaskSubmitInfoAfterCal = async (taskId: string, data: any) => {
-    // 计算之后将任务信息中的是否已计算修改为Y
+    // 计算之后将分数信息更新到提交信息中
     console.log(JSON.stringify(data))
     let requestBody = ''
     for(let i = 0; i < data.length; ++i){
@@ -605,7 +620,7 @@ export const taskStore = defineStore('taskStore', () => {
 
 
 
-  return $$({ allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

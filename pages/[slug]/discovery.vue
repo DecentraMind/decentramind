@@ -187,7 +187,7 @@ const test = ()=> {
     </UModal>
     <UModal v-model="joinLoading">
       <div class="h-[200px] flex flex-col items-center justify-center">
-        <div class="text-2xl">Join...</div>
+        <div>Join...</div>
         <UIcon name="svg-spinners:12-dots-scale-rotate" />
       </div>
     </UModal>

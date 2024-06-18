@@ -17,6 +17,7 @@ const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 
 let communitySetting = $ref(false)
+let postQuestLoading = $ref(false)
 const items = [
   {
     label: t('Public Quests'),
@@ -163,6 +164,7 @@ function uuid() {
   })
 }
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+  postQuestLoading = true
   // Do something with state
   transData.taskId = uuid()
   transData.taskLogo = state.taskLogo
@@ -199,6 +201,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   } else {
     taskListIsEmpty = false
   }
+  postQuestLoading = false
   isOpen = false
 }
 const ranges = [
@@ -538,7 +541,7 @@ const formattedTwitterLink = (twitter) => {
           </div>
           <div class="flex">
             <div>
-              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
+<!--              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>
@@ -602,7 +605,7 @@ const formattedTwitterLink = (twitter) => {
                     </div>
                     <div>
                       <div >
-                        {{ blogPost.builderNum }}
+                        {{ blogPost.joined }}
                       </div>
                     </div>
                   </div>
@@ -717,7 +720,7 @@ const formattedTwitterLink = (twitter) => {
               </UPopover>
             </div>
           </UFormGroup>
-          <UButton color="white" type="submit">
+          <UButton color="white" type="submit" :disabled="postQuestLoading">
             {{ $t('Post the Quest') }}
           </UButton>
         </UForm>
@@ -738,7 +741,7 @@ const formattedTwitterLink = (twitter) => {
           <UButton @click="quitCommunity(communityId)">Yes</UButton>
         </div>
         <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <Text>Leave...</Text>
+          <div>Leave...</div>
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>

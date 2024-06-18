@@ -6,7 +6,7 @@ import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
 import {shortAddress} from "../../../utils/web3";
 import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
-const { allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, userInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
@@ -19,6 +19,8 @@ let blogPost = $ref({})
 blogPost = await getTaskById(taskId)
 console.log('blogPost = ' + JSON.stringify(blogPost))
 let communityId = blogPost.communityId
+let isCal = blogPost.isCal === 'Y'
+// console.log('isCal = ' + isCal)
 let isOwner = blogPost.ownerId === address
 let taskJoinRecord = $ref({})
 taskJoinRecord = await getTaskJoinRecord(taskId)
@@ -51,6 +53,7 @@ isJoined = checkJoin()
 isSubmitted = checkSubmit()
 let joinStatus = $ref('')
 let submiteStatus = $ref('')
+let settleStatus = $ref(false)
 submiteStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
 joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 // console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
@@ -60,6 +63,7 @@ joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 onMounted(async () => {
   let isBegin = blogPost.isBegin
   let isSettle = blogPost.isSettle
+  settleStatus = isSettle === 'Y'
   let isCal = blogPost.isCal
   if(isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N'){
     // 计算分数
@@ -74,7 +78,7 @@ onMounted(async () => {
   // calculateScore()
   // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
   // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
-  // blogPost = await getTaskById(taskId)
+  blogPost = await getTaskById(taskId)
   // console.log('blogPost = ' + JSON.stringify(blogPost))
   console.log(isBegin)
   console.log(isSettle)
@@ -230,6 +234,7 @@ function isNullOrEmpty(str: string | null | undefined): boolean {
 const emit = defineEmits(['success'])
 const url = $ref('')
 let submitLoading = $ref(false)
+let sendBountyLoading = $ref(false)
 async function submitTask() {
   submitLoading = true
   for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
@@ -308,6 +313,7 @@ function select (row) {
 
 async function sendBountyByAo() {
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
+  sendBountyLoading = true
   if(blogPost.isCal === 'Y'){
     let bounties = []
     if(selected.length != 0){
@@ -339,14 +345,44 @@ async function sendBountyByAo() {
         }
       }
     }
-
+    // ji算剩余token，返还给任务创建人
+    let bounty1 = blogPost.tokenNumber
+    let bounty2 = blogPost.tokenNumber1
+    for(let j = 0; j < bounties.length; ++j){
+      if(bounties[j].tokenType === blogPost.tokenType){
+        bounty1 = bounty1 - bounties[j].tokenNumber
+      }
+      if(bounties[j].tokenType === blogPost.tokenType1){
+        bounty2 = bounty2 - bounties[j].tokenNumber
+      }
+    }
+    if(bounty1 && bounty1 > 0 && bounty1 != 'undefined'){
+      const bountyData = {
+        walletAddress: address,
+        tokenNumber: bounty1,
+        tokenType: blogPost.tokenType
+      }
+      bounties.push(bountyData)
+    }
+    if(bounty2 && bounty2 > 0 && bounty2 != 'undefined'){
+      const bountyData = {
+        walletAddress: address,
+        tokenNumber: bounty2,
+        tokenType: blogPost.tokenType1
+      }
+      bounties.push(bountyData)
+    }
     console.log('selected = ' + JSON.stringify(bounties))
-    await sendBounty(blogPost.processId, bounties)
+    // await sendBounty(blogPost.processId, bounties)
+    await updateTaskAfterSettle(blogPost.id)
+    blogPost = await getTaskById(taskId)
+    settleStatus = isSettle === 'Y'
     // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
+
   }else{
     alert('This quest is not calculate store or has settled.')
   }
-
+  sendBountyLoading = false
 }
 const makeConsole = () => {
   console.log(JSON.stringify(selected))
@@ -364,7 +400,7 @@ const finalStatus = (isBegin: string) => {
   console.log('res = ' + res)
   return res
 }
-const maxSelection = 5;
+const maxSelection = blogPost.rewardTotal;
 // 监视 selected 数组的变化
 watch(() => selected, (newVal) => {
   if (newVal.length > maxSelection) {
@@ -517,17 +553,11 @@ watch(() => selected, (newVal) => {
               </UTable>
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
-              <div class="mx-4">
-                <UButton color="white" label="test1" @click="makeConsole" />
-              </div>
-              <div class="mx-4">
+              <div v-if="!isCal" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-<!--              <div class="mx-4">-->
-<!--                <UButton color="white" label="load lua" @click="calculate" />-->
-<!--              </div>-->
-              <div v-if="isOwner" class="mx-4">
-                <UButton color="white" :label="$t('Send Bounty')" @click="sendBountyByAo"/>
+              <div v-if="isOwner && !settleStatus" class="mx-4">
+                <UButton color="white" :label="$t('Send Bounty')" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
               </div>
             </div>
             <div class="flex mt-4">

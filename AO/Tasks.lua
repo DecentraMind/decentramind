@@ -67,6 +67,7 @@ Handlers.add(
                 local tmp = v.joined
                 tmp = tmp + 1
                 v.joined = tmp
+                v.buildNumber = v.joined
                 print(tmp)
                 TasksForTable[key] = json.encode(v)
                 break
@@ -175,6 +176,22 @@ Handlers.add(
             local v = json.decode(TasksForTable[i])
             if(v.taskId == taskId) then
                 v.isCal = 'Y'
+            end
+            TasksForTable[i] = json.encode(v)
+        end
+        Handlers.utils.reply("update task success")(msg)
+    end
+)
+Handlers.add(
+    "updateTaskAfterSettle",
+    Handlers.utils.hasMatchingTag("Action", "updateTaskAfterSettle"),
+    function (msg)
+        -- 通过id获取该任务对应参与信息
+        local taskId = msg.Data
+        for i = 1, #TasksForTable do
+            local v = json.decode(TasksForTable[i])
+            if(v.taskId == taskId) then
+                v.isSettle = 'Y'
             end
             TasksForTable[i] = json.encode(v)
         end
