@@ -27,8 +27,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   let exitisLoading = $ref(false)
   let currentUuid = $ref('')
   let communityCreate = $ref(false)
-  const Sleep = (ms)=> {
-    return new Promise(resolve=>setTimeout(resolve, ms))
+  const Sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
   //设置当前选中社区的uuid
   const setCurrentuuid = (uuid: any) => {
@@ -152,7 +152,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "website": Website,
         "twitter": Twitter,
         "github": Github,
-        "buildnum": Bu1ildnum,
+        "buildnum": Buildnum,
         "bounty": Bounty,
         "ispublished": Ispublished,
         "communitytoken": CommunityToken,
