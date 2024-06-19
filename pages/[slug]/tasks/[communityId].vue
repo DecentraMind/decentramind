@@ -108,12 +108,17 @@ const timeZoneOptions = [
   { label: 'GMT+13:00', value: 'GMT+13:00' },
   { label: 'GMT+14:00', value: 'GMT+14:00' },
 ]
-const selected = ref({ start: sub(new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime(), { days: 14 }), end: new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime() })
+const selected = ref({ start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) })
 function isRangeSelected(duration: Duration) {
   return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
 }
 function selectRange(duration: Duration) {
-  selected.value = { start: sub(new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime(), duration), end: new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime() }
+  selected.value = { start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) }
+}
+function setTimeToTenAM(date: Date): Date {
+  const newDate = new Date(date);
+  newDate.setHours(10, 0, 0, 0); // 设置小时为10，分钟为0，秒为0，毫秒为0
+  return newDate;
 }
 const state = $ref({
   taskLogo: 'banner1',
@@ -354,7 +359,8 @@ async function testAO() {
   // const url = 'https://pbs.twimg.com/profile_images/1801571505647849473/Zbu80-_C_normal.jpg'
   // const res = await compareImages(base, url)
   // console.log(res)
-  await makecommunityChat('6i1DWfx2d11jfWnTSwveGhveksg_gi8svH1e7iMZNMg')
+  // await makecommunityChat('6i1DWfx2d11jfWnTSwveGhveksg_gi8svH1e7iMZNMg')
+  console.log(setTimeToTenAM(new Date()))
 }
 
 
@@ -541,7 +547,7 @@ const formattedTwitterLink = (twitter) => {
           </div>
           <div class="flex">
             <div>
-<!--              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
+              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>
