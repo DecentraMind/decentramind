@@ -69,7 +69,7 @@ const jointocommunity = async(uuid: any) => {
       LinktoTwitter = true
     } else {
       const invite = "none"
-      await joinCommunity(uuid, invite)
+      const result = await joinCommunity(uuid, invite)
       toast.add({ title: 'joined success' })
       // 查找uuid匹配的元素并更新isJoined属性
       await getCommunitylist()
@@ -80,7 +80,7 @@ const jointocommunity = async(uuid: any) => {
     console.log('communityJoin 操作成功');
   } catch (error) {
     // 如果 communityJoin 抛出了异常，则在这里处理异常
-    alert('communityJoin 操作失败:', error);
+    alert('communityJoin 操作失败:', result);
     // 可以在这里做一些失败处理，比如显示错误信息、重试等
   } finally {
     // 无论是否成功，都在最后将 loading 状态设为 false

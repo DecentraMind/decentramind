@@ -318,20 +318,28 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const joinCommunity = async (uuid, invite) => {
     if (joinisLoading) return
     joinisLoading = true
-    const time = Date.now();
-    let join = await message({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'join' },
-        { name: 'userAddress', value: address },
-        { name: 'invite', value: invite },
-        { name: 'time', value: time.toString() }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-      data: uuid,
-    });
-    joinisLoading = false
-    return join
+    try {
+      console.log("-----------")
+      const time = Date.now();
+      let join = await message({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'join' },
+          { name: 'userAddress', value: address },
+          { name: 'invite', value: invite },
+          { name: 'time', value: time.toString() }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+        data: uuid,
+      });
+      console.log(join)
+      joinisLoading = false
+      return join
+    } catch (error) {
+      alert("join failer", error)
+    } finally {
+      joinisLoading = false;
+    }
   }
 
   //Methods of withdrawing from the community

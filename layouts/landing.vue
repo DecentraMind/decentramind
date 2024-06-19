@@ -12,7 +12,7 @@ const {
   // currentChain, selectedWallet,
   address,
   credBalance,
-  init, doLogout, doLogin } = $(aoStore())
+  init, doLogout, doLogin, othentLogin } = $(aoStore())
 
 const { registInfo } = $(aocommunityStore())
 const router = useRouter();
@@ -20,22 +20,45 @@ const isLoading = ref(false);
 
 const handleButtonClick = async () => {
   isLoading.value = true;
+  loginLoading = true;
   try {
     const result = await doLogin();
-    registInfo()
     if (result) {
+      loginLoading = false;
       router.push('/dm');
     } else {
+      loginLoading = false;
       console.log('User did not connect the wallet, not navigating to /signup');
     }
   } catch (error) {
+    loginLoading = false;
     console.error('Error during async operation', error);
     alert('Please connect your Arweave Wallet to continue');
   } finally {
+    loginLoading = false;
     isLoading.value = false;
   }
 };
 
+const othent = async () => {
+  try {
+    loginLoading = true;
+    const result = await othentLogin()
+    if (result) {
+      loginLoading = false;
+      router.push('/dm');
+    } else {
+      loginLoading = false;
+      console.log('User did not connect the wallet, not navigating to /signup');
+    }
+  } catch (error) {
+    loginLoading = false;
+    console.error(error)
+  }
+}
+
+let loginModal = $ref(false)
+let loginLoading = $ref(false)
 </script>
 
 <template>
@@ -48,13 +71,39 @@ const handleButtonClick = async () => {
         <UColorModeImage src="DMLogo.png" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-[600px] mb-6" />
         <div class="text-7xl font-bold">Start your real community journey</div>
         <div class="mt-3 mb-6">Try a better way than airdrop to build your community.</div>
-        <UButton size="xl" color="black" @click="handleButtonClick">
+        <UButton size="xl" color="black" @click="loginModal = true">
           Open to Build
           <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
         </UButton>
       </div>
     </UMain>
-
+    <UModal v-model="loginModal">
+      <UCard class="h-[200px] flex items-center justify-center">
+        <div v-if="!loginLoading" class="flex justify-center space-x-3">
+          <UButton color="white" class="w-[120px]" @click="handleButtonClick">
+            <template #leading>
+              <UAvatar
+                src="wallet/arconnect.svg"
+                size="2xs"
+              />
+            </template>
+            Arweave
+          </UButton> 
+          <UButton color="white" class="w-[120px]" @click="othent">
+            <template #leading>
+              <UAvatar
+                src="wallet/arconnect.svg"
+                size="2xs"
+              />
+            </template>
+            Othent
+          </UButton>
+        </div>
+        <div v-else class="flex justify-center">
+          <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        </div>
+      </UCard>
+    </UModal>
     <Footer />
 
     <ClientOnly>

@@ -8,9 +8,9 @@ const options = [
   { label: 'OKE', value: 'OKE' },
   { label: 'Binance', value: 'Binance' },
 ]
-const supportSelect = ['ArSwap', 'Bark', 'Permaswap', 'Binance', 'Coinbase']
+const supportSelect = ['ArSwap', 'Permaswap', 'Binance', 'Coinbase']
 let supportSelected = $ref([])
-const tokenselect = ['AR', 'Bark', 'TRUNK', 'EXP', '0rbit', 'Earth', 'Fire', 'Air', 'Lava']
+const tokenselect = ['AR', 'TRUNK', 'EXP', '0rbit', 'Earth', 'Fire', 'Air', 'Lava']
 let tokenselected = $ref([])
 let isCreated = $ref(false)
 
