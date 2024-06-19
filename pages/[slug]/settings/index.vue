@@ -16,6 +16,7 @@ let accountForm = $ref({
   showmail: true,
   phone: '',
   showtelegram: true,
+  github: '',
 })
 let isLoading = $ref(false)
 
@@ -30,7 +31,7 @@ function onSubmitAccount() {
   console.log('Submitted form:', accountForm)
 }
 
-const { userInfo, getInfo, personalInfo } = $(aocommunityStore())
+const { userInfo, githubCode, getInfo, personalInfo } = $(aocommunityStore())
 
 const saveInfo = async () => {
 
@@ -42,7 +43,8 @@ const saveInfo = async () => {
     accountForm.mail,
     accountForm.showmail,
     accountForm.phone,
-    accountForm.showtelegram
+    accountForm.showtelegram,
+    accountForm.github
   )
   toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
   await getInfo()
@@ -53,6 +55,7 @@ const gettwitter = async () => {
 }
 
 let connectTwitter = $ref(false)
+let connectGithub = $ref(false)
 onMounted(async () => {
   try {
     //info = await getInfo();
@@ -70,8 +73,12 @@ onMounted(async () => {
     accountForm.showmail = userInfo[0].showmail;
     accountForm.phone = userInfo[0].phone;
     accountForm.showtelegram = userInfo[0].showphone;
+    accountForm.github = userInfo[0].github;
     if (accountForm.twitter == 'Success') {
       connectTwitter = true
+    }
+    if (accountForm.github == 'Success') {
+      connectGithub = true
     }
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -163,6 +170,23 @@ const handleUp = (event) => {
         </div>
       </UFormGroup>
 
+      <UFormGroup label="github" name="github" class="mb-5 pl-10">
+        <template #label>
+          Github
+        </template>
+        <div class="flex items-center space-x-3">
+          <UButton v-if="connectGithub" color="white" class="mr-5 w-[150px]" disabled>{{ githubCode }}</UButton>
+          <ULink
+            v-else
+            to="https://github.com/login/oauth/authorize?client_id=Ov23liyIh4bmA6HGwXhT&state=state"
+            active-class="text-primary"
+            target="_blank"
+            inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          >
+            <UButton color="white" class="mr-20 w-[120px]">{{ $t('github.link')}}</UButton>
+          </ULink>
+        </div>
+      </UFormGroup>
 
       <div class="flex justify-center">
         <UButton type="submit" color="black" @click="saveInfo">
