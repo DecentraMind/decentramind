@@ -9,9 +9,9 @@ const options = [
   { label: 'OKE', value: 'OKE' },
   { label: 'Binance', value: 'Binance' },
 ]
-const supportSelect = ['ArSwap', 'Bark', 'Permaswap', 'Binance', 'Coinbase']
+const supportSelect = ['ArSwap', 'Permaswap', 'Binance', 'Coinbase']
 const supportSelected = $ref([])
-const tokenselect = ['AR', 'Bark', 'TRUNK', 'EXP', '0rbit', 'Earth', 'Fire', 'Air', 'Lava']
+const tokenselect = ['AR', 'TRUNK', 'EXP', '0rbit', 'Earth', 'Fire', 'Air', 'Lava']
 const tokenselected = $ref([])
 let isCreated = $ref(false)
 
@@ -59,7 +59,7 @@ const schema = z.object({
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
   }),
-  
+
   /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
@@ -104,12 +104,12 @@ const CreateCommunity = async () => {
     const jsonString = JSON.stringify(communitySubmit);
 
     createCommunity = await addCommunity(
-      state.logobase64Data, 
-      state.banner, 
-      state.Name, 
-      state.Inbro, 
+      state.logobase64Data,
+      state.banner,
+      state.Name,
+      state.Inbro,
       state.Website,
-      state.Twitter, 
+      state.Twitter,
       state.Github,
       tokenselected, // 选择的token类型
       state.isPublished, // 是否有发行token
@@ -293,11 +293,11 @@ let settingInfo = $ref(true)
             </template>
 
             <template #indicator="{ onClick, page, active }">
-              <UButton 
-                :label="String(page)" 
-                :variant="active ? 'solid' : 'outline'" 
-                size="2xs" 
-                class="rounded-full min-w-6 justify-center" 
+              <UButton
+                :label="String(page)"
+                :variant="active ? 'solid' : 'outline'"
+                size="2xs"
+                class="rounded-full min-w-6 justify-center"
                 @click="() => {
                   currentIndex = page; // 更新当前索引
                   updateBanner(page)
@@ -339,7 +339,7 @@ let settingInfo = $ref(true)
             <UInput v-model="state.Twitter" placeholder="URL" />
           </div>
         </UFormGroup>
-        
+
         <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class=" w-[300px]">Github</div>

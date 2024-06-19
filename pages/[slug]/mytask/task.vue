@@ -155,27 +155,31 @@ onMounted( async () => {
         if(ele.bounty1){
           const didRow = {
             name: taskName,
-            balance: ele.bounty1 + ' ' + ele.bountyType1,
+            balance: (ele.bounty1 / 1e12) + ' ' + ele.bountyType1,
             from: coummunityName
           }
           // console.log('didRow = ' + JSON.stringify(didRow))
           if(ownerId === address){
             created.push(didRow)
+            publishedBounty.push({ bounty: (ele.bounty1 / 1e12), bountyType: ele.bountyType1 })
           }else{
             did.push(didRow)
+            didBounty.push({ bounty: (ele.bounty1 / 1e12), bountyType: ele.bountyType1 })
           }
         }
         if(ele.bounty2){
           const didRow = {
             name: taskName,
-            balance: ele.bounty2 + ' ' + ele.bountyType2,
+            balance: (ele.bounty2 / 1e12) + ' ' + ele.bountyType2,
             from: coummunityName
           }
           // console.log('didRow = ' + JSON.stringify(didRow))
           if(ownerId === address){
             created.push(didRow)
+            publishedBounty.push({ bounty: (ele.bounty2 / 1e12), bountyType: ele.bountyType2 })
           }else{
             did.push(didRow)
+            didBounty.push({ bounty: (ele.bounty2 / 1e12), bountyType: ele.bountyType2 })
           }
         }
       }
@@ -185,38 +189,17 @@ onMounted( async () => {
       // console.log('dLength = ' + dLength)
 
     }
-    publishedBounty = extractBounties(submitInfo, address);
-    didBounty = extractBounties(did, address)
+    // publishedBounty = extractBounties(submitInfo, address);
+    // didBounty = AwardBounties(submitInfo, address)
+    console.log('didBounty = ' + didBounty)
   }
   console.log(JSON.stringify(did))
 })
 
 let publishedQuest = $ref(false)
-let publishedBounty = $ref()
+let publishedBounty = $ref([])
 let didQuest = $ref(false)
-let didBounty = $ref()
-const test = async() => {
-  console.log("---------")
-  const allbounty = extractBounties(submitInfo, address);
-  console.log(allbounty)
-}
-
-const extractBounties = (data, address) => {
-  const allbounty = [];
-
-  data.forEach(item => {
-    if (item.address === address) {
-      if (item.bounty1) {
-        allbounty.push({ bounty: item.bounty1, bountyType: item.bountyType1 });
-      }
-      if (item.bounty2) {
-        allbounty.push({ bounty: item.bounty2, bountyType: item.bountyType2 });
-      }
-    }
-  });
-  const result = mergeBounties(allbounty)
-  return result;
-};
+let didBounty = $ref([])
 
 const mergeBounties = (bounties) => {
   const bountyMap = {};
@@ -314,7 +297,7 @@ const mergeBounties = (bounties) => {
         <div class="p-4 flex justify-center items-center">
           <UTable
             v-model:sort="sort"
-            :rows="publishedBounty"
+            :rows="mergeBounties(publishedBounty)"
             :columns="rewardcolumns2"
             :loading="pending"
             sort-mode="manual"
@@ -327,7 +310,7 @@ const mergeBounties = (bounties) => {
         <div class="p-4 flex justify-center items-center">
           <UTable
             v-model:sort="sort"
-            :rows="didBounty"
+            :rows="mergeBounties(didBounty)"
             :columns="rewardcolumns2"
             :loading="pending"
             sort-mode="manual"

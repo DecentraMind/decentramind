@@ -51,6 +51,7 @@ let isSubmitted = $ref()
 let isJoined = $ref()
 isJoined = checkJoin()
 isSubmitted = checkSubmit()
+let isIng = $ref(false)
 let joinStatus = $ref('')
 let submiteStatus = $ref('')
 let settleStatus = $ref(false)
@@ -62,6 +63,11 @@ joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 
 onMounted(async () => {
   let isBegin = blogPost.isBegin
+  if(isBegin === 'Y'){
+    isIng = true
+  }else{
+    isIng = false
+  }
   let isSettle = blogPost.isSettle
   settleStatus = isSettle === 'Y'
   let isCal = blogPost.isCal
@@ -75,9 +81,9 @@ onMounted(async () => {
       await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
     }
   }
-  // calculateScore()
+  calculateScore()
   // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
-  // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+  await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
   blogPost = await getTaskById(taskId)
   // console.log('blogPost = ' + JSON.stringify(blogPost))
   console.log(isBegin)
@@ -406,8 +412,16 @@ watch(() => selected, (newVal) => {
   if (newVal.length > maxSelection) {
     alert('Selected items exceed 5!');
     // 如果选择的数量超过最大值，取消超出的选择项
+    selected = newVal.slice(0, maxSelection)
   }
 })
+function labelName() {
+  if(spaceTaskSubmitInfo.length === 0 || !spaceTaskSubmitInfo){
+    return 'Return Bounty'
+  }else{
+    return t('Send Bounty')
+  }
+}
 </script>
 
 <template>
@@ -441,9 +455,9 @@ watch(() => selected, (newVal) => {
                     {{ submiteStatus }}
                   </UBadge>
                 </div>
-                <div v-if="isOwner" class="mx-2">
+                <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-2">
                   <UBadge color="black" variant="solid">
-                    {{ blogPost.isSettle == 'Y'? $t('Settled') : $t('Unsettled')}}
+                    {{ $t('Unsettled') }}
                   </UBadge>
                 </div>
               </div>
@@ -553,11 +567,11 @@ watch(() => selected, (newVal) => {
               </UTable>
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
-              <div v-if="!isCal" class="mx-4">
+              <div v-if="isIng" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-              <div v-if="isOwner && !settleStatus" class="mx-4">
-                <UButton color="white" :label="$t('Send Bounty')" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
+              <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-4">
+                <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
               </div>
             </div>
             <div class="flex mt-4">
@@ -582,7 +596,8 @@ watch(() => selected, (newVal) => {
 
                   <p> 7 If the total chances are 20 but you are in 21st, sorry you can get nothing </p>
 
-                  <p> 8 Yout only have 1 chance for this quest </p>
+                  <p> 8 You only have 1 chance for this quest </p>
+                  <p> 9 If no one meets the bounty, the bounty will be returned to the bounty owner's wallet </p>
                 </div>
               </div>
             </div>

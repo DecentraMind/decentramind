@@ -5,12 +5,14 @@ const slug = $computed(() => route.params.slug)
 
 const {t} = useI18n()
 
-const links = [[{
-    label: t('wallet'),
-    icon: 'i-heroicons-user-circle',
-    to: `/${slug}/mytask`,
-    exact: true
-  }, {
+const links = [[
+  // {
+  //   label: t('wallet'),
+  //   icon: 'i-heroicons-user-circle',
+  //   to: `/${slug}/mytask`,
+  //   exact: true
+  // },
+  {
     label: t('task'),
     icon: 'eos-icons:abstract-instance-outlined',
     to: `/${slug}/mytask/task`

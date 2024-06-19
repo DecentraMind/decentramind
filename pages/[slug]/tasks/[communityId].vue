@@ -68,7 +68,6 @@ const tokenOptions = [
   { label: 'LINUX', value: 'LINUX' },
   { label: 'AR', value: 'AR' },
   { label: 'AOCRED', value: 'AOCRED' },
-  { label: 'Bark', value: 'Bark' },
   { label: 'TRUNK', value: 'TRUNK' },
   { label: 'AR.IO EXP', value: 'AR.IO EXP' },
   { label: '0rbit Points', value: '0rbit Points' },

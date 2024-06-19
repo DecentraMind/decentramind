@@ -47,9 +47,9 @@ const saveInfo = async () => {
   toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
   await getInfo()
 }
-const { gettoken } = $(linktwitter())
+const { gettoken, getAccessToken } = $(linktwitter())
 const gettwitter = async () => {
-  await gettoken()
+  await getAccessToken()
 }
 
 let connectTwitter = $ref(false)
