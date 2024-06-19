@@ -104,7 +104,28 @@ export const linktwitter = defineStore('linktwitter', () => {
             console.error('Error posting token:', error)
         }
     }
-    return $$({ authClient, getAccessToken, back, gettoken, postToken, searchSpaceById })
+
+
+    const github = async (code) => {
+        const clientID = 'Ov23liyIh4bmA6HGwXhT';
+        const clientSecret = '766802ca2baa139239a3b2acda096d4644f24b02';
+        const url = 'https://github.com/login/oauth/access_token';
+
+        try {
+            const response = await axios.post(url, {
+                client_id: clientID,
+                client_secret: clientSecret,
+                code: code,
+            }, {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error posting token:', error);
+        }
+    }
+    return $$({ github, authClient, getAccessToken, back, gettoken, postToken, searchSpaceById })
 })
 
 if (import.meta.hot)
