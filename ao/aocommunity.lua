@@ -1,7 +1,7 @@
 community = community or {}
 usercommunity = usercommunity or {}
 userinfo = userinfo or {}
-
+githubcode = githubcode or {}
 
 local json = require("json")
 
@@ -370,6 +370,21 @@ Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), func
   Handlers.utils.reply(userInfo)(msg)
 end)
 
+--获取github code
+Handlers.add("getGithubcode", Handlers.utils.hasMatchingTag("Action", "getGithubcode"), function(msg)
+  local address = msg.Tags.userAddress
+  print("-----")
+  if githubcode[address] then
+    local value = githubcode[address]
+    print("Value for key " .. value)
+    Handlers.utils.reply(value)(msg)
+  else
+    local result = 'N/A'
+    print("Key not found")
+    Handlers.utils.reply(result)(msg)
+  end
+end)
+
 -- 个人信息修改
 Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalInfo"), function(msg)
   local newColumn = msg.From
@@ -380,6 +395,24 @@ Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalIn
   end
 
   userinfo[newColumn] = msg.Data
+
+  -- 判断msg.Tags.github是否存在并且等于"yes"
+  if msg.Tags.github and msg.Tags.github == "yes" then
+    -- 检查githubcode中是否存在key值为msg.From的列
+    if not githubcode[newColumn] then
+      -- 生成一串10位数字的字符串
+      local randomString = ""
+      for i = 1, 10 do
+        randomString = randomString .. tostring(math.random(0, 9))
+      end
+
+      -- 将生成的字符串赋值给githubcode的这一列
+      print(randomString)
+      print("------------")
+      githubcode[newColumn] = randomString
+      Handlers.utils.reply(randomString)(msg)
+    end
+  end
 end)
 
 -- 注册个人信息
@@ -395,7 +428,7 @@ Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo")
     showmail = true,
     phone = "N/A",
     showphone = true,
-    joined = {}
+    github = 'N/A'
   }
   local enjson = json.encode(jsonColum)
   if not userinfo[newColum] then
