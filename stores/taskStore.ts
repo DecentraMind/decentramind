@@ -592,6 +592,37 @@ export const taskStore = defineStore('taskStore', () => {
     }
   }
 
+  const storeBounty = async (bounties: any) => {
+    await window.arweaveWallet.connect(permissions)
+    try {
+      const messageId = await message({
+        process: processId,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [{ name: 'Action', value: 'storeBounty' }],
+        data: JSON.stringify(bounties)
+      })
+      console.log('return message = ' + messageId)
+      return messageId
+    } catch (error) {
+      console.log('messageToAo -> error:', error)
+      return ''
+    }
+  }
+  const getAllBounty = async () => {
+    let res
+    try {
+      res = await dryrun({
+        process: processId,
+        tags: [{ name: 'Action', value: 'getAllBounties' }]
+      })
+      console.log('all bounties = ' + res.Messages[0].Data)
+      return JSON.parse(res.Messages[0].Data)
+    } catch (error) {
+      console.log('messageToAo -> error:', error)
+      return ''
+    }
+  }
+
   const makecommunityChat = async (taskProcessId: string) => {
     const x = 'TaskOwnerWallet = "' + '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw' + '"'
     // const luaCode  = 'Handlers.add(    "Echo",    Handlers.utils.hasMatchingTag("Action", "Echo"),    function (msg)      Handlers.utils.reply("Echo back")(msg)    end  )'
@@ -620,7 +651,7 @@ export const taskStore = defineStore('taskStore', () => {
 
 
 
-  return $$({ updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

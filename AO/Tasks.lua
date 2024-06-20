@@ -4,6 +4,7 @@ TasksForTable = TasksForTable or {}
 SpaceTaskSubmittedTable = SpaceTaskSubmittedTable or {}
 TaskJoidRecord = TaskJoidRecord or {}
 XData = XData or {}
+Bounties = Bounties or {}
 
 Handlers.add(
     "DeleteAll",
@@ -251,6 +252,27 @@ Handlers.add(
         end
         -- 通过id获取该任务对应参与信息
         Handlers.utils.reply("success")(msg)
+    end
+)
+Handlers.add(
+    "storeBounty",
+    Handlers.utils.hasMatchingTag("Action", "storeBounty"),
+    function (msg)
+        local req = json.decode(msg.Data)
+        for _, value in pairs(req) do
+            table.insert(Bounties, value)
+        end
+        -- 通过id获取该任务对应参与信息
+        Handlers.utils.reply("success")(msg)
+    end
+)
+Handlers.add(
+    "getAllBounties",
+    Handlers.utils.hasMatchingTag("Action", "getAllBounties"),
+    function (msg)
+        local cJson = json.encode(Bounties)
+        -- 通过id获取该任务对应参与信息
+        Handlers.utils.reply(cJson)(msg)
     end
 )
 Handlers.add(

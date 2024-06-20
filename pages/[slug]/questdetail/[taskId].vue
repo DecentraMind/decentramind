@@ -6,7 +6,7 @@ import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
 import {shortAddress} from "../../../utils/web3";
 import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
-const { updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo, getInfo, getLocalcommunityInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
@@ -378,14 +378,31 @@ async function sendBountyByAo() {
     // await sendBounty(blogPost.processId, bounties)
     await updateTaskAfterSettle(blogPost.id)
     blogPost = await getTaskById(taskId)
-    settleStatus = isSettle === 'Y'
+    // settleStatus = isSettle === 'Y'
     // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
-
+    // 将发送出去的bounty信息保存
+    let sentBounties = []
+    for(let k = 0; k < bounties.length; ++k){
+      const tt = bounties[k]
+      const sent = {
+        send: address,
+        receive: tt.walletAddress,
+        tokenNumber: tt.tokenNumber,
+        tokenType: tt.tokenType,
+        taskId: blogPost.id,
+        taskName: blogPost.name,
+        communityId: communityInfo.uuid,
+        communityName: communityInfo.name
+      }
+      sentBounties.push(sent)
+    }
+    await storeBounty(sentBounties)
   }else{
     alert('This quest is not calculate store or has settled.')
   }
   sendBountyLoading = false
 }
+
 const makeConsole = () => {
   console.log(JSON.stringify(selected))
 }
@@ -570,7 +587,7 @@ function labelName() {
               <div v-if="isIng" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-              <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-4">
+              <div  class="mx-4">
                 <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
               </div>
             </div>
