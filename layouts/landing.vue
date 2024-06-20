@@ -24,7 +24,7 @@ const handleButtonClick = async () => {
     const result = await doLogin();
     registInfo()
     if (result) {
-      router.push('/dm');
+      router.push('/explore');
     } else {
       console.log('User did not connect the wallet, not navigating to /signup');
     }
@@ -47,7 +47,7 @@ const handleButtonClick = async () => {
       <div class="flex flex-col h-screen items-center gap-4 justify-center">
         <UColorModeImage src="DMLogo.png" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-[600px] mb-6" />
         <div class="text-7xl font-bold">Start your real community journey</div>
-        <div class="mt-3 mb-6">Try a better way than airdrop to build your community.</div>
+        <div class="mt-3 mb-6 text-3xl">Try a better way than airdrop to build your community.</div>
         <UButton size="xl" color="black" @click="handleButtonClick">
           Open to Build
           <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />

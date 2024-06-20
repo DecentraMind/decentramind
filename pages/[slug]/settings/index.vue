@@ -32,7 +32,7 @@ function onSubmitAccount() {
 }
 
 const { userInfo, githubCode, getInfo, personalInfo } = $(aocommunityStore())
-
+const client = useSupabaseClient()
 const saveInfo = async () => {
 
   await personalInfo(
@@ -51,7 +51,17 @@ const saveInfo = async () => {
 }
 const { gettoken, getAccessToken } = $(linktwitter())
 const gettwitter = async () => {
-  await getAccessToken()
+  // await client.auth.signInWithOAuth({
+  //   provider: 'twitter',
+  //   options: {
+  //     redirectTo: `http://example.com/auth/callback`,
+  //   },
+  // })
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: 'twitter',
+  })
+  console.log('data from supabase = ' + data)
+  console.log('error from supabase = ' + error)
 }
 
 let connectTwitter = $ref(false)

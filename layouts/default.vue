@@ -185,7 +185,7 @@ const test = ()=> {
 
         <UDivider />
 
-        <NuxtLink v-for="item in joincommunityList" :key="item.uuid" :to="`/${slug}/tasks/${item.uuid}`">
+        <NuxtLink v-for="item in joincommunityList" :key="item.uuid" :to="`/${slug}/community/${item.uuid}`">
           <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
           <div class="aspect-w-1 aspect-h-1">
             <img

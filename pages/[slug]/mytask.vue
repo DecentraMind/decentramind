@@ -15,7 +15,7 @@ const links = [[
   {
     label: t('task'),
     icon: 'eos-icons:abstract-instance-outlined',
-    to: `/${slug}/mytask/task`
+    to: `/${slug}/dashboard/task`
   }]]
 </script>
 

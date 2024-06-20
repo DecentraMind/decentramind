@@ -218,6 +218,7 @@ const ranges = [
 ]
 
 const slug = $computed(() => route.params.slug)
+console.log('slug = ' + slug)
 
 const chatId = $ref("CvgIA17jnhmuh3VtYozqlFy4sLKPVJV1c4eVZOY97to")
 const footerLinks = $computed(() => {
@@ -520,7 +521,7 @@ const formattedTwitterLink = (twitter) => {
           </div>
         </template>
       </UPopover>
-      <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
+      <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
         <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
       </NuxtLink>
       <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
@@ -578,14 +579,17 @@ const formattedTwitterLink = (twitter) => {
             <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="`/task/${blogPost.image}.jpg`"
                        :description="blogPost.description">
               <template #title>
-                <div class="flex justify-between ...">
+                <div class="flex justify-between">
                   <div>{{ blogPost.name }}</div>
+                </div>
+                <div class="flex">
                   <UBadge size="xs" color="black" variant="solid">
                     {{ finalStatus(blogPost.isBegin)}}
                   </UBadge>
                 </div>
               </template>
               <template #description>
+
                 <div class="flex flex-col space-y-2">
                   <div >
                     {{ blogPost.description }}
@@ -616,7 +620,7 @@ const formattedTwitterLink = (twitter) => {
                   </div>
                 </div>
               </template>
-              <UButton :to="`/${slug}/taskDetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
+              <UButton :to="`/${slug}/questdetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
                 {{ $t("View Details") }}
               </UButton>
             </UBlogPost>

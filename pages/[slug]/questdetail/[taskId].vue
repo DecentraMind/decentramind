@@ -90,6 +90,8 @@ onMounted(async () => {
   console.log(isSettle)
   console.log(isCal)
   await getAllInviteInfo()
+  await getInfo()
+  console.log(JSON.stringify(userInfo))
 })
 // spaceTaskSubmitInfo = people
 function calculateScore(){
@@ -200,17 +202,13 @@ const filteredRows = computed(() => {
 
 const modal = useModal()
 
-const userinfo = {
-  userId: 1,
-  userName: 'gqz',
-  userTwitter: 'xx',
-}
-let isSettlementOpen = userinfo.userTwitter
+
+let isSettlementOpen = userInfo.twitter && userInfo.twitter != 'Success'
 const error_msg = 'Please bound your twitter account！'
 let isOpen = $ref(false)
 let isOpenJoin = $ref(false)
 function openModal() {
-  if (isNullOrEmpty(userinfo.userTwitter)) {
+  if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
     modal.open(CommonAlert, { message: error_msg })
   } else {
     isOpen = true
@@ -221,7 +219,7 @@ async function test() {
   console.log('userInfo = ' + JSON.stringify(userInfo))
 }
 function openJoin() {
-  if (isNullOrEmpty(userinfo.userTwitter)) {
+  if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
     modal.open(CommonAlert, { message: error_msg })
   } else {
     isOpenJoin = true
@@ -429,7 +427,7 @@ function labelName() {
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
-            <NuxtLink :to="`/${slug}/tasks/${communityId}`">
+            <NuxtLink :to="`/${slug}/community/${communityId}`">
               <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
             </NuxtLink>
           </div>
@@ -542,7 +540,7 @@ function labelName() {
                   </div>
                 </div>
               </div>
-              <div v-if="!isJoined" class="flex justify-center ">
+              <div v-if=" isIng && !isJoined" class="flex justify-center ">
                 <UButton color="white" :label="$t('Join Quest')" @click="openJoin" />
               </div>
             </div>

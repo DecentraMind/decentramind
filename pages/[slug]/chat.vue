@@ -119,9 +119,9 @@ onMounted(async () => {
   console.log(result)
   if (result && result.Messages && result.Messages.length > 0) {
     const dataStr = result.Messages[0].Data;
-    
+
     try {
-      
+
       communityuser = JSON.parse(dataStr);
       console.log(communityuser)
       for (let key in communityuser) {
@@ -315,7 +315,7 @@ const test = async() => {
             </div>
           </template>
         </UPopover>
-        <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
+        <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
           <Button class="center-text border rounded-lg w-full">Quests Home</Button>
         </NuxtLink>
         <Button class="center-text border rounded-lg bg-black text-white">Chatroom</Button>
@@ -325,7 +325,7 @@ const test = async() => {
     </UDashboardPanel>
     <UPage class="w-full">
       <!--<UContainer class="w-full">-->
-      <UPageGrid class="w-full h-full">  
+      <UPageGrid class="w-full h-full">
         <div class="flex xl:col-span-2 w-full h-full ml-10">
           <div v-if="chatID" class="w-full">
             <InboxMail :mail="chatID" class="" />
