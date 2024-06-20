@@ -133,12 +133,18 @@ const getCommunity = async () => {
   communityLoading = false
 }
 
+let linkTwitter = $ref(false)
 onMounted(async () => {
   try {
     if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
       communityLoading = false
     }
-    //await getInfo()
+    await getInfo()
+    if((!userInfo[0].twitter || userInfo[0].twitter == 'N/A') && (!userInfo[0].github || userInfo[0].github !== 'Success')){
+      linkTwitter = false
+    } else {
+      linkTwitter = true
+    }
     //await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -195,7 +201,7 @@ const test = ()=> {
             >
           </div>
         </NuxtLink>
-        <UButton variant="soft" @click="communityCreate = true">
+        <UButton v-if="linkTwitter" variant="soft" @click="communityCreate = true">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
 
