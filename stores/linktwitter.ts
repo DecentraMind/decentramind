@@ -35,7 +35,7 @@ export const linktwitter = defineStore('linktwitter', () => {
 
     return authUrl
   }
-  const getAccessToken = async (resCode: string) => {
+  const getAccessToken = async () => {
     try {
       const query = computed(() => ({ code: 'getToken' }))
       const { data } = await useFetch('/api/getTwitterCode', { query })
@@ -112,6 +112,13 @@ export const linktwitter = defineStore('linktwitter', () => {
       console.log(response.data);
     } catch (error) {
       console.error('Error posting token:', error);
+    }
+  }
+  const back = async (state, code) => {
+    try {
+      await authClient.requestAccessToken(code as string);
+    } catch (error) {
+      console.log(error);
     }
   }
   return $$({ github, authClient, getAccessToken, back, gettoken, postToken, searchSpaceById })
