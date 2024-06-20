@@ -5,46 +5,21 @@ let did = $ref([])
 let created = $ref([])
 let cLength = $ref(0)
 let dLength = $ref(0)
-console.log('cLength = ' + cLength)
-console.log('dLength = ' + dLength)
-const items1 = [
-  {
-    slot: 'Published',
-    label: 'Published ' + cLength
-  }
-]
-
-const items = [
-//   {
-//   slot: 'join',
-//   label: `${t('task.isjoin')} 3`
-// },
-  {
-    slot: 'reward',
-    label: t('task.reward') + ' ' + dLength
-  }]
-
-const communityForm = $ref({ name: 'Benjamin', username: 'benjamincanac' })
-
-function onSubmitAccount () {
-  console.log('Submitted form:', communityForm)
+interface TaskData {
+  communityName: string;
+  taskName: string;
+  receive: string;
+  send: string;
+  communityId: string;
+  tokenNumber: number;
+  taskId: string;
+  tokenType: string;
 }
-
 const rewardcolumns2 = [
   { label: 'Bounty Type', key: 'bountyType' },
   { label: 'Amount', key: 'bounty' }
 ]
 
-const defaultColumns = [{
-  key: 'id',
-  label: '',
-}, {
-  key: 'name',
-  label: t('task.name')
-}, {
-  key: 'from',
-  label: t('task.from')
-}]
 
 const rewardColumns = [{
   key: 'id',
@@ -60,24 +35,8 @@ const rewardColumns = [{
   label: t('task.from')
 }]
 
-const q = $ref('')
-const selectedColumns = $ref(defaultColumns)
-const selectedStatuses = $ref([])
-const selectedLocations = $ref([])
 const sort = $ref({ column: 'id', direction: 'asc' as const })
 
-
-const columns = computed(() => defaultColumns.filter((column) => selectedColumns.includes(column)))
-
-const query = computed(() => ({ q: q, statuses: selectedStatuses, locations: selectedLocations, sort: sort.column, order: sort.direction }))
-
-const { data: Wallettoken, pending } = await useFetch<Tasks[]>('/api/task', { query, default: () => [] })
-
-
-
-
-const selectedrewardColumns = ref(rewardColumns)
-const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedrewardColumns.value.includes(column)))
 const cols = [
   {
     key: 'taskName',
@@ -92,21 +51,10 @@ const cols = [
     label: 'From Community',
   }
 ]
-const { communityList } = $(aocommunityStore())
-const { getAllBounty, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getTaskById } = $(taskStore())
+const { getAllBounty} = $(taskStore())
 const { address } = $(aoStore())
 let bounties = $ref([])
-let CommunityCreater = $ref(false)
-const checkCreater = async () => {
-  const isCreatorPresent = communityList.some(item => item.creater === address);
-  if (isCreatorPresent) {
-    CommunityCreater = true
-    // 这里替换成你要执行的函数
-    // executeYourFunction();
-  } else {
-    console.log("Creator not found!");
-  }
-}
+
 
 
 const page = ref(1)
@@ -127,7 +75,7 @@ function categorizeByTaskId(data: TaskData[]): Record<string, TaskData[]> {
     return acc;
   }, {} as Record<string, TaskData[]>);
 }
-// let totalAmount = $ref(0)
+
 onMounted( async () => {
   bounties = await getAllBounty()
   let cori = []
