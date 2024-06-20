@@ -7,7 +7,7 @@ import {shortAddress} from "../../../utils/web3";
 import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
 const { updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
-const { getLocalcommunityInfo, userInfo } = $(aocommunityStore())
+const { userInfo, getInfo, getLocalcommunityInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
 const { compareImages } = $(ssimStore())
@@ -216,6 +216,10 @@ function openModal() {
     isOpen = true
   }
 }
+async function test() {
+  await getInfo()
+  console.log('userInfo = ' + JSON.stringify(userInfo))
+}
 function openJoin() {
   if (isNullOrEmpty(userinfo.userTwitter)) {
     modal.open(CommonAlert, { message: error_msg })
@@ -310,12 +314,6 @@ function select (row) {
   }
 
 }
-// $watch(() => selected, (newValue, oldValue) => {
-//   console.log(selected.length)
-//   if(selected.length > 1){
-//     alert('Your selected is bigger than Total Chances')
-//   }
-// })
 
 async function sendBountyByAo() {
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
@@ -422,6 +420,7 @@ function labelName() {
     return t('Send Bounty')
   }
 }
+
 </script>
 
 <template>
@@ -567,6 +566,9 @@ function labelName() {
               </UTable>
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
+              <div class="mx-4">
+                <UButton color="white" label="testuser" @click="test" />
+              </div>
               <div v-if="isIng" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
