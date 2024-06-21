@@ -6,7 +6,7 @@ import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
 import {shortAddress} from "../../../utils/web3";
 import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
-const { storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const {  denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo, getInfo, getLocalcommunityInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
@@ -131,12 +131,12 @@ function calculateScore(){
     if(blogPost.tokenNumber){
       spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType1 = blogPost.tokenType
-      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / 1e12 ).toString() + spaceTaskSubmitInfo[i].bountyType1
+      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 /  denomination[spaceTaskSubmitInfo[i].bountyType1] ).toString() + spaceTaskSubmitInfo[i].bountyType1
     }
     if(blogPost.tokenNumber1){
       spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber1)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType2 = blogPost.tokenType1
-      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / 1e12 ).toString() + spaceTaskSubmitInfo[i].bountyType2
+      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / denomination[spaceTaskSubmitInfo[i].bountyType2] ).toString() + spaceTaskSubmitInfo[i].bountyType2
     }
 
     // console.log('bounty = ' + spaceTaskSubmitInfo[i].score / totalScore * 100)
@@ -435,7 +435,12 @@ function labelName() {
     return t('Send Bounty')
   }
 }
+const page = ref(1)
+const pageCount = 5
+const trueRows = computed(() => {
 
+  return filteredRows.value.slice((page.value - 1) * pageCount, (page.value) * pageCount)
+})
 </script>
 
 <template>
@@ -571,23 +576,30 @@ function labelName() {
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
               </div>
-              <UTable v-if="isJoined" v-model="selected" :rows="filteredRows" :columns="columns">
-                <template #address-data="{ row }">
-                  {{ isOwner ? row.address : shortAddress(row.address)}}
-                </template>
-                <template #url-data="{ row }">
-                  {{ isOwner ? row.url : shortAddress(row.url)}}
-                </template>
-              </UTable>
+              <div v-if="isJoined">
+                <UTable v-model="selected" :rows="trueRows" :columns="columns">
+                  <template #address-data="{ row }">
+                    {{ isOwner ? row.address : shortAddress(row.address)}}
+                  </template>
+                  <template #url-data="{ row }">
+                    {{ isOwner ? row.url : shortAddress(row.url)}}
+                  </template>
+                </UTable>
+                <div class="flex justify-end mt-2">
+                  <UPagination v-model="page" :page-count="pageCount" :total="filteredRows.length" />
+                </div>
+
+              </div>
+
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
-              <div class="mx-4">
-                <UButton color="white" label="testuser" @click="test" />
-              </div>
-              <div v-if="isIng" class="mx-4">
+<!--              <div class="mx-4">-->
+<!--                <UButton color="white" label="testuser" @click="test" />-->
+<!--              </div>-->
+              <div v-if="isIng && !isSubmitted" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-              <div  class="mx-4">
+              <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-4">
                 <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
               </div>
             </div>

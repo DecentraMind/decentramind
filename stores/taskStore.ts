@@ -35,6 +35,18 @@ export const taskStore = defineStore('taskStore', () => {
     AIR: '2nfFJb8LIA69gwuLNcFQezSuw4CXPE4--U-j-7cxKOU',
     FIREEARTH: 'NkXX3uZ4oGkQ3DPAWtjLb2sTA-yxmZKdlOlEHqMfWLQ',
   })
+  const denomination  = $ref({
+    AO: 1e12,
+    AR: 1e12,
+    FIZI: 1e12,
+    TRUNK: 1e3,
+    EXP: 1e6,
+    ORBT: 1e12,
+    EARTH: 1e12,
+    FIRE: 1e12,
+    AIR: 1e12,
+    LAVA: 1e12,
+  })
   const Sleep = (ms)=> {
     return new Promise(resolve=>setTimeout(resolve, ms))
   }
@@ -198,10 +210,10 @@ export const taskStore = defineStore('taskStore', () => {
       }
       let reward = ''
       if(element.tokenNumber != '0'){
-        reward = Number(element.tokenNumber) / 1e12 + ' ' + element.tokenType
+        reward = Number(element.tokenNumber) / denomination[element.tokenType] + ' ' + element.tokenType
       }
       if(element.tokenNumber1 != '0'){
-        reward = reward +  '+' + Number(element.tokenNumber1) / 1e12 + ' ' + element.tokenType1
+        reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
       }
       const respData = {
         id: element.taskId,
@@ -264,10 +276,10 @@ export const taskStore = defineStore('taskStore', () => {
       // console.log('trans communityId = ' + communityId)
       let reward = ''
       if(element.tokenNumber != '0'){
-        reward = Number(element.tokenNumber) / 1e12 + ' ' + element.tokenType
+        reward = Number(element.tokenNumber) /  denomination[element.tokenType] + ' ' + element.tokenType
       }
       if(element.tokenNumber1 != '0'){
-        reward = reward +  '+' + Number(element.tokenNumber1) / 1e12 + ' ' + element.tokenType1
+        reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
       }
       const respData = {
         id: element.taskId,
@@ -651,7 +663,7 @@ export const taskStore = defineStore('taskStore', () => {
 
 
 
-  return $$({ storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ denomination, storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
 
 // Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

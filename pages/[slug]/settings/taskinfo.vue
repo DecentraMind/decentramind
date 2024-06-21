@@ -20,7 +20,7 @@ async function onChange () {
   // Do something with data
   console.log(state)
 }
-const { getAllBounty} = $(taskStore())
+const { getAllBounty, denomination } = $(taskStore())
 const { address } = $(aoStore())
 let bounties = $ref([])
 let did = $ref([])
@@ -56,7 +56,7 @@ onMounted( async () => {
     if (categorizedC.hasOwnProperty(taskId)) {
       const taskArray = categorizedC[taskId]
       if(taskArray.length > 1){
-        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / 1e12) + ' ' + taskArray[1].tokenType
+        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / denomination[taskArray[1].tokenType]) + ' ' + taskArray[1].tokenType
 
         const combine = {
           communityName: taskArray[0].communityName,
@@ -71,7 +71,7 @@ onMounted( async () => {
         }
         created.push(combine)
       }else{
-        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType
+        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType
         const combine = {
           communityName: taskArray[0].communityName,
           taskName: taskArray[0].taskName,
@@ -92,7 +92,7 @@ onMounted( async () => {
     if (categorizedD.hasOwnProperty(taskId)) {
       const taskArray = categorizedD[taskId]
       if(taskArray.length > 1){
-        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / 1e12) + ' ' + taskArray[1].tokenType
+        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / denomination[taskArray[1].tokenType]) + ' ' + taskArray[1].tokenType
         const combine = {
           communityName: taskArray[0].communityName,
           taskName: taskArray[0].taskName,
@@ -106,7 +106,7 @@ onMounted( async () => {
         }
         did.push(combine)
       }else{
-        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType
+        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType
         const combine = {
           communityName: taskArray[0].communityName,
           taskName: taskArray[0].taskName,

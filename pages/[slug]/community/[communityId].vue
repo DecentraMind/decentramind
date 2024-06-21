@@ -8,13 +8,14 @@ import { z } from 'zod'
 import {ssimStore} from '~/stores/ssimStore'
 
 const { t } = useI18n()
-const { getAllInviteInfo, makecommunityChat, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
+const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { compareImages } = $(ssimStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
+
 
 let communitySetting = $ref(false)
 let postQuestLoading = $ref(false)
@@ -175,10 +176,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.taskName = state.taskName
   transData.taskInfo = state.taskInfo
   transData.taskRule = t('taskRule')
-  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * 1e12 : 0
+  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * denomination[state.tokenType.value] : 0
   transData.tokenType = state.tokenType ? state.tokenType.value : 'none'
   transData.tokenChain = state.tokenChain ? state.tokenChain.value : 'none'
-  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * 1e12 : 0
+  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * denomination[state.tokenType1.value] : 0
   transData.tokenType1 = state.tokenType1 ? state.tokenType1.value : 'none'
   transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1.value : 'none'
   transData.rewardTotal = state.rewardTotal
@@ -272,6 +273,19 @@ onMounted(async () => {
   }
   if(communityInfo.creater === address){
     isCommunityOwner = true
+  }
+  for(let i = 0; i < respArray.length; ++i){
+    respArray[i].status = 'N'
+    const t = respArray[i]
+    const spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(t.id)
+    for(let j = 0; j < spaceTaskSubmitInfo.length; ++j){
+      const element = spaceTaskSubmitInfo[j]
+      if(element.address === address){
+        respArray[i].status = 'Y'
+        break
+      }
+    }
+    console.log('respArray[i].status  =' + respArray[i].status)
   }
   // console.log('community creater = ' + communityInfo.creater)
   console.log('isCommunityOwner = ' + isCommunityOwner)
@@ -390,6 +404,7 @@ const finalStatus = (isBegin: string) => {
   return res
 }
 
+
 const formattedTwitterLink = (twitter) => {
   const link = twitter;
   // Add https:// prefix if the link doesn't start with http:// or https://
@@ -398,7 +413,12 @@ const formattedTwitterLink = (twitter) => {
   }
   console.log("-------",link)
   return link;
-};
+}
+const dStatus = (status) => {
+  if(status === 'Y'){
+    return t('task.isjoin')
+  }
+}
 </script>
 <template>
   <UDashboardPanel :width="420" collapsible>
@@ -514,7 +534,7 @@ const formattedTwitterLink = (twitter) => {
             <div>Invite URL: </div>
             <div class="flex items-center">
               <p ref="textToCopy">
-                dm-demo.vercel.app/{{ slug }}/invite/{{ communityId }}&{{ address }}
+                decentramind.club/{{ slug }}/invite/{{ communityId }}&{{ address }}
               </p>
               <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
             </div>
@@ -547,7 +567,7 @@ const formattedTwitterLink = (twitter) => {
           </div>
           <div class="flex">
             <div>
-              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>
+<!--              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>
@@ -583,9 +603,22 @@ const formattedTwitterLink = (twitter) => {
                   <div>{{ blogPost.name }}</div>
                 </div>
                 <div class="flex">
-                  <UBadge size="xs" color="black" variant="solid">
-                    {{ finalStatus(blogPost.isBegin)}}
-                  </UBadge>
+                  <div class="mx-2">
+                    <UBadge size="xs" color="black" variant="solid">
+                      {{ finalStatus(blogPost.isBegin)}}
+                    </UBadge>
+                  </div>
+                  <div v-if="blogPost.status === 'Y'">
+                    <UBadge color="black" variant="solid">
+                      {{ dStatus(blogPost.status) }}
+                    </UBadge>
+                  </div>
+                  <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N'" class="mx-2">
+                    <UBadge size="xs" color="black" variant="solid">
+                      {{ $t('Unsettled') }}
+                    </UBadge>
+                  </div>
+
                 </div>
               </template>
               <template #description>

@@ -5,46 +5,21 @@ let did = $ref([])
 let created = $ref([])
 let cLength = $ref(0)
 let dLength = $ref(0)
-console.log('cLength = ' + cLength)
-console.log('dLength = ' + dLength)
-const items1 = [
-  {
-    slot: 'Published',
-    label: 'Published ' + cLength
-  }
-]
-
-const items = [
-//   {
-//   slot: 'join',
-//   label: `${t('task.isjoin')} 3`
-// },
-  {
-  slot: 'reward',
-  label: t('task.reward') + ' ' + dLength
-}]
-
-const communityForm = $ref({ name: 'Benjamin', username: 'benjamincanac' })
-
-function onSubmitAccount () {
-  console.log('Submitted form:', communityForm)
+interface TaskData {
+  communityName: string;
+  taskName: string;
+  receive: string;
+  send: string;
+  communityId: string;
+  tokenNumber: number;
+  taskId: string;
+  tokenType: string;
 }
-
 const rewardcolumns2 = [
   { label: 'Bounty Type', key: 'bountyType' },
   { label: 'Amount', key: 'bounty' }
 ]
 
-const defaultColumns = [{
-  key: 'id',
-  label: '',
-}, {
-  key: 'name',
-  label: t('task.name')
-}, {
-  key: 'from',
-  label: t('task.from')
-}]
 
 const rewardColumns = [{
   key: 'id',
@@ -60,40 +35,26 @@ const rewardColumns = [{
   label: t('task.from')
 }]
 
-const q = $ref('')
-const selectedColumns = $ref(defaultColumns)
-const selectedStatuses = $ref([])
-const selectedLocations = $ref([])
 const sort = $ref({ column: 'id', direction: 'asc' as const })
 
-
-const columns = computed(() => defaultColumns.filter((column) => selectedColumns.includes(column)))
-
-const query = computed(() => ({ q: q, statuses: selectedStatuses, locations: selectedLocations, sort: sort.column, order: sort.direction }))
-
-const { data: Wallettoken, pending } = await useFetch<Tasks[]>('/api/task', { query, default: () => [] })
-
-
-
-
-const selectedrewardColumns = ref(rewardColumns)
-const rewardcolumns = computed(() => rewardColumns.filter((column) => selectedrewardColumns.value.includes(column)))
-
-const { communityList } = $(aocommunityStore())
-const { allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getTaskById } = $(taskStore())
-const { address } = $(aoStore())
-
-let CommunityCreater = $ref(false)
-const checkCreater = async () => {
-  const isCreatorPresent = communityList.some(item => item.creater === address);
-  if (isCreatorPresent) {
-    CommunityCreater = true
-    // 这里替换成你要执行的函数
-    // executeYourFunction();
-  } else {
-    console.log("Creator not found!");
+const cols = [
+  {
+    key: 'taskName',
+    label: 'Name',
+  },
+  {
+    key: 'show',
+    label: 'Amount',
+  },
+  {
+    key: 'communityName',
+    label: 'From Community',
   }
-}
+]
+const { getAllBounty} = $(taskStore())
+const { address } = $(aoStore())
+let bounties = $ref([])
+
 
 
 const page = ref(1)
@@ -105,94 +66,108 @@ const didRows = computed(() => {
 const cRows = computed(() => {
   return created.slice((pageC.value - 1) * pageCount, (pageC.value) * pageCount)
 })
-// let totalAmount = $ref(0)
+function categorizeByTaskId(data: TaskData[]): Record<string, TaskData[]> {
+  return data.reduce((acc, item) => {
+    if (!acc[item.taskId]) {
+      acc[item.taskId] = [];
+    }
+    acc[item.taskId].push(item);
+    return acc;
+  }, {} as Record<string, TaskData[]>);
+}
+
 onMounted( async () => {
-  await getAllTaskSubmitInfo()
-  await getAllTasksNoCommunity()
-  await checkCreater()
-  // console.log(JSON.stringify(allTasks))
-  for(let i = 0; i < submitInfo.length; ++i){
-    const ele = submitInfo[i]
-    // console.log(JSON.stringify(ele))
-    if(ele.address === address){
-      let taskName = ''
-      let coummunityId = ''
-      let coummunityName = ''
-      let ownerId = ''
-      for(let j = 0; j < allTasks.length; ++j){
-        let taskEle = allTasks[j]
-        if(taskEle.id === ele.taskId){
-          taskName = taskEle.name
-          coummunityId = taskEle.communityId
-          ownerId = taskEle.ownerId
-          break
+  bounties = await getAllBounty()
+  let cori = []
+  let dori = []
+  console.log('bounties = ' + bounties)
+  for(let i = 0; i < bounties.length; ++i){
+    const tt = bounties[i]
+    if(address === tt.send){
+      cori.push(tt)
+    }
+    if(address === tt.receive){
+      dori.push(tt)
+    }
+  }
+  publishedBounty = cori
+  didBounty = dori
+  // 根据任务分类好的，将含有两种bounty的加和在一起
+  const categorizedC = categorizeByTaskId(cori)
+  const categorizedD = categorizeByTaskId(dori)
+  for (const taskId in categorizedC) {
+    if (categorizedC.hasOwnProperty(taskId)) {
+      const taskArray = categorizedC[taskId]
+      if(taskArray.length > 1){
+        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / 1e12) + ' ' + taskArray[1].tokenType
+
+        const combine = {
+          communityName: taskArray[0].communityName,
+          taskName: taskArray[0].taskName,
+          receive: taskArray[0].receive,
+          send: taskArray[0].send,
+          communityId: taskArray[0].communityId,
+          tokenNumber: taskArray[0].tokenNumber,
+          taskId: taskArray[0].taskId,
+          tokenType: taskArray[0].tokenType,
+          show: b
         }
-      }
-      for(let k = 0; k < communityList.length; ++k){
-        let community = communityList[k]
-        // console.log('community.id = ' + community.uuid)
-        if(community.uuid === coummunityId){
-          coummunityName = community.name
-          break
-        }
-      }
-      // console.log(ele.bounty)
-      // console.log(ele.bounty1)
-      // console.log(ele.bounty2)
-      if(ele.bounty === 0){
-        const didRow = {
-          name: taskName,
-          balance: 0,
-          from: coummunityName
-        }
-        // console.log('didRow = ' + JSON.stringify(didRow))
-        if(ownerId === address){
-          created.push(didRow)
-        }else{
-          did.push(didRow)
-        }
+        created.push(combine)
       }else{
-        if(ele.bounty1){
-          const didRow = {
-            name: taskName,
-            balance: (ele.bounty1 / 1e12) + ' ' + ele.bountyType1,
-            from: coummunityName
-          }
-          // console.log('didRow = ' + JSON.stringify(didRow))
-          if(ownerId === address){
-            created.push(didRow)
-            publishedBounty.push({ bounty: (ele.bounty1 / 1e12), bountyType: ele.bountyType1 })
-          }else{
-            did.push(didRow)
-            didBounty.push({ bounty: (ele.bounty1 / 1e12), bountyType: ele.bountyType1 })
-          }
+        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType
+        const combine = {
+          communityName: taskArray[0].communityName,
+          taskName: taskArray[0].taskName,
+          receive: taskArray[0].receive,
+          send: taskArray[0].send,
+          communityId: taskArray[0].communityId,
+          tokenNumber: taskArray[0].tokenNumber,
+          taskId: taskArray[0].taskId,
+          tokenType: taskArray[0].tokenType,
+          show: b
         }
-        if(ele.bounty2){
-          const didRow = {
-            name: taskName,
-            balance: (ele.bounty2 / 1e12) + ' ' + ele.bountyType2,
-            from: coummunityName
-          }
-          // console.log('didRow = ' + JSON.stringify(didRow))
-          if(ownerId === address){
-            created.push(didRow)
-            publishedBounty.push({ bounty: (ele.bounty2 / 1e12), bountyType: ele.bountyType2 })
-          }else{
-            did.push(didRow)
-            didBounty.push({ bounty: (ele.bounty2 / 1e12), bountyType: ele.bountyType2 })
-          }
-        }
+        created.push(combine)
       }
-      cLength = created.length
-      dLength = did.length
-      // console.log('cLength = ' + cLength)
-      // console.log('dLength = ' + dLength)
 
     }
-    // publishedBounty = extractBounties(submitInfo, address);
-    // didBounty = AwardBounties(submitInfo, address)
-    console.log('didBounty = ' + didBounty)
   }
+  for (const taskId in categorizedD) {
+    if (categorizedD.hasOwnProperty(taskId)) {
+      const taskArray = categorizedD[taskId]
+      if(taskArray.length > 1){
+        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / 1e12) + ' ' + taskArray[1].tokenType
+        const combine = {
+          communityName: taskArray[0].communityName,
+          taskName: taskArray[0].taskName,
+          receive: taskArray[0].receive,
+          send: taskArray[0].send,
+          communityId: taskArray[0].communityId,
+          tokenNumber: taskArray[0].tokenNumber,
+          taskId: taskArray[0].taskId,
+          tokenType: taskArray[0].tokenType,
+          show: b
+        }
+        did.push(combine)
+      }else{
+        const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType
+        const combine = {
+          communityName: taskArray[0].communityName,
+          taskName: taskArray[0].taskName,
+          receive: taskArray[0].receive,
+          send: taskArray[0].send,
+          communityId: taskArray[0].communityId,
+          tokenNumber: taskArray[0].tokenNumber,
+          taskId: taskArray[0].taskId,
+          tokenType: taskArray[0].tokenType,
+          show: b
+        }
+        did.push(combine)
+      }
+
+    }
+  }
+  cLength = created.length
+  dLength = did.length
   console.log(JSON.stringify(did))
 })
 
@@ -205,19 +180,19 @@ const mergeBounties = (bounties) => {
   const bountyMap = {};
 
   bounties.forEach(item => {
-    const { bounty, bountyType } = item;
-    const bountyValue = parseFloat(bounty);
+    const { tokenNumber, tokenType } = item
+    const bountyValue = parseFloat(tokenNumber / 1e12)
 
-    if (bountyMap[bountyType]) {
-      bountyMap[bountyType] += bountyValue;
+    if (bountyMap[tokenType]) {
+      bountyMap[tokenType] += bountyValue
     } else {
-      bountyMap[bountyType] = bountyValue;
+      bountyMap[tokenType] = bountyValue
     }
   });
 
-  const mergedBounties = Object.keys(bountyMap).map(bountyType => ({
-    bounty: bountyMap[bountyType].toFixed(4),
-    bountyType: bountyType
+  const mergedBounties = Object.keys(bountyMap).map(tokenType => ({
+    bounty: bountyMap[tokenType].toFixed(4),
+    bountyType: tokenType
   }));
 
   return mergedBounties;
@@ -240,7 +215,7 @@ const mergeBounties = (bounties) => {
           <UTable
             v-model:sort="sort"
             :rows="cRows"
-            :columns="rewardcolumns"
+            :columns="cols"
             :loading="pending"
             sort-mode="manual"
             class="pl-10"
@@ -252,27 +227,27 @@ const mergeBounties = (bounties) => {
           </div>
         </UCard>
       </div>
-<!--      <UTabs v-if="CommunityCreater" :items="items1" class="w-1/2 mt-10">-->
-<!--        <template #Published>-->
-<!--          <UCard>-->
-<!--            <UTable-->
-<!--              v-model:sort="sort"-->
-<!--              :rows="created"-->
-<!--              :columns="rewardcolumns"-->
-<!--              :loading="pending"-->
-<!--              sort-mode="manual"-->
-<!--              class="pl-10"-->
-<!--              :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"-->
-<!--            />-->
-<!--            <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">-->
-<!--              <UPagination v-model="pageC" :page-count="pageCount" :total="created.length" />-->
-<!--            </div>-->
-<!--          </UCard>-->
-<!--        </template>-->
-<!--      </UTabs>-->
-<!--      <div class="flex pl-10 mt-6">-->
-<!--        {{ $t('task.allsum')}}：111U-->
-<!--      </div>-->
+      <!--      <UTabs v-if="CommunityCreater" :items="items1" class="w-1/2 mt-10">-->
+      <!--        <template #Published>-->
+      <!--          <UCard>-->
+      <!--            <UTable-->
+      <!--              v-model:sort="sort"-->
+      <!--              :rows="created"-->
+      <!--              :columns="rewardcolumns"-->
+      <!--              :loading="pending"-->
+      <!--              sort-mode="manual"-->
+      <!--              class="pl-10"-->
+      <!--              :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"-->
+      <!--            />-->
+      <!--            <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">-->
+      <!--              <UPagination v-model="pageC" :page-count="pageCount" :total="created.length" />-->
+      <!--            </div>-->
+      <!--          </UCard>-->
+      <!--        </template>-->
+      <!--      </UTabs>-->
+      <!--      <div class="flex pl-10 mt-6">-->
+      <!--        {{ $t('task.allsum')}}：111U-->
+      <!--      </div>-->
       <div class="my-10"/>
       <div class="w-1/2">
         <div class="flex justify-center  border-2 mb-1">Awarded  {{dLength}}</div>
@@ -280,7 +255,7 @@ const mergeBounties = (bounties) => {
           <UTable
             v-model:sort="sort"
             :rows="didRows"
-            :columns="rewardcolumns"
+            :columns="cols"
             :loading="pending"
             sort-mode="manual"
             class="pl-10"
@@ -319,11 +294,11 @@ const mergeBounties = (bounties) => {
           />
         </div>
       </UModal>
-<!--      <template #footer>-->
-<!--        <div class="flex pl-10">-->
-<!--          {{ $t('task.allsum')}}：111U-->
-<!--        </div>-->
-<!--      </template>-->
+      <!--      <template #footer>-->
+      <!--        <div class="flex pl-10">-->
+      <!--          {{ $t('task.allsum')}}：111U-->
+      <!--        </div>-->
+      <!--      </template>-->
     </UCard>
   </UDashboardPanelContent>
 </template>
