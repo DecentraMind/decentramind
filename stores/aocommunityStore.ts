@@ -427,15 +427,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       ]
     })
 
-    let Code = await dryrun({
-      process: processID,
-      tags: [
-        { name: 'Action', value: 'getGithubcode' },
-        { name: 'userAddress', value: address }
-      ],
-    })
-    console.log(Code.Messages[0].Data)
-    githubCode = Code.Messages[0].Data
     // Check if you have successfully obtained the Info
     const jsonData = Info.Messages[0].Data;
     const jsonObjects = jsonData.match(/\{.*?\}/g);
