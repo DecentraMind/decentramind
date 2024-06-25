@@ -369,12 +369,24 @@ const quitCommunity = async(communityuuid: any) => {
 }
 
 async function testAO() {
-  // const base = 'data:image/jpeg;base64,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'
-  // const url = 'https://pbs.twimg.com/profile_images/1801571505647849473/Zbu80-_C_normal.jpg'
-  // const res = await compareImages(base, url)
-  // console.log(res)
-  // await makecommunityChat('6i1DWfx2d11jfWnTSwveGhveksg_gi8svH1e7iMZNMg')
-  console.log(setTimeToTenAM(new Date()))
+  const startedAt = "2024-05-29T14:45:25.000Z";
+  const endedAt = "2024-05-29T16:06:51.000Z";
+
+  // 将字符串转换为 Date 对象
+  const startDate = new Date(startedAt);
+  const endDate = new Date(endedAt);
+
+  // 计算两个日期对象之间的时间差，以毫秒为单位
+  const timeDifference = endDate.getTime() - startDate.getTime();
+
+  // 将时间差转换为分钟
+  const timeDifferenceInMinutes = timeDifference / (1000 * 60);
+
+  console.log(`时间间隔为 ${timeDifferenceInMinutes} 分钟`);
+  if(timeDifferenceInMinutes > 15){
+    console.log('bigger than 15')
+  }
+
 }
 
 
@@ -567,7 +579,7 @@ const dStatus = (status) => {
           </div>
           <div class="flex">
             <div>
-<!--              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
+              <!-- <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/> -->
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>

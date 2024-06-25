@@ -260,7 +260,14 @@ async function submitTask() {
   const { data } = await useFetch('/api/twitter', { query })
   console.log('data = ' + JSON.stringify(data))
   // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
+  const spaceStart_at = data._rawValue.data.started_at
   const spaceEnded_at = data._rawValue.data.ended_at
+  // 计算时间差，如果不足15分钟，不允许提交
+  const timeDifference = (new Date(spaceEnded_at).getTime() - new Date(spaceStart_at).getTime()) / (1000 * 60)
+  if(timeDifference < 15){
+    alert('Space lasts less than 15 minutes')
+    return
+  }
   // space参与人数
   const participanted = data._rawValue.data.participant_count
   // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
