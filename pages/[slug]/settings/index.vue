@@ -3,6 +3,10 @@ import type { FormError, FormSubmitEvent } from '#ui/types'
 
 import { z } from 'zod'
 
+const { auth } = useSupabaseClient()
+
+const redirectTo = 'http://localhost:3000/githubcallback'
+
 const toast = useToast()
 
 let info = $ref({})
@@ -31,7 +35,7 @@ function onSubmitAccount() {
   console.log('Submitted form:', accountForm)
 }
 
-const { userInfo, githubCode, getInfo, personalInfo } = $(aocommunityStore())
+const { userInfo, getInfo, personalInfo } = $(aocommunityStore())
 const client = useSupabaseClient()
 const saveInfo = async () => {
 
@@ -185,7 +189,8 @@ const handleUp = (event) => {
           Github
         </template>
         <div class="flex items-center space-x-3">
-          <UButton v-if="connectGithub" color="white" class="mr-5 w-[150px]" disabled>{{ githubCode }}</UButton>
+          <UButton v-if="connectGithub" color="white" class="mr-5 w-[150px]" disabled>Connected Github</UButton>
+          <!--
           <ULink
             v-else
             to="https://github.com/login/oauth/authorize?client_id=Ov23liyIh4bmA6HGwXhT&state=state"
@@ -195,6 +200,10 @@ const handleUp = (event) => {
           >
             <UButton color="white" class="mr-20 w-[120px]">{{ $t('github.link')}}</UButton>
           </ULink>
+          -->
+          <UButton v-else variant="soft" @click="auth.signInWithOAuth({ provider: 'github', options: { redirectTo } })">
+            Link to Github
+          </UButton>
         </div>
       </UFormGroup>
 
