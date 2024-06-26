@@ -9,6 +9,14 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
+import * as Othent from "@othent/kms";
+
+import {
+  connect,
+  disconnect,
+  getActiveAddress,
+} from "@othent/kms";
+
 import { PermissionType } from 'arconnect'
 
 const permissions: PermissionType[] = [
@@ -80,6 +88,41 @@ export const aoStore = defineStore('aoStore', () => {
     }
     try {
       address = await window.arweaveWallet.getActiveAddress()
+
+      let result = await message({
+        process: processID,
+        tags: [
+          { name: 'Action', value: 'registInfo' },
+          { name: 'userAddress', value: address }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+      });
+      const success = 'success'
+      return success
+
+      //await init()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const othentLogin = async () => {
+    try {
+      let res = await connect();
+
+      if (typeof window !== 'undefined') {
+        window.arweaveWallet = Othent;
+      }
+      if (Othent) {
+        address = res.walletAddress
+      }
+
+    } catch (error) {
+      const fail = 'fail'
+      return fail
+    }
+    try {
+      // address = await window.arweaveWallet.getActiveAddress()
 
       let result = await message({
         process: processID,
@@ -243,7 +286,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, doLogin, getarbalance })
+  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance })
 })
 
 if (import.meta.hot)
