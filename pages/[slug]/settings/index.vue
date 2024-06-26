@@ -106,16 +106,25 @@ const logoupload = () => {
   input.click()
 }
 
+
 const handleUp = (event) => {
-  const file = event.target?.files[0]
+  const file = event.target?.files[0];
   if (file) {
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onload = (e) => {
-      accountForm.avatar = e.target.result
-    }
-    reader.readAsDataURL(file)
+      const img = new Image();
+      img.onload = () => {
+        if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
+          accountForm.avatar = e.target.result;
+        } else {
+          alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.');
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
-}
+};
 </script>
 
 <template>
@@ -126,7 +135,6 @@ const handleUp = (event) => {
         <div @click="logoupload">
           <UAvatar
             v-if="accountForm.avatar === 'N/A'"
-            src="/community/chatavatar.jpg"
             alt="Avatar"
             class="ml-5"
             size="3xl"

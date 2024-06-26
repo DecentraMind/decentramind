@@ -140,7 +140,7 @@ onMounted(async () => {
       communityLoading = false
     }
     await getInfo()
-    if((!userInfo[0].twitter || userInfo[0].twitter == 'N/A') && (!userInfo[0].github || userInfo[0].github !== 'Success')){
+    if((!userInfo[0].twitter || userInfo[0].twitter == 'N/A') && (!userInfo[0].github || userInfo[0].github == 'N/A')){
       linkTwitter = false
     } else {
       linkTwitter = true
@@ -222,7 +222,7 @@ const test = ()=> {
                 <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
               </template>
               <template v-else>
-                <UAvatar src="/community/chatavatar.jpg" alt="Avatar" size="2xl" />
+                <UAvatar alt="Avatar" size="2xl" />
               </template>
             </NuxtLink>
             <template #panel>

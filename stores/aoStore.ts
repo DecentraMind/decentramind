@@ -9,13 +9,13 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
-import * as Othent from "@othent/kms";
+import * as Othent from '@othent/kms';
 
 import {
   connect,
   disconnect,
   getActiveAddress,
-} from "@othent/kms";
+} from '@othent/kms';
 
 import { PermissionType } from 'arconnect'
 
@@ -34,8 +34,9 @@ const arweave = Arweave.init({
   protocol: 'https'
 });
 
-
 export const aoStore = defineStore('aoStore', () => {
+
+
   let totalBalance = $ref(0)
   const tokenMap = $ref({
     CRED: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
@@ -108,6 +109,7 @@ export const aoStore = defineStore('aoStore', () => {
 
   const othentLogin = async () => {
     try {
+      /*
       let res = await connect();
 
       if (typeof window !== 'undefined') {
@@ -116,7 +118,7 @@ export const aoStore = defineStore('aoStore', () => {
       if (Othent) {
         address = res.walletAddress
       }
-
+      */
     } catch (error) {
       const fail = 'fail'
       return fail
