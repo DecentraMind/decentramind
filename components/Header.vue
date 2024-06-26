@@ -70,8 +70,8 @@ const wallet = [
 <!--      </UButton>-->
 <!--    </template>-->
 
-    <template #panel>
+    <!-- <template #panel>
       <UNavigationTree :links="mapContentNavigation(navigation)" default-open />
-    </template>
+    </template> -->
   </UHeader>
 </template>
