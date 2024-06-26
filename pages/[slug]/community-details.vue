@@ -197,7 +197,7 @@ onBeforeUnmount(() => {
           <template #title>
             <div class="w-full flex justify-between text-3xl mb-12 mt-3 px-12">
               {{ communityInfo.name }}
-              <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
+              <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
                 <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
               </NuxtLink>
             </div>
@@ -233,16 +233,16 @@ onBeforeUnmount(() => {
                   <div class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.detail.token') }}</div>
                     <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="w-36 flex justify-around items-center space-x-1">
-                      <div 
-                        v-for="(token, index) in communityInfo.communitytoken.slice(0,2)" 
-                        :key="index" 
+                      <div
+                        v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
+                        :key="index"
                         class="flex justify-center border rounded-lg w-[350px]"
                       >
                         <UPopover mode="hover">
                           {{ token.tokenName }}
                           <template #panel>
-                            <div 
-                              v-for="(tokenname, tokenindex) in communityInfo.communitytoken" 
+                            <div
+                              v-for="(tokenname, tokenindex) in communityInfo.communitytoken"
                               :key="index"
                               class="flex flex-col pr-5 pl-5"
                             >
@@ -257,8 +257,8 @@ onBeforeUnmount(() => {
                   <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.token.platforms') }}</div>
                     <div class="w-36 flex justify-around items-center space-x-1">
-                      <div 
-                        v-for="(token, index) in communityInfo.support.slice(0,2)" 
+                      <div
+                        v-for="(token, index) in communityInfo.support.slice(0,2)"
                         :key="index"
                         class="flex justify-center border rounded-lg w-[350px]"
                       >
@@ -269,16 +269,16 @@ onBeforeUnmount(() => {
                   <div v-if="communityInfo.bounty && communityInfo.bounty.length > 0" class="flex justify-between px-16 pt-2">
                     <div>{{ $t('community.typereward') }}</div>
                     <div class="w-36 flex justify-around items-center space-x-1">
-                      <div 
-                        v-for="(token, index) in communityInfo.bounty.slice(0,2)" 
+                      <div
+                        v-for="(token, index) in communityInfo.bounty.slice(0,2)"
                         :key="index"
                         class="flex justify-center border rounded-lg w-[350px]"
                       >
                         <UPopover mode="hover">
                           {{ token }}
                           <template #panel>
-                            <div 
-                              v-for="(tokenname, tokenindex) in communityInfo.bounty" 
+                            <div
+                              v-for="(tokenname, tokenindex) in communityInfo.bounty"
                               :key="index"
                               class="flex flex-col pr-5 pl-5"
                             >

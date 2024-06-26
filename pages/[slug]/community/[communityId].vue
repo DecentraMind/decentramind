@@ -8,13 +8,14 @@ import { z } from 'zod'
 import {ssimStore} from '~/stores/ssimStore'
 
 const { t } = useI18n()
-const { getAllInviteInfo, makecommunityChat, createTask, getAllTasks, respArray, joinTask } = $(taskStore())
+const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
 const { compareImages } = $(ssimStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
+
 
 let communitySetting = $ref(false)
 let postQuestLoading = $ref(false)
@@ -68,7 +69,6 @@ const tokenOptions = [
   { label: 'LINUX', value: 'LINUX' },
   { label: 'AR', value: 'AR' },
   { label: 'AOCRED', value: 'AOCRED' },
-  { label: 'Bark', value: 'Bark' },
   { label: 'TRUNK', value: 'TRUNK' },
   { label: 'AR.IO EXP', value: 'AR.IO EXP' },
   { label: '0rbit Points', value: '0rbit Points' },
@@ -108,12 +108,17 @@ const timeZoneOptions = [
   { label: 'GMT+13:00', value: 'GMT+13:00' },
   { label: 'GMT+14:00', value: 'GMT+14:00' },
 ]
-const selected = ref({ start: sub(new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime(), { days: 14 }), end: new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime() })
+const selected = ref({ start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) })
 function isRangeSelected(duration: Duration) {
   return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
 }
 function selectRange(duration: Duration) {
-  selected.value = { start: sub(new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime(), duration), end: new Date(new Date(new Date().toLocaleDateString()).getTime()).getTime() }
+  selected.value = { start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) }
+}
+function setTimeToTenAM(date: Date): Date {
+  const newDate = new Date(date);
+  newDate.setHours(10, 0, 0, 0); // 设置小时为10，分钟为0，秒为0，毫秒为0
+  return newDate;
 }
 const state = $ref({
   taskLogo: 'banner1',
@@ -171,10 +176,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.taskName = state.taskName
   transData.taskInfo = state.taskInfo
   transData.taskRule = t('taskRule')
-  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * 1e12 : 0
+  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * denomination[state.tokenType.value] : 0
   transData.tokenType = state.tokenType ? state.tokenType.value : 'none'
   transData.tokenChain = state.tokenChain ? state.tokenChain.value : 'none'
-  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * 1e12 : 0
+  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * denomination[state.tokenType1.value] : 0
   transData.tokenType1 = state.tokenType1 ? state.tokenType1.value : 'none'
   transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1.value : 'none'
   transData.rewardTotal = state.rewardTotal
@@ -214,6 +219,7 @@ const ranges = [
 ]
 
 const slug = $computed(() => route.params.slug)
+console.log('slug = ' + slug)
 
 const chatId = $ref("CvgIA17jnhmuh3VtYozqlFy4sLKPVJV1c4eVZOY97to")
 const footerLinks = $computed(() => {
@@ -267,6 +273,19 @@ onMounted(async () => {
   }
   if(communityInfo.creater === address){
     isCommunityOwner = true
+  }
+  for(let i = 0; i < respArray.length; ++i){
+    respArray[i].status = 'N'
+    const t = respArray[i]
+    const spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(t.id)
+    for(let j = 0; j < spaceTaskSubmitInfo.length; ++j){
+      const element = spaceTaskSubmitInfo[j]
+      if(element.address === address){
+        respArray[i].status = 'Y'
+        break
+      }
+    }
+    console.log('respArray[i].status  =' + respArray[i].status)
   }
   // console.log('community creater = ' + communityInfo.creater)
   console.log('isCommunityOwner = ' + isCommunityOwner)
@@ -350,11 +369,24 @@ const quitCommunity = async(communityuuid: any) => {
 }
 
 async function testAO() {
-  // const base = 'data:image/jpeg;base64,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'
-  // const url = 'https://pbs.twimg.com/profile_images/1801571505647849473/Zbu80-_C_normal.jpg'
-  // const res = await compareImages(base, url)
-  // console.log(res)
-  await makecommunityChat('6i1DWfx2d11jfWnTSwveGhveksg_gi8svH1e7iMZNMg')
+  const startedAt = "2024-05-29T14:45:25.000Z";
+  const endedAt = "2024-05-29T16:06:51.000Z";
+
+  // 将字符串转换为 Date 对象
+  const startDate = new Date(startedAt);
+  const endDate = new Date(endedAt);
+
+  // 计算两个日期对象之间的时间差，以毫秒为单位
+  const timeDifference = endDate.getTime() - startDate.getTime();
+
+  // 将时间差转换为分钟
+  const timeDifferenceInMinutes = timeDifference / (1000 * 60);
+
+  console.log(`时间间隔为 ${timeDifferenceInMinutes} 分钟`);
+  if(timeDifferenceInMinutes > 15){
+    console.log('bigger than 15')
+  }
+
 }
 
 
@@ -384,6 +416,7 @@ const finalStatus = (isBegin: string) => {
   return res
 }
 
+
 const formattedTwitterLink = (twitter) => {
   const link = twitter;
   // Add https:// prefix if the link doesn't start with http:// or https://
@@ -392,7 +425,12 @@ const formattedTwitterLink = (twitter) => {
   }
   console.log("-------",link)
   return link;
-};
+}
+const dStatus = (status) => {
+  if(status === 'Y'){
+    return t('task.isjoin')
+  }
+}
 </script>
 <template>
   <UDashboardPanel :width="420" collapsible>
@@ -508,14 +546,14 @@ const formattedTwitterLink = (twitter) => {
             <div>Invite URL: </div>
             <div class="flex items-center">
               <p ref="textToCopy">
-                dm-demo.vercel.app/{{ slug }}/invite/{{ communityId }}&{{ address }}
+                decentramind.club/{{ slug }}/invite/{{ communityId }}&{{ address }}
               </p>
               <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
             </div>
           </div>
         </template>
       </UPopover>
-      <NuxtLink :to="`/${slug}/tasks/${communityInfo.uuid}`">
+      <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
         <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
       </NuxtLink>
       <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
@@ -541,7 +579,7 @@ const formattedTwitterLink = (twitter) => {
           </div>
           <div class="flex">
             <div>
-<!--              <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/>-->
+              <!-- <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/> -->
               <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
                 <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
               </UDropdown>
@@ -573,14 +611,30 @@ const formattedTwitterLink = (twitter) => {
             <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="`/task/${blogPost.image}.jpg`"
                        :description="blogPost.description">
               <template #title>
-                <div class="flex justify-between ...">
+                <div class="flex justify-between">
                   <div>{{ blogPost.name }}</div>
-                  <UBadge size="xs" color="black" variant="solid">
-                    {{ finalStatus(blogPost.isBegin)}}
-                  </UBadge>
+                </div>
+                <div class="flex">
+                  <div class="mx-2">
+                    <UBadge size="xs" color="black" variant="solid">
+                      {{ finalStatus(blogPost.isBegin)}}
+                    </UBadge>
+                  </div>
+                  <div v-if="blogPost.status === 'Y'">
+                    <UBadge color="black" variant="solid">
+                      {{ dStatus(blogPost.status) }}
+                    </UBadge>
+                  </div>
+                  <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N'" class="mx-2">
+                    <UBadge size="xs" color="black" variant="solid">
+                      {{ $t('Unsettled') }}
+                    </UBadge>
+                  </div>
+
                 </div>
               </template>
               <template #description>
+
                 <div class="flex flex-col space-y-2">
                   <div >
                     {{ blogPost.description }}
@@ -611,7 +665,7 @@ const formattedTwitterLink = (twitter) => {
                   </div>
                 </div>
               </template>
-              <UButton :to="`/${slug}/taskDetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
+              <UButton :to="`/${slug}/questdetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
                 {{ $t("View Details") }}
               </UButton>
             </UBlogPost>

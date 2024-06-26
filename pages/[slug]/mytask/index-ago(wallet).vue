@@ -166,8 +166,6 @@ onMounted( async () => {
 
     }
   }
-  cLength = created.length
-  dLength = did.length
   console.log(JSON.stringify(did))
 })
 

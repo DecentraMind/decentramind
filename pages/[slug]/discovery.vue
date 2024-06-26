@@ -65,7 +65,7 @@ let joinLoading = $ref(false)
 const jointocommunity = async(uuid: any) => {
   joinLoading = true
   try {
-    if(!userInfo[0].twitter || userInfo[0].twitter !== 'Success'){
+    if((!userInfo[0].twitter || userInfo[0].twitter == 'N/A') && (!userInfo[0].github || userInfo[0].github !== 'Success')){
       LinktoTwitter = true
     } else {
       const invite = "none"

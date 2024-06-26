@@ -21,6 +21,7 @@ let communityLoading = $ref(true)
 let communities = $ref([])
 let invitedByCid = $ref([])
 let avas  = $ref({})
+let avasLength = $ref(0)
 
 
 onMounted(async () => {
@@ -35,7 +36,7 @@ onMounted(async () => {
   await getAllInviteInfo()
   console.log('allInviteInfo = ' + JSON.stringify(allInviteInfo))
   for(let i = 0; i < allInviteInfo.length; ++i){
-    if(allInviteInfo[i].invited === address){
+    if(allInviteInfo[i].invited === address || allInviteInfo[i].userId === 'none'){
       continue
     }
     if(!avas[allInviteInfo[i].communityId]){
@@ -84,6 +85,9 @@ const findInvitedById = (cId: string) => {
   }
   // console.log('result = ' + JSON.stringify(invitedByCid))
 }
+function getAvaLength(data) {
+  return data.length
+}
 </script>
 
 <template>
@@ -96,7 +100,7 @@ const findInvitedById = (cId: string) => {
         <div class="flex items-center mt-5">
           <UColorModeImage :src="item.logo" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
           <div class="ml-10 text-xl w-[100px]">{{ item.name }}</div>
-          <div class="ml-10 text-xl">{{ $t('setting.invited') }}</div>
+          <div class="ml-10 text-xl">{{ $t('setting.invited') }}{{getAvaLength(avas[item.uuid])}} </div>
           <UAvatarGroup  :key="index" size="sm" :max="2" class="ml-10">
             <div v-for="(inv, index) in avas[item.uuid]">
               <UAvatar :src="inv.userAvatar" alt="benjamincanac" />
@@ -115,7 +119,7 @@ const findInvitedById = (cId: string) => {
           <div v-for="(inv, index) in invitedByCid" :key="index" class="flex items-center space-x-3">
             <UAvatar :src="inv.userAvatar" alt="Atinux" />
             <div>{{inv.userName}}</div>
-            <div>{{inv.userId}}</div>
+            <div>{{inv.invited}}</div>
           </div>
         </div>
       </div>

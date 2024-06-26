@@ -100,12 +100,12 @@ const CreateCommunity = async () => {
     createCommunity = await settingCommunity(
       state.creater,
       state.owner,
-      state.logobase64Data, 
-      state.banner, 
-      state.Name, 
-      state.Inbro, 
-      state.Website, 
-      state.Twitter, 
+      state.logobase64Data,
+      state.banner,
+      state.Name,
+      state.Inbro,
+      state.Website,
+      state.Twitter,
       state.Github,
       state.Buildernum,
       tokenselected, //选择的token类型
@@ -173,7 +173,7 @@ const updateBanner = (index: number) => {
     state.banner = 'banner6'
   } else if (index === 2) {
     state.banner = 'banner7'
-  } 
+  }
 };
 
 
@@ -300,11 +300,11 @@ onMounted(async () => {
             </template>
 
             <template #indicator="{ onClick, page, active }">
-              <UButton 
-                :label="String(page)" 
-                :variant="active ? 'solid' : 'outline'" 
-                size="2xs" 
-                class="rounded-full min-w-6 justify-center" 
+              <UButton
+                :label="String(page)"
+                :variant="active ? 'solid' : 'outline'"
+                size="2xs"
+                class="rounded-full min-w-6 justify-center"
                 @click="() => {
                   currentIndex = page; // 更新当前索引
                   updateBanner(page)
@@ -346,7 +346,7 @@ onMounted(async () => {
             <UInput v-model="state.Twitter" placeholder="URL" />
           </div>
         </UFormGroup>
-        
+
         <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class=" w-[300px]">Github</div>

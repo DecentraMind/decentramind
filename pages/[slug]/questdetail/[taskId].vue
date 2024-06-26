@@ -6,8 +6,8 @@ import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
 import {shortAddress} from "../../../utils/web3";
 import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
-const { updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
-const { getLocalcommunityInfo, userInfo } = $(aocommunityStore())
+const {  denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { userInfo, getInfo, getLocalcommunityInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
 const { compareImages } = $(ssimStore())
@@ -51,6 +51,7 @@ let isSubmitted = $ref()
 let isJoined = $ref()
 isJoined = checkJoin()
 isSubmitted = checkSubmit()
+let isIng = $ref(false)
 let joinStatus = $ref('')
 let submiteStatus = $ref('')
 let settleStatus = $ref(false)
@@ -62,6 +63,11 @@ joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
 
 onMounted(async () => {
   let isBegin = blogPost.isBegin
+  if(isBegin === 'Y'){
+    isIng = true
+  }else{
+    isIng = false
+  }
   let isSettle = blogPost.isSettle
   settleStatus = isSettle === 'Y'
   let isCal = blogPost.isCal
@@ -75,15 +81,17 @@ onMounted(async () => {
       await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
     }
   }
-  // calculateScore()
+  calculateScore()
   // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
-  // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+  await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
   blogPost = await getTaskById(taskId)
   // console.log('blogPost = ' + JSON.stringify(blogPost))
   console.log(isBegin)
   console.log(isSettle)
   console.log(isCal)
   await getAllInviteInfo()
+  await getInfo()
+  console.log(JSON.stringify(userInfo))
 })
 // spaceTaskSubmitInfo = people
 function calculateScore(){
@@ -123,12 +131,12 @@ function calculateScore(){
     if(blogPost.tokenNumber){
       spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType1 = blogPost.tokenType
-      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / 1e12 ).toString() + spaceTaskSubmitInfo[i].bountyType1
+      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 /  denomination[spaceTaskSubmitInfo[i].bountyType1] ).toString() + spaceTaskSubmitInfo[i].bountyType1
     }
     if(blogPost.tokenNumber1){
       spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber1)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType2 = blogPost.tokenType1
-      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / 1e12 ).toString() + spaceTaskSubmitInfo[i].bountyType2
+      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / denomination[spaceTaskSubmitInfo[i].bountyType2] ).toString() + spaceTaskSubmitInfo[i].bountyType2
     }
 
     // console.log('bounty = ' + spaceTaskSubmitInfo[i].score / totalScore * 100)
@@ -194,24 +202,24 @@ const filteredRows = computed(() => {
 
 const modal = useModal()
 
-const userinfo = {
-  userId: 1,
-  userName: 'gqz',
-  userTwitter: 'xx',
-}
-let isSettlementOpen = userinfo.userTwitter
+
+let isSettlementOpen = userInfo.twitter && userInfo.twitter != 'Success'
 const error_msg = 'Please bound your twitter account！'
 let isOpen = $ref(false)
 let isOpenJoin = $ref(false)
 function openModal() {
-  if (isNullOrEmpty(userinfo.userTwitter)) {
+  if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
     modal.open(CommonAlert, { message: error_msg })
   } else {
     isOpen = true
   }
 }
+async function test() {
+  await getInfo()
+  console.log('userInfo = ' + JSON.stringify(userInfo))
+}
 function openJoin() {
-  if (isNullOrEmpty(userinfo.userTwitter)) {
+  if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
     modal.open(CommonAlert, { message: error_msg })
   } else {
     isOpenJoin = true
@@ -252,7 +260,14 @@ async function submitTask() {
   const { data } = await useFetch('/api/twitter', { query })
   console.log('data = ' + JSON.stringify(data))
   // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
+  const spaceStart_at = data._rawValue.data.started_at
   const spaceEnded_at = data._rawValue.data.ended_at
+  // 计算时间差，如果不足15分钟，不允许提交
+  const timeDifference = (new Date(spaceEnded_at).getTime() - new Date(spaceStart_at).getTime()) / (1000 * 60)
+  if(timeDifference < 15){
+    alert('Space lasts less than 15 minutes')
+    return
+  }
   // space参与人数
   const participanted = data._rawValue.data.participant_count
   // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
@@ -304,12 +319,6 @@ function select (row) {
   }
 
 }
-// $watch(() => selected, (newValue, oldValue) => {
-//   console.log(selected.length)
-//   if(selected.length > 1){
-//     alert('Your selected is bigger than Total Chances')
-//   }
-// })
 
 async function sendBountyByAo() {
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
@@ -376,14 +385,31 @@ async function sendBountyByAo() {
     // await sendBounty(blogPost.processId, bounties)
     await updateTaskAfterSettle(blogPost.id)
     blogPost = await getTaskById(taskId)
-    settleStatus = isSettle === 'Y'
+    // settleStatus = isSettle === 'Y'
     // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
-
+    // 将发送出去的bounty信息保存
+    let sentBounties = []
+    for(let k = 0; k < bounties.length; ++k){
+      const tt = bounties[k]
+      const sent = {
+        send: address,
+        receive: tt.walletAddress,
+        tokenNumber: tt.tokenNumber,
+        tokenType: tt.tokenType,
+        taskId: blogPost.id,
+        taskName: blogPost.name,
+        communityId: communityInfo.uuid,
+        communityName: communityInfo.name
+      }
+      sentBounties.push(sent)
+    }
+    await storeBounty(sentBounties)
   }else{
     alert('This quest is not calculate store or has settled.')
   }
   sendBountyLoading = false
 }
+
 const makeConsole = () => {
   console.log(JSON.stringify(selected))
 }
@@ -406,7 +432,21 @@ watch(() => selected, (newVal) => {
   if (newVal.length > maxSelection) {
     alert('Selected items exceed 5!');
     // 如果选择的数量超过最大值，取消超出的选择项
+    selected = newVal.slice(0, maxSelection)
   }
+})
+function labelName() {
+  if(spaceTaskSubmitInfo.length === 0 || !spaceTaskSubmitInfo){
+    return 'Return Bounty'
+  }else{
+    return t('Send Bounty')
+  }
+}
+const page = ref(1)
+const pageCount = 5
+const trueRows = computed(() => {
+
+  return filteredRows.value.slice((page.value - 1) * pageCount, (page.value) * pageCount)
 })
 </script>
 
@@ -416,7 +456,7 @@ watch(() => selected, (newVal) => {
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
-            <NuxtLink :to="`/${slug}/tasks/${communityId}`">
+            <NuxtLink :to="`/${slug}/community/${communityId}`">
               <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
             </NuxtLink>
           </div>
@@ -441,9 +481,9 @@ watch(() => selected, (newVal) => {
                     {{ submiteStatus }}
                   </UBadge>
                 </div>
-                <div v-if="isOwner" class="mx-2">
+                <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-2">
                   <UBadge color="black" variant="solid">
-                    {{ blogPost.isSettle == 'Y'? $t('Settled') : $t('Unsettled')}}
+                    {{ $t('Unsettled') }}
                   </UBadge>
                 </div>
               </div>
@@ -529,7 +569,7 @@ watch(() => selected, (newVal) => {
                   </div>
                 </div>
               </div>
-              <div v-if="!isJoined" class="flex justify-center ">
+              <div v-if=" isIng && !isJoined" class="flex justify-center ">
                 <UButton color="white" :label="$t('Join Quest')" @click="openJoin" />
               </div>
             </div>
@@ -543,21 +583,31 @@ watch(() => selected, (newVal) => {
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
               </div>
-              <UTable v-if="isJoined" v-model="selected" :rows="filteredRows" :columns="columns">
-                <template #address-data="{ row }">
-                  {{ isOwner ? row.address : shortAddress(row.address)}}
-                </template>
-                <template #url-data="{ row }">
-                  {{ isOwner ? row.url : shortAddress(row.url)}}
-                </template>
-              </UTable>
+              <div v-if="isJoined">
+                <UTable v-model="selected" :rows="trueRows" :columns="columns">
+                  <template #address-data="{ row }">
+                    {{ isOwner ? row.address : shortAddress(row.address)}}
+                  </template>
+                  <template #url-data="{ row }">
+                    {{ isOwner ? row.url : shortAddress(row.url)}}
+                  </template>
+                </UTable>
+                <div class="flex justify-end mt-2">
+                  <UPagination v-model="page" :page-count="pageCount" :total="filteredRows.length" />
+                </div>
+
+              </div>
+
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
-              <div v-if="!isCal" class="mx-4">
+<!--              <div class="mx-4">-->
+<!--                <UButton color="white" label="testuser" @click="test" />-->
+<!--              </div>-->
+              <div v-if="isIng && !isSubmitted" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-              <div v-if="isOwner && !settleStatus" class="mx-4">
-                <UButton color="white" :label="$t('Send Bounty')" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
+              <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-4">
+                <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
               </div>
             </div>
             <div class="flex mt-4">
@@ -582,7 +632,8 @@ watch(() => selected, (newVal) => {
 
                   <p> 7 If the total chances are 20 but you are in 21st, sorry you can get nothing </p>
 
-                  <p> 8 Yout only have 1 chance for this quest </p>
+                  <p> 8 You only have 1 chance for this quest </p>
+                  <p> 9 If no one meets the bounty, the bounty will be returned to the bounty owner's wallet </p>
                 </div>
               </div>
             </div>

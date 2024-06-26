@@ -27,6 +27,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   let exitisLoading = $ref(false)
   let currentUuid = $ref('')
   let communityCreate = $ref(false)
+  let githubCode = $ref()
   const Sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
@@ -360,7 +361,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
 
   //Modification of personal information
-  const personalInfo = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone) => {
+  const personalInfo = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone, github) => {
     //if (isLoading) return
     //isLoading = true
     let personal = [
@@ -373,6 +374,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "showmail": showmail,
         "phone": phone,
         "showphone": showphone,
+        "github": github,
       }
     ]
     const jsonString = JSON.stringify(personal);
@@ -381,6 +383,38 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       tags: [
         { name: 'Action', value: 'personalInfo' },
         { name: 'userAddress', value: address }
+      ],
+      data: jsonString,
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    isLoading = false
+    return Info
+  }
+
+  //Modification of personal github information
+  const personalGithub = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone, github) => {
+    //if (isLoading) return
+    //isLoading = true
+    let personal = [
+      {
+        "avatar": avatar,
+        "name": username,
+        "twitter": twitter,
+        "showtwitter": showtwitter,
+        "mail": mail,
+        "showmail": showmail,
+        "phone": phone,
+        "showphone": showphone,
+        "github": github,
+      }
+    ]
+    const jsonString = JSON.stringify(personal);
+    let Info = await message({
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'personalInfo' },
+        { name: 'userAddress', value: address },
+        { name: 'github', value: 'yes' }
       ],
       data: jsonString,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -400,6 +434,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         { name: 'userAddress', value: address }
       ]
     })
+
     // Check if you have successfully obtained the Info
     const jsonData = Info.Messages[0].Data;
     const jsonObjects = jsonData.match(/\{.*?\}/g);
@@ -432,6 +467,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   }
   return $$({
     userInfo,
+    githubCode,
     communityUser,
     communityList,
     joincommunityList,
@@ -448,6 +484,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     joinCommunity,
     exitCommunity,
     personalInfo,
+    personalGithub,
     getInfo,
     getCommunityuser,
     getCommunityjoined,
