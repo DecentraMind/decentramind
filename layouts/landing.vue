@@ -89,7 +89,7 @@ let loginLoading = $ref(false)
             </template>
             Arweave
           </UButton> 
-          <UButton color="white" class="w-[120px]" @click="othent">
+          <UButton color="white" disabled class="w-[120px]" @click="othent">
             <template #leading>
               <UAvatar
                 src="wallet/arconnect.svg"

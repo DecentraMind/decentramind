@@ -108,6 +108,7 @@ export const aoStore = defineStore('aoStore', () => {
   }
 
   const othentLogin = async () => {
+    /*
     if (typeof window !== 'undefined') {
       try {
         let res = await connect();
@@ -121,6 +122,7 @@ export const aoStore = defineStore('aoStore', () => {
     } else {
       console.error('This code must be run in a browser environment.');
     }
+    */
     try {
       // address = await window.arweaveWallet.getActiveAddress()
 

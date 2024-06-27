@@ -187,7 +187,7 @@ onBeforeUnmount(() => {
 <template>
   <UDashboardPage>
     <!--<div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">-->
-    <div class="w-full px-50 pt-16">
+    <div class="w-full px-50 pt-16 overflow-y-auto">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
       <UPage class="pl-36 pr-80">
         <ULandingCard
