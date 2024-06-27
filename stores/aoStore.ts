@@ -16,7 +16,7 @@ import {
   disconnect,
   getActiveAddress,
 } from '@othent/kms';
-
+declare const window: any;
 import { PermissionType } from 'arconnect'
 
 const permissions: PermissionType[] = [
@@ -108,20 +108,18 @@ export const aoStore = defineStore('aoStore', () => {
   }
 
   const othentLogin = async () => {
-    try {
-      /*
-      let res = await connect();
-
-      if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
+      try {
+        let res = await connect();
         window.arweaveWallet = Othent;
+        if (Othent) {
+          address = res.walletAddress;
+        }
+      } catch (error) {
+        console.error('An error occurred:', error);
       }
-      if (Othent) {
-        address = res.walletAddress
-      }
-      */
-    } catch (error) {
-      const fail = 'fail'
-      return fail
+    } else {
+      console.error('This code must be run in a browser environment.');
     }
     try {
       // address = await window.arweaveWallet.getActiveAddress()
