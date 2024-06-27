@@ -168,6 +168,38 @@ Handlers.add(
 --)
 
 Handlers.add(
+    "updateTaskToIng",
+    Handlers.utils.hasMatchingTag("Action", "updateTaskToIng"),
+    function (msg)
+        -- 通过id获取该任务对应参与信息
+        local taskId = msg.Data
+        for i = 1, #TasksForTable do
+            local v = json.decode(TasksForTable[i])
+            if(v.taskId == taskId) then
+                v.isBegin = 'Y'
+            end
+            TasksForTable[i] = json.encode(v)
+        end
+        Handlers.utils.reply("update task success")(msg)
+    end
+)
+Handlers.add(
+    "updateTaskToEnd",
+    Handlers.utils.hasMatchingTag("Action", "updateTaskToEnd"),
+    function (msg)
+        -- 通过id获取该任务对应参与信息
+        local taskId = msg.Data
+        for i = 1, #TasksForTable do
+            local v = json.decode(TasksForTable[i])
+            if(v.taskId == taskId) then
+                v.isBegin = 'N'
+            end
+            TasksForTable[i] = json.encode(v)
+        end
+        Handlers.utils.reply("update task success")(msg)
+    end
+)
+Handlers.add(
     "updateTaskAfterCal",
     Handlers.utils.hasMatchingTag("Action", "updateTaskAfterCal"),
     function (msg)

@@ -20,6 +20,15 @@ export default defineNuxtConfig({
   //     }
   //   }
   // },
+  nitro: {
+    experimental: {
+      tasks: true
+    },
+    scheduledTasks: {
+      // Run `cms:update` task every minute
+      '5 10 * * *': 'testo'
+    }
+  },
   colorMode: {
     preference: 'light'
   },

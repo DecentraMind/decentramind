@@ -47,9 +47,11 @@ onMounted(async () => {
 })
 
 const translate = [
-  [{
-    label: '简体中文',
-  }, {
+  [
+  //   {
+  //   label: '简体中文',
+  // }, 
+  {
     label: 'English'
   }]
 ]

@@ -81,9 +81,9 @@ onMounted(async () => {
       await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
     }
   }
-  calculateScore()
+  // calculateScore()
   // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
-  await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+  // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
   blogPost = await getTaskById(taskId)
   // console.log('blogPost = ' + JSON.stringify(blogPost))
   console.log(isBegin)
