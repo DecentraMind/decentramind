@@ -9,7 +9,7 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
-import * as Othent from '@othent/kms';
+// import * as Othent from '@othent/kms';
 
 import {
   connect,
