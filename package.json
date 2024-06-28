@@ -12,7 +12,6 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
-    "@css-inline/css-inline-win32-x64-msvc": "^0.13.1",
     "@nuxtjs/i18n": "^8.3.1",
     "@nuxtjs/proxy": "^2.1.0",
     "@othent/kms": "^1.0.12",
