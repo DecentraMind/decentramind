@@ -11,7 +11,7 @@ const options = [
 ]
 const supportSelect = ['ArSwap', 'Permaswap', 'Binance', 'Coinbase']
 const supportSelected = $ref([])
-const tokenselect = ['AR', 'TRUNK', 'EXP', '0rbit', 'Earth', 'Fire', 'Air', 'Lava']
+const tokenselect = ['AR', 'TRUNK', 'EXP', 'Orbit', 'Earth', 'Fire', 'Air', 'Lava']
 const tokenselected = $ref([])
 let isCreated = $ref(false)
 

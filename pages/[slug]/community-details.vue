@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
 });
 
 const formatTwitter = (twitter: string | undefined): string => {
-  if (!twitter || twitter.length <= 6) {
+  if (!twitter || twitter.length <= 12) {
     return twitter || '';
   }
   return `${twitter.slice(0, 3)}...${twitter.slice(-3)}`;
@@ -228,13 +228,31 @@ const formatTwitter = (twitter: string | undefined): string => {
                   <div class="flex justify-between px-16">
                     <div>{{ $t('community.website') }}</div>
                     <div class="w-36 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[350px]">{{ communityInfo.website }}</div>
+                      <div class="flex justify-center border rounded-lg w-[350px]">
+                        <UPopover mode="hover" :popper="{ placement: 'top' }">
+                          {{ formatTwitter(communityInfo.website) }}
+                          <template #panel>
+                            <div class="px-5">
+                              {{ communityInfo.website }}
+                            </div>
+                          </template>
+                        </UPopover>
+                      </div>
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
                     <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
                     <div class="w-36 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[350px]">{{ formatTwitter(communityInfo.twitter) }}</div>
+                      <div class="flex justify-center border rounded-lg w-[350px]">
+                        <UPopover mode="hover" :popper="{ placement: 'top' }">
+                          {{ formatTwitter(communityInfo.twitter) }}
+                          <template #panel>
+                            <div class="px-5">
+                              {{ communityInfo.twitter }}
+                            </div>
+                          </template>
+                        </UPopover>
+                      </div>
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">
@@ -269,7 +287,18 @@ const formatTwitter = (twitter: string | undefined): string => {
                         :key="index"
                         class="flex justify-center border rounded-lg w-[350px]"
                       >
-                        {{ token }}
+                        <UPopover mode="hover" :popper="{ placement: 'top' }">
+                          {{ token }}
+                          <template #panel>
+                            <div
+                              v-for="(tokenname, tokenindex) in communityInfo.support"
+                              :key="tokenindex"
+                              class="flex flex-col pr-5 pl-5"
+                            >
+                              {{ tokenname }}
+                            </div>
+                          </template>
+                        </UPopover>
                       </div>
                     </div>
                   </div>
@@ -281,12 +310,12 @@ const formatTwitter = (twitter: string | undefined): string => {
                         :key="index"
                         class="flex justify-center border rounded-lg w-[350px]"
                       >
-                        <UPopover mode="hover">
+                        <UPopover mode="hover" :popper="{ placement: 'top' }">
                           {{ token }}
                           <template #panel>
                             <div
                               v-for="(tokenname, tokenindex) in communityInfo.bounty"
-                              :key="index"
+                              :key="tokenindex"
                               class="flex flex-col pr-5 pl-5"
                             >
                               {{ tokenname }}:
@@ -303,7 +332,14 @@ const formatTwitter = (twitter: string | undefined): string => {
                     <div>Github</div>
                     <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
-                        {{ communityInfo.github }}
+                        <UPopover mode="hover" :popper="{ placement: 'top' }">
+                          {{ formatTwitter(communityInfo.github) }}
+                          <template #panel>
+                            <div class="px-5">
+                              {{ communityInfo.github }}
+                            </div>
+                          </template>
+                        </UPopover>
                       </div>
                     </div>
                   </div>
@@ -319,7 +355,7 @@ const formatTwitter = (twitter: string | undefined): string => {
                     <div>{{ $t('community.allreward') }}</div>
                     <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
-                        0
+                        {{ communityInfo && communityInfo.bounty ? communityInfo.bounty.length : 0 }}
                       </div>
                     </div>
                   </div>
