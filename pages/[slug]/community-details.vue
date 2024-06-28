@@ -182,6 +182,13 @@ onBeforeUnmount(() => {
     chartInstance.dispose();
   }
 });
+
+const formatTwitter = (twitter: string | undefined): string => {
+  if (!twitter || twitter.length <= 6) {
+    return twitter || '';
+  }
+  return `${twitter.slice(0, 3)}...${twitter.slice(-3)}`;
+};
 </script>
 
 <template>
@@ -227,7 +234,7 @@ onBeforeUnmount(() => {
                   <div class="flex justify-between px-16 pt-2">
                     <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
                     <div class="w-36 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[350px]">{{ communityInfo.twitter }}</div>
+                      <div class="flex justify-center border rounded-lg w-[350px]">{{ formatTwitter(communityInfo.twitter) }}</div>
                     </div>
                   </div>
                   <div class="flex justify-between px-16 pt-2">

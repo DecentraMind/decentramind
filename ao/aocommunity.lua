@@ -198,6 +198,7 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
     if usercommunity[msg.Tags.userAddress] then
       if usercommunity[msg.Tags.userAddress][dCom[1].uuid] then
         itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
+        itemCopy.joinTime = usercommunity[msg.Tags.userAddress][dCom[1].uuid].time
       end
     end
     table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中

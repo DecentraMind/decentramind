@@ -78,7 +78,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 }
 
 
-const { addCommunity, communityCreate, makecommunityChat } = $(aocommunityStore())
+const { addCommunity, communityCreate, getCommunitylist, makecommunityChat } = $(aocommunityStore())
 let createCommunity = $ref('')
 let isLoading = $ref(false)
 let createSuccess = $ref(false)
@@ -487,8 +487,7 @@ let settingInfo = $ref(true)
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/${slug}/create-community`" @click="isCreated = false">{{ $t('community.continue') }}</UButton>
-            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
+            <UButton :to="`/${slug}/discovery`" @click="getCommunitylist(); communityCreate = false; isCreated = false">{{$t('community.look') }}
             </UButton>
           </UContainer>
         </UCard>

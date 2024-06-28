@@ -207,6 +207,9 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       });
 
       joincommunityList = communityList.filter((item) => item.isJoined === true);
+      joincommunityList.sort((a, b) => {
+        return parseInt(b.joinTime) - parseInt(a.joinTime);
+      });
       isLoading = false
       return result
     } else {

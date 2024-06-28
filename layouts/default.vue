@@ -135,6 +135,8 @@ const getCommunity = async () => {
 
 let linkTwitter = $ref(false)
 onMounted(async () => {
+  console.log("---")
+  console.log(joincommunityList)
   try {
     if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
       communityLoading = false
@@ -175,6 +177,8 @@ const test = ()=> {
   //const a = postToken()
 
 }
+
+
 </script>
 
 <template>
