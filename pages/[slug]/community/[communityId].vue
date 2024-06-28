@@ -6,7 +6,8 @@ import {aocommunityStore} from '../../../stores/aocommunityStore';
 
 import { z } from 'zod'
 import {ssimStore} from '~/stores/ssimStore'
-
+import { ref } from 'vue';
+import type { Dayjs } from 'dayjs';
 const { t } = useI18n()
 const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
@@ -108,17 +109,33 @@ const timeZoneOptions = [
   { label: 'GMT+13:00', value: 'GMT+13:00' },
   { label: 'GMT+14:00', value: 'GMT+14:00' },
 ]
-const selected = ref({ start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) })
-function isRangeSelected(duration: Duration) {
-  return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
-}
-function selectRange(duration: Duration) {
-  selected.value = { start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) }
-}
-function setTimeToTenAM(date: Date): Date {
-  const newDate = new Date(date);
-  newDate.setHours(10, 0, 0, 0); // 设置小时为10，分钟为0，秒为0，毫秒为0
-  return newDate;
+// const selected = ref({ start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) })
+// function isRangeSelected(duration: Duration) {
+//   return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
+// }
+// function selectRange(duration: Duration) {
+//   selected.value = { start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) }
+// }
+// function setTimeToTenAM(date: Date): Date {
+//   const newDate = new Date(date);
+//   newDate.setHours(10, 0, 0, 0); // 设置小时为10，分钟为0，秒为0，毫秒为0
+//   return newDate;
+// }
+type RangeValue = [Dayjs, Dayjs];
+let selectStartTime = $ref()
+let selectEndTime = $ref()
+const value2 = ref<RangeValue>();
+function handleDateChange(value) {
+  selectStartTime = value[0]
+  selectEndTime = value[1]
+  // const currentDate = new Date()
+  // if(currentDate <= endTime && currentDate >= startTime){
+  //     isBegin = 'Y'
+  // }else if(currentDate > endTime){
+  //     isBegin = 'N'
+  // }
+  // value 是选择的日期 moment 对象
+  console.log('Selected Date:', value);
 }
 const state = $ref({
   taskLogo: 'banner1',
@@ -184,15 +201,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1.value : 'none'
   transData.rewardTotal = state.rewardTotal
   transData.zone = state.zone
-  transData.startTime = selected.value.start.toLocaleString()
-  transData.endTime = selected.value.end.toLocaleString()
+  transData.startTime = selectStartTime
+  transData.endTime = selectEndTime
   transData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
   let isBegin = 'NS'
-  if (currentDate <= selected.value.end && currentDate >= selected.value.start) {
+  if (currentDate <= selectEndTime && currentDate >= selectStartTime) {
     isBegin = 'Y'
-  } else if (currentDate > selected.value.end) {
+  } else if (currentDate > selectEndTime) {
     isBegin = 'N'
   }
   transData.isBegin = isBegin
@@ -755,23 +772,7 @@ const dStatus = (status) => {
           <UFormGroup name="textarea" :label="$t('Time')">
             <div class="flex justify-between items-center">
               <USelect v-model="state.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
-              <UPopover :popper="{ placement: 'bottom-start' }">
-                <UButton icon="i-heroicons-calendar-days-20-solid">
-                  {{ format(selected.start, 'd MMM, yyy') }} - {{ format(selected.end, 'd MMM, yyy') }}
-                </UButton>
-                <template #panel="{ close }">
-                  <div class="flex items-center sm:divide-x divide-gray-200 dark:divide-gray-800">
-                    <div class="hidden sm:flex flex-col py-4">
-                      <UButton v-for="(range, index) in ranges" :key="index" :label="range.label" color="gray"
-                        variant="ghost" class="rounded-none px-6"
-                        :class="[isRangeSelected(range.duration) ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50']"
-                        truncate @click="selectRange(range.duration)" />
-                    </div>
-
-                    <DatePicker v-model="selected" @close="close" />
-                  </div>
-                </template>
-              </UPopover>
+              <a-range-picker v-model:value="value2" show-time @change="handleDateChange" />
             </div>
           </UFormGroup>
           <UButton color="white" type="submit" :disabled="postQuestLoading">

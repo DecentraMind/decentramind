@@ -1,11 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [process.env.WEB3_FULL_STACK_LAYER_PATH || '@web3-fullstack/layer'],
-  modules: [
-    '@nuxtjs/i18n',
-    // '@nuxtjs/axios',
-    // '@nuxtjs/proxy'
-  ],
+  modules: [// '@nuxtjs/axios',
+  // '@nuxtjs/proxy'
+  '@nuxtjs/i18n', "@ant-design-vue/nuxt"],
   // nitro: {
   //   devProxy: {
   //     "/user": {
