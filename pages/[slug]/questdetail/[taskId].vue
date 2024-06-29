@@ -271,7 +271,17 @@ async function submitTask() {
   // space参与人数
   const participanted = data._rawValue.data.participant_count
   // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
-  const userAvatar = data._rawValue.includes.users[0].profile_image_url
+  const la = data._rawValue.includes.users[0].profile_image_url
+  let resp = la.split('_')
+  let url = ''
+  for(let i = 0; i < resp.length - 1; ++i){
+    url = url + resp[i]
+    if(i != resp.length - 2){
+      url += '_'
+    }
+  }
+  url = url + '.png'
+  const userAvatar = url
   // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
   const userCreatedAt = data._rawValue.includes.users[0].created_at
   // space创办人的ID 用于判断是否是本人提交任务
@@ -282,7 +292,7 @@ async function submitTask() {
   const brandEffect = ssim >= 0.8 ? 10 : 0
   // 听众
   const audience = participanted
-  // 邀请人数 TODO 待完善方法，先设置默认值走下去
+  // 邀请人数 
   let getPersion = 0
   if(allInviteInfo && allInviteInfo.length != 0){
     for(let i = 0; i < allInviteInfo.length; ++i){
