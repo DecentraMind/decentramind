@@ -169,7 +169,10 @@ const bannerupload = () => {
 
 const items = [
   '/task/banner6.jpg',
-  '/task/banner7.jpg'
+  '/task/banner7.jpg',
+  '/task/banner8.jpg',
+  '/task/banner9.jpg',
+  '/task/banner10.jpg',
 ]
 const currentIndex = $ref(0); // 用于存储当前选中的索引
 
@@ -178,6 +181,14 @@ const updateBanner = (index: number) => {
     state.banner = 'banner6'
   } else if (index === 2) {
     state.banner = 'banner7'
+  } else if (index === 3) {
+    state.banner = 'banner8'
+  } else if (index === 4) {
+    state.banner = 'banner8'
+  } else if (index === 5) {
+    state.banner = 'banner9'
+  } else if (index === 6) {
+    state.banner = 'banner10'
   }
 };
 const test = ()=> {
