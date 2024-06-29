@@ -90,8 +90,31 @@ export const taskStore = defineStore('taskStore', () => {
             {name: 'Quantity', value: String(data.tokenNumber)}
           ]
         })
+        let { Messages, Spawns, Output, Error } = await result({
+          // the arweave TXID of the message
+          message: messageId,
+          // the arweave TXID of the process
+          process: tokenMap[data.tokenType],
+        });
+        const mTags = Messages[0].Tags
+        let transError = false
+        let errorMessage = ''
+        for(let k = 0; k < mTags.length; ++k){
+          const tag = mTags[k]
+          if(tag.name === 'Error'){
+            errorMessage = tag.value
+            transError = true
+            break
+          }
+        }
+        if(transError){
+          showError('Pay bounty failed.' + errorMessage)
+          alert('Pay bounty failed.' + errorMessage)
+          return
+        }
       }catch(error){
-        console.log('error = ' + error)
+        showError(error)
+        return
       }
     }
 
@@ -114,6 +137,28 @@ export const taskStore = defineStore('taskStore', () => {
             {name: 'Quantity', value: String(data.tokenNumber1) }
           ]
         })
+        let { Messages, Spawns, Output, Error } = await result({
+          // the arweave TXID of the message
+          message: messageId,
+          // the arweave TXID of the process
+          process: tokenMap[data.tokenType],
+        });
+        const mTags = Messages[0].Tags
+        let transError = false
+        let errorMessage = ''
+        for(let k = 0; k < mTags.length; ++k){
+          const tag = mTags[k]
+          if(tag.name === 'Error'){
+            errorMessage = tag.value
+            transError = true
+            break
+          }
+        }
+        if(transError){
+          showError('Pay bounty failed.' + errorMessage)
+          alert('Pay bounty failed.' + errorMessage)
+          return
+        }
       }catch(error){
         console.log(error)
       }

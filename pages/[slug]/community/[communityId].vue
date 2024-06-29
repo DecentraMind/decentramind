@@ -187,6 +187,12 @@ function uuid() {
 }
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   postQuestLoading = true
+  if(!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime){
+    postQuestLoading = false
+    // isOpen = false
+    alert('Please complete the quest information.')
+    return
+  }
   // Do something with state
   transData.taskId = uuid()
   transData.taskLogo = state.taskLogo
@@ -206,6 +212,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
+  if(selectEndTime <= currentDate){
+    postQuestLoading = false
+    alert('Quest end time cannot be earlier than current time.')
+    return
+  }
   let isBegin = 'NS'
   if (currentDate <= selectEndTime && currentDate >= selectStartTime) {
     isBegin = 'Y'
@@ -752,18 +763,18 @@ const dStatus = (status) => {
 
           <UFormGroup name="textarea" :label="$t('Bounty')">
             <div class="flex justify-between items-center">
-              <UInput v-model="state.tokenNumber" :placeholder="$t('Token Number')" />
+              <UInput v-model="state.tokenNumber" placeholder="Amount" />
 
-              <UInputMenu v-model="state.tokenType" :placeholder="$t('Token Type')" :options="tokenOptions" />
+              <UInputMenu v-model="state.tokenType" placeholder="Token" :options="tokenOptions" />
 
-              <UInputMenu v-model="state.tokenChain" :placeholder="$t('Chain Type')" :options="chainOptions" />
+              <UInputMenu v-model="state.tokenChain" placeholder="Chain" :options="chainOptions" />
             </div>
             <div class="flex justify-between items-center">
-              <UInput v-model="state.tokenNumber1" :placeholder="$t('Token Number')" />
+              <UInput v-model="state.tokenNumber1" placeholder="Amount" />
 
-              <UInputMenu v-model="state.tokenType1" :placeholder="$t('Token Type')" :options="tokenOptions" />
+              <UInputMenu v-model="state.tokenType1" placeholder="Token" :options="tokenOptions" />
 
-              <UInputMenu v-model="state.tokenChain1" :placeholder="$t('Chain Type')" :options="chainOptions" />
+              <UInputMenu v-model="state.tokenChain1" placeholder="Chain" :options="chainOptions" />
             </div>
           </UFormGroup>
           <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
