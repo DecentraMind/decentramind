@@ -217,6 +217,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     alert('Quest end time cannot be earlier than current time.')
     return
   }
+  if(selectStartTime <= currentDate){
+    postQuestLoading = false
+    alert('Quest start time cannot be earlier than current time.')
+    return
+  }
+  if(selectStartTime >= selectEndTime){
+    postQuestLoading = false
+    alert('Quest end time cannot be earlier than start time.')
+    return
+  }
   let isBegin = 'NS'
   if (currentDate <= selectEndTime && currentDate >= selectStartTime) {
     isBegin = 'Y'
@@ -653,7 +663,7 @@ const dStatus = (status) => {
                       {{ dStatus(blogPost.status) }}
                     </UBadge>
                   </div>
-                  <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N'" class="mx-2">
+                  <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-2">
                     <UBadge size="xs" color="black" variant="solid">
                       {{ $t('Unsettled') }}
                     </UBadge>
