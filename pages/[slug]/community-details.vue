@@ -189,6 +189,15 @@ const formatTwitter = (twitter: string | undefined): string => {
   }
   return `${twitter.slice(0, 3)}...${twitter.slice(-3)}`;
 };
+
+const formattedTwitterLink = (twitter) => {
+  const link = twitter;
+  // Add https:// prefix if the link doesn't start with http:// or https://
+  if (!/^(http|https):\/\//.test(link)) {
+    return `https://${link}`;
+  }
+  return link;
+}
 </script>
 
 <template>
@@ -229,14 +238,14 @@ const formatTwitter = (twitter: string | undefined): string => {
                     <div>{{ $t('community.website') }}</div>
                     <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[350px]">
-                        <UPopover mode="hover" :popper="{ placement: 'top' }">
+                        <ULink
+                          :to="formattedTwitterLink(communityInfo.website)"
+                          active-class="text-primary"
+                          target="_blank"
+                          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                        >
                           {{ formatTwitter(communityInfo.website) }}
-                          <template #panel>
-                            <div class="px-5">
-                              {{ communityInfo.website }}
-                            </div>
-                          </template>
-                        </UPopover>
+                        </ULink>
                       </div>
                     </div>
                   </div>
@@ -244,14 +253,14 @@ const formatTwitter = (twitter: string | undefined): string => {
                     <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
                     <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[350px]">
-                        <UPopover mode="hover" :popper="{ placement: 'top' }">
+                        <ULink
+                          :to="formattedTwitterLink(communityInfo.twitter)"
+                          active-class="text-primary"
+                          target="_blank"
+                          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                        >
                           {{ formatTwitter(communityInfo.twitter) }}
-                          <template #panel>
-                            <div class="px-5">
-                              {{ communityInfo.twitter }}
-                            </div>
-                          </template>
-                        </UPopover>
+                        </ULink>
                       </div>
                     </div>
                   </div>
@@ -332,14 +341,14 @@ const formatTwitter = (twitter: string | undefined): string => {
                     <div>Github</div>
                     <div class="w-36 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
-                        <UPopover mode="hover" :popper="{ placement: 'top' }">
+                        <ULink
+                          :to="formattedTwitterLink(communityInfo.github)"
+                          active-class="text-primary"
+                          target="_blank"
+                          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                        >
                           {{ formatTwitter(communityInfo.github) }}
-                          <template #panel>
-                            <div class="px-5">
-                              {{ communityInfo.github }}
-                            </div>
-                          </template>
-                        </UPopover>
+                        </ULink>
                       </div>
                     </div>
                   </div>

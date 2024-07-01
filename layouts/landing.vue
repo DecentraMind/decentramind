@@ -91,12 +91,12 @@ let loginLoading = $ref(false)
           </UButton> 
           <UButton color="white" disabled class="w-[120px]" @click="othent">
             <template #leading>
-              <UAvatar
-                src="wallet/arconnect.svg"
-                size="2xs"
+              <UIcon
+                name="logos:google-icon"
+                class="w-[25px] h-[23px]"
               />
             </template>
-            Othent
+            Google
           </UButton>
         </div>
         <div v-else class="flex justify-center">

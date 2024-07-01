@@ -195,16 +195,23 @@ const test = ()=> {
 
         <UDivider />
 
-        <NuxtLink v-for="item in joincommunityList" :key="item.uuid" :to="`/${slug}/community/${item.uuid}`">
-          <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
-          <div class="aspect-w-1 aspect-h-1">
-            <img
-              :src="item.logo"
-              :title="item.name"
-              class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
-            >
-          </div>
-        </NuxtLink>
+        <div class="overflow-y-auto">
+          <NuxtLink
+            v-for="item in joincommunityList"
+            :key="item.uuid"
+            :to="`/${slug}/community/${item.uuid}`"
+            class="block p-2"
+          >
+            <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
+            <div class="aspect-w-1 aspect-h-1">
+              <img
+                :src="item.logo"
+                :title="item.name"
+                class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
+              >
+            </div>
+          </NuxtLink>
+        </div>
         <UButton v-if="linkTwitter" variant="soft" @click="communityCreate = true">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
