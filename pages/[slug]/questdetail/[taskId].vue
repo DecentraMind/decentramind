@@ -240,7 +240,7 @@ function isNullOrEmpty(str: string | null | undefined): boolean {
 
 
 const emit = defineEmits(['success'])
-const url = $ref('')
+let submitUrl = $ref('')
 let submitLoading = $ref(false)
 let sendBountyLoading = $ref(false)
 async function submitTask() {
@@ -252,7 +252,8 @@ async function submitTask() {
     }
   }
   // TODO 调用提交space链接并解析方法
-  var splitted = url.split('/', 6)
+  console.log('submitUrl = ' + submitUrl)
+  var splitted = submitUrl.split('/', 6)
   console.log(splitted)
   // await testCallJava()
   // 直接在vue中请求api接口 拿到需要的信息
@@ -292,7 +293,7 @@ async function submitTask() {
   const brandEffect = ssim >= 0.8 ? 10 : 0
   // 听众
   const audience = participanted
-  // 邀请人数 
+  // 邀请人数
   let getPersion = 0
   if(allInviteInfo && allInviteInfo.length != 0){
     for(let i = 0; i < allInviteInfo.length; ++i){
@@ -708,7 +709,7 @@ const trueRows = computed(() => {
 <!--            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />-->
 <!--          </div>-->
           <div class="my-8">
-            <UInput v-model="url" color="primary" variant="outline" :placeholder="$t('Space Url')" />
+            <UInput v-model="submitUrl" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>
           <div class="flex justify-center my-8">
             <UButton :disabled="submitLoading" @click="submitTask">

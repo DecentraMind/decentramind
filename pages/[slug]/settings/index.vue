@@ -55,17 +55,7 @@ const saveInfo = async () => {
 }
 const { gettoken, getAccessToken } = $(linktwitter())
 const gettwitter = async () => {
-  // await client.auth.signInWithOAuth({
-  //   provider: 'twitter',
-  //   options: {
-  //     redirectTo: `http://example.com/auth/callback`,
-  //   },
-  // })
-  const { data, error } = await client.auth.signInWithOAuth({
-    provider: 'twitter',
-  })
-  console.log('data from supabase = ' + data)
-  console.log('error from supabase = ' + error)
+  await getAccessToken()
 }
 
 let connectTwitter = $ref(false)
