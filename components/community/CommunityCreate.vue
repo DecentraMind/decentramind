@@ -52,9 +52,9 @@ const schema = z.object({
   Name: z.string().min(2).max(20),
   Inbro: z.string().min(3).max(100),
 
-  Website: z.string().max(20).optional(),
-  Twitter: z.string().max(20).optional(),
-  Gihub: z.string().max(20).optional(),
+  //Website: z.string().max(20).optional(),
+  //Twitter: z.string().max(20).optional(),
+  //Gihub: z.string().max(20).optional(),
 
   TradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
@@ -184,10 +184,8 @@ const updateBanner = (index: number) => {
   } else if (index === 3) {
     state.banner = 'banner8'
   } else if (index === 4) {
-    state.banner = 'banner8'
-  } else if (index === 5) {
     state.banner = 'banner9'
-  } else if (index === 6) {
+  } else if (index === 5) {
     state.banner = 'banner10'
   }
 };
