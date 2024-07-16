@@ -629,7 +629,7 @@ const trueRows = computed(() => {
               </div>
               <div>
                 <div>
-                  <p> 1 Total score is 100 including Brand 10%, Friends 40%, Audience 50% </p>
+                  <p> 1 Total score is 100 including Brand 10%, Friends 40%, Popularity 50% </p>
 
                   <p> 2 Brand is decided by your avatar,  change it you’ll get 10, not change get 0 </p>
 
