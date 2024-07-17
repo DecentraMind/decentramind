@@ -133,7 +133,6 @@ const getCommunity = async () => {
   communityLoading = false
 }
 
-let linkTwitter = $ref(false)
 onMounted(async () => {
   console.log("---")
   console.log(joincommunityList)
@@ -142,11 +141,6 @@ onMounted(async () => {
       communityLoading = false
     }
     await getInfo()
-    if((!userInfo[0].twitter || userInfo[0].twitter == 'N/A') && (!userInfo[0].github || userInfo[0].github == 'N/A')){
-      linkTwitter = false
-    } else {
-      linkTwitter = true
-    }
     //await getCommunity()
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -212,7 +206,7 @@ const test = ()=> {
             </div>
           </NuxtLink>
         </div>
-        <UButton v-if="linkTwitter" variant="soft" @click="communityCreate = true">
+        <UButton variant="soft" @click="communityCreate = true">
           <UIcon name="ion:add" class="h-full w-full " />
         </UButton>
 
@@ -248,12 +242,13 @@ const test = ()=> {
                   <div v-if="userInfo.length && userInfo[0]" class="text-2xl">{{ userInfo[0].name }}</div>
                 </div>
                 <UDivider />
-
+                <!--
                 <div class="mt-3">
                   <UIcon name="ei:sc-twitter" />
                   <UIcon name="quill:mail" />
                   <UIcon name="ei:sc-telegram" />
                 </div>
+                -->
               </div>
             </template>
           </UPopover>
