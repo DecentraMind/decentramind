@@ -147,9 +147,10 @@ const handleUp = (event) => {
         </div>
       </div>
 
-
+      <!--
       <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">{{ $t('setting.person.social') }}
       </div>
+      
       <UFormGroup label="twitter" name="twitter" class="mb-5 pl-10">
         <template #label>
           {{ $t('setting.person.twitter') }}
@@ -188,23 +189,13 @@ const handleUp = (event) => {
         </template>
         <div class="flex items-center space-x-3">
           <UButton v-if="connectGithub" color="white" class="mr-5 w-[150px]" disabled>Connected Github</UButton>
-          <!--
-          <ULink
-            v-else
-            to="https://github.com/login/oauth/authorize?client_id=Ov23liyIh4bmA6HGwXhT&state=state"
-            active-class="text-primary"
-            target="_blank"
-            inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-          >
-            <UButton color="white" class="mr-20 w-[120px]">{{ $t('github.link')}}</UButton>
-          </ULink>
-          -->
+
           <UButton v-else variant="soft" @click="auth.signInWithOAuth({ provider: 'github', options: { redirectTo } })">
             Link to Github
           </UButton>
         </div>
       </UFormGroup>
-
+    -->
       <div class="flex justify-center">
         <UButton type="submit" color="black" @click="saveInfo">
           {{ $t('setting.save')}}

@@ -67,17 +67,15 @@ let joinLoading = $ref(false)
 const jointocommunity = async(uuid: any) => {
   joinLoading = true
   try {
-    if((!userInfo[0].twitter || userInfo[0].twitter == 'N/A') && (!userInfo[0].github || userInfo[0].github !== 'Success')){
-      LinktoTwitter = true
-    } else {
+
       const invite = "none"
       const result = await joinCommunity(uuid, invite)
       toast.add({ title: 'joined success' })
       // 查找uuid匹配的元素并更新isJoined属性
       await getCommunitylist()
       joinLoading = false
-    }
-    joinLoading = true
+    
+    // joinLoading = true
     // 如果 communityJoin 没有抛出异常，则认为操作成功
     console.log('communityJoin 操作成功');
   } catch (error) {
