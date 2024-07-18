@@ -208,22 +208,24 @@ const error_msg = 'Please bound your twitter account！'
 let isOpen = $ref(false)
 let isOpenJoin = $ref(false)
 function openModal() {
-  if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
-    modal.open(CommonAlert, { message: error_msg })
-  } else {
-    isOpen = true
-  }
+  // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
+  //   modal.open(CommonAlert, { message: error_msg })
+  // } else {
+  //   isOpen = true
+  // }
+  isOpen = true
 }
 async function test() {
   await getInfo()
   console.log('userInfo = ' + JSON.stringify(userInfo))
 }
 function openJoin() {
-  if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
-    modal.open(CommonAlert, { message: error_msg })
-  } else {
-    isOpenJoin = true
-  }
+  // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
+  //   modal.open(CommonAlert, { message: error_msg })
+  // } else {
+  //   isOpenJoin = true
+  // }
+  isOpenJoin = true
 }
 async function onClick() {
   //  调用参与任务方法，只计数不提交
