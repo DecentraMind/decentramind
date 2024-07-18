@@ -471,7 +471,7 @@ const dStatus = (status) => {
 }
 </script>
 <template>
-  <UDashboardPanel :width="420" collapsible>
+  <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
     <UDashboardSidebar>
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
       <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->

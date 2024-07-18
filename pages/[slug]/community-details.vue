@@ -205,7 +205,7 @@ const formattedTwitterLink = (twitter) => {
     <!--<div v-for="Info in communityInfoJson" :key="Info.uuid" class="w-full px-50">-->
     <div class="w-full px-50 pt-16 overflow-y-auto">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
-      <UPage class="pl-36 pr-80">
+      <UPage class="pl-10 pr-80 min-w-[1720px]">
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
           color="primary"
@@ -234,9 +234,9 @@ const formattedTwitterLink = (twitter) => {
             <ULandingCard class="col-span-8 row-span-2 flex">
               <div class="flex justify-between w-full">
                 <div class="" style="flex: 1; height: 100%;">
-                  <div class="flex justify-between px-16">
+                  <div class="flex justify-between px-6">
                     <div>{{ $t('community.website') }}</div>
-                    <div class="w-36 flex justify-around items-center">
+                    <div class="w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[350px]">
                         <ULink
                           :to="formattedTwitterLink(communityInfo.website)"
@@ -249,9 +249,9 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16 pt-2">
+                  <div class="flex justify-between px-6 pt-2">
                     <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
-                    <div class="w-36 flex justify-around items-center">
+                    <div class="w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[350px]">
                         <ULink
                           :to="formattedTwitterLink(communityInfo.twitter)"
@@ -264,9 +264,9 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16 pt-2">
+                  <div class="flex justify-between px-6 pt-2">
                     <div>{{ $t('community.detail.token') }}</div>
-                    <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="w-36 flex justify-around items-center space-x-1">
+                    <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="w-48 flex justify-around items-center space-x-1">
                       <div
                         v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
                         :key="index"
@@ -288,9 +288,9 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                     </div>
                   </div>
-                  <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex justify-between px-16 pt-2">
+                  <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex justify-between px-6 pt-2">
                     <div>{{ $t('community.token.platforms') }}</div>
-                    <div class="w-36 flex justify-around items-center space-x-1">
+                    <div class="w-48 flex justify-around items-center space-x-1">
                       <div
                         v-for="(token, index) in communityInfo.support.slice(0,2)"
                         :key="index"
@@ -311,9 +311,9 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                     </div>
                   </div>
-                  <div v-if="communityInfo.bounty && communityInfo.bounty.length > 0" class="flex justify-between px-16 pt-2">
+                  <div v-if="communityInfo.bounty && communityInfo.bounty.length > 0" class="flex justify-between px-6 pt-2">
                     <div>{{ $t('community.typereward') }}</div>
-                    <div class="w-36 flex justify-around items-center space-x-1">
+                    <div class="w-48 flex justify-around items-center space-x-1">
                       <div
                         v-for="(token, index) in communityInfo.bounty.slice(0,2)"
                         :key="index"
@@ -337,9 +337,9 @@ const formattedTwitterLink = (twitter) => {
                   </div>
                 </div>
                 <div class="" style="flex: 1;">
-                  <div class="flex justify-between px-16">
+                  <div class="flex justify-between px-6">
                     <div>Github</div>
-                    <div class="w-36 flex justify-around items-center">
+                    <div class="w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
                         <ULink
                           :to="formattedTwitterLink(communityInfo.github)"
@@ -352,17 +352,17 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16 pt-2">
+                  <div class="flex justify-between px-6 pt-2">
                     <div>{{ $t('community.buildnum') }}</div>
-                    <div class="w-36 flex justify-around items-center">
+                    <div class="w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
                         {{ communityInfo.buildnum }}
                       </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-16 pt-2">
+                  <div class="flex justify-between px-6 pt-2">
                     <div>{{ $t('community.allreward') }}</div>
-                    <div class="w-36 flex justify-around items-center">
+                    <div class="max-w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
                         {{ communityInfo && communityInfo.bounty ? communityInfo.bounty.length : 0 }}
                       </div>
