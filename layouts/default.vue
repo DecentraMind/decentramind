@@ -1,9 +1,6 @@
 <script setup lang="ts">
-const { t } = useI18n()
 const route = useRoute()
 const appConfig = useAppConfig()
-const { isHelpSlideoverOpen } = useDashboard()
-
 const slug = $computed(() => route.params.slug)
 
 const links = $computed(() => {
@@ -62,25 +59,6 @@ const links = $computed(() => {
     },
   ]
 })
-const footerLinks = $computed(() => {
-  return [
-    {
-      label: t('Task Area'),
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/tasks`,
-    },
-    {
-      label: 'Invite people',
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/settings/communityinfo`,
-    },
-    {
-      label: 'Help & Support',
-      icon: 'i-heroicons-question-mark-circle',
-      click: () => (isHelpSlideoverOpen.value = true),
-    },
-  ]
-})
 
 const groups = [
   {
@@ -111,30 +89,11 @@ const defaultColors = ref(
     click: () => (appConfig.ui.primary = color),
   }))
 )
-const colors = computed(() => defaultColors.value.map((color) => ({ ...color, active: appConfig.ui.primary === color.label })))
-
-const communityList1 = [
-  { title: 'HelloRWA1', slug: 'hellorwa1', avatar: '/logo.png' },
-  { title: 'HelloRWA2', slug: 'hellorwa2', avatar: '/logo.png' },
-  { title: 'HelloRWA3', slug: 'hellorwa3', avatar: '/logo.png' },
-]
 
 const { userInfo, joincommunityList, communityCreate, getCommunitylist, getInfo } = $(aocommunityStore())
 
-let result = $ref()
-const createCommunity = $ref(false)
-
-let communityLoading = $ref(true)
-
-const getCommunity = async () => {
-
-  result = await getCommunitylist()
-
-  communityLoading = false
-}
-
 onMounted(async () => {
-  console.log("---")
+  console.log('---')
   console.log(joincommunityList)
   try {
     if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
@@ -177,7 +136,7 @@ const test = ()=> {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel :width="100" collapsible>
+    <UDashboardPanel class="w-24">
       <UDashboardSidebar>
         <template #header>
           <NuxtLink :to="`/${slug}/discovery`">
@@ -255,42 +214,8 @@ const test = ()=> {
         </template>
       </UDashboardSidebar>
     </UDashboardPanel>
-    <!--    <UDashboardPanel :width="250" :resizable="{ min: 200, max: 300 }" collapsible>-->
-    <!--      <UDashboardNavbar class="!border-transparent" :ui="{ left: 'flex-1' }">-->
-    <!--        <template #left>-->
-    <!--          <TeamsDropdown />-->
-    <!--        </template>-->
-    <!--      </UDashboardNavbar>-->
-
-    <!--      <UDashboardSidebar>-->
-    <!--        <template #header>-->
-    <!--          <UDashboardSearchButton />-->
-    <!--        </template>-->
-
-    <!--        <UDashboardSidebarLinks :links="links" />-->
-
-    <!--        <UDivider />-->
-
-    <!--        <UDashboardSidebarLinks-->
-    <!--          :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
-    <!--          @update:links="(colors) => (defaultColors = colors)"-->
-    <!--        />-->
-
-    <!--        <div class="flex-1" />-->
-
-    <!--        <UDashboardSidebarLinks :links="footerLinks" />-->
-
-    <!--        <UDivider class="bottom-0 sticky" />-->
-
-    <!--        <template #footer>-->
-    <!--          &lt;!&ndash; ~/components/UserDropdown.vue &ndash;&gt;-->
-    <!--          <UserDropdown />-->
-    <!--        </template>-->
-    <!--      </UDashboardSidebar>-->
-    <!--    </UDashboardPanel>-->
 
     <slot />
-
 
     <!-- ~/components/HelpSlideover.vue -->
     <HelpSlideover />
