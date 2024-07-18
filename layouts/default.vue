@@ -136,7 +136,7 @@ const test = ()=> {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel class="w-24">
+    <UDashboardPanel :width="96" class="w-24">
       <UDashboardSidebar>
         <template #header>
           <NuxtLink :to="`/${slug}/discovery`">

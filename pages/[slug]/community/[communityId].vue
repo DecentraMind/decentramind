@@ -471,6 +471,7 @@ const dStatus = (status) => {
 }
 </script>
 <template>
+  <UDashboardLayout :ui="{wrapper: 'static'}">
   <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
     <UDashboardSidebar>
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
