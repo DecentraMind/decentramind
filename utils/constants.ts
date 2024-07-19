@@ -94,6 +94,11 @@ export const tokenOptions = tokenNames.map((value) => {
   }
 })
 
+export const tokenProcessIDs = tokenNames.reduce((carry, name) => {
+  carry[name] = tokens[name].processID
+  return carry
+}, {} as { [key in TokenName]: string })
+
 export type CommunityToken = {
   tokenName: TokenName;
   showTokenName: boolean;
