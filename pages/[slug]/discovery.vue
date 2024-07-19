@@ -5,7 +5,7 @@ const {
   credBalance,
   init, doLogout, doLogin } = $(aoStore())
 
-const { communityList, userInfo, updataCommunity, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
+const { communityList, userInfo, vouch, updataCommunity, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
 const { gettoken } = $(linktwitter())
 
 const toast = useToast()
@@ -68,12 +68,12 @@ const jointocommunity = async(uuid: any) => {
   joinLoading = true
   try {
 
-      const invite = "none"
-      const result = await joinCommunity(uuid, invite)
-      toast.add({ title: 'joined success' })
-      // 查找uuid匹配的元素并更新isJoined属性
-      await getCommunitylist()
-      joinLoading = false
+    const invite = "none"
+    const result = await joinCommunity(uuid, invite)
+    toast.add({ title: 'joined success' })
+    // 查找uuid匹配的元素并更新isJoined属性
+    await getCommunitylist()
+    joinLoading = false
     
     // joinLoading = true
     // 如果 communityJoin 没有抛出异常，则认为操作成功
@@ -89,9 +89,7 @@ const jointocommunity = async(uuid: any) => {
 
 }
 const test = ()=> {
-  const a = "06263a46-121b-4027-be33-adbe269ccbd8"
-  updataCommunity(a, "join")
-  console.log(communityList)
+  const a = vouch()
 }
 </script>
 
