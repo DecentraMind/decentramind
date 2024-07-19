@@ -3,66 +3,63 @@
 
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
+import type { CommunitySetting, CommunityToken, Token, TokenSupply, TradePlatform } from '~/types'
+import { tradePlatforms, tokens } from '~/utils/constants'
 
-const options = [
-  { label: 'OKE', value: 'OKE' },
-  { label: 'Binance', value: 'Binance' },
-]
-const supportSelect = ['ArSwap', 'Permaswap', 'Binance', 'Coinbase']
-let supportSelected = $ref([])
-const tokenselect = ['AR', 'TRUNK', 'EXP', 'Orbit', 'Earth', 'Fire', 'Air', 'Lava']
-let tokenselected = $ref([])
+let supportSelected: TradePlatform[] = $ref([])
+let tokenSelected = $ref<Token[]>([])
 let isCreated = $ref(false)
 
-let state = $ref({
+
+const state = $ref<CommunitySetting>({
   owner: undefined,
-  creater: undefined,
-  logobase64Data: undefined,
+  creator: undefined,
+  logoBase64Data: undefined,
   banner: 'banner6',
   input: undefined,
   inputMenu: undefined,
-  Name: undefined,
-  Inbro: undefined,
-  Website: undefined,
-  Twitter: undefined,
-  Github: undefined,
-  Buildernum: undefined,
-  Allreward: undefined,
-  Typereward: undefined,
+  name: undefined,
+  inbro: undefined,
+  website: undefined,
+  twitter: undefined,
+  github: undefined,
+  builderNum: undefined,
+  allReward: undefined,
+  typeReward: undefined,
   isPublished: true,
-  TokenName: undefined,
+  tokenName: undefined,
   showTokenName: true,
   isTradable: undefined,
-  TradePlatform: undefined,
-  Alltoken: undefined,
-  Communitytoken: undefined,
-  communityChatid: undefined,
+  tradePlatform: undefined,
+  allToken: undefined,
+  communityToken: undefined,
+  communityChatID: undefined,
   time: undefined,
 })
 
 const schema = z.object({
-  Name: z.string().min(2).max(20),
-  Inbro: z.string().min(3).max(100),
+  name: z.string().min(2).max(20),
+  inbro: z.string().min(3).max(100),
 
   //Website: z.string().max(15).optional(),
   //Twitter: z.string().max(15).optional(),
   //Gihub: z.string().max(15).optional(),
 
-  TradePlatform: z.string().refine((value: string) => value === 'OKE', {
+  tradePlatform: z.string().refine((value: string) => value === 'OKE', {
     message: 'Select OKE'
   }),
-  Alltoken: z.string()
+  allToken: z.string()
     .min(0, { message: 'Must be more than 0' })
     .refine((value: string) => {
-      const num = parseFloat(value);
-      return !isNaN(num) && num > 0;
+      const num = parseFloat(value)
+      return !isNaN(num) && num > 0
     }, { message: 'Must be a valid number more than 0' })
     .refine((value: string) => {
-      const regex = /^\d+(\.\d{1,3})?$/;
-      return regex.test(value);
+      const regex = /^\d+(\.\d{1,3})?$/
+      return regex.test(value)
     }, { message: 'Must be a valid number with up to 3 decimal places' })
   /*
-  Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
+  allReward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
     const num = parseInt(value)
     return !isNaN(num) && num <= 100
   }, { message: 'Must be a valid number less than or equal to 20' }),
@@ -79,8 +76,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 }
 
 
-const { addCommunity, settingCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
-let createCommunity = $ref('')
+const { settingCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
 let isLoading = $ref(false)
 let createSuccess = $ref(false)
 const CreateCommunity = async () => {
@@ -88,43 +84,20 @@ const CreateCommunity = async () => {
   isLoading = true
   isCreated = true
   try {
-    let communitySubmit = [
-      {
-        "name": state.Name,
-        "desc": state.Inbro,
-        "website": state.Website,
-        "allreward": state.Allreward,
-      }
-    ]
-    const jsonString = JSON.stringify(communitySubmit);
-    createCommunity = await settingCommunity(
-      state.creater,
-      state.owner,
-      state.logobase64Data,
-      state.banner,
-      state.Name,
-      state.Inbro,
-      state.Website,
-      state.Twitter,
-      state.Github,
-      state.Buildernum,
-      tokenselected, //选择的token类型
-      state.isPublished, //是否有发行token
-      token.communityToken, //社区token分配比例额度
-      state.isTradable, //是否可以交易
-      supportSelected, //交易得平台
-      state.Alltoken, //分配得token总量
-      token.tokenSupply, //社区token分配比例详情
-      state.communityChatid,
-      state.time
+    await settingCommunity(
+      state,
+      tokenSelected, // 选择的token类型
+      token.communityToken, // 社区token分配比例额度
+      supportSelected, // 交易平台
+      token.tokenSupply, // 社区token分配比例详情
     )
   } catch (error) {
-    console.error('Error setting community:', error.message);
+    console.error('Error setting community:', error)
     isCreated = false
     alert('Failed to setting community!')
     // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
   } finally {
-    isLoading = false;
+    isLoading = false
     createSuccess = true
   }
 
@@ -132,27 +105,32 @@ const CreateCommunity = async () => {
   isLoading = false
 }
 
-const handleUp = (event) => {
-  const file = event.target?.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
-          state.logobase64Data = e.target.result;
-        } else {
-          alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.');
-        }
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+const handleUp = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) {
+    throw new Error('No file selected.')
   }
-};
+  const file = input.files[0]
 
-const logoupload = () => {
-  const input = document.querySelector('#logoupload') as any
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const img = new Image()
+    const b64 = e.target!.result?.toString() || defaultCommunityLogo
+    img.onload = () => {
+      if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
+        state.logoBase64Data = b64
+      } else {
+        alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
+      }
+    }
+    img.src = b64
+  }
+  reader.readAsDataURL(file)
+
+}
+
+const uploadLogo = () => {
+  const input = document.querySelector('#uploadLogo') as any
   input.click()
 }
 
@@ -169,7 +147,7 @@ const items = [
   '/task/banner9.jpg',
   '/task/banner10.jpg',
 ]
-const currentIndex = $ref(0); // 用于存储当前选中的索引
+const currentIndex = $ref(0) // 用于存储当前选中的索引
 
 const updateBanner = (index: number) => {
   if (index === 1) {
@@ -183,11 +161,14 @@ const updateBanner = (index: number) => {
   } else if (index === 5) {
     state.banner = 'banner10'
   }
-};
+}
 
 
 // 初始化表单组状态数组
-const token = $ref({
+const token = $ref<{
+  communityToken: CommunityToken[],
+  tokenSupply: TokenSupply[]
+}>({
   communityToken: [
     {
       tokenName: '',
@@ -237,36 +218,40 @@ const addSupplyGroup = () => {
 }
 
 // 移除表单组函数
-const removeSupplyGroup = (index) => {
+const removeSupplyGroup = (index: number) => {
   token.tokenSupply.splice(index, 1)
 }
 
-const setcommunitycurrent = async() => {
+const setCommunityState = async() => {
   const communityInfo = await getLocalcommunityInfo(currentUuid)
+  if(!communityInfo) return
+
+  console.log({communityInfo})
+
   //state.banner = a.banner;
-  state.creater = communityInfo.creater
-  state.owner = communityInfo.owner
-  state.logobase64Data = communityInfo.logo
+  state.creator = communityInfo.creater
+  state.owner = communityInfo.creater
+  state.logoBase64Data = communityInfo.logo
   state.banner = communityInfo.banner
-  state.Name = communityInfo.name
-  state.Inbro = communityInfo.desc
-  state.Website = communityInfo.website
-  state.Twitter = communityInfo.twitter
-  state.Github = communityInfo.github
-  state.Buildernum = communityInfo.buildnum
-  tokenselected = communityInfo.bounty //选择的token类型
+  state.name = communityInfo.name
+  state.inbro = communityInfo.desc
+  state.website = communityInfo.website
+  state.twitter = communityInfo.twitter
+  state.github = communityInfo.github
+  state.builderNum = communityInfo.buildnum
+  tokenSelected = communityInfo.bounty //选择的token类型
   state.isPublished = communityInfo.ispublished //是否有发行token
   token.communityToken = communityInfo.communitytoken //社区token分配比例额度
   state.isTradable = communityInfo.istradable //是否可以交易
   supportSelected = communityInfo.support //交易得平台
-  state.Alltoken = communityInfo.alltoken //分配得token总量
+  state.allToken = communityInfo.alltoken //分配得token总量
   token.tokenSupply = communityInfo.tokensupply //社区token分配比例详情
-  state.communityChatid = communityInfo.communitychatid
+  state.communityChatID = communityInfo.communitychatid
   state.time = communityInfo.timestamp
 }
 
 onMounted(async () => {
-  await setcommunitycurrent()
+  await setCommunityState()
 })
 </script>
 
@@ -275,21 +260,34 @@ onMounted(async () => {
     <DashboardPanelContent class="w-full overflow-y-auto pl-20 pt-10">
       <UAlert>
         <template #title>
-          <div class="text-3xl p-2 flex justify-center">{{ $t('community.setting') }}</div>
+          <div class="text-3xl p-2 flex justify-center">
+            {{ $t('community.setting') }}
+          </div>
         </template>
       </UAlert>
       <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
         <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.logo') }}</div>
+            <div class=" w-[300px]">
+              {{ $t('community.logo') }}
+            </div>
           </template>
-          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
-          <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
+          <UButton
+            label="LOGO"
+            size="xl"
+            square
+            variant="outline"
+            class="flex justify-center w-[150px] h-[120px]"
+            @click="uploadLogo"
+          />
+          <Input id="uploadLogo" type="file" size="sm" class="opacity-0" @change="handleUp" />
         </UFormGroup>
         <!--<UButton @click="test">test</UButton>-->
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.banner') }}</div>
+            <div class=" w-[300px]">
+              {{ $t('community.banner') }}
+            </div>
           </template>
           <UCarousel
             v-model="currentIndex"
@@ -326,59 +324,75 @@ onMounted(async () => {
 
         <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.name') }}</div>
+            <div class=" w-[300px]">
+              {{ $t('community.name') }}
+            </div>
           </template>
-          <UInput v-model="state.Name" placeholder="Name" class="min-w-[100px] w-[430px]" />
+          <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Inbro" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.intro') }}</div>
+            <div class=" w-[300px]">
+              {{ $t('community.intro') }}
+            </div>
           </template>
-          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.website') }}</div>
+            <div class=" w-[300px]">
+              {{ $t('community.website') }}
+            </div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Website" placeholder="URL" />
+            <UInput v-model="state.website" placeholder="URL" />
           </div>
         </UFormGroup>
 
         <UFormGroup name="Twitter" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.twitter') }}</div>
+            <div class=" w-[300px]">
+              {{ $t('community.twitter') }}
+            </div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Twitter" placeholder="URL" />
+            <UInput v-model="state.twitter" placeholder="URL" />
           </div>
         </UFormGroup>
 
         <UFormGroup name="Github" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">Github</div>
+            <div class=" w-[300px]">
+              Github
+            </div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Github" placeholder="URL" />
+            <UInput v-model="state.github" placeholder="URL" />
           </div>
         </UFormGroup>
 
         <UFormGroup name="Typereward" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
+            <div class=" w-[300px]">
+              {{ $t('community.typereward') }}
+            </div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu v-model="tokenselected" class="w-[130px] mr-10" :options="tokenselect" multiple placeholder="Select Token" />
+            <USelectMenu v-model="tokenSelected" class="w-[130px] mr-10" :options="tokens" multiple placeholder="Select Token" />
           </div>
         </UFormGroup>
 
-        <div class="py-8 text-2xl">{{ $t('community.project') }}</div>
+        <div class="py-8 text-2xl">
+          {{ $t('community.project') }}
+        </div>
 
         <UFormGroup name="range" class="flex flex-row items-center space-x-10">
           <template #label>
-            <div class=" min-w-[450px]">{{ $t('community.token.release') }}</div>
+            <div class=" min-w-[450px]">
+              {{ $t('community.token.release') }}
+            </div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.isPublished" />
@@ -389,11 +403,13 @@ onMounted(async () => {
         <div v-for="(formGroup, index) in token.communityToken" :key="index">
           <UFormGroup name="range" label="Range">
             <template #label>
-              <div class=" min-w-[100px]">{{ index+1 }}st Token</div>
+              <div class=" min-w-[100px]">
+                {{ index+1 }}st Token
+              </div>
             </template>
             <div class="flex flex-row items-center space-x-3">
               <div class="flex min-w-[477px]">
-                <USelect v-model="formGroup.tokenName" :options="tokenselect" />
+                <USelect v-model="formGroup.tokenName" :options="tokens" />
                 <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)" />
               </div>
             </div>
@@ -403,7 +419,9 @@ onMounted(async () => {
 
         <UFormGroup name="range" class="flex flex-row items-center space-x-10">
           <template #label>
-            <div class=" min-w-[452px]">{{ $t('community.token.trade') }}</div>
+            <div class=" min-w-[452px]">
+              {{ $t('community.token.trade') }}
+            </div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UToggle v-model="state.isTradable" />
@@ -413,24 +431,30 @@ onMounted(async () => {
         <div v-if="state.isTradable">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class=" min-w-[270px]">{{ $t('community.token.platforms') }}</div>
+              <div class=" min-w-[270px]">
+                {{ $t('community.token.platforms') }}
+              </div>
             </template>
-            <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select people" />
+            <USelectMenu v-model="supportSelected" :options="tradePlatforms" multiple placeholder="Select people" />
           </UFormGroup>
         </div>
 
-        <div class="py-8 text-2xl">{{ $t('community.economics') }}</div>
+        <div class="py-8 text-2xl">
+          {{ $t('community.economics') }}
+        </div>
 
 
         <div class="space-y-3">
           <UFormGroup name="range" class="flex flex-row items-center space-x-10">
             <template #label>
-              <div class=" min-w-[410px]">{{ $t('community.token.all') }}</div>
+              <div class=" min-w-[410px]">
+                {{ $t('community.token.all') }}
+              </div>
             </template>
           </UFormGroup>
           <UFormGroup name="Alltoken" class="mb-2">
             <div class="flex flex-row items-center space-x-3">
-              <UInput v-model="state.Alltoken" placeholder="" class="w-[120px]" />
+              <UInput v-model="state.allToken" placeholder="" class="w-[120px]" />
             </div>
           </UFormGroup>
 
@@ -478,15 +502,17 @@ onMounted(async () => {
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                 Modify Community
               </h3>
-              <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
             </div>
           </template>
           <UContainer v-if="!createSuccess" class="w-full flex justify-around">
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/${slug}/create-community`" @click="isCreated = false">{{ $t('community.continue') }}</UButton>
-            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
+            <UButton :to="`/${slug}/create-community`" @click="isCreated = false">
+              {{ $t('community.continue') }}
+            </UButton>
+            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">
+              {{ $t('community.look') }}
             </UButton>
           </UContainer>
         </UCard>

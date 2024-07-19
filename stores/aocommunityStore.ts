@@ -8,8 +8,31 @@ import {
   unmonitor,
   dryrun
 } from '@permaweb/aoconnect'
+import type { CommunitySetting, CommunityToken, Token, TokenSupply, TradePlatform } from '~/types'
 
-import fs from 'fs'
+
+type CommunityList = {
+  uuid: string
+  logo: string
+  banner: string
+  name: string
+  desc: string
+  website: string
+  twitter: string
+  whitebook: string
+  github: string
+  buildnum: string
+  bounty: Token[]
+  ispublished: boolean
+  communitytoken: CommunityToken[]
+  istradable: boolean
+  support: TradePlatform[]
+  alltoken: string
+  tokensupply: TokenSupply[]
+  creater: string
+  communitychatid: string
+  timestamp: string
+}[]
 
 
 // Read the Lua file
@@ -18,7 +41,7 @@ import fs from 'fs'
 export const aocommunityStore = defineStore('aocommunityStore', () => {
   const { address } = $(aoStore())
   const processID = 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU'
-  let communityList = $ref({})
+  let communityList = $ref<CommunityList>([])
   let userInfo = $ref({})
   let communityUser = $ref({})
   let joincommunityList = $ref({})
@@ -76,31 +99,31 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
     let communitySubmitList = [
       {
-        "logo": logo,
-        "banner": Banner,
-        "name": Name,
-        "desc": Inbro,
-        "creater": address,
-        "owner": address,
-        "website": Website,
-        "twitter": Twitter,
-        "github": Github,
-        "buildnum": 1,
-        "bounty": Bounty,
-        "ispublished": Ispublished,
-        "communitytoken": CommunityToken,
-        "istradable": IsTradable,
-        "support": Support,
-        "alltoken": AllToken,
-        "tokensupply": TokenSupply,
-        "uuid": uuid,
-        "timestamp": time.toString(),
-        "communitychatid": CommunityChatid,
+        logo: logo,
+        banner: Banner,
+        name: Name,
+        desc: Inbro,
+        creater: address,
+        owner: address,
+        website: Website,
+        twitter: Twitter,
+        github: Github,
+        buildnum: 1,
+        bounty: Bounty,
+        ispublished: Ispublished,
+        communitytoken: CommunityToken,
+        istradable: IsTradable,
+        support: Support,
+        alltoken: AllToken,
+        tokensupply: TokenSupply,
+        uuid: uuid,
+        timestamp: time.toString(),
+        communitychatid: CommunityChatid,
       }
     ]
-    console.log("--------gooods")
+    console.log('--------gooods')
     const jsonString = JSON.stringify(communitySubmitList);
-    const invite = "none"
+    const invite = 'none'
     let createCommunity = await message({
       process: processID,
       tags: [
@@ -115,59 +138,49 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     isLoading = false
   }
 
-  //Modifying the community approach
+  /**
+   * Modifying the community approach.
+   * @param {CommunitySetting} setting - The community settings object.
+   * @param {string} bounty - The token type.
+   * @param {string} communityToken - The community token distribution ratio.
+   * @param {string} support - The trading platform.
+   * @param {any} tokenSupply - The details of the community token distribution ratio.
+   */
   const settingCommunity = async (
-    Creater,
-    Owner,
-    logo,
-    Banner,
-    Name,
-    Inbro,
-    Website,
-    Twitter,
-    Github,
-    Buildnum,
-    Bounty,
-    Ispublished,
-    CommunityToken,
-    IsTradable,
-    Support,
-    AllToken,
-    TokenSupply,
-    CommunityChatid,
-    TimeStamp
+    setting: CommunitySetting,
+    bounty: string[], // token 类型
+    communityToken: CommunityToken[], // 社区 token 分配比例
+    support: string[], // 交易的平台
+    tokenSupply: TokenSupply[], /** 社区 token 分配比例详情 */
   ) => {
     if (isLoading) return
     isLoading = true
 
-    const uuid = createuuid()
-
-    let communitySubmitList = [
-      {
-        "logo": logo,
-        "banner": Banner,
-        "name": Name,
-        "desc": Inbro,
-        "creater": Creater,
-        "owner": Owner,
-        "website": Website,
-        "twitter": Twitter,
-        "github": Github,
-        "buildnum": Buildnum,
-        "bounty": Bounty,
-        "ispublished": Ispublished,
-        "communitytoken": CommunityToken,
-        "istradable": IsTradable,
-        "support": Support,
-        "alltoken": AllToken,
-        "tokensupply": TokenSupply,
-        "uuid": currentUuid,
-        "timestamp": TimeStamp,
-        "communitychatid": CommunityChatid
-      }
-    ]
-    const jsonString = JSON.stringify(communitySubmitList);
-    let settingCommunity = await message({
+    const { logoBase64Data: logo, banner, name, inbro, creator, owner, website, twitter, github, builderNum, isPublished, isTradable, allToken, communityChatID, time } = setting
+    const communitySubmitList = [{
+      logo,
+      banner,
+      name,
+      desc: inbro,
+      creater: creator,
+      owner,
+      website,
+      twitter,
+      github,
+      buildnum: builderNum,
+      bounty,
+      ispublished: isPublished,
+      communitytoken: communityToken,
+      istradable: isTradable,
+      support,
+      alltoken: allToken,
+      tokensupply: tokenSupply,
+      uuid: currentUuid,
+      timestamp: time,
+      communitychatid: communityChatID
+    }]
+    const jsonString = JSON.stringify(communitySubmitList)
+    await message({
       process: processID,
       tags: [
         { name: 'Action', value: 'communitysetting' },
@@ -175,7 +188,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
-    });
+    })
     isLoading = false
   }
 
@@ -233,11 +246,11 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const updataCommunity = async (uuid, joinStatus) => {
     for (let i = 0; i < communityList.length; i++) {
       if (communityList[i].uuid === uuid) {
-        if (joinStatus == "join") {
-          console.log("join")
+        if (joinStatus == 'join') {
+          console.log('join')
           communityList[i].isJoined = true;
         } else {
-          console.log("exit")
+          console.log('exit')
           communityList[i].isJoined = false;
         }
         break;
@@ -298,7 +311,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     //if (isLoading) return
     //isLoading = true
 
-    const communityInfo = communityList.find(community => community.uuid === uuid);
+    const communityInfo = communityList.find(community => community.uuid === uuid)
     return communityInfo
   }
 
@@ -323,7 +336,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (joinisLoading) return
     joinisLoading = true
     try {
-      console.log("-----------")
+      console.log('-----------')
       const time = Date.now();
       let join = await message({
         process: processID,
@@ -340,7 +353,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       joinisLoading = false
       return join
     } catch (error) {
-      alert("join failer", error)
+      alert('join failer', error)
     } finally {
       joinisLoading = false;
     }
@@ -369,15 +382,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     //isLoading = true
     let personal = [
       {
-        "avatar": avatar,
-        "name": username,
-        "twitter": twitter,
-        "showtwitter": showtwitter,
-        "mail": mail,
-        "showmail": showmail,
-        "phone": phone,
-        "showphone": showphone,
-        "github": github,
+        avatar: avatar,
+        name: username,
+        twitter: twitter,
+        showtwitter: showtwitter,
+        mail: mail,
+        showmail: showmail,
+        phone: phone,
+        showphone: showphone,
+        github: github,
       }
     ]
     const jsonString = JSON.stringify(personal);
@@ -400,15 +413,15 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     //isLoading = true
     let personal = [
       {
-        "avatar": avatar,
-        "name": username,
-        "twitter": twitter,
-        "showtwitter": showtwitter,
-        "mail": mail,
-        "showmail": showmail,
-        "phone": phone,
-        "showphone": showphone,
-        "github": github,
+        avatar: avatar,
+        name: username,
+        twitter: twitter,
+        showtwitter: showtwitter,
+        mail: mail,
+        showmail: showmail,
+        phone: phone,
+        showphone: showphone,
+        github: github,
       }
     ]
     const jsonString = JSON.stringify(personal);

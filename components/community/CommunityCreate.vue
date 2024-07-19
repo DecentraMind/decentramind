@@ -1,21 +1,13 @@
 <script setup lang="ts">
-
-
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
+import { tradePlatforms, tokens } from '~/utils/constants'
 
-
-const options = [
-  { label: 'OKE', value: 'OKE' },
-  { label: 'Binance', value: 'Binance' },
-]
-const supportSelect = ['ArSwap', 'Permaswap', 'Binance', 'Coinbase']
-const supportSelected = $ref([])
-const tokenselect = ['AR', 'TRUNK', 'EXP', 'Orbit', 'Earth', 'Fire', 'Air', 'Lava']
-const tokenselected = $ref([])
+const tradePlatformSelected = $ref([])
+const tokenSelected = $ref([])
 let isCreated = $ref(false)
 
-let state = $ref({
+const state = $ref({
   logobase64Data: undefined,
   banner: 'banner6',
   input: undefined,
@@ -42,12 +34,12 @@ const schema = z.object({
   Alltoken: z.string()
     .min(0, { message: 'Must be more than 0' })
     .refine((value: string) => {
-      const num = parseFloat(value);
-      return !isNaN(num) && num > 0;
+      const num = parseFloat(value)
+      return !isNaN(num) && num > 0
     }, { message: 'Must be a valid number more than 0' })
     .refine((value: string) => {
-      const regex = /^\d+(\.\d{1,3})?$/;
-      return regex.test(value);
+      const regex = /^\d+(\.\d{1,3})?$/
+      return regex.test(value)
     }, { message: 'Must be a valid number with up to 3 decimal places' }),
   Name: z.string().min(2).max(20),
   Inbro: z.string().min(3).max(100),
@@ -87,10 +79,10 @@ const CreateCommunity = async () => {
   isLoading = true
   isCreated = true
   try {
-    state.communityChatid = await makecommunityChat();
+    state.communityChatid = await makecommunityChat()
 
     if (!state.communityChatid) {
-      throw new Error('Failed to create community chat');
+      throw new Error('Failed to create community chat')
     }
 
     let communitySubmit = [
@@ -100,8 +92,8 @@ const CreateCommunity = async () => {
         website: state.Website,
         allreward: state.Allreward,
       }
-    ];
-    const jsonString = JSON.stringify(communitySubmit);
+    ]
+    const jsonString = JSON.stringify(communitySubmit)
 
     createCommunity = await addCommunity(
       state.logobase64Data,
@@ -111,24 +103,24 @@ const CreateCommunity = async () => {
       state.Website,
       state.Twitter,
       state.Github,
-      tokenselected, // 选择的token类型
+      tokenSelected, // 选择的token类型
       state.isPublished, // 是否有发行token
       token.communityToken, // 社区token分配比例额度
       state.isTradable, // 是否可以交易
-      supportSelected, // 交易得平台
+      tradePlatformSelected, // 交易得平台
       state.Alltoken, // 分配得token总量
       token.tokenSupply, // 社区token分配比例详情
       state.communityChatid
-    );
+    )
     createSuccess = true
-    isCreated = true;
+    isCreated = true
   } catch (error) {
-    console.error('Error creating community:', error.message);
+    console.error('Error creating community:', error)
     isCreated = false
     alert('Failed to create community!')
     // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
   } finally {
-    isLoading = false;
+    isLoading = false
     createSuccess = true
   }
   createSuccess = true
@@ -138,23 +130,23 @@ const CreateCommunity = async () => {
 
 
 const handleUp = (event) => {
-  const file = event.target?.files[0];
+  const file = event.target?.files[0]
   if (file) {
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = (e) => {
-      const img = new Image();
+      const img = new Image()
       img.onload = () => {
         if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
-          state.logobase64Data = e.target.result;
+          state.logobase64Data = e.target.result
         } else {
-          alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.');
+          alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
         }
-      };
-      img.src = e.target.result;
+      }
+      img.src = e.target.result
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(file)
   }
-};
+}
 
 const logoupload = () => {
   const input = document.querySelector('#logoupload') as any
@@ -174,7 +166,7 @@ const items = [
   '/task/banner9.jpg',
   '/task/banner10.jpg',
 ]
-const currentIndex = $ref(0); // 用于存储当前选中的索引
+const currentIndex = $ref(0) // 用于存储当前选中的索引
 
 const updateBanner = (index: number) => {
   if (index === 1) {
@@ -188,7 +180,7 @@ const updateBanner = (index: number) => {
   } else if (index === 5) {
     state.banner = 'banner10'
   }
-};
+}
 const test = ()=> {
   //console.log(token.communityToken)
 }
@@ -215,9 +207,9 @@ const addFormGroup = () => {
     token.communityToken.push({
       tokenName: '',
       showTokenName: true
-    });
+    })
   } else {
-    console.warn('Maximum of 2 community tokens allowed');
+    console.warn('Maximum of 2 community tokens allowed')
   }
 }
 
@@ -363,7 +355,7 @@ let settingInfo = $ref(true)
             <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu v-model="tokenselected" class="w-[130px] mr-10" :options="tokenselect" multiple placeholder="Select Token" />
+            <USelectMenu v-model="tokenSelected" class="w-[130px] mr-10" :options="tokens" multiple placeholder="Select Token" />
           </div>
         </UFormGroup>
 
@@ -386,7 +378,7 @@ let settingInfo = $ref(true)
             </template>
             <div class="flex flex-row items-center space-x-3">
               <div class="flex min-w-[477px]">
-                <USelect v-model="formGroup.tokenName" :options="tokenselect" />
+                <USelect v-model="formGroup.tokenName" :options="tokens" />
 
                 <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)"/>
               </div>
@@ -424,7 +416,7 @@ let settingInfo = $ref(true)
             <template #label>
               <div class=" min-w-[270px]">{{ $t('community.token.platforms') }}</div>
             </template>
-            <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select" />
+            <USelectMenu v-model="tradePlatformSelected" :options="tradePlatforms" multiple placeholder="Select" />
           </UFormGroup>
         </div>
 

@@ -34,6 +34,8 @@ export const taskStore = defineStore('taskStore', () => {
     FIRE: 'KmGmJieqSRJpbW6JJUFQrH3sQPEG9F6DQETlXNt4GpM',
     AIR: '2nfFJb8LIA69gwuLNcFQezSuw4CXPE4--U-j-7cxKOU',
     FIREEARTH: 'NkXX3uZ4oGkQ3DPAWtjLb2sTA-yxmZKdlOlEHqMfWLQ',
+    USDA: 'GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU',
+    AO: 'm3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w',
   })
   const denomination  = $ref({
     AO: 1e12,

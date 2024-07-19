@@ -64,12 +64,13 @@ const schema = z.object({
 })
 
 type Schema = z.infer<typeof schema>
-
+  ['AR', 'USDA', 'AO', 'TRUNK', 'EXP', 'Orbit', 'Earth', 'Fire', 'Air', 'Lava']
 const tokenOptions = [
+  { label: 'AR', value: 'AR' },
+  { label: 'USDA', value: 'USDA' },
+  { label: 'AO', value: 'AO' },
   { label: 'FIZI', value: 'FIZI' },
   { label: 'LINUX', value: 'LINUX' },
-  { label: 'AR', value: 'AR' },
-  { label: 'AOCRED', value: 'AOCRED' },
   { label: 'TRUNK', value: 'TRUNK' },
   { label: 'AR.IO EXP', value: 'AR.IO EXP' },
   { label: '0rbit Points', value: '0rbit Points' },
@@ -472,356 +473,364 @@ const dStatus = (status) => {
 </script>
 <template>
   <UDashboardLayout :ui="{wrapper: 'static'}">
-  <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
-    <UDashboardSidebar>
-      <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
-      <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
-      <div class="pt-8">
-        <div class="flex justify-between  my-3 items-center">
-          <div class="text-3xl">{{ communityInfo.name }}</div>
-          <div>
-            <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
-              {{ $t('View Details') }}
+    <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
+      <UDashboardSidebar>
+        <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
+        <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
+        <div class="pt-8">
+          <div class="flex justify-between  my-3 items-center">
+            <div class="text-3xl">{{ communityInfo.name }}</div>
+            <div>
+              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
+                {{ $t('View Details') }}
+              </UButton>
+            </div>
+          </div>
+
+          <UDivider />
+
+          <div class="flex justify-between my-3 mt-5 items-center">
+            <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
+            <div>
+              <div class="flex justify-center border rounded-lg w-full pl-2 pr-2">
+                {{ communityInfo.website }}
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-between my-3 items-center">
+            <div>{{ $t('SocialOfCommunityDetail') }}</div>
+            <div>
+              <ULink
+                :to="formattedTwitterLink(communityInfo.twitter)"
+                active-class="text-primary"
+                target="_blank"
+                inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                <UButton variant="link">
+                  <UIcon name="ri:twitter-fill" class="h-full w-full " />
+                  Twitter
+                </UButton>
+              </ULink>
+            </div>
+          </div>
+          <div class="flex justify-between my-3 mt-10 items-center">
+            <div >{{ $t('TokenOfCommunityDetail') }}</div>
+            <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="flex space-x-3">
+              <div
+                v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
+                :key="index"
+                class="flex justify-center border rounded-lg w-full pl-2 pr-2"
+              >
+                {{ token.tokenName }}
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-between my-3 items-center">
+            <div>{{ $t('Trading Support') }}</div>
+            <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex space-x-3">
+              <div
+                v-for="(token, index) in communityInfo.support.slice(0,2)"
+                :key="index"
+                class="flex justify-center border rounded-lg w-full pl-2 pr-2"
+              >
+                {{ token }}
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-between my-3 items-center">
+            <div>{{ $t('GithubOfCommunityDetail') }}</div>
+            <div>
+              <ULink
+                :to="formattedTwitterLink(communityInfo.github)"
+                active-class="text-primary"
+                target="_blank"
+                inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                <UButton variant="link">
+                  <UIcon name="ri:github-line" class="h-full w-full " />
+                  Github
+                </UButton>
+              </ULink>
+            </div>
+          </div>
+          <div class="flex justify-between my-3 items-center">
+            <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
+            <div>{{ communityInfo.buildnum }}</div>
+          </div>
+          <div v-if="communityInfo.creater !== address" class="flex">
+            <UButton
+              color="white"
+              variant="solid"
+              class="ml-auto mt-10"
+              @click="exitButton = true"
+            >
+              {{ $t('Quit') }}
+              <UIcon name="bi:arrow-left-circle" />
             </UButton>
           </div>
         </div>
-
         <UDivider />
 
-        <div class="flex justify-between my-3 mt-5 items-center">
-          <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
-          <div>
-            <div class="flex justify-center border rounded-lg w-full pl-2 pr-2">
-              {{ communityInfo.website }}
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-between my-3 items-center">
-          <div>{{ $t('SocialOfCommunityDetail') }}</div>
-          <div>
-            <ULink
-              :to="formattedTwitterLink(communityInfo.twitter)"
-              active-class="text-primary"
-              target="_blank"
-              inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            >
-              <UButton variant="link">
-                <UIcon name="ri:twitter-fill" class="h-full w-full " />
-                Twitter
-              </UButton>
-            </ULink>
-          </div>
-        </div>
-        <div class="flex justify-between my-3 mt-10 items-center">
-          <div >{{ $t('TokenOfCommunityDetail') }}</div>
-          <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="flex space-x-3">
-            <div
-              v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
-              :key="index"
-              class="flex justify-center border rounded-lg w-full pl-2 pr-2"
-            >
-              {{ token.tokenName }}
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-between my-3 items-center">
-          <div>{{ $t('Trading Support') }}</div>
-          <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex space-x-3">
-            <div
-              v-for="(token, index) in communityInfo.support.slice(0,2)"
-              :key="index"
-              class="flex justify-center border rounded-lg w-full pl-2 pr-2"
-            >
-              {{ token }}
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-between my-3 items-center">
-          <div>{{ $t('GithubOfCommunityDetail') }}</div>
-          <div>
-            <ULink
-              :to="formattedTwitterLink(communityInfo.github)"
-              active-class="text-primary"
-              target="_blank"
-              inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            >
-              <UButton variant="link">
-                <UIcon name="ri:github-line" class="h-full w-full " />
-                Github
-              </UButton>
-            </ULink>
-          </div>
-        </div>
-        <div class="flex justify-between my-3 items-center">
-          <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-          <div>{{ communityInfo.buildnum }}</div>
-        </div>
-        <div v-if="communityInfo.creater !== address" class="flex">
-          <UButton
-            color="white"
-            variant="solid"
-            class="ml-auto mt-10"
-            @click="exitButton = true"
-          >
-            {{ $t('Quit') }}
-            <UIcon name="bi:arrow-left-circle" />
-          </UButton>
-        </div>
-      </div>
-      <UDivider />
+        <!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
+        <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
-      <!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
-      <!--        @update:links="(colors) => (defaultColors = colors)" />-->
-
-      <div class="flex-1" />
-      <div v-if="communityInfo.creater == address" class="flex">
-        <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="communitySetting = true" />
-      </div>
-      <UPopover mode="hover" :popper="{ placement: 'top' }">
-        <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
-        <Button class="center-text border rounded-lg w-full">Invite people</Button>
-        <template #panel>
-          <div class="p-4 ">
-            <div>Invite URL: </div>
-            <div class="flex items-center">
-              <p ref="textToCopy">
-                decentramind.club/{{ slug }}/invite/{{ communityId }}&{{ address }}
-              </p>
-              <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
+        <div class="flex-1" />
+        <div v-if="communityInfo.creater == address" class="flex">
+          <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="communitySetting = true" />
+        </div>
+        <UPopover mode="hover" :popper="{ placement: 'top' }">
+          <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
+          <Button class="center-text border rounded-lg w-full">Invite people</Button>
+          <template #panel>
+            <div class="p-4 ">
+              <div>Invite URL: </div>
+              <div class="flex items-center">
+                <p ref="textToCopy">
+                  decentramind.club/{{ slug }}/invite/{{ communityId }}&{{ address }}
+                </p>
+                <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
+              </div>
             </div>
-          </div>
+          </template>
+        </UPopover>
+        <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
+          <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
+        </NuxtLink>
+        <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
+          <Button class="center-text border rounded-lg w-full">Chatroom</Button>
+        </NuxtLink>
+        <!--<UDashboardSidebarLinks :links="footerLinks" />-->
+
+        <UDivider class="bottom-0 sticky" />
+        <!--
+        <template #footer>
+          <UserDropdown />
         </template>
-      </UPopover>
-      <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
-        <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
-      </NuxtLink>
-      <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
-        <Button class="center-text border rounded-lg w-full">Chatroom</Button>
-      </NuxtLink>
-      <!--<UDashboardSidebarLinks :links="footerLinks" />-->
+        -->
+      </UDashboardSidebar>
+    </UDashboardPanel>
 
-      <UDivider class="bottom-0 sticky" />
-      <!--
-      <template #footer>
-        <UserDropdown />
-      </template>
-      -->
-    </UDashboardSidebar>
-  </UDashboardPanel>
-
-  <UDashboardPage>
-    <UPage class="overflow-y-auto h-full w-full">
-      <div class=" flex flex-col mx-10 pt-10 items-center h-full">
-        <div class="flex w-full justify-between mb-4">
-          <div>
-            <UTabs :items="items" @change="onChange" />
-          </div>
-          <div class="flex">
+    <UDashboardPage>
+      <UPage class="overflow-y-auto h-full w-full">
+        <div class=" flex flex-col mx-10 pt-10 items-center h-full">
+          <div class="flex w-full justify-between mb-4">
             <div>
-              <!-- <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/> -->
-              <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
-                <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
-              </UDropdown>
+              <UTabs :items="items" @change="onChange" />
             </div>
-          </div>
-        </div>
-        <div class="h-full w-full flex justify-center items-center" v-if="taskListIsEmpty">
-          <div class=" w-1/3" v-if="taskListIsEmpty">
-            <Card highlight orientation="vertical">
-
-              <div class="flex justify-center items-center  " style="text-align: center;white-space: pre-line">
-                <div class="text-2xl ">
-                  {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
-                </div>
+            <div class="flex">
+              <div>
+                <!-- <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/> -->
+                <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
+                  <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+                </UDropdown>
               </div>
-              <div class="flex mt-10 justify-center items-center">
-                <div class="flex justify-center items-center" v-if="communityInfo.creater == address" >
-                  <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
-                    <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
-                  </UDropdown>
+            </div>
+          </div>
+          <div class="h-full w-full flex justify-center items-center" v-if="taskListIsEmpty">
+            <div class=" w-1/3" v-if="taskListIsEmpty">
+              <Card highlight orientation="vertical">
+                <div class="flex justify-center items-center  " style="text-align: center;white-space: pre-line">
+                  <div class="text-2xl ">
+                    {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
+                  </div>
                 </div>
+                <div class="flex mt-10 justify-center items-center">
+                  <div class="flex justify-center items-center" v-if="communityInfo.creater == address" >
+                    <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
+                      <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+                    </UDropdown>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          <div v-if="!taskListIsEmpty" class="mx-auto w-full">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
+              <UBlogPost
+                v-for="blogPost in respArray"
+                :key="blogPost.id"
+                :image="`/task/${blogPost.image}.jpg`"
+                :description="blogPost.description">
+                <template #title>
+                  <div class="flex justify-between">
+                    <div>{{ blogPost.name }}</div>
+                  </div>
+                  <div class="flex">
+                    <div class="mx-2">
+                      <UBadge size="xs" color="black" variant="solid">
+                        {{ finalStatus(blogPost.isBegin)}}
+                      </UBadge>
+                    </div>
+                    <div v-if="blogPost.status === 'Y'">
+                      <UBadge color="black" variant="solid">
+                        {{ dStatus(blogPost.status) }}
+                      </UBadge>
+                    </div>
+                    <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-2">
+                      <UBadge size="xs" color="black" variant="solid">
+                        {{ $t('Unsettled') }}
+                      </UBadge>
+                    </div>
+                  </div>
+                </template>
+
+                <template #description>
+                  <div class="flex flex-col space-y-2">
+                    <div>
+                      {{ blogPost.description }}
+                    </div>
+                    <div class="flex justify-between ...">
+                      <div>
+                        <div>
+                          {{ $t("Bounty") }}:
+                        </div>
+                      </div>
+                      <div>
+                        <div>
+                          {{ blogPost.reward }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex justify-between ...">
+                      <div>
+                        <div>
+                          {{ $t("builders now") }}:
+                        </div>
+                      </div>
+                      <div>
+                        <div>
+                          {{ blogPost.joined }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <UButton :to="`/${slug}/questdetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
+                  {{ $t("View Details") }}
+                </UButton>
+              </UBlogPost>
+            </div>
+          </div>
+        </div>
+      </UPage>
+      <UModal v-model="isOpen">
+        <UCard>
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                {{ $t("Start a Public Quest") }}
+              </h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
+            </div>
+          </template>
+          <UForm ref="form" :schema="schema" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
+            <UFormGroup name="taskLogo" :label="$t('Banner')">
+              <template #label>
+                <div class="w-[300px]">
+                  {{ $t('Banner') }}
+                </div>
+              </template>
+              <UCarousel
+                v-model="currentIndex"
+                :items="banners"
+                :ui="{
+                  item: 'basis-full',
+                  container: 'rounded-lg',
+                  indicators: {
+                    wrapper: 'relative bottom-0 mt-4'
+                  }
+                }"
+                indicators
+                class="w-64 mx-auto"
+              >
+                <template #default="{ item }">
+                  <img :src="item" class="w-full" draggable="false">
+                </template>
+
+                <template #indicator="{ onClick, page, active }">
+                  <UButton
+                    :label="String(page)"
+                    :variant="active ? 'solid' : 'outline'"
+                    size="2xs"
+                    class="rounded-full min-w-6 justify-center"
+                    @click="() => {
+                      currentIndex = page; // 更新当前索引
+                      updateBanner(page)
+                      onClick(page); // 触发页面点击事件
+                    }"
+                  />
+                </template>
+              </UCarousel>
+            </UFormGroup>
+
+            <UFormGroup name="taskName" :label="$t('Name of Quest')">
+              <UInput v-model="state.taskName" placeholder="name" />
+            </UFormGroup>
+
+            <UFormGroup name="taskInfo" :label="$t('Task Introduction')">
+              <UTextarea v-model="state.taskInfo" />
+            </UFormGroup>
+
+            <UFormGroup name="taskRule" :label="$t('Rules of the Quest')">
+              <UTextarea v-model="state.taskRule" disabled :placeholder="$t('taskRule')" />
+            </UFormGroup>
+
+            <UFormGroup name="textarea" :label="$t('Bounty')">
+              <div class="flex justify-between items-center">
+                <UInput v-model="state.tokenNumber" placeholder="Amount" />
+
+                <UInputMenu v-model="state.tokenType" placeholder="Token" :options="tokenOptions" />
+
+                <UInputMenu v-model="state.tokenChain" placeholder="Chain" :options="chainOptions" />
               </div>
+              <div class="flex justify-between items-center">
+                <UInput v-model="state.tokenNumber1" placeholder="Amount" />
 
-            </Card>
+                <UInputMenu v-model="state.tokenType1" placeholder="Token" :options="tokenOptions" />
+
+                <UInputMenu v-model="state.tokenChain1" placeholder="Chain" :options="chainOptions" />
+              </div>
+            </UFormGroup>
+            <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
+              <UInput v-model="state.rewardTotal" :placeholder="$t('Total Chances')" />
+            </UFormGroup>
+            <UFormGroup name="textarea" :label="$t('Time')">
+              <div class="flex justify-between items-center">
+                <USelect v-model="state.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
+                <a-range-picker v-model:value="value2" show-time @change="handleDateChange" />
+              </div>
+            </UFormGroup>
+            <UButton color="white" type="submit" :disabled="postQuestLoading">
+              {{ $t('Post the Quest') }}
+            </UButton>
+          </UForm>
+        </UCard>
+      </UModal>
+      <UModal v-model="communitySetting" :ui="{ width: w-full }">
+        <UCard>
+          <CommunitySetting />
+        </UCard>
+      </UModal>
+      <UModal v-model="exitButton" :ui="{ width: w-full }">
+        <UCard class="min-w-[300px] flex justify-center">
+          <div class="w-full flex justify-center text-2xl">
+            Sure to exit
           </div>
-        </div>
-        <div class="mx-auto w-full" v-if="!taskListIsEmpty">
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
-            <UBlogPost v-for="blogPost in respArray" :key="blogPost.id" :image="`/task/${blogPost.image}.jpg`"
-                       :description="blogPost.description">
-              <template #title>
-                <div class="flex justify-between">
-                  <div>{{ blogPost.name }}</div>
-                </div>
-                <div class="flex">
-                  <div class="mx-2">
-                    <UBadge size="xs" color="black" variant="solid">
-                      {{ finalStatus(blogPost.isBegin)}}
-                    </UBadge>
-                  </div>
-                  <div v-if="blogPost.status === 'Y'">
-                    <UBadge color="black" variant="solid">
-                      {{ dStatus(blogPost.status) }}
-                    </UBadge>
-                  </div>
-                  <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-2">
-                    <UBadge size="xs" color="black" variant="solid">
-                      {{ $t('Unsettled') }}
-                    </UBadge>
-                  </div>
-
-                </div>
-              </template>
-              <template #description>
-
-                <div class="flex flex-col space-y-2">
-                  <div >
-                    {{ blogPost.description }}
-                  </div>
-                  <div class="flex justify-between ...">
-                    <div>
-                      <div >
-                        {{ $t("Bounty") }}:
-                      </div>
-                    </div>
-                    <div>
-                      <div >
-                        {{ blogPost.reward }}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex justify-between ...">
-                    <div>
-                      <div >
-                        {{ $t("builders now") }}:
-                      </div>
-                    </div>
-                    <div>
-                      <div >
-                        {{ blogPost.joined }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </template>
-              <UButton :to="`/${slug}/questdetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
-                {{ $t("View Details") }}
-              </UButton>
-            </UBlogPost>
+          <div v-if="!Leaveout" class="w-full flex space-x-10 mt-6">
+            <UButton @click="exitButton = false">
+              No
+            </UButton>
+            <UButton @click="quitCommunity(communityId)">
+              Yes
+            </UButton>
           </div>
-        </div>
-      </div>
-    </UPage>
-    <UModal v-model="isOpen">
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              {{ $t("Start a Public Quest") }}
-            </h3>
-            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
+          <div v-else class="h-[80px] flex flex-col items-center justify-center">
+            <div>Leave...</div>
+            <UIcon name="svg-spinners:12-dots-scale-rotate" />
           </div>
-        </template>
-        <UForm ref="form" :schema="schema" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
-          <UFormGroup name="taskLogo" :label="$t('Banner')">
-            <template #label>
-              <div class="w-[300px]">{{ $t('Banner') }}</div>
-            </template>
-            <UCarousel
-              v-model="currentIndex"
-              :items="banners"
-              :ui="{
-                item: 'basis-full',
-                container: 'rounded-lg',
-                indicators: {
-                  wrapper: 'relative bottom-0 mt-4'
-                }
-              }"
-              indicators
-              class="w-64 mx-auto"
-            >
-              <template #default="{ item }">
-                <img :src="item" class="w-full" draggable="false">
-              </template>
-
-              <template #indicator="{ onClick, page, active }">
-                <UButton
-                  :label="String(page)"
-                  :variant="active ? 'solid' : 'outline'"
-                  size="2xs"
-                  class="rounded-full min-w-6 justify-center"
-                  @click="() => {
-                    currentIndex = page; // 更新当前索引
-                    updateBanner(page)
-                    onClick(page); // 触发页面点击事件
-                  }"
-                />
-              </template>
-            </UCarousel>
-          </UFormGroup>
-
-          <UFormGroup name="taskName" :label="$t('Name of Quest')">
-            <UInput v-model="state.taskName" placeholder="name" />
-          </UFormGroup>
-
-          <UFormGroup name="taskInfo" :label="$t('Task Introduction')">
-            <UTextarea v-model="state.taskInfo" />
-          </UFormGroup>
-
-          <UFormGroup name="taskRule" :label="$t('Rules of the Quest')">
-            <UTextarea disabled v-model="state.taskRule" :placeholder="$t('taskRule')" />
-          </UFormGroup>
-
-          <UFormGroup name="textarea" :label="$t('Bounty')">
-            <div class="flex justify-between items-center">
-              <UInput v-model="state.tokenNumber" placeholder="Amount" />
-
-              <UInputMenu v-model="state.tokenType" placeholder="Token" :options="tokenOptions" />
-
-              <UInputMenu v-model="state.tokenChain" placeholder="Chain" :options="chainOptions" />
-            </div>
-            <div class="flex justify-between items-center">
-              <UInput v-model="state.tokenNumber1" placeholder="Amount" />
-
-              <UInputMenu v-model="state.tokenType1" placeholder="Token" :options="tokenOptions" />
-
-              <UInputMenu v-model="state.tokenChain1" placeholder="Chain" :options="chainOptions" />
-            </div>
-          </UFormGroup>
-          <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
-            <UInput v-model="state.rewardTotal" :placeholder="$t('Total Chances')" />
-          </UFormGroup>
-          <UFormGroup name="textarea" :label="$t('Time')">
-            <div class="flex justify-between items-center">
-              <USelect v-model="state.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
-              <a-range-picker v-model:value="value2" show-time @change="handleDateChange" />
-            </div>
-          </UFormGroup>
-          <UButton color="white" type="submit" :disabled="postQuestLoading">
-            {{ $t('Post the Quest') }}
-          </UButton>
-        </UForm>
-      </UCard>
-    </UModal>
-    <UModal v-model="communitySetting" :ui="{ width: w-full }">
-      <UCard>
-        <CommunitySetting />
-      </UCard>
-    </UModal>
-    <UModal v-model="exitButton" :ui="{ width: w-full }">
-      <UCard class="min-w-[300px] flex justify-center">
-        <div class="w-full flex justify-center text-2xl">
-          Sure to exit
-        </div>
-        <div v-if="!Leaveout" class="w-full flex space-x-10 mt-6">
-          <UButton @click="exitButton = false">No</UButton>
-          <UButton @click="quitCommunity(communityId)">Yes</UButton>
-        </div>
-        <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <div>Leave...</div>
-          <UIcon name="svg-spinners:12-dots-scale-rotate" />
-        </div>
-      </UCard>
-    </UModal>
-  </UDashboardPage>
+        </UCard>
+      </UModal>
+    </UDashboardPage>
+  </UDashboardLayout>
 </template>
