@@ -13,6 +13,7 @@ export function createUuid() {
  * @returns {string}
  */
 export function formatToLocale(isoString: string, locale: string = 'en-US') {
+  if(!isoString) return ''
   const date = new Date(isoString)
 
   const options: Intl.DateTimeFormatOptions = {
@@ -25,5 +26,6 @@ export function formatToLocale(isoString: string, locale: string = 'en-US') {
     // timeZoneName: 'short'
   }
 
-  return new Intl.DateTimeFormat(locale, options).format(date)
+  console.log({isoString})
+  return new Intl.DateTimeFormat(locale, options).format(date).replace(/\sat\s/, ' ')
 }

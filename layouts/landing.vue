@@ -87,8 +87,8 @@ let loginLoading = $ref(false)
                 size="2xs"
               />
             </template>
-            Arweave
-          </UButton> 
+            ArConnect
+          </UButton>
           <UButton color="white" disabled class="w-[120px]" @click="othent">
             <template #leading>
               <UIcon
