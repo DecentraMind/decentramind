@@ -11,7 +11,6 @@ let supportSelected: TradePlatform[] = $ref([])
 let tokenSelected = $ref<TokenName[]>([])
 let isCreated = $ref(false)
 
-
 const state = $ref<CommunitySetting>({
   owner: undefined,
   creator: undefined,
@@ -37,6 +36,8 @@ const state = $ref<CommunitySetting>({
   communityChatID: undefined,
   time: undefined,
 })
+
+let communityID = $ref('')
 
 const schema = z.object({
   name: z.string().min(2).max(20),
@@ -228,6 +229,8 @@ const setCommunityState = async() => {
   if(!communityInfo) return
 
   console.log({communityInfo})
+
+  communityID = communityInfo.uuid
 
   //state.banner = a.banner;
   state.creator = communityInfo.creater
@@ -477,25 +480,7 @@ onMounted(async () => {
           </UButton>
         </div>
       </UForm>
-      <!--
-      <UModal v-model="isCreated" prevent-close>
-        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                Modal
-              </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />
-            </div>
-          </template>
-          <UContainer class="w-full flex justify-around">
-            <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
-            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
-            </UButton>
-          </UContainer>
-        </UCard>
-      </UModal>
-      -->
+
       <UModal v-model="isCreated" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
@@ -509,10 +494,7 @@ onMounted(async () => {
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/${slug}/create-community`" @click="isCreated = false">
-              {{ $t('community.continue') }}
-            </UButton>
-            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">
+            <UButton :to="`/${slug}/community/${communityID}`" @click="communityCreate = false; isCreated = false">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>
