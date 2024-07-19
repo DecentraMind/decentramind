@@ -10,6 +10,7 @@ import {
 } from '@permaweb/aoconnect'
 import type { CommunitySetting, TradePlatform } from '~/types'
 import type { TokenName, CommunityToken, TokenSupply } from '~/utils/constants'
+import { createUuid } from '~/utils/util'
 
 
 type CommunityList = {
@@ -110,7 +111,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
     const time = Date.now();
-    const uuid = createuuid()
+    const uuid = createUuid()
 
     let communitySubmitList = [
       {

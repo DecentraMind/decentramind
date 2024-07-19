@@ -1,10 +1,9 @@
 <script setup lang="ts">
-
-import CommonAlert from '~/components/CommonAlert.vue'
-import {taskStore} from '../../../stores/taskStore'
-import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
-import {shortAddress} from "../../../utils/web3";
+import {taskStore} from '~/stores/taskStore'
+import {shortAddress} from '~/utils/web3'
 import {ssimStore} from '~/stores/ssimStore'
+import { formatToLocale } from '~/utils/util'
+
 const { t } = useI18n()
 const {  denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo, getInfo, getLocalcommunityInfo } = $(aocommunityStore())
@@ -530,7 +529,7 @@ const trueRows = computed(() => {
                 </div>
                 <div>
                   <div>
-                    {{ blogPost.startTime }} - {{ blogPost.endTime }}
+                    {{ formatToLocale(blogPost.startTime) }} - {{ formatToLocale(blogPost.endTime) }}
                   </div>
                 </div>
               </div>
