@@ -312,6 +312,9 @@ const updateBanner = (index: number) => {
   }
 }
 
+const alertNotReady = () => {
+  alert('Being Cooked')
+}
 const taskTypes = [
   [{
     label: 'Twitter Space Quest',
@@ -320,29 +323,19 @@ const taskTypes = [
     }
   }], [{
     label: 'Promotion Quest',
-    click: () => {
-      alert('This quest template is being prepared')
-    }
+    click: alertNotReady
   }], [{
     label: 'Invitation Quest',
-    click: () => {
-      alert('This quest template is being prepared')
-    }
+    click: alertNotReady
   }], [{
     label: 'Try Our Product Quest',
-    click: () => {
-      alert('This quest template is being prepared')
-    }
+    click: alertNotReady
   }], [{
     label: 'Thread Quest',
-    click: () => {
-      alert('This quest template is being prepared')
-    }
+    click: alertNotReady
   }], [{
     label: 'Twitter Article Quest',
-    click: () => {
-      alert('This quest template is being prepared')
-    }
+    click: alertNotReady
   }]
 ]
 
@@ -636,10 +629,10 @@ const dStatus = (status) => {
 
                 <template #description>
                   <div class="flex flex-col space-y-2">
-                    <div>
+                    <div class="h-6 overflow-hidden">
                       {{ blogPost.description }}
                     </div>
-                    <div class="flex justify-between ...">
+                    <div class="flex justify-between">
                       <div>
                         <div>
                           {{ $t("Bounty") }}:
@@ -651,7 +644,7 @@ const dStatus = (status) => {
                         </div>
                       </div>
                     </div>
-                    <div class="flex justify-between ...">
+                    <div class="flex justify-between">
                       <div>
                         <div>
                           {{ $t("builders now") }}:

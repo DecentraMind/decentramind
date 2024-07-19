@@ -506,7 +506,7 @@ const trueRows = computed(() => {
           </template>
           <template #description>
             <div class="flex flex-col space-y-2">
-              <div>
+              <div class="h-6 overflow-hidden">
                 {{ blogPost.description }}
               </div>
               <div class="flex ...">
