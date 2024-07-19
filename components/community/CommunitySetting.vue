@@ -276,7 +276,16 @@ onMounted(async () => {
               {{ $t('community.logo') }}
             </div>
           </template>
+          <img
+            v-if="state.logoBase64Data"
+            :src="state.logoBase64Data"
+            width="75"
+            height="75"
+            alt="logo"
+            @click="uploadLogo"
+          >
           <UButton
+            v-if="!state.logoBase64Data"
             label="LOGO"
             size="xl"
             square
