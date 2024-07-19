@@ -189,23 +189,22 @@ const test = ()=> {
 
         <UDivider />
         <div class="overflow-y-auto h-full" style="-ms-overflow-style: none; scrollbar-width: none;">
-          <div>
-            <NuxtLink
-              v-for="item in joincommunityList"
-              :key="item.uuid"
-              :to="`/${slug}/community/${item.uuid}`"
-              class="block p-2"
-            >
-              <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
-              <div class="aspect-w-1 aspect-h-1">
-                <img
-                  :src="item.logo"
-                  :title="item.name"
-                  class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
-                >
-              </div>
-            </NuxtLink>
-          </div>
+          <NuxtLink
+            v-for="item in joincommunityList"
+            :key="item.uuid"
+            :to="`/${slug}/community/${item.uuid}`"
+            class="w-full block mt-2"
+          >
+            <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
+            <div class="aspect-w-1 aspect-h-1">
+              <img
+                :src="item.logo"
+                :title="item.name"
+                class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
+              >
+            </div>
+          </NuxtLink>
+          
           <UButton class="w-full " variant="soft" @click="communityCreate = true">
             <UIcon name="ion:add" class="h-full w-full " />
           </UButton>
@@ -227,30 +226,9 @@ const test = ()=> {
                 <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
               </template>
               <template v-else>
-                <UAvatar alt="Avatar" size="2xl" />
+                <UAvatar alt=" " size="2xl" />
               </template>
             </NuxtLink>
-            <template #panel>
-              <div class="h-[350px] w-[300px] pt-10 pl-10 pr-10">
-                <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
-                  <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
-                </template>
-                <template v-else>
-                  <UAvatar src="/community/chatavatar.jpg" alt="Avatar" size="2xl" />
-                </template>
-                <div>
-                  <div v-if="userInfo.length && userInfo[0]" class="text-2xl">{{ userInfo[0].name }}</div>
-                </div>
-                <UDivider />
-                <!--
-                <div class="mt-3">
-                  <UIcon name="ei:sc-twitter" />
-                  <UIcon name="quill:mail" />
-                  <UIcon name="ei:sc-telegram" />
-                </div>
-                -->
-              </div>
-            </template>
           </UPopover>
         </template>
       </UDashboardSidebar>

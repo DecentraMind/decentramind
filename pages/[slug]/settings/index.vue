@@ -125,7 +125,7 @@ const handleUp = (event) => {
         <div @click="logoupload">
           <UAvatar
             v-if="accountForm.avatar === 'N/A'"
-            alt="Avatar"
+            alt=""
             class="ml-5"
             size="3xl"
           />

@@ -31,11 +31,25 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   const Sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
-  //设置当前选中社区的uuid
+  //Set the uuid of the currently selected community
   const setCurrentuuid = (uuid: any) => {
     currentUuid = uuid
   }
 
+  //
+  const vouch = async () => {
+    let result = await message({
+      process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
+      tags: [
+        { name: 'Data-Protocol', value: 'Vouch' },
+        { name: 'Vouch-For', value: address },
+        { name: 'Variant', value: '0.2' },
+        { name: 'Method', value: 'Twiter' }
+      ],
+      signer: createDataItemSigner(window.arweaveWallet),
+    });
+    console.log(result)
+  }
   //User registration method
   const registInfo = async () => {
     if (isLoading) return
@@ -476,6 +490,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     joincommunityList,
     communityCreate,
     currentUuid,
+    vouch,
     setCurrentuuid,
     makecommunityChat,
     registInfo,

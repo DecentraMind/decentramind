@@ -198,7 +198,7 @@ const test = async() => {
 
 <template>
   <div class="flex w-full">
-    <UDashboardPanel :width="420" collapsible>
+    <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
       <UDashboardSidebar>
         <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
@@ -342,12 +342,12 @@ const test = async() => {
           <ULandingCard class="">
             <div v-for="(user, index) in communityUser" :key="index" class="flex items-center">
               <div class="mr-3">
-                <UAvatar v-if="user[0].avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
-                <UAvatar v-else size="xl" :src="user[0].avatar"/>
+                <UAvatar v-if="user.avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
+                <UAvatar v-else size="xl" :src="user.avatar"/>
               </div>
               <div>
-                <div v-if="user[0].name == 'N/A'" class="flex text-center item-center text-3xl">User</div>
-                <div v-else class="flex text-center item-center text-3xl">{{ user[0].name }}</div>
+                <div v-if="user.name == 'N/A'" class="flex text-center item-center text-3xl">User</div>
+                <div v-else class="flex text-center item-center text-3xl">{{ user.name }}</div>
               </div>
             </div>
             <!--<UButton @click="test">test</UButton>-->
