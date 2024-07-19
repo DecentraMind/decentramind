@@ -3,11 +3,12 @@
 
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
-import type { CommunitySetting, CommunityToken, Token, TokenSupply, TradePlatform } from '~/types'
-import { tradePlatforms, tokens } from '~/utils/constants'
+import type { CommunitySetting, TradePlatform } from '~/types'
+import { tradePlatforms, tokenNames, type TokenName, type CommunityToken, type TokenSupply } from '~/utils/constants'
+import defaultCommunityLogo from '~/utils/defaultCommunityLogo'
 
 let supportSelected: TradePlatform[] = $ref([])
-let tokenSelected = $ref<Token[]>([])
+let tokenSelected = $ref<TokenName[]>([])
 let isCreated = $ref(false)
 
 
@@ -171,13 +172,13 @@ const token = $ref<{
 }>({
   communityToken: [
     {
-      tokenName: '',
+      tokenName: '' as TokenName,
       showTokenName: true
     }
   ],
   tokenSupply: [
     {
-      name: '',
+      name: '' as TokenName,
       supply: '',
     }
   ]
@@ -186,7 +187,7 @@ const token = $ref<{
 // 添加表单组函数
 const addFormGroup = () => {
   token.communityToken.push({
-    tokenName: '',
+    tokenName: '' as TokenName,
     showTokenName: true
   })
 }
@@ -380,7 +381,7 @@ onMounted(async () => {
             </div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu v-model="tokenSelected" class="w-[130px] mr-10" :options="tokens" multiple placeholder="Select Token" />
+            <USelectMenu v-model="tokenSelected" class="w-[130px] mr-10" :options="tokenNames" multiple placeholder="Select Token" />
           </div>
         </UFormGroup>
 
@@ -409,7 +410,7 @@ onMounted(async () => {
             </template>
             <div class="flex flex-row items-center space-x-3">
               <div class="flex min-w-[477px]">
-                <USelect v-model="formGroup.tokenName" :options="tokens" />
+                <USelect v-model="formGroup.tokenName" :options="tokenNames" />
                 <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)" />
               </div>
             </div>

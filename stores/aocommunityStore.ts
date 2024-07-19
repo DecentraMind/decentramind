@@ -8,7 +8,8 @@ import {
   unmonitor,
   dryrun
 } from '@permaweb/aoconnect'
-import type { CommunitySetting, CommunityToken, Token, TokenSupply, TradePlatform } from '~/types'
+import type { CommunitySetting, TradePlatform } from '~/types'
+import type { TokenName, CommunityToken, TokenSupply } from '~/utils/constants'
 
 
 type CommunityList = {
@@ -22,7 +23,7 @@ type CommunityList = {
   whitebook: string
   github: string
   buildnum: string
-  bounty: Token[]
+  bounty: TokenName[]
   ispublished: boolean
   communitytoken: CommunityToken[]
   istradable: boolean

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
-import { tradePlatforms, tokens } from '~/utils/constants'
+import { tradePlatforms, tokenNames } from '~/utils/constants'
 
 const tradePlatformSelected = $ref([])
 const tokenSelected = $ref([])
@@ -355,7 +355,7 @@ let settingInfo = $ref(true)
             <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu v-model="tokenSelected" class="w-[130px] mr-10" :options="tokens" multiple placeholder="Select Token" />
+            <USelectMenu v-model="tokenSelected" class="w-[130px] mr-10" :options="tokenNames" multiple placeholder="Select Token" />
           </div>
         </UFormGroup>
 
@@ -378,7 +378,7 @@ let settingInfo = $ref(true)
             </template>
             <div class="flex flex-row items-center space-x-3">
               <div class="flex min-w-[477px]">
-                <USelect v-model="formGroup.tokenName" :options="tokens" />
+                <USelect v-model="formGroup.tokenName" :options="tokenNames" />
 
                 <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)"/>
               </div>

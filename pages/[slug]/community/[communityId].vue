@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { sub, format, isSameDay, type Duration } from 'date-fns'
 import type { FormSubmitEvent } from '#ui/types'
-import {taskStore} from '../../../stores/taskStore';
-import {aocommunityStore} from '../../../stores/aocommunityStore';
+import {taskStore} from '../../../stores/taskStore'
+import {aocommunityStore} from '~/stores/aocommunityStore'
 
 import { z } from 'zod'
 import {ssimStore} from '~/stores/ssimStore'
-import { ref } from 'vue';
-import type { Dayjs } from 'dayjs';
+import { ref } from 'vue'
+import type { Dayjs } from 'dayjs'
+import { tokenOptions, timeZoneOptions } from '~/utils/constants'
+
 const { t } = useI18n()
 const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo } = $(taskStore())
-const { getLocalcommunityInfo, setCurrentuuid } = $(aocommunityStore())
+const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, getCommunitylist  } = $(aocommunityStore())
 const { compareImages } = $(ssimStore())
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
@@ -18,7 +19,7 @@ const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 
 
-let communitySetting = $ref(false)
+const communitySetting = $ref(false)
 let postQuestLoading = $ref(false)
 const items = [
   {
@@ -64,52 +65,11 @@ const schema = z.object({
 })
 
 type Schema = z.infer<typeof schema>
-  ['AR', 'USDA', 'AO', 'TRUNK', 'EXP', 'Orbit', 'Earth', 'Fire', 'Air', 'Lava']
-const tokenOptions = [
-  { label: 'AR', value: 'AR' },
-  { label: 'USDA', value: 'USDA' },
-  { label: 'AO', value: 'AO' },
-  { label: 'FIZI', value: 'FIZI' },
-  { label: 'LINUX', value: 'LINUX' },
-  { label: 'TRUNK', value: 'TRUNK' },
-  { label: 'AR.IO EXP', value: 'AR.IO EXP' },
-  { label: '0rbit Points', value: '0rbit Points' },
-  { label: 'Earth', value: 'Earth' },
-  { label: 'Fire', value: 'Fire' },
-  { label: 'Air', value: 'Air' },
-  { label: 'Lava', value: 'Lava' }
-]
+
 const chainOptions = [
   { label: 'AO', value: 'AO' }
 ]
-const timeZoneOptions = [
-  { label: 'GMT-11:00', value: 'GMT-11:00' },
-  { label: 'GMT-10:00', value: 'GMT-10:00' },
-  { label: 'GMT-9:00', value: 'GMT-9:00' },
-  { label: 'GMT-8:00', value: 'GMT-8:00' },
-  { label: 'GMT-7:00', value: 'GMT-7:00' },
-  { label: 'GMT-6:00', value: 'GMT-6:00' },
-  { label: 'GMT-5:00', value: 'GMT-5:00' },
-  { label: 'GMT-4:00', value: 'GMT-4:00' },
-  { label: 'GMT-3:00', value: 'GMT-3:00' },
-  { label: 'GMT-2:00', value: 'GMT-2:00' },
-  { label: 'GMT-1:00', value: 'GMT-1:00' },
-  { label: 'GMT+0:00', value: 'GMT+0:00' },
-  { label: 'GMT+1:00', value: 'GMT+1:00' },
-  { label: 'GMT+2:00', value: 'GMT+2:00' },
-  { label: 'GMT+3:00', value: 'GMT+3:00' },
-  { label: 'GMT+4:00', value: 'GMT+4:00' },
-  { label: 'GMT+5:00', value: 'GMT+5:00' },
-  { label: 'GMT+6:00', value: 'GMT+6:00' },
-  { label: 'GMT+7:00', value: 'GMT+7:00' },
-  { label: 'GMT+8:00', value: 'GMT+8:00' },
-  { label: 'GMT+9:00', value: 'GMT+9:00' },
-  { label: 'GMT+10:00', value: 'GMT+10:00' },
-  { label: 'GMT+11:00', value: 'GMT+11:00' },
-  { label: 'GMT+12:00', value: 'GMT+12:00' },
-  { label: 'GMT+13:00', value: 'GMT+13:00' },
-  { label: 'GMT+14:00', value: 'GMT+14:00' },
-]
+
 // const selected = ref({ start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) })
 // function isRangeSelected(duration: Duration) {
 //   return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
@@ -387,7 +347,6 @@ const taskTypes = [
 ]
 
 let exitButton = $ref(false)
-const { exitCommunity, updataCommunity, getCommunitylist } = $(aocommunityStore())
 const router = useRouter();
 
 
@@ -472,7 +431,7 @@ const dStatus = (status) => {
 }
 </script>
 <template>
-  <UDashboardLayout :ui="{wrapper: 'static'}">
+  <UDashboardLayout :ui="{wrapper: 'w-full static'}">
     <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
       <UDashboardSidebar>
         <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
@@ -627,10 +586,10 @@ const dStatus = (status) => {
             </div>
           </div>
           <div class="h-full w-full flex justify-center items-center" v-if="taskListIsEmpty">
-            <div class=" w-1/3" v-if="taskListIsEmpty">
+            <div class="w-2/3" v-if="taskListIsEmpty">
               <Card highlight orientation="vertical">
-                <div class="flex justify-center items-center  " style="text-align: center;white-space: pre-line">
-                  <div class="text-2xl ">
+                <div class="flex justify-center items-center text-center whitespace-pre-line">
+                  <div class="text-xl">
                     {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
                   </div>
                 </div>

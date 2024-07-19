@@ -90,16 +90,12 @@ export type CommunitySetting = {
   time: string | undefined;
 }
 
-export type Token = 'AR' | 'USDA' | 'AO' | 'TRUNK' | 'EXP' | 'Orbit' | 'Earth' | 'Fire' | 'Air' | 'Lava'
-
-export type CommunityToken = {
-  tokenName: Token;
-  showTokenName: boolean;
-}
-
-export type TokenSupply = {
-  name: string;
-  supply: string;
+export type Tokens = {
+  [key: string]: {
+    ticker: string;
+    label: string;
+    processID: string;
+  }
 }
 
 export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
