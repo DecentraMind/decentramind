@@ -1,6 +1,4 @@
 <script setup lang="ts">
-
-
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 import type { CommunitySetting, TradePlatform } from '~/types'
@@ -224,11 +222,11 @@ const removeSupplyGroup = (index: number) => {
   token.tokenSupply.splice(index, 1)
 }
 
-const setCommunityState = async() => {
+const setCommunityState = async () => {
   const communityInfo = await getLocalcommunityInfo(currentUuid)
-  if(!communityInfo) return
+  if (!communityInfo) return
 
-  console.log({communityInfo})
+  console.log({ communityInfo })
 
   communityID = communityInfo.uuid
 

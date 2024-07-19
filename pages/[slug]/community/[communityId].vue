@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
-import {taskStore} from '../../../stores/taskStore'
-import {aocommunityStore} from '~/stores/aocommunityStore'
+import { taskStore } from '../../../stores/taskStore'
+import { aocommunityStore } from '~/stores/aocommunityStore'
 
 import { z } from 'zod'
-import {ssimStore} from '~/stores/ssimStore'
 import { ref } from 'vue'
 import type { Dayjs } from 'dayjs'
 import { tokenOptions, timeZoneOptions } from '~/utils/constants'
 
 const { t } = useI18n()
 const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo } = $(taskStore())
-const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, getCommunitylist  } = $(aocommunityStore())
-const { compareImages } = $(ssimStore())
+const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, communityList, getCommunitylist } = $(aocommunityStore())
+
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
@@ -32,14 +31,12 @@ const items = [
   },
 ]
 let isOpen = $ref(false)
-function openModal() {
-  isOpen = true
-}
-function onChange(index) {
+
+function onChange(index: number) {
   const item = items[index]
   // console.log(item)
-  if(item.label === 'Private Quests'){
-    alert(`${item.label} was clicked!This quest template is being prepared!`)
+  if (item.label === 'Private Quests') {
+    alert('Being Cooked!')
   }
 }
 
@@ -49,12 +46,12 @@ const schema = z.object({
   rewardTotal: z.string()
     .min(1, { message: 'Must be more than 0' }) // This ensures the string is not empty
     .refine((value: string) => {
-      const num = parseInt(value, 10);
-      return !isNaN(num) && num > 0;
+      const num = parseInt(value, 10)
+      return !isNaN(num) && num > 0
     }, { message: 'Must be a valid number more than 0' })
     .refine((value: string) => {
-      const regex = /^\d+$/;
-      return regex.test(value);
+      const regex = /^\d+$/
+      return regex.test(value)
     }, { message: 'Must be a valid integer' })
   /*
   Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
@@ -70,22 +67,10 @@ const chainOptions = [
   { label: 'AO', value: 'AO' }
 ]
 
-// const selected = ref({ start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) })
-// function isRangeSelected(duration: Duration) {
-//   return isSameDay(selected.value.start, sub(new Date(), duration)) && isSameDay(selected.value.end, new Date())
-// }
-// function selectRange(duration: Duration) {
-//   selected.value = { start: sub(setTimeToTenAM(new Date()), { days: 14 }), end: setTimeToTenAM(new Date()) }
-// }
-// function setTimeToTenAM(date: Date): Date {
-//   const newDate = new Date(date);
-//   newDate.setHours(10, 0, 0, 0); // 设置小时为10，分钟为0，秒为0，毫秒为0
-//   return newDate;
-// }
 type RangeValue = [Dayjs, Dayjs];
 let selectStartTime = $ref()
 let selectEndTime = $ref()
-const value2 = ref<RangeValue>();
+const value2 = ref<RangeValue>()
 function handleDateChange(value) {
   selectStartTime = value[0]
   selectEndTime = value[1]
@@ -96,7 +81,7 @@ function handleDateChange(value) {
   //     isBegin = 'N'
   // }
   // value 是选择的日期 moment 对象
-  console.log('Selected Date:', value);
+  console.log('Selected Date:', value)
 }
 const state = $ref({
   taskLogo: 'banner1',
@@ -148,7 +133,7 @@ function uuid() {
 }
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   postQuestLoading = true
-  if(!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime){
+  if (!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime) {
     postQuestLoading = false
     // isOpen = false
     alert('Please complete the quest information.')
@@ -173,17 +158,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
-  if(selectEndTime <= currentDate){
+  if (selectEndTime <= currentDate) {
     postQuestLoading = false
     alert('Quest end time cannot be earlier than current time.')
     return
   }
-  if(selectStartTime <= currentDate){
+  if (selectStartTime <= currentDate) {
     postQuestLoading = false
     alert('Quest start time cannot be earlier than current time.')
     return
   }
-  if(selectStartTime >= selectEndTime){
+  if (selectStartTime >= selectEndTime) {
     postQuestLoading = false
     alert('Quest end time cannot be earlier than start time.')
     return
@@ -200,7 +185,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   await joinTask(transData.taskId, address)
 
   await getAllTasks(String(communityId))
-  if(respArray.length === 0){
+  if (respArray.length === 0) {
     taskListIsEmpty = true
   } else {
     taskListIsEmpty = false
@@ -208,54 +193,30 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   postQuestLoading = false
   isOpen = false
 }
-const ranges = [
-  { label: 'Last 7 days', duration: { days: 7 } },
-  { label: 'Last 14 days', duration: { days: 14 } },
-  { label: 'Last 30 days', duration: { days: 30 } },
-  { label: 'Last 3 months', duration: { months: 3 } },
-  { label: 'Last 6 months', duration: { months: 6 } },
-  { label: 'Last year', duration: { years: 1 } }
-]
 
 const slug = $computed(() => route.params.slug)
 console.log('slug = ' + slug)
 
-const chatId = $ref("CvgIA17jnhmuh3VtYozqlFy4sLKPVJV1c4eVZOY97to")
-const footerLinks = $computed(() => {
-  return [
-    // {
-    //   label: 'Invite people',
-    //   icon: 'i-heroicons-plus',
-    //   to: `/${slug}/settings/communityinfo`,
-    // },
-    {
-      label: t('Quests Home'),
-      icon: 'i-heroicons-plus',
-      class: 'border',
-      to: `/${slug}/tasks`,
-    },
-    {
-      label: 'Chatroom',
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/chat/${communityInfo.communitychatid}`,
-    },
-  ]
-})
+console.log('get community info of ', communityId)
+let communityInfo = $ref<Awaited<ReturnType<typeof getLocalcommunityInfo>> | {}>({})
 
-let communityInfo = $ref({})
-let communityInfoJson = $ref({})
 const loadCommunityInfo = async (pid) => {
   try {
     communityInfo = await getLocalcommunityInfo(pid)
+    console.log('get communityInfo', communityInfo)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
 }
-const taskType = ref()
+
 let taskListIsEmpty = $ref(false)
 let isCommunityOwner = $ref(false)
-onMounted(async () => {
 
+onMounted(async () => {
+  // if(!communityInfo) {
+  //   console.error('communityInfo is null')
+  //   return
+  // }
 
   setCurrentuuid(route.params.communityId)
   await loadCommunityInfo(route.params.communityId)
@@ -267,19 +228,19 @@ onMounted(async () => {
   }
 
   await getAllTasks(communityId)
-  if(respArray.length === 0){
+  if (respArray.length === 0) {
     taskListIsEmpty = true
   }
-  if(communityInfo.creater === address){
+  if (communityInfo.creater === address) {
     isCommunityOwner = true
   }
-  for(let i = 0; i < respArray.length; ++i){
+  for (let i = 0;i < respArray.length;++i) {
     respArray[i].status = 'N'
     const t = respArray[i]
     const spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(t.id)
-    for(let j = 0; j < spaceTaskSubmitInfo.length; ++j){
+    for (let j = 0;j < spaceTaskSubmitInfo.length;++j) {
       const element = spaceTaskSubmitInfo[j]
-      if(element.address === address){
+      if (element.address === address) {
         respArray[i].status = 'Y'
         break
       }
@@ -297,7 +258,7 @@ const banners = [
   '/task/banner4.jpg',
   '/task/banner5.jpg'
 ]
-const currentIndex = $ref(0); // 用于存储当前选中的索引
+const currentIndex = $ref(0) // 用于存储当前选中的索引
 const updateBanner = (index: number) => {
   if (index === 1) {
     state.taskLogo = 'banner1'
@@ -305,9 +266,9 @@ const updateBanner = (index: number) => {
     state.taskLogo = 'banner2'
   } else if (index === 3) {
     state.taskLogo = 'banner3'
-  }else if (index === 4){
+  } else if (index === 4) {
     state.taskLogo = 'banner4'
-  }else if (index === 5){
+  } else if (index === 5) {
     state.taskLogo = 'banner5'
   }
 }
@@ -339,68 +300,45 @@ const taskTypes = [
   }]
 ]
 
-let exitButton = $ref(false)
-const router = useRouter();
+const exitButton = $ref(false)
+const router = useRouter()
 
 
-let Leaveout = $ref(false)
-const quitCommunity = async(communityuuid: any) => {
-  Leaveout = true
+let leaveOut = $ref(false)
+const quitCommunity = async (communityuuid: any) => {
+  leaveOut = true
   try {
-    await exitCommunity(communityuuid);
+    await exitCommunity(communityuuid)
     await getCommunitylist()
-    console.log('exitCommunity 操作成功');
-    Leaveout = false;
-    router.push(`/${slug}/discovery`);
+    console.log('exitCommunity 操作成功')
+    leaveOut = false
+    router.push(`/${slug}/discovery`)
   } catch (error) {
-    alert('exitCommunity Fail:', error);
+    alert('exitCommunity Fail:', error)
   } finally {
-    Leaveout = false;
+    leaveOut = false
   }
 }
 
-async function testAO() {
-  const startedAt = "2024-05-29T14:45:25.000Z";
-  const endedAt = "2024-05-29T16:06:51.000Z";
-
-  // 将字符串转换为 Date 对象
-  const startDate = new Date(startedAt);
-  const endDate = new Date(endedAt);
-
-  // 计算两个日期对象之间的时间差，以毫秒为单位
-  const timeDifference = endDate.getTime() - startDate.getTime();
-
-  // 将时间差转换为分钟
-  const timeDifferenceInMinutes = timeDifference / (1000 * 60);
-
-  console.log(`时间间隔为 ${timeDifferenceInMinutes} 分钟`);
-  if(timeDifferenceInMinutes > 15){
-    console.log('bigger than 15')
-  }
-
-}
-
-
-const textToCopy = $ref('');
-const copySuccess = $ref(false);
+const textToCopy = $ref('')
 
 const copyText = async () => {
   try {
     // 使用 navigator.clipboard.writeText 复制文本
-    await navigator.clipboard.writeText(textToCopy.innerText);
+    await navigator.clipboard.writeText(textToCopy.innerText)
     // 复制成功后设置一段时间后隐藏提示信息
   } catch (err) {
-    console.error('复制失败: ', err);
+    console.error('复制失败: ', err)
   }
 }
 const finalStatus = (isBegin: string) => {
   // console.log('isB = ' + isBegin)
   let res = ''
-  if(isBegin === 'NS')
+  if (isBegin === 'NS')
     res = t('Not Start')
-  else if(isBegin === 'Y'){
+  else if (isBegin === 'Y') {
     res = t('Ing')
-  }else {
+  } else {
     res = t('End')
   }
   // console.log('res = ' + res)
@@ -409,16 +347,16 @@ const finalStatus = (isBegin: string) => {
 
 
 const formattedTwitterLink = (twitter) => {
-  const link = twitter;
+  const link = twitter
   // Add https:// prefix if the link doesn't start with http:// or https://
   if (!/^(http|https):\/\//.test(link)) {
-    return `https://${link}`;
+    return `https://${link}`
   }
-  console.log("-------",link)
-  return link;
+  console.log('-------', link)
+  return link
 }
 const dStatus = (status) => {
-  if(status === 'Y'){
+  if (status === 'Y') {
     return t('task.isjoin')
   }
 }
@@ -598,7 +536,7 @@ const dStatus = (status) => {
           </div>
 
           <div v-if="!taskListIsEmpty" class="mx-auto w-full">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-10">
               <UBlogPost
                 v-for="blogPost in respArray"
                 :key="blogPost.id"
@@ -769,7 +707,7 @@ const dStatus = (status) => {
           <div class="w-full flex justify-center text-2xl">
             Sure to exit
           </div>
-          <div v-if="!Leaveout" class="w-full flex space-x-10 mt-6">
+          <div v-if="!leaveOut" class="w-full flex space-x-10 mt-6">
             <UButton @click="exitButton = false">
               No
             </UButton>

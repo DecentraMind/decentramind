@@ -99,3 +99,29 @@ export type Tokens = {
 }
 
 export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
+
+export type Task = {
+  buildNumber: number;
+  communityId: string;
+  endTime: string;
+  isBegin: 'Y' | 'N';
+  isCal: 'Y' | 'N';
+  isSettle: 'Y' | 'N';
+  joined: number;
+  ownerId: string;
+  processId: string;
+  rewardTotal: string;
+  startTime: string;
+  taskId: string;
+  taskInfo: string;
+  taskLogo: string;
+  taskName: string;
+  taskRule: string;
+  tokenChain: string;
+  tokenChain1: string;
+  tokenNumber: number;
+  tokenNumber1: number;
+  tokenType: string;
+  tokenType1: string;
+  zone: string
+}

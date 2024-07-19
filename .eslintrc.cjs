@@ -18,6 +18,7 @@ module.exports = {
         }
       }
     ],
+    'vue/singleline-html-element-content-newline': 0,
     'vue/no-v-html': 0
   }
 }
