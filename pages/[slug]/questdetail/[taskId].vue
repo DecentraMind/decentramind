@@ -70,6 +70,8 @@ submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
 // console.log('isJoined = ' + isJoined)
 // console.log('chatProcessId = ' + chatProcessId)
 
+let submittedBuilderCount = $ref<number>(0)
+
 onMounted(async () => {
   const isBegin = blogPost!.isBegin
   if (isBegin === 'Y') {
@@ -81,9 +83,14 @@ onMounted(async () => {
   settleStatus = isSettle === 'Y'
   const isCal = blogPost!.isCal
 
+  if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
+    // TODO update task.submittedCount after every task submit in cronjob
+    submittedBuilderCount = spaceTaskSubmitInfo.reduce((count, info) => {
+      return count + (info.taskId === taskId ? 1 : 0)
+    }, 0)
+
   if (isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N') {
     // 计算分数
-    if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
       calculateScore()
       console.log(taskId)
       // 更新任务状态和已提交信息
@@ -451,6 +458,7 @@ const finalStatus = (isBegin: string) => {
   console.log('res = ' + res)
   return res
 }
+
 const maxSelection = blogPost.rewardTotal
 // 监视 selected 数组的变化
 watch(() => selected, (newVal) => {
@@ -578,7 +586,7 @@ const trueRows = computed(() => {
                 </div>
                 <div>
                   <div>
-                    {{ blogPost.buildNumber }}
+                    {{ submittedBuilderCount }}
                   </div>
                 </div>
               </div>
