@@ -115,6 +115,7 @@ const transData = {
   zone: undefined,
   startTime: '',
   endTime: '',
+  createTime: 0,
   buildNumber: 0,
   joined: 0,
   ownerId: '',
@@ -160,6 +161,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.zone = state.zone
   transData.startTime = selectStartTime
   transData.endTime = selectEndTime
+  transData.createTime = Date.now()
   transData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()

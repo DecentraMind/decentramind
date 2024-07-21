@@ -288,31 +288,10 @@ export const taskStore = defineStore('taskStore', () => {
       if(element.tokenNumber1 != '0'){
         reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
       }
+
       const respData = {
-        id: element.taskId,
-        name: element.taskName,
-        image: element.taskLogo,
-        description: element.taskInfo,
-        startTime: element.startTime,
-        endTime: element.endTime,
-        zone: element.zone,
-        rewardTotal: element.rewardTotal,
-        buildNumber: element.buildNumber,
-        taskRule: element.taskRule,
-        reward: reward,
-        tokenNumber: element.tokenNumber,
-        tokenType: element.tokenType,
-        tokenNumber1: element.tokenNumber1,
-        tokenType1: element.tokenType1,
-        builderNum: element.buildNumber,
-        status: element.isBegin,
-        joined: element.joined,
-        ownerId: element.ownerId,
-        communityId: element.communityId,
-        isBegin: element.isBegin,
-        isSettle: element.isSettle,
-        isCal: element.isCal,
-        processId: element.processId
+        ...element,
+        reward: reward
       }
       respArray.push(respData)
 
@@ -324,7 +303,9 @@ export const taskStore = defineStore('taskStore', () => {
     //     console.log(e.id)
     // }
     console.log({communityTasks, respArray})
-    return communityTasks
+    return communityTasks.sort((a, b) => {
+      return (a.createTime || a.startTime) > (b.createTime || b.startTime) ? -1 : 1
+    })
     showSuccess('Get all tasks success')
   }
 
