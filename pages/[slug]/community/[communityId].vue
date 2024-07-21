@@ -182,7 +182,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   transData.isBegin = isBegin
   transData.communityId = String(communityId)
   await createTask(transData)
-  await joinTask(transData.taskId, address)
+  // await joinTask(transData.taskId, address)
 
   await getAllTasks(String(communityId))
   if (respArray.length === 0) {

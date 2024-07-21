@@ -24,7 +24,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       // Run `cms:update` task every minute
-      '5 10 * * *': 'testo'
+      '*/5 * * * *': 'testo'
     }
   },
   colorMode: {
