@@ -481,7 +481,7 @@ const formattedTwitterLink = (twitter) => {
         <div v-if="communityInfo.creater == address" class="flex">
           <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="isSettingModalOpen = true" />
         </div>
-        <UPopover mode="hover" :popper="{ placement: 'top' }">
+        <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60]">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
           <Button class="center-text border rounded-lg w-full">Invite people</Button>
           <template #panel>
