@@ -7,9 +7,10 @@ import { z } from 'zod'
 import { ref } from 'vue'
 import type { Dayjs } from 'dayjs'
 import { tokenOptions, timeZoneOptions } from '~/utils/constants'
+import TaskId from '../questdetail/[taskId].vue'
 
 const { t } = useI18n()
-const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo } = $(taskStore())
+const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo, getAllTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, communityList, getCommunitylist } = $(aocommunityStore())
 
 const { add } = $(inboxStore())
@@ -131,6 +132,7 @@ function uuid() {
     return v.toString(16)
   })
 }
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   postQuestLoading = true
   if (!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime) {
@@ -194,6 +196,21 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   isOpen = false
 }
 
+let allTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getAllTaskSubmitInfo>>>([])
+async function checkSubmit(taskID: string, address: string) {
+  if (!allTaskSubmitInfo) {
+    allTaskSubmitInfo = await getAllTaskSubmitInfo()
+  }
+
+  for (const submitInfo of allTaskSubmitInfo) {
+    if (submitInfo.address === address) {
+      console.log('found address submitted to task', submitInfo.id)
+      return true
+    }
+  }
+  return false
+}
+
 const slug = $computed(() => route.params.slug)
 console.log('slug = ' + slug)
 
@@ -212,6 +229,7 @@ const loadCommunityInfo = async (pid) => {
 let taskListIsEmpty = $ref(false)
 let isCommunityOwner = $ref(false)
 
+let allTasks = $ref()
 onMounted(async () => {
   // if(!communityInfo) {
   //   console.error('communityInfo is null')
@@ -227,26 +245,22 @@ onMounted(async () => {
     //return
   }
 
-  await getAllTasks(communityId)
-  if (respArray.length === 0) {
+  allTasks = await getAllTasks(communityId as string)
+  if(!allTasks) {
+    console.error('allTasks undefined', communityId)
+  }
+
+  if (!allTasks || allTasks.length === 0) {
     taskListIsEmpty = true
   }
   if (communityInfo.creater === address) {
     isCommunityOwner = true
   }
-  for (let i = 0;i < respArray.length;++i) {
-    respArray[i].status = 'N'
-    const t = respArray[i]
-    const spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(t.id)
-    for (let j = 0;j < spaceTaskSubmitInfo.length;++j) {
-      const element = spaceTaskSubmitInfo[j]
-      if (element.address === address) {
-        respArray[i].status = 'Y'
-        break
-      }
-    }
-    console.log('respArray[i].status  =' + respArray[i].status)
+  for (const t of allTasks) {
+    t.status = await checkSubmit(t.id, address) ? 'Y' : 'N'
   }
+
+  console.log('respArray[i].status  =', respArray.map(item => item.status))
   // console.log('community creater = ' + communityInfo.creater)
   console.log('isCommunityOwner = ' + isCommunityOwner)
 })
@@ -331,6 +345,7 @@ const copyText = async () => {
     console.error('复制失败: ', err)
   }
 }
+
 const finalStatus = (isBegin: string) => {
   // console.log('isB = ' + isBegin)
   let res = ''
@@ -345,7 +360,6 @@ const finalStatus = (isBegin: string) => {
   return res
 }
 
-
 const formattedTwitterLink = (twitter) => {
   const link = twitter
   // Add https:// prefix if the link doesn't start with http:// or https://
@@ -355,11 +369,7 @@ const formattedTwitterLink = (twitter) => {
   console.log('-------', link)
   return link
 }
-const dStatus = (status) => {
-  if (status === 'Y') {
-    return t('task.isjoin')
-  }
-}
+
 </script>
 <template>
   <UDashboardLayout :ui="{wrapper: 'w-full static'}">
@@ -538,7 +548,7 @@ const dStatus = (status) => {
           <div v-if="!taskListIsEmpty" class="mx-auto w-full">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-10">
               <UBlogPost
-                v-for="blogPost in respArray"
+                v-for="blogPost in allTasks"
                 :key="blogPost.id"
                 :image="`/task/${blogPost.image}.jpg`"
                 :description="blogPost.description">
@@ -554,7 +564,7 @@ const dStatus = (status) => {
                     </div>
                     <div v-if="blogPost.status === 'Y'">
                       <UBadge color="black" variant="solid">
-                        {{ dStatus(blogPost.status) }}
+                        {{ t('task.isjoin') }}
                       </UBadge>
                     </div>
                     <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-2">

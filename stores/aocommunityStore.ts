@@ -467,6 +467,10 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       ]
     })
 
+    if(!Info.Messages) {
+      console.error('get user info failed', Info)
+    }
+
     // Check if you have successfully obtained the Info
     const jsonData = Info.Messages[0].Data
     const jsonObjects = jsonData.match(/\{.*?\}/g)

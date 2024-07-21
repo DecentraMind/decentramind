@@ -19,6 +19,22 @@ const permissions: PermissionType[] = [
   'DISPATCH'
 ]
 
+type TaskSubmitInfo = {
+  taskId: any;
+  id: number;
+  address: any;
+  brandEffect: any;
+  getPerson: any;
+  audience: any;
+  url: any;
+  score: any;
+  bounty: any;
+  bounty1: any;
+  bountyType1: any;
+  bounty2: any;
+  bountyType2: any;
+}
+
 export const taskStore = defineStore('taskStore', () => {
   const tokenMap = $ref(tokenProcessIDs)
   const denomination  = $ref({
@@ -40,7 +56,7 @@ export const taskStore = defineStore('taskStore', () => {
 
   const { showError, showSuccess, alertMessage } = $(notificationStore())
   let respArray = $ref([])
-  let submitInfo = $ref([])
+  let allTaskSubmitInfo = $ref<TaskSubmitInfo[]>([])
   let allTasks = $ref([])
   let allInviteInfo = $ref([])
   const createTask = async (data: any) => {
@@ -168,6 +184,7 @@ export const taskStore = defineStore('taskStore', () => {
       tags: [
         { name: 'Action', value: 'Eval' }
       ],
+      // TODO data: luaCode.replace('\n', '      '),
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),
     })
@@ -222,7 +239,11 @@ export const taskStore = defineStore('taskStore', () => {
       console.log(error)
     }
   }
+
   const getAllTasks = async (communityId: string) => {
+    // TODO don't use outer variable respArray
+    // respArray = []
+    const communityTasks = []
     let res
     try {
       res = await dryrun({
@@ -231,19 +252,20 @@ export const taskStore = defineStore('taskStore', () => {
       })
     } catch (error) {
       alertMessage(error)
-      return ''
+      return []
     }
     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
       respArray = []
-      return ''
+      return []
     }
-    let resp = res.Messages[0].Data.split(';')
-    respArray = []
-    for (let index = 0; index < resp.length; index++) {
+    const resp = res.Messages[0].Data.split(';')
 
-      let element = JSON.parse(resp[index])
-      // console.log('communityId = ' + element.communityId)
-      // console.log('trans communityId = ' + communityId)
+    console.log('getAllTask resp from AO', resp)
+    for (const json of resp) {
+      const element = JSON.parse(json)
+      console.log({element})
+      console.log('communityId = ' + element.communityId)
+      console.log('trans communityId = ' + communityId)
       if (element.communityId !== communityId) {
         // console.log('communityId = ' + element.communityId)
         continue
@@ -283,12 +305,15 @@ export const taskStore = defineStore('taskStore', () => {
       }
       respArray.push(respData)
 
+      communityTasks.push(respData)
     }
     // console.log("respArray = " + respArray)
     // for (let index = 0; index < respArray.length; index++) {
     //     const e = respArray[index];
     //     console.log(e.id)
     // }
+    console.log({communityTasks, respArray})
+    return communityTasks
     showSuccess('Get all tasks success')
   }
 
@@ -641,17 +666,17 @@ export const taskStore = defineStore('taskStore', () => {
       console.log('getAllTaskSubmitInfo', res)
     } catch (error) {
       alertMessage(error)
-      return ''
+      return []
     }
     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
-      submitInfo = []
-      return ''
+      allTaskSubmitInfo = []
+      return []
     }
     const resp = res.Messages[0].Data.split(';')
-    submitInfo = []
+    allTaskSubmitInfo = []
     for (let index = 0; index < resp.length; index++) {
 
-      let element = JSON.parse(resp[index])
+      const element = JSON.parse(resp[index])
       // console.log('resp = ' + element.address)
       const respData = {
         taskId: element.taskId,
@@ -668,8 +693,9 @@ export const taskStore = defineStore('taskStore', () => {
         bounty2: element.bounty2,
         bountyType2: element.bountyType2
       }
-      submitInfo.push(respData)
+      allTaskSubmitInfo.push(respData)
     }
+    return allTaskSubmitInfo
   }
 
   // wallets: 需要转账的钱包地址 tokenNumber: 每个账户需要转的token数量 tokenType: 转账的token类型的地址
@@ -756,5 +782,5 @@ export const taskStore = defineStore('taskStore', () => {
 
 
 
-  return $$({ denomination, storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ denomination, storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })

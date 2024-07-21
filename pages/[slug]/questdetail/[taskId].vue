@@ -85,6 +85,7 @@ onMounted(async () => {
   settleStatus = isSettle === 'Y'
   const isCal = blogPost!.isCal
 
+  // TODO don't use spaceTaskSubmitInfo array, use submitInfo of current task only
   if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
     // TODO update task.submittedCount after every task submit in cronjob
     submittedBuilderCount = spaceTaskSubmitInfo.reduce((count, info) => {

@@ -15,6 +15,7 @@ export const tokens = {
     ticker: 'AR ',
     label: 'AR',
     processID: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
+    // denotion: 
   },
   USDA: {
     ticker: 'USDA ',
