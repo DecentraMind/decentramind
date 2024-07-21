@@ -99,6 +99,8 @@ const state = $ref({
   rewardTotal: undefined,
   zone: undefined,
 })
+
+
 const transData = {
   taskId: '',
   taskLogo: undefined,
@@ -222,10 +224,10 @@ console.log('slug = ' + slug)
 console.log('get community info of ', communityId)
 let communityInfo = $ref<Awaited<ReturnType<typeof getLocalcommunityInfo>> | {}>({})
 
-const loadCommunityInfo = async (pid) => {
+const loadCommunityInfo = async (pid: string) => {
   try {
     communityInfo = await getLocalcommunityInfo(pid)
-    console.log('get communityInfo', communityInfo)
+    console.log('get communityInfo', communityInfo, pid)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -240,7 +242,7 @@ onMounted(async () => {
   // }
 
   setCurrentuuid(route.params.communityId)
-  await loadCommunityInfo(route.params.communityId)
+  await loadCommunityInfo(communityId)
 
   const rz = await add(communityInfo.name, communityInfo.communitychatid)
   if (rz.err) {
@@ -370,7 +372,7 @@ const formattedTwitterLink = (twitter) => {
 <template>
   <UDashboardLayout :ui="{wrapper: 'w-full static'}">
     <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
-      <UDashboardSidebar>
+      <UDashboardSidebar v-if="communityInfo">
         <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
         <div class="pt-8">
@@ -515,7 +517,7 @@ const formattedTwitterLink = (twitter) => {
 
     <UDashboardPage>
       <UPage class="overflow-y-auto h-full w-full">
-        <div class=" flex flex-col mx-10 pt-10 items-center h-full">
+        <div v-if="communityInfo" class=" flex flex-col mx-10 pt-10 items-center h-full">
           <div class="flex w-full justify-between mb-4">
             <div>
               <UTabs :items="items" @change="onChange" />
@@ -563,7 +565,7 @@ const formattedTwitterLink = (twitter) => {
                   <div class="flex">
                     <div class="mx-2">
                       <UBadge size="xs" color="black" variant="solid">
-                        {{ finalStatus(task.isBegin)}}
+                        {{ finalStatus(task.isBegin) }}
                       </UBadge>
                     </div>
                     <div v-if="task.status === 'Y'">

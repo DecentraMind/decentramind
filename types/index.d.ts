@@ -124,5 +124,6 @@ export type Task = {
   tokenNumber1: number;
   tokenType: string;
   tokenType1: string;
-  zone: string
+  zone: string;
+  createTime: number;
 }

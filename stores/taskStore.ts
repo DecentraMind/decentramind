@@ -256,7 +256,7 @@ export const taskStore = defineStore('taskStore', () => {
 
   const getAllTasks = async (communityId: string) => {
     // TODO don't use outer variable respArray
-    // respArray = []
+    respArray = []
     const communityTasks = []
     let res
     try {
@@ -275,22 +275,26 @@ export const taskStore = defineStore('taskStore', () => {
     const resp = res.Messages[0].Data.split(';')
 
     for (const json of resp) {
-      const element = JSON.parse(json)
+      const element = JSON.parse(json) as Task
 
       if (element.communityId !== communityId) {
         continue
       }
 
       let reward = ''
-      if(element.tokenNumber != '0'){
+      if(element.tokenNumber != 0){
         reward = Number(element.tokenNumber) / denomination[element.tokenType] + ' ' + element.tokenType
       }
-      if(element.tokenNumber1 != '0'){
+      if(element.tokenNumber1 != 0){
         reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
       }
 
       const respData = {
         ...element,
+        id: element.taskId,
+        name: element.taskName,
+        image: element.taskLogo,
+        description: element.taskInfo,
         reward: reward
       }
       respArray.push(respData)
@@ -302,11 +306,16 @@ export const taskStore = defineStore('taskStore', () => {
     //     const e = respArray[index];
     //     console.log(e.id)
     // }
-    console.log({communityTasks, respArray})
-    return communityTasks.sort((a, b) => {
-      return (a.createTime || a.startTime) > (b.createTime || b.startTime) ? -1 : 1
-    })
+    // console.log({communityTasks: communityTasks.sort((a, b) => {
+    //   return (a.createTime || a.startTime) > (b.createTime || b.startTime) ? 1 : -1
+    // }), respArray})
     showSuccess('Get all tasks success')
+
+    const sortedTasks = communityTasks.sort((a, b) => {
+      return (a.createTime || a.startTime) >= (b.createTime || b.startTime) ? 1 : -1
+    })
+    console.log({sortedTasks})
+    return sortedTasks
   }
 
   const getAllTasksNoCommunity = async () => {
@@ -414,7 +423,10 @@ export const taskStore = defineStore('taskStore', () => {
       if(element.tokenNumber1 != 0){
         reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
       }
-      return {...element, reward}
+      return {
+        ...element,
+        reward
+      }
     }
 
     console.error('Not found this task')

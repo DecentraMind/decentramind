@@ -323,7 +323,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //Getting information about a specific community from a cached community list
   const getLocalcommunityInfo = async (uuid: any) => {
-    if(!communityList) {
+    if(!communityList || !communityList.length) {
       await getCommunitylist()
     }
 

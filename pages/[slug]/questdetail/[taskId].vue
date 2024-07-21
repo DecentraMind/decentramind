@@ -17,7 +17,9 @@ const slug = $computed(() => route.params.slug)
 
 console.log('route params', route.params)
 
-let blogPost = $ref<Task & { reward: string }>()
+let blogPost = $ref<Task & {
+  reward: string
+}>()
 
 blogPost = await getTask(taskId)
 console.log('blogPost of task id ' + taskId + JSON.stringify(blogPost))
@@ -247,7 +249,7 @@ function openJoin() {
 async function onClick() {
   //  调用参与任务方法，只计数不提交
   await joinTask(taskId, address)
-  blogPost = await getTaskById(taskId)
+  // blogPost = await getTaskById(taskId)
   taskJoinRecord = await getTaskJoinRecord(taskId)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isJoined = checkJoin()
@@ -352,6 +354,7 @@ let selected = $ref([])
 
 
 async function sendBountyByAo() {
+  if(!blogPost) return
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
   sendBountyLoading = true
 
@@ -497,7 +500,7 @@ const trueRows = computed(() => {
 
 <template>
   <UDashboardPage>
-    <UPage class="overflow-y-auto h-full w-full">
+    <UPage v-if="blogPost" class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
@@ -511,7 +514,7 @@ const trueRows = computed(() => {
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
         -->
-        <UBlogPost :key="blogPost.id" :description="blogPost.description" class="p-10">
+        <UBlogPost :key="blogPost.taskId" :description="blogPost.taskInfo" class="p-10">
           <template #title>
             <div class="flex justify-start">
               <div class="flex-none w-60"><div>{{ blogPost?.taskName }}</div></div>
@@ -532,15 +535,12 @@ const trueRows = computed(() => {
                   </UBadge>
                 </div>
               </div>
-
-              <!-- <UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge>
-              <UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge> -->
             </div>
           </template>
           <template #description>
             <div class="flex flex-col space-y-2">
               <div class="h-6 overflow-hidden">
-                {{ blogPost.description }}
+                {{ blogPost.taskInfo }}
               </div>
               <div class="flex ...">
                 <div class="flex-none w-60">
@@ -646,7 +646,7 @@ const trueRows = computed(() => {
                   </template>
                 </UTable>
                 <div class="flex justify-end mt-2">
-                  <UPagination v-model="page" :page-count="pageCount" :total="filteredRows.length" />
+                  <UPagination v-model="page" :page-count="pageCount" :total="filteredRows?.length || 0" />
                 </div>
               </div>
             </div>
