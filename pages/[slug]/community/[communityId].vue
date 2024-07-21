@@ -7,9 +7,10 @@ import { z } from 'zod'
 import { ref } from 'vue'
 import type { Dayjs } from 'dayjs'
 import { tokenOptions, timeZoneOptions } from '~/utils/constants'
+import type { Task } from '~/types'
 
 const { t } = useI18n()
-const { denomination, createTask, getAllTasks, respArray, getAllTaskSubmitInfo } = $(taskStore())
+const { denomination, createTask, getAllTasks, getAllTaskSubmitInfo } = $(taskStore())
 const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, getCommunitylist } = $(aocommunityStore())
 
 const { add } = $(inboxStore())
@@ -19,7 +20,7 @@ const communityId = $computed(() => route.params.communityId)
 
 const isSettingModalOpen = $ref(false)
 
-let tasks = $ref<Awaited<ReturnType<typeof getAllTasks>>>([])
+let tasks = $ref<Array<Task & {reward: string}>>([])
 
 let postQuestLoading = $ref(false)
 const items = [
@@ -204,11 +205,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 }
 
 let allTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getAllTaskSubmitInfo>>>([])
-async function checkSubmit(taskID: string, address: string) {
-  if (!allTaskSubmitInfo) {
-    allTaskSubmitInfo = await getAllTaskSubmitInfo()
-  }
-
+async function checkSubmit(allTaskSubmitInfo: Awaited<ReturnType<typeof getAllTaskSubmitInfo>>, taskID: string, address: string) {
   for (const submitInfo of allTaskSubmitInfo) {
     if (submitInfo.address === address) {
       console.log('found address submitted to task', submitInfo.id)
@@ -216,6 +213,18 @@ async function checkSubmit(taskID: string, address: string) {
     }
   }
   return false
+}
+
+async function countSubmitOfTask(allTaskSubmitInfo: Awaited<ReturnType<typeof getAllTaskSubmitInfo>>, taskID: string) {
+  return allTaskSubmitInfo.filter(submit => submit.taskId === taskID).length
+}
+
+async function countSubmitOfCommunity(allTaskSubmitInfo: Awaited<ReturnType<typeof getAllTaskSubmitInfo>>, tasks: Array<Task & {reward: string}>, communityID: string) {
+return allTaskSubmitInfo.filter(submit => {
+  const task = tasks.find(task => task.taskId === submit.taskId)
+    if(!task) return false
+    return task.communityId === communityID
+  }).length
 }
 
 const slug = $computed(() => route.params.slug)
@@ -258,9 +267,17 @@ onMounted(async () => {
   if (communityInfo.creater === address) {
     isCommunityOwner = true
   }
-  for (const t of tasks) {
-    t.status = await checkSubmit(t.id, address) ? 'Y' : 'N'
+
+  if (!allTaskSubmitInfo) {
+    allTaskSubmitInfo = await getAllTaskSubmitInfo()
   }
+
+  for (const t of tasks) {
+    t.status = await checkSubmit(allTaskSubmitInfo, t.taskId, address) ? 'Y' : 'N'
+    t.buildNumber = await countSubmitOfTask(allTaskSubmitInfo, t.taskId)
+  }
+
+  communityInfo.buildNumber = await countSubmitOfCommunity(allTaskSubmitInfo, tasks, communityId as string)
 })
 
 const banners = [
@@ -458,7 +475,7 @@ const formattedTwitterLink = (twitter) => {
 
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-            <div>{{ communityInfo.buildnum }}</div>
+            <div>{{ communityInfo.buildNumber }}</div>
           </div>
 
           <div v-if="communityInfo.creater !== address" class="flex">
@@ -554,13 +571,13 @@ const formattedTwitterLink = (twitter) => {
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-10">
               <UBlogPost
                 v-for="task in tasks"
-                :key="task.id"
-                :image="`/task/${task.image}.jpg`"
-                :description="task.description"
+                :key="task.taskId"
+                :image="`/task/${task.taskLogo}.jpg`"
+                :description="task.taskInfo"
               >
                 <template #title>
                   <div class="flex justify-between">
-                    <div>{{ task.name }}</div>
+                    <div>{{ task.taskName }}</div>
                   </div>
                   <div class="flex">
                     <div class="mx-2">
@@ -584,7 +601,7 @@ const formattedTwitterLink = (twitter) => {
                 <template #description>
                   <div class="flex flex-col space-y-2">
                     <div class="h-6 overflow-hidden">
-                      {{ task.description }}
+                      {{ task.taskInfo }}
                     </div>
                     <div class="flex justify-between">
                       <div>
@@ -606,13 +623,13 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                       <div>
                         <div>
-                          {{ task.joined }}
+                          {{ task.buildNumber }}
                         </div>
                       </div>
                     </div>
                   </div>
                 </template>
-                <UButton :to="`/${slug}/questdetail/${task.id}`" class="absolute right-0" color="white" variant="outline">
+                <UButton :to="`/${slug}/questdetail/${task.taskId}`" class="absolute right-0" color="white" variant="outline">
                   {{ $t("View Details") }}
                 </UButton>
               </UBlogPost>

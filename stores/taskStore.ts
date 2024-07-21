@@ -291,10 +291,6 @@ export const taskStore = defineStore('taskStore', () => {
 
       const respData = {
         ...element,
-        id: element.taskId,
-        name: element.taskName,
-        image: element.taskLogo,
-        description: element.taskInfo,
         reward: reward
       }
       respArray.push(respData)
@@ -433,6 +429,7 @@ export const taskStore = defineStore('taskStore', () => {
     return
   }
 
+  // TODO replace this with getTask
   const getTaskById = async (taskId: string) => {
     console.log('getTaskById', taskId)
 
@@ -667,7 +664,6 @@ export const taskStore = defineStore('taskStore', () => {
         process: tasksProcessID,
         tags: [{ name: 'Action', value: 'getAllTaskSubmitInfo' }],
       })
-      console.log('getAllTaskSubmitInfo', res)
     } catch (error) {
       alertMessage(error)
       return []
@@ -699,6 +695,8 @@ export const taskStore = defineStore('taskStore', () => {
       }
       allTaskSubmitInfo.push(respData)
     }
+
+    console.log('getAllTaskSubmitInfo', allTaskSubmitInfo)
     return allTaskSubmitInfo
   }
 
