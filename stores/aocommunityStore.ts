@@ -50,7 +50,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   let joinisLoading = $ref(false)
   let exitisLoading = $ref(false)
   let currentUuid = $ref('')
-  let communityCreate = $ref(false)
+
   let githubCode = $ref()
   const Sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -488,7 +488,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
       scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    await Sleep(1000)
+    await Sleep(2000)
     const luaCode = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local inboxCount = #Inbox      ao.send({      Target = msg.From,      Tags = {      InboxCount = tostring(inboxCount)      }      })      Handlers.utils.reply("Echo back")(msg)    end  )      Handlers.add(    "inboxMessage",    Handlers.utils.hasMatchingTag("Action", "CheckInbox"),    function (msg)      local index = tonumber(msg.Tags.Index)      if index and index > 0 and index <= #Inbox then      local message = Inbox[index]      ao.send({      Target = msg.From,      Tags = {      Action = "Inbox",      Index = tostring(index),      MessageDetails = message      }      }) else      ao.send({      Target = msg.From,      Tags = {      Error = "Invalid inbox message index"      }      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
 
     let buildLua = await message({
@@ -507,7 +507,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     communityUser,
     communityList,
     joincommunityList,
-    communityCreate,
     currentUuid,
     vouch,
     setCurrentuuid,

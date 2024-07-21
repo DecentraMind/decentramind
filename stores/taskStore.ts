@@ -68,22 +68,29 @@ export const taskStore = defineStore('taskStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
     })
     data.processId = newProcessId
-    await Sleep(1000)
+
+    // wait for process creating until you can send message to it
+    await Sleep(2000)
+
+    // TODO check if process exist, and wait for seconds to try again
+
+
+
     console.log(JSON.stringify(data))
     console.log('newProcessId = ' + newProcessId)
 
     // 把此次任务需要的钱转给process两种bounty，转两次，如果不为0的话
-    if(data.tokenNumber && data.tokenNumber != 0){
+    if (data.tokenNumber && data.tokenNumber != 0) {
       console.log('tokenNumber = ' + data.tokenNumber)
       console.log(data.tokenType)
 
-      try{
-        if(!tokenMap[data.tokenType as TokenName]) {
+      try {
+        if (!tokenMap[data.tokenType as TokenName]) {
           throw new Error(`token ${data.tokenType} not supported.`)
         }
-        console.log('token processID: ', tokenMap[data.tokenType as TokenName])
+        console.log(data.tokenType, 'token processID: ', tokenMap[data.tokenType as TokenName])
         await window.arweaveWallet.connect(permissions)
-      }catch(error){
+      } catch (error) {
         console.log('open error = ' + error)
         return
       }
@@ -94,8 +101,8 @@ export const taskStore = defineStore('taskStore', () => {
           signer: createDataItemSigner(window.arweaveWallet),
           tags: [
             { name: 'Action', value: 'Transfer' },
-            {name: 'Recipient', value: newProcessId},
-            {name: 'Quantity', value: String(data.tokenNumber)}
+            { name: 'Recipient', value: newProcessId },
+            { name: 'Quantity', value: String(data.tokenNumber) }
           ]
         })
         const { Messages } = await result({
@@ -153,7 +160,7 @@ export const taskStore = defineStore('taskStore', () => {
           message: messageId,
           // the arweave TXID of the process
           process: tokenMap[data.tokenType],
-        });
+        })
         const mTags = Messages[0].Tags
         let transError = false
         let errorMessage = ''
@@ -170,24 +177,14 @@ export const taskStore = defineStore('taskStore', () => {
           alert('Pay bounty failed.' + errorMessage)
           return
         }
-      }catch(error){
-        console.log(error)
+      } catch (error) {
+        console.error('create task error', error)
       }
     }
+
     // 向新的process里写入sendBounty方法
-    const x = 'TaskOwnerWallet = "' + data.ownerId + '"'
-    const luaCode = x + '      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )'
-    console.log('luacode = ' + luaCode)
-    await message({
-      // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
-      process: newProcessId,
-      tags: [
-        { name: 'Action', value: 'Eval' }
-      ],
-      // TODO data: luaCode.replace('\n', '      '),
-      data: luaCode,
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
+    await evalTaskProcess(newProcessId, data.ownerId)
+    showSuccess('Create task success')
 
     try {
       await message({
@@ -200,8 +197,25 @@ export const taskStore = defineStore('taskStore', () => {
       // alertError('messageToAo -> error:' + error)
       // return '';
     }
-    showSuccess('Create task success')
   }
+
+  async function evalTaskProcess(processID: string, ownerId: string) {
+    const x = 'TaskOwnerWallet = "' + ownerId + '"'
+    const luaCode = x + '      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )'
+    console.log('luacode = ' + luaCode)
+    await message({
+      // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'Eval' }
+      ],
+      // TODO data: luaCode.replace('\n', '      '),
+      data: luaCode,
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+  }
+
+
   const getAllInviteInfo = async() => {
     await window.arweaveWallet.connect(permissions)
     try{
@@ -260,16 +274,13 @@ export const taskStore = defineStore('taskStore', () => {
     }
     const resp = res.Messages[0].Data.split(';')
 
-    console.log('getAllTask resp from AO', resp)
     for (const json of resp) {
       const element = JSON.parse(json)
-      console.log({element})
-      console.log('communityId = ' + element.communityId)
-      console.log('trans communityId = ' + communityId)
+
       if (element.communityId !== communityId) {
-        // console.log('communityId = ' + element.communityId)
         continue
       }
+
       let reward = ''
       if(element.tokenNumber != '0'){
         reward = Number(element.tokenNumber) / denomination[element.tokenType] + ' ' + element.tokenType

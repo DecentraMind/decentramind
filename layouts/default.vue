@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import defaultCommunityLogo from '@/utils/defaultCommunityLogo'
 const route = useRoute()
 const appConfig = useAppConfig()
 const slug = $computed(() => route.params.slug)
@@ -90,7 +91,9 @@ const defaultColors = ref(
   }))
 )
 
-const { userInfo, joincommunityList, communityCreate, getCommunitylist, getInfo } = $(aocommunityStore())
+const { userInfo, joincommunityList, getCommunitylist, getInfo } = $(aocommunityStore())
+
+const isCreateModalOpen = $ref(false)
 
 onMounted(async () => {
   console.log('---')
@@ -147,6 +150,7 @@ const test = ()=> {
         </template>
 
         <UDivider />
+
         <div class="overflow-y-auto h-full" style="-ms-overflow-style: none; scrollbar-width: none;">
           <NuxtLink
             v-for="item in joincommunityList"
@@ -157,22 +161,18 @@ const test = ()=> {
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
             <div class="aspect-w-1 aspect-h-1">
               <img
-                :src="item.logo"
+                :src="item.logo || defaultCommunityLogo"
                 :title="item.name"
                 class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
               >
             </div>
           </NuxtLink>
-          
-          <UButton class="w-full " variant="soft" @click="communityCreate = true">
+
+          <UButton class="w-full mt-2" variant="soft" @click="isCreateModalOpen = true">
             <UIcon name="ion:add" class="h-full w-full " />
           </UButton>
         </div>
-        <!--
-        <UButton variant="soft" @click="test">
-          <UIcon name="ion:add" class="h-full w-full " />
-        </UButton>
-        -->
+
         <div class="flex-1" />
 
         <UDivider class="bottom-0 sticky" />
@@ -203,9 +203,10 @@ const test = ()=> {
     <ClientOnly>
       <LazyUDashboardSearch :groups="groups" />
     </ClientOnly>
-    <UModal v-model="communityCreate" :ui="{ width: w-full }">
+
+    <UModal v-model="isCreateModalOpen" :ui="{ width: w-full }">
       <UCard>
-        <CommunityCreate />
+        <CommunityCreate @close-modal="isCreateModalOpen = false" />
       </UCard>
     </UModal>
   </UDashboardLayout>

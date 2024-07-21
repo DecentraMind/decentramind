@@ -7,19 +7,20 @@ import { z } from 'zod'
 import { ref } from 'vue'
 import type { Dayjs } from 'dayjs'
 import { tokenOptions, timeZoneOptions } from '~/utils/constants'
-import TaskId from '../questdetail/[taskId].vue'
 
 const { t } = useI18n()
-const { denomination, createTask, getAllTasks, respArray, joinTask, getSpaceTaskSubmitInfo, getAllTaskSubmitInfo } = $(taskStore())
-const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, communityList, getCommunitylist } = $(aocommunityStore())
+const { denomination, createTask, getAllTasks, respArray, getAllTaskSubmitInfo } = $(taskStore())
+const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, getCommunitylist } = $(aocommunityStore())
 
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 
+const isSettingModalOpen = $ref(false)
 
-const communitySetting = $ref(false)
+let tasks = $ref<Awaited<ReturnType<typeof getAllTasks>>>([])
+
 let postQuestLoading = $ref(false)
 const items = [
   {
@@ -31,7 +32,7 @@ const items = [
     content: '',
   },
 ]
-let isOpen = $ref(false)
+let isCreateTaskModalOpen = $ref(false)
 
 function onChange(index: number) {
   const item = items[index]
@@ -133,6 +134,8 @@ function uuid() {
   })
 }
 
+const { showError } = $(notificationStore())
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   postQuestLoading = true
   if (!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime) {
@@ -183,17 +186,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
   transData.isBegin = isBegin
   transData.communityId = String(communityId)
-  await createTask(transData)
-  // await joinTask(transData.taskId, address)
 
-  await getAllTasks(String(communityId))
-  if (respArray.length === 0) {
-    taskListIsEmpty = true
-  } else {
-    taskListIsEmpty = false
+  try{
+    await createTask(transData)
+    isCreateTaskModalOpen = false
+  } catch (e) {
+    showError('Failed to create task.' + ((e as unknown as Error).message || ''))
+    console.error('create task error', e)
   }
+
+  tasks = await getAllTasks(String(communityId))
   postQuestLoading = false
-  isOpen = false
 }
 
 let allTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getAllTaskSubmitInfo>>>([])
@@ -226,10 +229,8 @@ const loadCommunityInfo = async (pid) => {
   }
 }
 
-let taskListIsEmpty = $ref(false)
 let isCommunityOwner = $ref(false)
 
-let allTasks = $ref()
 onMounted(async () => {
   // if(!communityInfo) {
   //   console.error('communityInfo is null')
@@ -245,24 +246,17 @@ onMounted(async () => {
     //return
   }
 
-  allTasks = await getAllTasks(communityId as string)
-  if(!allTasks) {
+  tasks = await getAllTasks(communityId as string)
+  if(!tasks) {
     console.error('allTasks undefined', communityId)
   }
 
-  if (!allTasks || allTasks.length === 0) {
-    taskListIsEmpty = true
-  }
   if (communityInfo.creater === address) {
     isCommunityOwner = true
   }
-  for (const t of allTasks) {
+  for (const t of tasks) {
     t.status = await checkSubmit(t.id, address) ? 'Y' : 'N'
   }
-
-  console.log('respArray[i].status  =', respArray.map(item => item.status))
-  // console.log('community creater = ' + communityInfo.creater)
-  console.log('isCommunityOwner = ' + isCommunityOwner)
 })
 
 const banners = [
@@ -294,7 +288,7 @@ const taskTypes = [
   [{
     label: 'Twitter Space Quest',
     click: () => {
-      isOpen = true
+      isCreateTaskModalOpen = true
     }
   }], [{
     label: 'Promotion Quest',
@@ -389,7 +383,7 @@ const formattedTwitterLink = (twitter) => {
 
           <UDivider />
 
-          <div class="flex justify-between my-3 mt-5 items-center">
+          <div v-if="communityInfo.website" class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
             <div>
               <div class="flex justify-center border rounded-lg w-full pl-2 pr-2">
@@ -397,7 +391,8 @@ const formattedTwitterLink = (twitter) => {
               </div>
             </div>
           </div>
-          <div class="flex justify-between my-3 items-center">
+
+          <div v-if="communityInfo.twitter" class="flex justify-between my-3 items-center">
             <div>{{ $t('SocialOfCommunityDetail') }}</div>
             <div>
               <ULink
@@ -413,8 +408,9 @@ const formattedTwitterLink = (twitter) => {
               </ULink>
             </div>
           </div>
+
           <div class="flex justify-between my-3 mt-10 items-center">
-            <div >{{ $t('TokenOfCommunityDetail') }}</div>
+            <div>{{ $t('TokenOfCommunityDetail') }}</div>
             <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="flex space-x-3">
               <div
                 v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
@@ -425,6 +421,7 @@ const formattedTwitterLink = (twitter) => {
               </div>
             </div>
           </div>
+
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('Trading Support') }}</div>
             <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex space-x-3">
@@ -437,7 +434,8 @@ const formattedTwitterLink = (twitter) => {
               </div>
             </div>
           </div>
-          <div class="flex justify-between my-3 items-center">
+
+          <div v-if="communityInfo.github" class="flex justify-between my-3 items-center">
             <div>{{ $t('GithubOfCommunityDetail') }}</div>
             <div>
               <ULink
@@ -453,10 +451,12 @@ const formattedTwitterLink = (twitter) => {
               </ULink>
             </div>
           </div>
+
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
             <div>{{ communityInfo.buildnum }}</div>
           </div>
+
           <div v-if="communityInfo.creater !== address" class="flex">
             <UButton
               color="white"
@@ -469,6 +469,7 @@ const formattedTwitterLink = (twitter) => {
             </UButton>
           </div>
         </div>
+
         <UDivider />
 
         <!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
@@ -476,7 +477,7 @@ const formattedTwitterLink = (twitter) => {
 
         <div class="flex-1" />
         <div v-if="communityInfo.creater == address" class="flex">
-          <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="communitySetting = true" />
+          <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="isSettingModalOpen = true" />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
@@ -520,14 +521,14 @@ const formattedTwitterLink = (twitter) => {
             <div class="flex">
               <div>
                 <!-- <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/> -->
-                <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }" v-if="communityInfo.creater == address" >
+                <UDropdown :items="taskTypes" v-if="communityInfo.creater == address" :popper="{ placement: 'bottom-start' }" >
                   <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
                 </UDropdown>
               </div>
             </div>
           </div>
-          <div class="h-full w-full flex justify-center items-center" v-if="taskListIsEmpty">
-            <div class="w-2/3" v-if="taskListIsEmpty">
+          <div v-if="!tasks.length" class="h-full w-full flex justify-center items-center">
+            <div v-if="!tasks.length" class="w-2/3">
               <Card highlight orientation="vertical">
                 <div class="flex justify-center items-center text-center whitespace-pre-line">
                   <div class="text-xl">
@@ -535,7 +536,7 @@ const formattedTwitterLink = (twitter) => {
                   </div>
                 </div>
                 <div class="flex mt-10 justify-center items-center">
-                  <div class="flex justify-center items-center" v-if="communityInfo.creater == address" >
+                  <div v-if="communityInfo.creater == address" class="flex justify-center items-center" >
                     <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                       <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
                     </UDropdown>
@@ -545,29 +546,30 @@ const formattedTwitterLink = (twitter) => {
             </div>
           </div>
 
-          <div v-if="!taskListIsEmpty" class="mx-auto w-full">
+          <div v-if="tasks.length" class="mx-auto w-full">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-10">
               <UBlogPost
-                v-for="blogPost in allTasks"
-                :key="blogPost.id"
-                :image="`/task/${blogPost.image}.jpg`"
-                :description="blogPost.description">
+                v-for="task in tasks"
+                :key="task.id"
+                :image="`/task/${task.image}.jpg`"
+                :description="task.description"
+              >
                 <template #title>
                   <div class="flex justify-between">
-                    <div>{{ blogPost.name }}</div>
+                    <div>{{ task.name }}</div>
                   </div>
                   <div class="flex">
                     <div class="mx-2">
                       <UBadge size="xs" color="black" variant="solid">
-                        {{ finalStatus(blogPost.isBegin)}}
+                        {{ finalStatus(task.isBegin)}}
                       </UBadge>
                     </div>
-                    <div v-if="blogPost.status === 'Y'">
+                    <div v-if="task.status === 'Y'">
                       <UBadge color="black" variant="solid">
                         {{ t('task.isjoin') }}
                       </UBadge>
                     </div>
-                    <div v-if="blogPost.ownerId === address && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-2">
+                    <div v-if="task.ownerId === address && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-2">
                       <UBadge size="xs" color="black" variant="solid">
                         {{ $t('Unsettled') }}
                       </UBadge>
@@ -578,7 +580,7 @@ const formattedTwitterLink = (twitter) => {
                 <template #description>
                   <div class="flex flex-col space-y-2">
                     <div class="h-6 overflow-hidden">
-                      {{ blogPost.description }}
+                      {{ task.description }}
                     </div>
                     <div class="flex justify-between">
                       <div>
@@ -588,7 +590,7 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                       <div>
                         <div>
-                          {{ blogPost.reward }}
+                          {{ task.reward }}
                         </div>
                       </div>
                     </div>
@@ -600,13 +602,13 @@ const formattedTwitterLink = (twitter) => {
                       </div>
                       <div>
                         <div>
-                          {{ blogPost.joined }}
+                          {{ task.joined }}
                         </div>
                       </div>
                     </div>
                   </div>
                 </template>
-                <UButton :to="`/${slug}/questdetail/${blogPost.id}`" class="absolute right-0" color="white" variant="outline">
+                <UButton :to="`/${slug}/questdetail/${task.id}`" class="absolute right-0" color="white" variant="outline">
                   {{ $t("View Details") }}
                 </UButton>
               </UBlogPost>
@@ -614,14 +616,15 @@ const formattedTwitterLink = (twitter) => {
           </div>
         </div>
       </UPage>
-      <UModal v-model="isOpen">
+
+      <UModal v-model="isCreateTaskModalOpen">
         <UCard>
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                 {{ $t("Start a Public Quest") }}
               </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreateTaskModalOpen = false" />
             </div>
           </template>
           <UForm ref="form" :schema="schema" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
@@ -707,11 +710,13 @@ const formattedTwitterLink = (twitter) => {
           </UForm>
         </UCard>
       </UModal>
-      <UModal v-model="communitySetting" :ui="{ width: w-full }">
+
+      <UModal v-model="isSettingModalOpen" :ui="{ width: w-full }">
         <UCard>
-          <CommunitySetting />
+          <CommunitySetting @close-setting="isSettingModalOpen=false" />
         </UCard>
       </UModal>
+
       <UModal v-model="exitButton" :ui="{ width: w-full }">
         <UCard class="min-w-[300px] flex justify-center">
           <div class="w-full flex justify-center text-2xl">

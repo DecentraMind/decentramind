@@ -4,6 +4,7 @@ import type { FormSubmitEvent } from '#ui/types'
 import type { CommunitySetting, TradePlatform } from '~/types'
 import { tradePlatforms, tokenNames, type TokenName, type CommunityToken, type TokenSupply } from '~/utils/constants'
 import defaultCommunityLogo from '~/utils/defaultCommunityLogo'
+import { communitySettingSchema, type CommunitySettingSchema } from '~/utils/schemas'
 
 let supportSelected: TradePlatform[] = $ref([])
 let tokenSelected = $ref<TokenName[]>([])
@@ -37,46 +38,17 @@ const state = $ref<CommunitySetting>({
 
 let communityID = $ref('')
 
-const schema = z.object({
-  name: z.string().min(2).max(20),
-  inbro: z.string().min(3).max(100),
-
-  //Website: z.string().max(15).optional(),
-  //Twitter: z.string().max(15).optional(),
-  //Gihub: z.string().max(15).optional(),
-
-  tradePlatform: z.string().refine((value: string) => value === 'OKE', {
-    message: 'Select OKE'
-  }),
-  allToken: z.string()
-    .min(0, { message: 'Must be more than 0' })
-    .refine((value: string) => {
-      const num = parseFloat(value)
-      return !isNaN(num) && num > 0
-    }, { message: 'Must be a valid number more than 0' })
-    .refine((value: string) => {
-      const regex = /^\d+(\.\d{1,3})?$/
-      return regex.test(value)
-    }, { message: 'Must be a valid number with up to 3 decimal places' })
-  /*
-  allReward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
-    const num = parseInt(value)
-    return !isNaN(num) && num <= 100
-  }, { message: 'Must be a valid number less than or equal to 20' }),
-  */
-})
-
-type Schema = z.infer<typeof schema>
+const emit = defineEmits(['close-setting'])
 
 const form = ref()
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   // Do something with event.data
   console.log(event.data)
 }
 
 
-const { settingCommunity, communityCreate, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
+const { settingCommunity, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
 let isLoading = $ref(false)
 let createSuccess = $ref(false)
 const CreateCommunity = async () => {
@@ -105,7 +77,7 @@ const CreateCommunity = async () => {
   isLoading = false
 }
 
-const handleUp = (event: Event) => {
+const handleUploadLogo = (event: Event) => {
   const input = event.target as HTMLInputElement
   if (!input.files?.length) {
     throw new Error('No file selected.')
@@ -126,19 +98,12 @@ const handleUp = (event: Event) => {
     img.src = b64
   }
   reader.readAsDataURL(file)
-
 }
 
 const uploadLogo = () => {
   const input = document.querySelector('#uploadLogo') as any
   input.click()
 }
-
-const bannerupload = () => {
-  const input = document.querySelector('#bannerupload') as any
-  input.click()
-}
-
 
 const items = [
   '/task/banner6.jpg',
@@ -212,7 +177,7 @@ watch(() => state.isPublished, (newVal) => {
 // 添加表单组函数
 const addSupplyGroup = () => {
   token.tokenSupply.push({
-    name: '',
+    name: '' as TokenName,
     supply: '',
   })
 }
@@ -259,7 +224,7 @@ onMounted(async () => {
 
 <template>
   <UDashboardPage>
-    <DashboardPanelContent class="w-full overflow-y-auto pl-20 pt-10">
+    <DashboardPanelContent class="w-full overflow-y-auto px-10 pt-10">
       <UAlert>
         <template #title>
           <div class="text-3xl p-2 flex justify-center">
@@ -267,7 +232,7 @@ onMounted(async () => {
           </div>
         </template>
       </UAlert>
-      <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
+      <UForm ref="form" :schema="communitySettingSchema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
         <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class=" w-[300px]">
@@ -291,7 +256,7 @@ onMounted(async () => {
             class="flex justify-center w-[150px] h-[120px]"
             @click="uploadLogo"
           />
-          <Input id="uploadLogo" type="file" size="sm" class="opacity-0" @change="handleUp" />
+          <Input id="uploadLogo" type="file" size="sm" class="opacity-0" @change="handleUploadLogo" />
         </UFormGroup>
         <!--<UButton @click="test">test</UButton>-->
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
@@ -501,7 +466,7 @@ onMounted(async () => {
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/${slug}/community/${communityID}`" @click="communityCreate = false; isCreated = false">
+            <UButton @click="emit('close-setting')">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>

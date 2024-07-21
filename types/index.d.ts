@@ -87,6 +87,7 @@ export type CommunitySetting = {
   allToken: string | undefined;
   communityToken: string | undefined;
   communityChatID: string | undefined;
+  /** string of timestamp */
   time: string | undefined;
 }
 
