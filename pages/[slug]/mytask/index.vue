@@ -66,14 +66,17 @@ const didRows = computed(() => {
 const cRows = computed(() => {
   return created.slice((pageC.value - 1) * pageCount, (pageC.value) * pageCount)
 })
+
+// TODO add categorizeByCommunityID
+// TODO move to utils
 function categorizeByTaskId(data: TaskData[]): Record<string, TaskData[]> {
   return data.reduce((acc, item) => {
     if (!acc[item.taskId]) {
-      acc[item.taskId] = [];
+      acc[item.taskId] = []
     }
-    acc[item.taskId].push(item);
-    return acc;
-  }, {} as Record<string, TaskData[]>);
+    acc[item.taskId].push(item)
+    return acc
+  }, {} as Record<string, TaskData[]>)
 }
 
 onMounted( async () => {
@@ -99,6 +102,7 @@ onMounted( async () => {
     if (categorizedC.hasOwnProperty(taskId)) {
       const taskArray = categorizedC[taskId]
       if(taskArray.length > 1){
+        // TODO use token.denotation
         const b = (taskArray[0].tokenNumber / 1e12) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / 1e12) + ' ' + taskArray[1].tokenType
 
         const combine = {
@@ -177,7 +181,7 @@ let didQuest = $ref(false)
 let didBounty = $ref([])
 
 const mergeBounties = (bounties) => {
-  const bountyMap = {};
+  const bountyMap = {}
 
   bounties.forEach(item => {
     const { tokenNumber, tokenType } = item
@@ -188,14 +192,14 @@ const mergeBounties = (bounties) => {
     } else {
       bountyMap[tokenType] = bountyValue
     }
-  });
+  })
 
   const mergedBounties = Object.keys(bountyMap).map(tokenType => ({
     bounty: bountyMap[tokenType].toFixed(4),
     bountyType: tokenType
-  }));
+  }))
 
-  return mergedBounties;
+  return mergedBounties
 };
 
 </script>

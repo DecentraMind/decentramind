@@ -40,6 +40,7 @@ const checkSubmit = () => {
   for (let index = 0;index < spaceTaskSubmitInfo.length;index++) {
     const element = spaceTaskSubmitInfo[index]
     if (element.address === address) {
+      console.log('found address submitted to task', element.id)
       return true
     }
   }
@@ -57,10 +58,11 @@ const checkJoin = () => {
   }
   return false
 }
-let isSubmitted = $ref<boolean>()
-let isJoined = $ref<boolean>()
+let isSubmitted = $ref<boolean>(false)
+let isJoined = $ref<boolean>(false)
 isJoined = checkJoin()
 isSubmitted = checkSubmit()
+console.log({isSubmitted})
 
 let isIng = $ref(false)
 let submitStatus = $ref('')
@@ -89,7 +91,7 @@ onMounted(async () => {
       return count + (info.taskId === taskId ? 1 : 0)
     }, 0)
 
-  if (isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N') {
+    if (isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N') {
     // 计算分数
       calculateScore()
       console.log(taskId)
@@ -147,13 +149,17 @@ function calculateScore() {
   console.log('totalScore = ' + totalScore)
   for (let i = 0;i < spaceTaskSubmitInfo.length;++i) {
     if (blogPost!.tokenNumber) {
+      // TODO 5% 手续费
       spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType1 = blogPost!.tokenType
+      // TODO use token.denomination
       spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / denomination[spaceTaskSubmitInfo[i].bountyType1]).toString() + spaceTaskSubmitInfo[i].bountyType1
     }
     if (blogPost!.tokenNumber1) {
+      // TODO 5% 手续费
       spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber1)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType2 = blogPost!.tokenType1
+      // TODO use token.denomination
       spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / denomination[spaceTaskSubmitInfo[i].bountyType2]).toString() + spaceTaskSubmitInfo[i].bountyType2
     }
 
@@ -303,7 +309,7 @@ async function submitTask() {
   url = url + '.png'
   const userAvatar = url
   // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
-  const userCreatedAt = data._rawValue.includes.users[0].created_at
+  // const userCreatedAt = data._rawValue.includes.users[0].created_at
   // space创办人的ID 用于判断是否是本人提交任务
   const userId = data._rawValue.includes.users[0].id
   // const userAvatarBase64 = await url2Base64(userAvatar)
@@ -328,7 +334,7 @@ async function submitTask() {
   console.log('spaceEnded_at = ' + spaceEnded_at)
   console.log('participated = ' + participated)
   console.log('userAvatar = ' + userAvatar)
-  console.log('userCreatedAt = ' + userCreatedAt)
+  //console.log('userCreatedAt = ' + userCreatedAt)
   console.log('userId = ' + userId)
   // console.log('brand = ' + brandEffect)
   // console.log(communityInfo.logo)
@@ -343,19 +349,13 @@ async function submitTask() {
 
 let selected = $ref([])
 
-function select(row) {
-  const index = selected.findIndex((item) => item.id === row.id)
-  if (index === -1) {
-    selected.push(row)
-  } else {
-    selected.splice(index, 1)
-  }
-
-}
 
 async function sendBountyByAo() {
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
   sendBountyLoading = true
+
+  // TODO if no submitted info, don't need isCal==='Y'
+
   if (blogPost.isCal === 'Y') {
     const bounties = []
     if (selected.length != 0) {
@@ -385,6 +385,14 @@ async function sendBountyByAo() {
             break
           }
         }
+
+        // TODO add bountyData of 5%
+
+        // const bountyData = {
+        //         walletAddress: ,
+        //         tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+        //         tokenType: spaceTaskSubmitInfo[j].bountyType2,
+        //       }
       }
     }
     // ji算剩余token，返还给任务创建人
@@ -398,6 +406,9 @@ async function sendBountyByAo() {
         bounty2 = bounty2 - bounties[j].tokenNumber
       }
     }
+
+    // TODO 如果bounties.length>0 收取5%手续费
+
     if (bounty1 && bounty1 > 0 && bounty1 != 'undefined') {
       const bountyData = {
         walletAddress: address,
