@@ -626,6 +626,7 @@ const trueRows = computed(() => {
                   </div>
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
+                <div><a :href="`https://www.ao.link/#/entity/${blogPost.processId}?tab=source-code`" target="_blank">AO Process</a></div>
               </div>
               <div v-if="isJoined">
                 <UTable v-model="selected" :rows="trueRows" :columns="columns">
