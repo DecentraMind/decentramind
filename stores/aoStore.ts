@@ -1,3 +1,4 @@
+import {tokenProcessIDs} from '~/utils/constants'
 import {
   createDataItemSigner,
   result,
@@ -38,25 +39,10 @@ export const aoStore = defineStore('aoStore', () => {
 
 
   let totalBalance = $ref(0)
-  const tokenMap = $ref({
-    CRED: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
-    AOCoin: 'rxl5oOyCuzrUUVB1edjrcHpcn9s9czhj4rsq4ACQGv4',
-    AR: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
-    FIZI: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
-    Arena: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
-    DepositService: 'kzcVZhdcZOpM90eeKb-JRX3AG7TGH__S7p5I6PsqA3g',
-    BRKTST: '8p7ApPZxC_37M06QHVejCQrKsHbcJEerd3jWNkDUWPQ',
-    TRUNK: 'OT9qTE2467gcozb2g8R6D6N3nQS94ENcaAIJfUzHCww',
-    EXP: 'aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw',
-    ORBT: 'BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc',
-    EARTH: 'PBg5TSJPQp9xgXGfjN27GA28Mg5bQmNEdXH2TXY4t-A',
-    FIRE: 'KmGmJieqSRJpbW6JJUFQrH3sQPEG9F6DQETlXNt4GpM',
-    AIR: '2nfFJb8LIA69gwuLNcFQezSuw4CXPE4--U-j-7cxKOU',
-    FIREEARTH: 'NkXX3uZ4oGkQ3DPAWtjLb2sTA-yxmZKdlOlEHqMfWLQ',
-  })
+  const tokenMap = $ref(tokenProcessIDs)
   const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
   let address = $(lsItemRef('address', ''))
-  let tokenBalances = $ref({
+  const tokenBalances = $ref({
     //CRED: 0,
     AOCOIN: 0,
     AR: 0,

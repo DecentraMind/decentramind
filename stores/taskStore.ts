@@ -1,3 +1,4 @@
+import {tokenProcessIDs} from '~/utils/constants'
 import {
   createDataItemSigner,
   result,
@@ -5,8 +6,11 @@ import {
   dryrun, spawn
 } from '@permaweb/aoconnect'
 
-import { PermissionType } from 'arconnect'
-
+import type { PermissionType } from 'arconnect'
+import { defineStore } from 'pinia'
+import { notificationStore } from './notificationStore'
+import {aoCommunityProcessID, tasksProcessID} from '~/utils/processID'
+import type { Task } from '~/types'
 
 const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
@@ -15,26 +19,24 @@ const permissions: PermissionType[] = [
   'DISPATCH'
 ]
 
-let processId = 'mNbAy9OY-R0tdrNnQBQatVKo37SxlY7bt-ouS_hZ33w'
+type TaskSubmitInfo = {
+  taskId: any;
+  id: number;
+  address: any;
+  brandEffect: any;
+  getPerson: any;
+  audience: any;
+  url: any;
+  score: any;
+  bounty: any;
+  bounty1: any;
+  bountyType1: any;
+  bounty2: any;
+  bountyType2: any;
+}
 
 export const taskStore = defineStore('taskStore', () => {
-  const tokenMap = $ref({
-    CRED: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
-    AOCoin: 'rxl5oOyCuzrUUVB1edjrcHpcn9s9czhj4rsq4ACQGv4',
-    AR: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
-    FIZI: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
-    LINUX: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
-    Arena: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
-    DepositService: 'kzcVZhdcZOpM90eeKb-JRX3AG7TGH__S7p5I6PsqA3g',
-    BRKTST: '8p7ApPZxC_37M06QHVejCQrKsHbcJEerd3jWNkDUWPQ',
-    TRUNK: 'OT9qTE2467gcozb2g8R6D6N3nQS94ENcaAIJfUzHCww',
-    EXP: 'aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw',
-    ORBT: 'BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc',
-    EARTH: 'PBg5TSJPQp9xgXGfjN27GA28Mg5bQmNEdXH2TXY4t-A',
-    FIRE: 'KmGmJieqSRJpbW6JJUFQrH3sQPEG9F6DQETlXNt4GpM',
-    AIR: '2nfFJb8LIA69gwuLNcFQezSuw4CXPE4--U-j-7cxKOU',
-    FIREEARTH: 'NkXX3uZ4oGkQ3DPAWtjLb2sTA-yxmZKdlOlEHqMfWLQ',
-  })
+  const tokenMap = $ref(tokenProcessIDs)
   const denomination  = $ref({
     AO: 1e12,
     AR: 1e12,
@@ -47,55 +49,69 @@ export const taskStore = defineStore('taskStore', () => {
     AIR: 1e12,
     LAVA: 1e12,
   })
-  const Sleep = (ms)=> {
+  const Sleep = (ms: number)=> {
     return new Promise(resolve=>setTimeout(resolve, ms))
   }
 
 
   const { showError, showSuccess, alertMessage } = $(notificationStore())
   let respArray = $ref([])
-  let submitInfo = $ref([])
+  let allTaskSubmitInfo = $ref<TaskSubmitInfo[]>([])
   let allTasks = $ref([])
   let allInviteInfo = $ref([])
   const createTask = async (data: any) => {
     //  创建process 将process ID添加在任务信息中
     await window.arweaveWallet.connect(permissions)
-    let newProcessId = await spawn({
+    const newProcessId = await spawn({
       module: '5l00H2S0RuPYe-V5GAI-1RgQEHFInSMr20E-3RNXJ_U',
       scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
       signer: createDataItemSigner(window.arweaveWallet),
     })
     data.processId = newProcessId
-    await Sleep(1000)
+
+    // wait for process creating until you can send message to it
+    await Sleep(2000)
+
+    // TODO check if process exist, and wait for seconds to try again
+
+
+
     console.log(JSON.stringify(data))
     console.log('newProcessId = ' + newProcessId)
+
     // 把此次任务需要的钱转给process两种bounty，转两次，如果不为0的话
-    if(data.tokenNumber && data.tokenNumber != 0){
+    if (data.tokenNumber && data.tokenNumber != 0) {
       console.log('tokenNumber = ' + data.tokenNumber)
       console.log(data.tokenType)
-      console.log(tokenMap[data.tokenType])
-      try{
+
+      try {
+        if (!tokenMap[data.tokenType as TokenName]) {
+          throw new Error(`token ${data.tokenType} not supported.`)
+        }
+        console.log(data.tokenType, 'token processID: ', tokenMap[data.tokenType as TokenName])
         await window.arweaveWallet.connect(permissions)
-      }catch(error){
+      } catch (error) {
         console.log('open error = ' + error)
         return
       }
+
       try{
         const messageId = await message({
-          process: tokenMap[data.tokenType],
+          process: tokenMap[data.tokenType as TokenName],
           signer: createDataItemSigner(window.arweaveWallet),
           tags: [
             { name: 'Action', value: 'Transfer' },
-            {name: 'Recipient', value: newProcessId},
-            {name: 'Quantity', value: String(data.tokenNumber)}
+            { name: 'Recipient', value: newProcessId },
+            { name: 'Quantity', value: String(data.tokenNumber) }
           ]
         })
-        let { Messages, Spawns, Output, Error } = await result({
+        const { Messages } = await result({
           // the arweave TXID of the message
           message: messageId,
           // the arweave TXID of the process
-          process: tokenMap[data.tokenType],
-        });
+          process: tokenMap[data.tokenType as TokenName],
+        })
+
         const mTags = Messages[0].Tags
         let transError = false
         let errorMessage = ''
@@ -107,12 +123,14 @@ export const taskStore = defineStore('taskStore', () => {
             break
           }
         }
+
         if(transError){
           showError('Pay bounty failed.' + errorMessage)
           alert('Pay bounty failed.' + errorMessage)
           return
         }
-      }catch(error){
+
+      } catch (error){
         showError(error)
         return
       }
@@ -142,7 +160,7 @@ export const taskStore = defineStore('taskStore', () => {
           message: messageId,
           // the arweave TXID of the process
           process: tokenMap[data.tokenType],
-        });
+        })
         const mTags = Messages[0].Tags
         let transError = false
         let errorMessage = ''
@@ -159,27 +177,18 @@ export const taskStore = defineStore('taskStore', () => {
           alert('Pay bounty failed.' + errorMessage)
           return
         }
-      }catch(error){
-        console.log(error)
+      } catch (error) {
+        console.error('create task error', error)
       }
     }
+
     // 向新的process里写入sendBounty方法
-    const x = 'TaskOwnerWallet = "' + data.ownerId + '"'
-    const luaCode = x + '      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )'
-    console.log('luacode = ' + luaCode)
-    let buildLua = await message({
-      // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
-      process: newProcessId,
-      tags: [
-        { name: 'Action', value: 'Eval' }
-      ],
-      data: luaCode,
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
+    await evalTaskProcess(newProcessId, data.ownerId)
+    showSuccess('Create task success')
 
     try {
-      const messageId = await message({
-        process: processId,
+      await message({
+        process: tasksProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'CreateTask' }],
         data: JSON.stringify(data)
@@ -188,19 +197,36 @@ export const taskStore = defineStore('taskStore', () => {
       // alertError('messageToAo -> error:' + error)
       // return '';
     }
-    showSuccess('Create task success')
   }
+
+  async function evalTaskProcess(processID: string, ownerId: string) {
+    const x = 'TaskOwnerWallet = "' + ownerId + '"'
+    const luaCode = x + '      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )'
+    console.log('luacode = ' + luaCode)
+    await message({
+      // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'Eval' }
+      ],
+      // TODO data: luaCode.replace('\n', '      '),
+      data: luaCode,
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+  }
+
+
   const getAllInviteInfo = async() => {
     await window.arweaveWallet.connect(permissions)
     try{
       const res = await dryrun({
-        process: 'jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU',
+        process: aoCommunityProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [
           { name: 'Action', value: 'getAllInviteInfo' }
         ]
       })
-      if (res.Messages[0].Data === 'null') {
+    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
         respArray = []
         return ''
       }
@@ -208,11 +234,10 @@ export const taskStore = defineStore('taskStore', () => {
       allInviteInfo = []
       for (let index = 0; index < resp.length; index++) {
         // console.log('resp[index] = ' + JSON.parse(resp[index]).invited)
-        let element = JSON.parse(resp[index])
+        const element = JSON.parse(resp[index])
         if(element.invited === 'none'){
           continue
         }
-        // console.log(resp[index])
         const inviteInfo = {
           invited: element.invited,
           communityId: element.communityId,
@@ -221,94 +246,86 @@ export const taskStore = defineStore('taskStore', () => {
           userName: element.userName,
           userAvatar: element.userAvatar
         }
+        console.log({inviteInfo})
         allInviteInfo.push(inviteInfo)
       }
-    }catch(error){
+    } catch (error){
       console.log(error)
     }
   }
+
   const getAllTasks = async (communityId: string) => {
+    // TODO don't use outer variable respArray
+    respArray = []
+    const communityTasks = []
     let res
     try {
       res = await dryrun({
-        process: processId,
+        process: tasksProcessID,
         tags: [{ name: 'Action', value: 'GetAllTasks' }],
       })
     } catch (error) {
       alertMessage(error)
-      return ''
+      return []
     }
-    if (res.Messages[0].Data === 'null') {
+    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
       respArray = []
-      return ''
+      return []
     }
-    let resp = res.Messages[0].Data.split(';')
-    respArray = []
-    for (let index = 0; index < resp.length; index++) {
+    const resp = res.Messages[0].Data.split(';')
 
-      let element = JSON.parse(resp[index])
-      // console.log('communityId = ' + element.communityId)
-      // console.log('trans communityId = ' + communityId)
+    for (const json of resp) {
+      const element = JSON.parse(json) as Task
+
       if (element.communityId !== communityId) {
-        // console.log('communityId = ' + element.communityId)
         continue
       }
+
       let reward = ''
-      if(element.tokenNumber != '0'){
+      if(element.tokenNumber != 0){
         reward = Number(element.tokenNumber) / denomination[element.tokenType] + ' ' + element.tokenType
       }
-      if(element.tokenNumber1 != '0'){
+      if(element.tokenNumber1 != 0){
         reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
       }
+
       const respData = {
-        id: element.taskId,
-        name: element.taskName,
-        image: element.taskLogo,
-        description: element.taskInfo,
-        startTime: element.startTime,
-        endTime: element.endTime,
-        zone: element.zone,
-        rewardTotal: element.rewardTotal,
-        buildNumber: element.buildNumber,
-        taskRule: element.taskRule,
-        reward: reward,
-        tokenNumber: element.tokenNumber,
-        tokenType: element.tokenType,
-        tokenNumber1: element.tokenNumber1,
-        tokenType1: element.tokenType1,
-        builderNum: element.buildNumber,
-        status: element.isBegin,
-        joined: element.joined,
-        ownerId: element.ownerId,
-        communityId: element.communityId,
-        isBegin: element.isBegin,
-        isSettle: element.isSettle,
-        isCal: element.isCal,
-        processId: element.processId
+        ...element,
+        reward: reward
       }
       respArray.push(respData)
 
+      communityTasks.push(respData)
     }
     // console.log("respArray = " + respArray)
     // for (let index = 0; index < respArray.length; index++) {
     //     const e = respArray[index];
     //     console.log(e.id)
     // }
+    // console.log({communityTasks: communityTasks.sort((a, b) => {
+    //   return (a.createTime || a.startTime) > (b.createTime || b.startTime) ? 1 : -1
+    // }), respArray})
     showSuccess('Get all tasks success')
+
+    const sortedTasks = communityTasks.sort((a, b) => {
+      return (a.createTime || a.startTime) >= (b.createTime || b.startTime) ? 1 : -1
+    })
+    console.log({sortedTasks})
+    return sortedTasks
   }
 
   const getAllTasksNoCommunity = async () => {
     let res
     try {
       res = await dryrun({
-        process: processId,
+        process: tasksProcessID,
         tags: [{ name: 'Action', value: 'GetAllTasks' }],
       })
     } catch (error) {
       alertMessage(error)
       return ''
     }
-    if (res.Messages[0].Data === 'null') {
+    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
       respArray = []
       return ''
     }
@@ -363,7 +380,59 @@ export const taskStore = defineStore('taskStore', () => {
     showSuccess('Get all tasks success')
   }
 
+  const getTask = async (taskID: string) => {
+    if(!taskID) {
+      throw new Error('taskID is required to get task info')
+    }
+
+    let res
+    try {
+      res = await dryrun({
+        process: tasksProcessID,
+        tags: [{ name: 'Action', value: 'GetAllTasks' }],
+      })
+    } catch (error) {
+      console.error('getTask error:', error)
+      alertMessage(error)
+      return
+    }
+
+    console.log(`getTask ${taskID} res:`, res)
+    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
+      return
+    }
+    const resp = res.Messages[0].Data.split(';')
+
+    for (let index = 0; index < resp.length; index++) {
+      const element = JSON.parse(resp[index]) as Task
+
+      if(element.taskId !== taskID) continue
+      // console.log('communityId = ' + element.communityId)
+      // console.log('trans communityId = ' + communityId)
+
+      console.info('found task from res!')
+
+      let reward = ''
+      if(element.tokenNumber != 0){
+        reward = Number(element.tokenNumber) / denomination[element.tokenType] + ' ' + element.tokenType
+      }
+      if(element.tokenNumber1 != 0){
+        reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
+      }
+      return {
+        ...element,
+        reward
+      }
+    }
+
+    console.error('Not found this task')
+    return
+  }
+
+  // TODO replace this with getTask
   const getTaskById = async (taskId: string) => {
+    console.log('getTaskById', taskId)
+
     // 根据taskId获取单个任务信息
     for (let index = 0; index < respArray.length; index++) {
       const taskItem = respArray[index]
@@ -383,14 +452,14 @@ export const taskStore = defineStore('taskStore', () => {
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
-        process: processId,
+        process: tasksProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: "JoinTask" }],
+        tags: [{ name: 'Action', value: 'JoinTask' }],
         data: JSON.stringify(data)
       })
       return messageId
     } catch (error) {
-      console.log("messageToAo -> error:", error)
+      console.log('messageToAo -> error:', error)
       return ''
     }
   }
@@ -400,21 +469,21 @@ export const taskStore = defineStore('taskStore', () => {
     let TaskJoinRecords = []
     try {
       res = await dryrun({
-        process: processId,
-        tags: [{ name: 'Action', value: "getTaskJoinRecord" }, { name: 'taskId', value: taskId }],
+        process: tasksProcessID,
+        tags: [{ name: 'Action', value: 'getTaskJoinRecord' }, { name: 'taskId', value: taskId }],
       })
     } catch (error) {
       alertMessage(error)
-      return ''
+      return
     }
-    if (res.Messages[0].Data === 'null') {
+    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
       TaskJoinRecords = []
-      return ''
+      return
     }
-    let resp = res.Messages[0].Data.split(';')
+    const resp = res.Messages[0].Data.split(';')
     for (let index = 0; index < resp.length; index++) {
 
-      let element = JSON.parse(resp[index])
+      const element = JSON.parse(resp[index])
 
       const respData = {
         taskId: element.taskId,
@@ -462,9 +531,9 @@ export const taskStore = defineStore('taskStore', () => {
 
 
 
-  const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: string, friend: string, audi: string) => {
+  const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: number, friend: string, audi: string) => {
     console.log('audi = ' + audi)
-    let data = {
+    const data = {
       taskId: taskId,
       address: walletAddress,
       brandEffect: brand,
@@ -478,14 +547,14 @@ export const taskStore = defineStore('taskStore', () => {
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
-        process: processId,
+        process: tasksProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: "SubmitSpaceTask" }],
+        tags: [{ name: 'Action', value: 'SubmitSpaceTask' }],
         data: JSON.stringify(data)
       })
       return messageId
     } catch (error) {
-      console.log("messageToAo -> error:", error)
+      console.log('messageToAo -> error:', error)
       return ''
     }
   }
@@ -494,7 +563,7 @@ export const taskStore = defineStore('taskStore', () => {
     console.log('in updataTask')
     try {
       await message({
-        process: processId,
+        process: tasksProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'updateTaskAfterCal' }],
         data: taskId
@@ -509,7 +578,7 @@ export const taskStore = defineStore('taskStore', () => {
     console.log('in updataTask')
     try {
       await message({
-        process: processId,
+        process: tasksProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'updateTaskAfterSettle' }],
         data: taskId
@@ -532,7 +601,7 @@ export const taskStore = defineStore('taskStore', () => {
     console.log(requestBody)
     try {
       const messageId = await message({
-        process: processId,
+        process: tasksProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'updateTaskSubmitInfoAfterCal' }, { name: 'taskId', value: taskId }],
         data: requestBody
@@ -547,24 +616,27 @@ export const taskStore = defineStore('taskStore', () => {
     let spaceTaskSubmitInfo = []
     try {
       res = await dryrun({
-        process: processId,
-        tags: [{ name: 'Action', value: "getSpaceTaskSubmitInfo" }, { name: 'taskId', value: taskId }],
+        process: tasksProcessID,
+        tags: [{ name: 'Action', value: 'getSpaceTaskSubmitInfo' }, { name: 'taskId', value: taskId }],
       })
+      console.log('getSpaceTaskSubmitInfo:', {res})
     } catch (error) {
       alertMessage(error)
-      return ''
+      console.error('getSpaceTaskSubmitInfo', error)
+      return []
     }
 
-    if (res.Messages[0].Data === 'null') {
+    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
+      console.info('getSpaceTaskSubmitInfo null', res)
       spaceTaskSubmitInfo = []
-      return ''
+      return []
     }
-    let resp = res.Messages[0].Data.split(';')
+    const resp = res.Messages[0].Data.split(';')
 
     for (let index = 0; index < resp.length; index++) {
-
-      let element = JSON.parse(resp[index])
+      const element = JSON.parse(resp[index])
       console.log('resp = ' + element.address)
+
       const respData = {
         taskId: element.taskId,
         id: index + 1,
@@ -584,26 +656,27 @@ export const taskStore = defineStore('taskStore', () => {
     }
     return spaceTaskSubmitInfo
   }
+
   const getAllTaskSubmitInfo = async () => {
     let res
     try {
       res = await dryrun({
-        process: processId,
+        process: tasksProcessID,
         tags: [{ name: 'Action', value: 'getAllTaskSubmitInfo' }],
       })
     } catch (error) {
       alertMessage(error)
-      return ''
+      return []
     }
-    if (res.Messages[0].Data === 'null') {
-      submitInfo = []
-      return ''
+    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
+      allTaskSubmitInfo = []
+      return []
     }
     const resp = res.Messages[0].Data.split(';')
-    submitInfo = []
+    allTaskSubmitInfo = []
     for (let index = 0; index < resp.length; index++) {
 
-      let element = JSON.parse(resp[index])
+      const element = JSON.parse(resp[index])
       // console.log('resp = ' + element.address)
       const respData = {
         taskId: element.taskId,
@@ -620,8 +693,11 @@ export const taskStore = defineStore('taskStore', () => {
         bounty2: element.bounty2,
         bountyType2: element.bountyType2
       }
-      submitInfo.push(respData)
+      allTaskSubmitInfo.push(respData)
     }
+
+    console.log('getAllTaskSubmitInfo', allTaskSubmitInfo)
+    return allTaskSubmitInfo
   }
 
   // wallets: 需要转账的钱包地址 tokenNumber: 每个账户需要转的token数量 tokenType: 转账的token类型的地址
@@ -653,7 +729,7 @@ export const taskStore = defineStore('taskStore', () => {
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
-        process: processId,
+        process: tasksProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'storeBounty' }],
         data: JSON.stringify(bounties)
@@ -669,7 +745,7 @@ export const taskStore = defineStore('taskStore', () => {
     let res
     try {
       res = await dryrun({
-        process: processId,
+        process: tasksProcessID,
         tags: [{ name: 'Action', value: 'getAllBounties' }]
       })
       console.log('all bounties = ' + res.Messages[0].Data)
@@ -708,7 +784,5 @@ export const taskStore = defineStore('taskStore', () => {
 
 
 
-  return $$({ denomination, storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
+  return $$({ denomination, storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo, makecommunityChat })
 })
-
-// Send({ Target = ao.id, Action = "sendBounty", Data = "{"tokenNumber": "100","tokenType": "4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw","wallets": ["Hjb69NoUe5ClO2ZD3eVYM5gPKrS2PSYctns95kBA4Fg","jl0nyTKNDHPVMoE3DlaHiBnn8Ltoz-x0zJ2Qytag9qU"]}"})

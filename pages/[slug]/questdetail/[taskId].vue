@@ -1,79 +1,101 @@
 <script setup lang="ts">
+import { taskStore } from '~/stores/taskStore'
+import { shortAddress } from '~/utils/web3'
+import { ssimStore } from '~/stores/ssimStore'
+import { formatToLocale } from '~/utils/util'
+import type { Task } from '~/types'
 
-import CommonAlert from '~/components/CommonAlert.vue'
-import {taskStore} from '../../../stores/taskStore'
-import {createDataItemSigner, spawn} from "@permaweb/aoconnect";
-import {shortAddress} from "../../../utils/web3";
-import {ssimStore} from '~/stores/ssimStore'
 const { t } = useI18n()
-const {  denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, makecommunityChat, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, submitSpaceTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo, getInfo, getLocalcommunityInfo } = $(aocommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
 const { compareImages } = $(ssimStore())
 const route = useRoute()
-const taskId = $computed(() => route.params.taskId)
+const taskId = $computed(() => route.params.taskId) as string
 const slug = $computed(() => route.params.slug)
 
-let blogPost = $ref({})
-blogPost = await getTaskById(taskId)
-console.log('blogPost = ' + JSON.stringify(blogPost))
-let communityId = blogPost.communityId
-let isCal = blogPost.isCal === 'Y'
-// console.log('isCal = ' + isCal)
-let isOwner = blogPost.ownerId === address
-let taskJoinRecord = $ref({})
+console.log('route params', route.params)
+
+let blogPost = $ref<Task & {
+  reward: string
+}>()
+
+blogPost = await getTask(taskId)
+console.log('blogPost of task id ' + taskId + JSON.stringify(blogPost))
+
+const communityId = blogPost!.communityId
+
+const isOwner = blogPost!.ownerId === address
+
+let taskJoinRecord = $ref<Awaited<ReturnType<typeof getTaskJoinRecord>>>()
 taskJoinRecord = await getTaskJoinRecord(taskId)
 
-let spaceTaskSubmitInfo = $ref({})
+let spaceTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>()
 const communityInfo = await getLocalcommunityInfo(communityId)
 spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo))
-let checkSubmit = () => {
-  for (let index = 0; index < spaceTaskSubmitInfo.length; index++) {
+console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
+
+const checkSubmit = () => {
+  if (!spaceTaskSubmitInfo) return false
+
+  for (let index = 0;index < spaceTaskSubmitInfo.length;index++) {
     const element = spaceTaskSubmitInfo[index]
-    if(element.address === address){
+    if (element.address === address) {
+      console.log('found address submitted to task', element.id)
       return true
     }
   }
   return false
 }
-let checkJoin = () => {
-  for (let index = 0; index < taskJoinRecord.length; index++) {
+
+const checkJoin = () => {
+  if (!taskJoinRecord) return false
+
+  for (let index = 0;index < taskJoinRecord.length;index++) {
     const element = taskJoinRecord[index]
-    if(element.joinedAddress === address){
+    if (element.joinedAddress === address) {
       return true
     }
   }
   return false
 }
-let isSubmitted = $ref()
-let isJoined = $ref()
+let isSubmitted = $ref<boolean>(false)
+let isJoined = $ref<boolean>(false)
 isJoined = checkJoin()
 isSubmitted = checkSubmit()
+console.log({isSubmitted})
+
 let isIng = $ref(false)
-let joinStatus = $ref('')
-let submiteStatus = $ref('')
+let submitStatus = $ref('')
 let settleStatus = $ref(false)
-submiteStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
-joinStatus = isJoined ? t("task.isjoin") : t("Not Join")
+submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
 // console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
 // console.log('isJoined = ' + isJoined)
 // console.log('chatProcessId = ' + chatProcessId)
 
+let submittedBuilderCount = $ref<number>(0)
+
 onMounted(async () => {
-  let isBegin = blogPost.isBegin
-  if(isBegin === 'Y'){
+  const isBegin = blogPost!.isBegin
+  if (isBegin === 'Y') {
     isIng = true
-  }else{
+  } else {
     isIng = false
   }
-  let isSettle = blogPost.isSettle
+  const isSettle = blogPost!.isSettle
   settleStatus = isSettle === 'Y'
-  let isCal = blogPost.isCal
-  if(isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N'){
+  const isCal = blogPost!.isCal
+
+  // TODO don't use spaceTaskSubmitInfo array, use submitInfo of current task only
+  if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
+    // TODO update task.submittedCount after every task submit in cronjob
+    submittedBuilderCount = spaceTaskSubmitInfo.reduce((count, info) => {
+      return count + (info.taskId === taskId ? 1 : 0)
+    }, 0)
+
+    if (isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N') {
     // 计算分数
-    if(spaceTaskSubmitInfo.length != 0){
       calculateScore()
       console.log(taskId)
       // 更新任务状态和已提交信息
@@ -84,39 +106,40 @@ onMounted(async () => {
   // calculateScore()
   // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
   // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
-  blogPost = await getTaskById(taskId)
-  // console.log('blogPost = ' + JSON.stringify(blogPost))
+
+  blogPost = await getTask(taskId)
+  console.log('getTask ' + JSON.stringify(blogPost))
   console.log(isBegin)
   console.log(isSettle)
   console.log(isCal)
   await getAllInviteInfo()
   await getInfo()
-  console.log(JSON.stringify(userInfo))
+  console.log('userInfo', JSON.stringify(userInfo))
 })
-// spaceTaskSubmitInfo = people
-function calculateScore(){
-  console.log(spaceTaskSubmitInfo.length)
 
+// spaceTaskSubmitInfo = people
+function calculateScore() {
+  if (!spaceTaskSubmitInfo) return
   // 找到friends和audience的最大值
   spaceTaskSubmitInfo.sort((a, b) => b.getPerson - a.getPerson)
-  let getPersionMax = spaceTaskSubmitInfo[0].getPerson
+  const getPersonMax = spaceTaskSubmitInfo[0].getPerson
   spaceTaskSubmitInfo.sort((a, b) => b.audience - a.audience)
-  let audienceMax = spaceTaskSubmitInfo[0].audience
-  console.log('getPersionMax = ' + getPersionMax)
+  const audienceMax = spaceTaskSubmitInfo[0].audience
+  console.log('getPersonMax = ' + getPersonMax)
   console.log('audienceMax = ' + audienceMax)
   let totalScore = 0
-  let totalReward = 1000
   let friendScore = 0
   let audienceScore = 0
-  for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
-    if(getPersionMax != 0){
-      friendScore = spaceTaskSubmitInfo[i].getPerson / getPersionMax * 40
+
+  for (let i = 0;i < spaceTaskSubmitInfo.length;++i) {
+    if (getPersonMax != 0) {
+      friendScore = spaceTaskSubmitInfo[i].getPerson / getPersonMax * 40
     }
-    if(audienceMax != 0){
+    if (audienceMax != 0) {
       audienceScore = spaceTaskSubmitInfo[i].audience / audienceMax * 50
     }
     let brandScore = 0
-    if(spaceTaskSubmitInfo[i].brandEffect === 10){
+    if (spaceTaskSubmitInfo[i].brandEffect === 10) {
       brandScore = 10
     }
     console.log('friendScore = ' + friendScore)
@@ -127,27 +150,26 @@ function calculateScore(){
     totalScore += spaceTaskSubmitInfo[i].score
   }
   console.log('totalScore = ' + totalScore)
-  for(var i = 0; i < spaceTaskSubmitInfo.length; ++i) {
-    if(blogPost.tokenNumber){
-      spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber)).toFixed(4)
-      spaceTaskSubmitInfo[i].bountyType1 = blogPost.tokenType
-      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 /  denomination[spaceTaskSubmitInfo[i].bountyType1] ).toString() + spaceTaskSubmitInfo[i].bountyType1
+  for (let i = 0;i < spaceTaskSubmitInfo.length;++i) {
+    if (blogPost!.tokenNumber) {
+      // TODO 5% 手续费
+      spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber)).toFixed(4)
+      spaceTaskSubmitInfo[i].bountyType1 = blogPost!.tokenType
+      // TODO use token.denomination
+      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / denomination[spaceTaskSubmitInfo[i].bountyType1]).toString() + spaceTaskSubmitInfo[i].bountyType1
     }
-    if(blogPost.tokenNumber1){
-      spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost.tokenNumber1)).toFixed(4)
-      spaceTaskSubmitInfo[i].bountyType2 = blogPost.tokenType1
-      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / denomination[spaceTaskSubmitInfo[i].bountyType2] ).toString() + spaceTaskSubmitInfo[i].bountyType2
+    if (blogPost!.tokenNumber1) {
+      // TODO 5% 手续费
+      spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber1)).toFixed(4)
+      spaceTaskSubmitInfo[i].bountyType2 = blogPost!.tokenType1
+      // TODO use token.denomination
+      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / denomination[spaceTaskSubmitInfo[i].bountyType2]).toString() + spaceTaskSubmitInfo[i].bountyType2
     }
 
     // console.log('bounty = ' + spaceTaskSubmitInfo[i].score / totalScore * 100)
   }
   // 计算完成后更新AO侧数据和前端表单数据
-  console.log(JSON.stringify(spaceTaskSubmitInfo))
-}
-
-async function calculate() {
-  // await makecommunityChat(blogPost.processId)
-  await makecommunityChat('4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw')
+  console.log('spaceTaskSubmitInfo', JSON.stringify(spaceTaskSubmitInfo))
 }
 
 const columns = [
@@ -187,11 +209,13 @@ const columns = [
 
 const q = ref('')
 
-
 const filteredRows = computed(() => {
   if (!q.value) {
+    console.info('spaceTaskSubmitInfo as filteredRows')
     return spaceTaskSubmitInfo
   }
+
+  if (!spaceTaskSubmitInfo) return []
 
   return spaceTaskSubmitInfo.filter((info) => {
     return Object.values(info).some((value) => {
@@ -200,11 +224,8 @@ const filteredRows = computed(() => {
   })
 })
 
-const modal = useModal()
+useModal()
 
-
-let isSettlementOpen = userInfo.twitter && userInfo.twitter != 'Success'
-const error_msg = 'Please bound your twitter account！'
 let isOpen = $ref(false)
 let isOpenJoin = $ref(false)
 function openModal() {
@@ -215,10 +236,7 @@ function openModal() {
   // }
   isOpen = true
 }
-async function test() {
-  await getInfo()
-  console.log('userInfo = ' + JSON.stringify(userInfo))
-}
+
 function openJoin() {
   // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
   //   modal.open(CommonAlert, { message: error_msg })
@@ -227,126 +245,132 @@ function openJoin() {
   // }
   isOpenJoin = true
 }
+
 async function onClick() {
   //  调用参与任务方法，只计数不提交
   await joinTask(taskId, address)
-  blogPost = await getTaskById(taskId)
+  // blogPost = await getTaskById(taskId)
   taskJoinRecord = await getTaskJoinRecord(taskId)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isJoined = checkJoin()
   isOpenJoin = false
 }
-function isNullOrEmpty(str: string | null | undefined): boolean {
-  return !str || str.length === 0 || str.length == undefined
-}
-
 
 const emit = defineEmits(['success'])
-let submitUrl = $ref('')
+const submitUrl = $ref('')
 let submitLoading = $ref(false)
 let sendBountyLoading = $ref(false)
 async function submitTask() {
+  if (!spaceTaskSubmitInfo) {
+    console.error('spaceTaskSubmitInfo is null')
+    return
+  }
+
   submitLoading = true
-  for(let i = 0; i < spaceTaskSubmitInfo.length; i++){
-    if(spaceTaskSubmitInfo[i].address === address){
+  for (let i = 0;i < spaceTaskSubmitInfo.length;i++) {
+    if (spaceTaskSubmitInfo[i].address === address) {
       alert('You have submitted this quest.')
       return
     }
   }
   // TODO 调用提交space链接并解析方法
   console.log('submitUrl = ' + submitUrl)
-  var splitted = submitUrl.split('/', 6)
+  const splitted = submitUrl.split('/', 6)
   console.log(splitted)
   // await testCallJava()
   // 直接在vue中请求api接口 拿到需要的信息
-  const query = computed(() => ({ spaceId: splitted[splitted.length - 1]}))
-  const { data } = await useFetch('/api/twitter', { query })
+  const query = computed(() => ({ spaceId: splitted[splitted.length - 1] }))
+  const { data, error } = await useFetch('/api/twitter', { query })
+
+  if (error) {
+    console.error('Error fetching data:', error)
+    return
+  }
+
   console.log('data = ' + JSON.stringify(data))
   // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
   const spaceStart_at = data._rawValue.data.started_at
   const spaceEnded_at = data._rawValue.data.ended_at
   // 计算时间差，如果不足15分钟，不允许提交
   const timeDifference = (new Date(spaceEnded_at).getTime() - new Date(spaceStart_at).getTime()) / (1000 * 60)
-  if(timeDifference < 15){
+  if (timeDifference < 15) {
     alert('Space lasts less than 15 minutes')
     return
   }
   // space参与人数
-  const participanted = data._rawValue.data.participant_count
+  const participated = data._rawValue.data.participant_count
   // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
   const la = data._rawValue.includes.users[0].profile_image_url
-  let resp = la.split('_')
+  const resp = la.split('_')
   let url = ''
-  for(let i = 0; i < resp.length - 1; ++i){
+  for (let i = 0;i < resp.length - 1;++i) {
     url = url + resp[i]
-    if(i != resp.length - 2){
+    if (i != resp.length - 2) {
       url += '_'
     }
   }
   url = url + '.png'
   const userAvatar = url
   // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
-  const userCreatedAt = data._rawValue.includes.users[0].created_at
+  // const userCreatedAt = data._rawValue.includes.users[0].created_at
   // space创办人的ID 用于判断是否是本人提交任务
   const userId = data._rawValue.includes.users[0].id
   // const userAvatarBase64 = await url2Base64(userAvatar)
-  const ssim = await compareImages(communityInfo.logo,  userAvatar)
+  const ssim = await compareImages(communityInfo.logo, userAvatar)
   // 品牌效应
   const brandEffect = ssim >= 0.8 ? 10 : 0
   // 听众
-  const audience = participanted
+  const audience = participated
   // 邀请人数
-  let getPersion = 0
-  if(allInviteInfo && allInviteInfo.length != 0){
-    for(let i = 0; i < allInviteInfo.length; ++i){
+  let inviteCount = 0
+  if (allInviteInfo && allInviteInfo.length != 0) {
+    for (let i = 0;i < allInviteInfo.length;++i) {
       const temp = allInviteInfo[i]
-      if(temp.userId === address && temp.communityId === communityId && temp.inviteTime < new Date(spaceEnded_at).getTime()){
-        getPersion = getPersion + 1
+      if (temp.userId === address
+        && temp.communityId === communityId
+        && temp.inviteTime < new Date(spaceEnded_at).getTime()
+      ) {
+        inviteCount = inviteCount + 1
       }
     }
   }
   console.log('spaceEnded_at = ' + spaceEnded_at)
-  console.log('participanted = ' + participanted)
+  console.log('participated = ' + participated)
   console.log('userAvatar = ' + userAvatar)
-  console.log('userCreatedAt = ' + userCreatedAt)
+  //console.log('userCreatedAt = ' + userCreatedAt)
   console.log('userId = ' + userId)
   // console.log('brand = ' + brandEffect)
   // console.log(communityInfo.logo)
   // console.log(userAvatarBase64)
-  await submitSpaceTask(taskId, address, url, brandEffect, getPersion, audience)
+  await submitSpaceTask(taskId, address, url, brandEffect, inviteCount, audience)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isSubmitted = checkSubmit()
-  submiteStatus = isSubmitted ? t("task.isjoin") : t("Not Join")
+  submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
   submitLoading = false
   isOpen = false
 }
 
 let selected = $ref([])
 
-function select (row) {
-  const index = selected.findIndex((item) => item.id === row.id)
-  if (index === -1) {
-    selected.push(row)
-  } else {
-    selected.splice(index, 1)
-  }
-
-}
 
 async function sendBountyByAo() {
+  if(!blogPost) return
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
   sendBountyLoading = true
-  if(blogPost.isCal === 'Y'){
-    let bounties = []
-    if(selected.length != 0){
 
-      for(let i = 0; i < selected.length; ++i){
-        let address = selected[i].address
-        for(let j = 0; j < spaceTaskSubmitInfo.length; ++j){
-          if(address === spaceTaskSubmitInfo[j].address){
+  // TODO if no submitted info, don't need isCal==='Y'
+
+  if (blogPost.isCal === 'Y') {
+    const bounties = []
+    if (selected.length != 0) {
+
+      for (let i = 0;i < selected.length;++i) {
+        const address = selected[i].address
+        for (let j = 0;j < spaceTaskSubmitInfo.length;++j) {
+          if (address === spaceTaskSubmitInfo[j].address) {
             console.log(spaceTaskSubmitInfo[j].bounty1)
             console.log(spaceTaskSubmitInfo[j].bounty2)
-            if(spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0){
+            if (spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0) {
               const bountyData = {
                 walletAddress: address,
                 tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
@@ -354,7 +378,7 @@ async function sendBountyByAo() {
               }
               bounties.push(bountyData)
             }
-            if(spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0){
+            if (spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0) {
               const bountyData = {
                 walletAddress: address,
                 tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
@@ -365,20 +389,31 @@ async function sendBountyByAo() {
             break
           }
         }
+
+        // TODO add bountyData of 5%
+
+        // const bountyData = {
+        //         walletAddress: ,
+        //         tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+        //         tokenType: spaceTaskSubmitInfo[j].bountyType2,
+        //       }
       }
     }
     // ji算剩余token，返还给任务创建人
     let bounty1 = blogPost.tokenNumber
     let bounty2 = blogPost.tokenNumber1
-    for(let j = 0; j < bounties.length; ++j){
-      if(bounties[j].tokenType === blogPost.tokenType){
+    for (let j = 0;j < bounties.length;++j) {
+      if (bounties[j].tokenType === blogPost.tokenType) {
         bounty1 = bounty1 - bounties[j].tokenNumber
       }
-      if(bounties[j].tokenType === blogPost.tokenType1){
+      if (bounties[j].tokenType === blogPost.tokenType1) {
         bounty2 = bounty2 - bounties[j].tokenNumber
       }
     }
-    if(bounty1 && bounty1 > 0 && bounty1 != 'undefined'){
+
+    // TODO 如果bounties.length>0 收取5%手续费
+
+    if (bounty1 && bounty1 > 0 && bounty1 != 'undefined') {
       const bountyData = {
         walletAddress: address,
         tokenNumber: bounty1,
@@ -386,7 +421,7 @@ async function sendBountyByAo() {
       }
       bounties.push(bountyData)
     }
-    if(bounty2 && bounty2 > 0 && bounty2 != 'undefined'){
+    if (bounty2 && bounty2 > 0 && bounty2 != 'undefined') {
       const bountyData = {
         walletAddress: address,
         tokenNumber: bounty2,
@@ -398,11 +433,13 @@ async function sendBountyByAo() {
     // await sendBounty(blogPost.processId, bounties)
     await updateTaskAfterSettle(blogPost.id)
     blogPost = await getTaskById(taskId)
+
+    console.log({ blogPost })
     // settleStatus = isSettle === 'Y'
     // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
     // 将发送出去的bounty信息保存
-    let sentBounties = []
-    for(let k = 0; k < bounties.length; ++k){
+    const sentBounties = []
+    for (let k = 0;k < bounties.length;++k) {
       const tt = bounties[k]
       const sent = {
         send: address,
@@ -417,60 +454,58 @@ async function sendBountyByAo() {
       sentBounties.push(sent)
     }
     await storeBounty(sentBounties)
-  }else{
+  } else {
     alert('This quest is not calculate store or has settled.')
   }
   sendBountyLoading = false
 }
 
-const makeConsole = () => {
-  console.log(JSON.stringify(selected))
-}
 const finalStatus = (isBegin: string) => {
   console.log('isB = ' + isBegin)
   let res = ''
-  if(isBegin === 'NS')
+  if (isBegin === 'NS')
     res = t('Not Start')
-  else if(isBegin === 'Y'){
+  else if (isBegin === 'Y') {
     res = t('Ing')
-  }else {
+  } else {
     res = t('End')
   }
   console.log('res = ' + res)
   return res
 }
-const maxSelection = blogPost.rewardTotal;
+
+const maxSelection = blogPost.rewardTotal
 // 监视 selected 数组的变化
 watch(() => selected, (newVal) => {
   if (newVal.length > maxSelection) {
-    alert('Selected items exceed 5!');
+    alert('Selected items exceed 5!')
     // 如果选择的数量超过最大值，取消超出的选择项
     selected = newVal.slice(0, maxSelection)
   }
 })
 function labelName() {
-  if(spaceTaskSubmitInfo.length === 0 || !spaceTaskSubmitInfo){
+  if (!spaceTaskSubmitInfo || spaceTaskSubmitInfo.length === 0 || !spaceTaskSubmitInfo) {
     return 'Return Bounty'
-  }else{
+  } else {
     return t('Send Bounty')
   }
 }
 const page = ref(1)
 const pageCount = 5
 const trueRows = computed(() => {
-
+  if (!filteredRows.value) return
   return filteredRows.value.slice((page.value - 1) * pageCount, (page.value) * pageCount)
 })
 </script>
 
 <template>
   <UDashboardPage>
-    <UPage class="overflow-y-auto h-full w-full">
+    <UPage v-if="blogPost" class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
             <NuxtLink :to="`/${slug}/community/${communityId}`">
-              <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
+              <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
             </NuxtLink>
           </div>
         </div>
@@ -479,19 +514,19 @@ const trueRows = computed(() => {
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
         -->
-        <UBlogPost :key="blogPost.id" :description="blogPost.description" class="p-10">
+        <UBlogPost :key="blogPost.taskId" :description="blogPost.taskInfo" class="p-10">
           <template #title>
             <div class="flex justify-start">
-              <div class="flex-none w-60"><div>{{ blogPost.name }}</div></div>
+              <div class="flex-none w-60"><div>{{ blogPost?.taskName }}</div></div>
               <div class="flex justify-start">
                 <div>
                   <UBadge color="black" variant="solid">
-                    {{ finalStatus(blogPost.isBegin)}}
+                    {{ finalStatus(blogPost.isBegin) }}
                   </UBadge>
                 </div>
                 <div v-if="isSubmitted" class="mx-2">
                   <UBadge color="black" variant="solid">
-                    {{ submiteStatus }}
+                    {{ submitStatus }}
                   </UBadge>
                 </div>
                 <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-2">
@@ -500,15 +535,12 @@ const trueRows = computed(() => {
                   </UBadge>
                 </div>
               </div>
-
-              <!-- <UBadge color="green" variant="solid">{{ blogPost.status }}</UBadge>
-              <UBadge color="green" variant="solid">{{ blogPost.isJoin }}</UBadge> -->
             </div>
           </template>
           <template #description>
             <div class="flex flex-col space-y-2">
-              <div>
-                {{ blogPost.description }}
+              <div class="h-6 overflow-hidden">
+                {{ blogPost.taskInfo }}
               </div>
               <div class="flex ...">
                 <div class="flex-none w-60">
@@ -530,7 +562,7 @@ const trueRows = computed(() => {
                 </div>
                 <div>
                   <div>
-                    {{ blogPost.startTime }} - {{ blogPost.endTime }}
+                    {{ formatToLocale(blogPost.startTime) }} - {{ formatToLocale(blogPost.endTime) }}
                   </div>
                 </div>
               </div>
@@ -566,7 +598,7 @@ const trueRows = computed(() => {
                 </div>
                 <div>
                   <div>
-                    {{ blogPost.joined }}
+                    {{ submittedBuilderCount }}
                   </div>
                 </div>
               </div>
@@ -586,7 +618,7 @@ const trueRows = computed(() => {
                 <UButton color="white" :label="$t('Join Quest')" @click="openJoin" />
               </div>
             </div>
-<!--            <UDivider class="mt-4" />-->
+            <!--            <UDivider class="mt-4" />-->
             <div class="mt-8">
               <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex ">
@@ -595,32 +627,38 @@ const trueRows = computed(() => {
                   </div>
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
+                <ULink
+                  :to="`https://www.ao.link/#/entity/${blogPost.processId}?tab=source-code`"
+                  active-class="text-primary"
+                  target="_blank"
+                  inactive-class="text-primary"
+                >
+                  AO Process
+                </ULink>
               </div>
               <div v-if="isJoined">
                 <UTable v-model="selected" :rows="trueRows" :columns="columns">
                   <template #address-data="{ row }">
-                    {{ isOwner ? row.address : shortAddress(row.address)}}
+                    {{ isOwner ? row.address : shortAddress(row.address) }}
                   </template>
                   <template #url-data="{ row }">
-                    {{ isOwner ? row.url : shortAddress(row.url)}}
+                    {{ isOwner ? row.url : shortAddress(row.url) }}
                   </template>
                 </UTable>
                 <div class="flex justify-end mt-2">
-                  <UPagination v-model="page" :page-count="pageCount" :total="filteredRows.length" />
+                  <UPagination v-model="page" :page-count="pageCount" :total="filteredRows?.length || 0" />
                 </div>
-
               </div>
-
             </div>
             <div v-if="isJoined" class="flex justify-center my-8">
-<!--              <div class="mx-4">-->
-<!--                <UButton color="white" label="testuser" @click="test" />-->
-<!--              </div>-->
+              <!--              <div class="mx-4">-->
+              <!--                <UButton color="white" label="testuser" @click="test" />-->
+              <!--              </div>-->
               <div v-if="isIng && !isSubmitted" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
               <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-4">
-                <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo"/>
+                <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo" />
               </div>
             </div>
             <div class="flex mt-4">
@@ -656,24 +694,24 @@ const trueRows = computed(() => {
     </UPage>
     <UModal v-model="isOpenJoin">
       <UCard>
-<!--        <template #header>-->
-<!--          <div class="flex items-center justify-center">-->
-<!--            <div class="flex justify-center">-->
-<!--              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">-->
-<!--                {{ $t("Join Quest") }}-->
-<!--              </h3>-->
-<!--            </div>-->
-<!--            &lt;!&ndash;-->
-<!--              <UButton-->
-<!--                color="gray"-->
-<!--                variant="ghost"-->
-<!--                icon="i-heroicons-x-mark-20-solid"-->
-<!--                class="-my-1"-->
-<!--                @click="isOpenJoin = false"-->
-<!--              />-->
-<!--              &ndash;&gt;-->
-<!--          </div>-->
-<!--        </template>-->
+        <!--        <template #header>-->
+        <!--          <div class="flex items-center justify-center">-->
+        <!--            <div class="flex justify-center">-->
+        <!--              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">-->
+        <!--                {{ $t("Join Quest") }}-->
+        <!--              </h3>-->
+        <!--            </div>-->
+        <!--            &lt;!&ndash;-->
+        <!--              <UButton-->
+        <!--                color="gray"-->
+        <!--                variant="ghost"-->
+        <!--                icon="i-heroicons-x-mark-20-solid"-->
+        <!--                class="-my-1"-->
+        <!--                @click="isOpenJoin = false"-->
+        <!--              />-->
+        <!--              &ndash;&gt;-->
+        <!--          </div>-->
+        <!--        </template>-->
         <div class="space-y-2">
           <div class="flex flex-col justify-center">
             <div class="flex justify-center items-center">Thank u for your support.</div>
@@ -707,9 +745,9 @@ const trueRows = computed(() => {
           </div>
         </template>
         <div>
-<!--          <div class="my-8">-->
-<!--            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />-->
-<!--          </div>-->
+          <!--          <div class="my-8">-->
+          <!--            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />-->
+          <!--          </div>-->
           <div class="my-8">
             <UInput v-model="submitUrl" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>

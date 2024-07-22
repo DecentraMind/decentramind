@@ -1,134 +1,91 @@
 <script setup lang="ts">
-
-
-import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
+import { tradePlatforms, tokenNames } from '~/utils/constants'
+import defaultCommunityLogo from '~/utils/defaultCommunityLogo'
+import type { CommunitySetting } from '~/types'
+import { communitySettingSchema, type CommunitySettingSchema } from '~/utils/schemas'
 
-
-const options = [
-  { label: 'OKE', value: 'OKE' },
-  { label: 'Binance', value: 'Binance' },
-]
-const supportSelect = ['ArSwap', 'Permaswap', 'Binance', 'Coinbase']
-const supportSelected = $ref([])
-const tokenselect = ['AR', 'TRUNK', 'EXP', 'Orbit', 'Earth', 'Fire', 'Air', 'Lava']
-const tokenselected = $ref([])
+const tradePlatformSelected = $ref([])
+const tokenSelected = $ref([])
 let isCreated = $ref(false)
 
-let state = $ref({
-  logobase64Data: undefined,
+const state = $ref<CommunitySetting>({
+  logoBase64Data: undefined,
   banner: 'banner6',
   input: undefined,
   inputMenu: undefined,
-  Name: undefined,
-  Inbro: undefined,
-  Website: undefined,
-  Twitter: undefined,
-  Github: undefined,
-  Buildernum: undefined,
-  Allreward: undefined,
-  Typereward: undefined,
+  name: undefined,
+  inbro: undefined,
+  website: undefined,
+  twitter: undefined,
+  github: undefined,
+  builderNum: undefined,
+  allReward: undefined,
+  typeReward: undefined,
   isPublished: true,
-  TokenName: undefined,
+  tokenName: undefined,
   showTokenName: false,
   isTradable: undefined,
-  TradePlatform: undefined,
-  Alltoken: undefined,
-  Communitytoken: undefined,
-  communityChatid: undefined,
+  tradePlatform: undefined,
+  allToken: undefined,
+  communityToken: undefined,
+  communityChatID: undefined,
+  owner: '',
+  creator: '',
+  time: ''
 })
-
-const schema = z.object({
-  Alltoken: z.string()
-    .min(0, { message: 'Must be more than 0' })
-    .refine((value: string) => {
-      const num = parseFloat(value);
-      return !isNaN(num) && num > 0;
-    }, { message: 'Must be a valid number more than 0' })
-    .refine((value: string) => {
-      const regex = /^\d+(\.\d{1,3})?$/;
-      return regex.test(value);
-    }, { message: 'Must be a valid number with up to 3 decimal places' }),
-  Name: z.string().min(2).max(20),
-  Inbro: z.string().min(3).max(100),
-
-  //Website: z.string().max(20).optional(),
-  //Twitter: z.string().max(20).optional(),
-  //Gihub: z.string().max(20).optional(),
-
-  TradePlatform: z.string().refine((value: string) => value === 'OKE', {
-    message: 'Select OKE'
-  }),
-
-  /*
-  Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
-    const num = parseInt(value)
-    return !isNaN(num) && num <= 100
-  }, { message: 'Must be a valid number less than or equal to 20' }),
-  */
-})
-
-type Schema = z.infer<typeof schema>
 
 const form = ref()
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   // Do something with event.data
   console.log(event.data)
 }
 
+const emit = defineEmits(['close-modal'])
 
-const { addCommunity, communityCreate, getCommunitylist, makecommunityChat } = $(aocommunityStore())
-let createCommunity = $ref('')
+const { addCommunity, getCommunitylist, makecommunityChat } = $(aocommunityStore())
+
 let isLoading = $ref(false)
 let createSuccess = $ref(false)
+
 const CreateCommunity = async () => {
   if (isLoading) return
   isLoading = true
   isCreated = true
   try {
-    state.communityChatid = await makecommunityChat();
+    state.communityChatID = await makecommunityChat()
 
-    if (!state.communityChatid) {
-      throw new Error('Failed to create community chat');
+    if (!state.communityChatID) {
+      throw new Error('Failed to create community chat')
     }
 
-    let communitySubmit = [
-      {
-        name: state.Name,
-        desc: state.Inbro,
-        website: state.Website,
-        allreward: state.Allreward,
-      }
-    ];
-    const jsonString = JSON.stringify(communitySubmit);
-
-    createCommunity = await addCommunity(
-      state.logobase64Data,
+    await addCommunity(
+      state.logoBase64Data,
       state.banner,
-      state.Name,
-      state.Inbro,
-      state.Website,
-      state.Twitter,
-      state.Github,
-      tokenselected, // 选择的token类型
+      state.name,
+      state.inbro,
+      state.website,
+      state.twitter,
+      state.github,
+      tokenSelected, // 选择的token类型
       state.isPublished, // 是否有发行token
       token.communityToken, // 社区token分配比例额度
       state.isTradable, // 是否可以交易
-      supportSelected, // 交易得平台
-      state.Alltoken, // 分配得token总量
+      tradePlatformSelected, // 交易得平台
+      state.allToken, // 分配得token总量
       token.tokenSupply, // 社区token分配比例详情
-      state.communityChatid
-    );
+      state.communityChatID
+    )
     createSuccess = true
-    isCreated = true;
+    isCreated = true
   } catch (error) {
-    console.error('Error creating community:', error.message);
+    console.error('Error creating community:', error)
     isCreated = false
     alert('Failed to create community!')
     // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
   } finally {
-    isLoading = false;
+    isLoading = false
     createSuccess = true
   }
   createSuccess = true
@@ -136,36 +93,33 @@ const CreateCommunity = async () => {
   isLoading = false
 }
 
-
-const handleUp = (event) => {
-  const file = event.target?.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
-          state.logobase64Data = e.target.result;
-        } else {
-          alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.');
-        }
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+const handleUploadLogo = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) {
+    throw new Error('No file selected.')
   }
-};
+  const file = input.files[0]
 
-const logoupload = () => {
-  const input = document.querySelector('#logoupload') as any
-  input.click()
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const img = new Image()
+    const b64 = e.target!.result?.toString() || defaultCommunityLogo
+    img.onload = () => {
+      if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
+        state.logoBase64Data = b64
+      } else {
+        alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
+      }
+    }
+    img.src = b64
+  }
+  reader.readAsDataURL(file)
 }
 
-const bannerupload = () => {
-  const input = document.querySelector('#bannerupload') as any
+const uploadLogo = () => {
+  const input = document.querySelector('#logoUpload') as HTMLInputElement
   input.click()
 }
-
 
 const items = [
   '/task/banner6.jpg',
@@ -174,7 +128,7 @@ const items = [
   '/task/banner9.jpg',
   '/task/banner10.jpg',
 ]
-const currentIndex = $ref(0); // 用于存储当前选中的索引
+const currentIndex = $ref(0) // 用于存储当前选中的索引
 
 const updateBanner = (index: number) => {
   if (index === 1) {
@@ -188,9 +142,6 @@ const updateBanner = (index: number) => {
   } else if (index === 5) {
     state.banner = 'banner10'
   }
-};
-const test = ()=> {
-  //console.log(token.communityToken)
 }
 
 // 初始化表单组状态数组
@@ -215,9 +166,9 @@ const addFormGroup = () => {
     token.communityToken.push({
       tokenName: '',
       showTokenName: true
-    });
+    })
   } else {
-    console.warn('Maximum of 2 community tokens allowed');
+    console.warn('Maximum of 2 community tokens allowed')
   }
 }
 
@@ -237,8 +188,6 @@ watch(() => state.isPublished, (newVal) => {
   }
 })
 
-
-
 // 添加表单组函数
 const addSupplyGroup = () => {
   token.tokenSupply.push({
@@ -248,36 +197,35 @@ const addSupplyGroup = () => {
 }
 
 // 移除表单组函数
-const removeSupplyGroup = (index) => {
+const removeSupplyGroup = (index: number) => {
   token.tokenSupply.splice(index, 1)
 }
-
-let settingInfo = $ref(true)
-
-
 </script>
 
 <template>
   <UDashboardPage>
-    <DashboardPanelContent class="w-full overflow-y-auto pl-20 pt-10">
+    <DashboardPanelContent class="w-full overflow-y-auto px-10 pt-10">
       <UAlert>
         <template #title>
-          <div class="text-3xl p-2 flex justify-center">{{ $t('community.create') }}</div>
+          <div class="text-3xl text-center p-2">{{ $t('community.create') }}</div>
         </template>
       </UAlert>
-      <UForm ref="form" :schema="schema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
-        <!--
-        <div>
-          <UButton @click="settingInfo = true">基础信息设置</UButton>
-          <UButton @click="settingInfo = false">功能设置</UButton>
-        </div>
-        -->
+      <UForm ref="form" :schema="communitySettingSchema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
         <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class=" w-[300px]">{{ $t('community.logo') }}</div>
           </template>
-          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="logoupload" />
-          <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
+
+          <img
+            v-if="state.logoBase64Data"
+            :src="state.logoBase64Data"
+            width="75"
+            height="75"
+            alt="logo"
+            @click="uploadLogo"
+          >
+          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="uploadLogo" />
+          <Input id="logoUpload" type="file" size="sm" class="opacity-0" @change="handleUploadLogo" />
         </UFormGroup>
 
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
@@ -321,14 +269,14 @@ let settingInfo = $ref(true)
           <template #label>
             <div class="w-[300px]">{{ $t('community.name') }}</div>
           </template>
-          <UInput v-model="state.Name" placeholder="Name" class="min-w-[100px] w-[430px]" />
+          <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Inbro" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="w-[300px]">{{ $t('community.intro') }}</div>
           </template>
-          <UTextarea v-model="state.Inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
@@ -336,7 +284,7 @@ let settingInfo = $ref(true)
             <div class="w-[300px]">{{ $t('community.website') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Website" placeholder="URL" />
+            <UInput v-model="state.website" placeholder="URL" />
           </div>
         </UFormGroup>
 
@@ -345,7 +293,7 @@ let settingInfo = $ref(true)
             <div class=" w-[300px]">{{ $t('community.twitter') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Twitter" placeholder="URL" />
+            <UInput v-model="state.twitter" placeholder="URL" />
           </div>
         </UFormGroup>
 
@@ -354,7 +302,7 @@ let settingInfo = $ref(true)
             <div class=" w-[300px]">Github</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.Github" placeholder="URL" />
+            <UInput v-model="state.github" placeholder="URL" />
           </div>
         </UFormGroup>
 
@@ -363,7 +311,7 @@ let settingInfo = $ref(true)
             <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <USelectMenu v-model="tokenselected" class="w-[130px] mr-10" :options="tokenselect" multiple placeholder="Select Token" />
+            <USelectMenu v-model="tokenSelected" class="w-[130px] mr-10" :options="tokenNames" multiple placeholder="Select Token" />
           </div>
         </UFormGroup>
 
@@ -386,7 +334,7 @@ let settingInfo = $ref(true)
             </template>
             <div class="flex flex-row items-center space-x-3">
               <div class="flex min-w-[477px]">
-                <USelect v-model="formGroup.tokenName" :options="tokenselect" />
+                <USelect v-model="formGroup.tokenName" :options="tokenNames" />
 
                 <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)"/>
               </div>
@@ -424,7 +372,7 @@ let settingInfo = $ref(true)
             <template #label>
               <div class=" min-w-[270px]">{{ $t('community.token.platforms') }}</div>
             </template>
-            <USelectMenu v-model="supportSelected" :options="supportSelect" multiple placeholder="Select" />
+            <USelectMenu v-model="tradePlatformSelected" :options="tradePlatforms" multiple placeholder="Select" />
           </UFormGroup>
         </div>
 
@@ -463,25 +411,7 @@ let settingInfo = $ref(true)
           </UButton>
         </div>
       </UForm>
-      <!--
-      <UModal v-model="isCreated" prevent-close>
-        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                Modal
-              </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />
-            </div>
-          </template>
-          <UContainer class="w-full flex justify-around">
-            <UButton :to="`/${slug}/create-community`">{{ $t('community.continue') }}</UButton>
-            <UButton :to="`/${slug}/discovery`" @click="communityCreate = false; isCreated = false">{{$t('community.look') }}
-            </UButton>
-          </UContainer>
-        </UCard>
-      </UModal>
-      -->
+
       <UModal v-model="isCreated" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
@@ -496,7 +426,8 @@ let settingInfo = $ref(true)
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/${slug}/discovery`" @click="getCommunitylist(); communityCreate = false; isCreated = false">{{$t('community.look') }}
+            <UButton @click="getCommunitylist(); emit('close-modal'); isCreated = false">
+              {{ $t('community.look') }}
             </UButton>
           </UContainer>
         </UCard>
