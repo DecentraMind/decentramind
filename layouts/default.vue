@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import defaultCommunityLogo from '@/utils/defaultCommunityLogo'
 const route = useRoute()
-const appConfig = useAppConfig()
 const slug = $computed(() => route.params.slug)
 
 const links = $computed(() => {
@@ -83,27 +82,11 @@ const groups = [
   },
 ]
 
-const defaultColors = ref(
-  ['green', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet'].map((color) => ({
-    label: color,
-    chip: color,
-    click: () => (appConfig.ui.primary = color),
-  }))
-)
+const { userInfo, joincommunityList, getBan, getInfo } = $(aocommunityStore())
 
-const { userInfo, joincommunityList, getBan, getCommunitylist, getInfo } = $(aocommunityStore())
-
-let result = $ref()
-const createCommunity = $ref(false)
+const isCreateModalOpen = $ref(false)
 
 let communityLoading = $ref(true)
-
-const getCommunity = async () => {
-
-  result = await getCommunitylist()
-
-  communityLoading = false
-}
 
 onMounted(async () => {
   try {
@@ -112,37 +95,11 @@ onMounted(async () => {
     }
     getBan()
     await getInfo()
-    //await getCommunity()
+
   } catch (error) {
     console.error('Error fetching data:', error)
   }
 })
-
-const navigation = inject<Ref<NavItem[]>>('navigation', ref([]))
-
-const links2 = [{
-  label: 'Docs',
-  icon: 'i-heroicons-book-open',
-  to: '/getting-started'
-}, {
-  label: 'Pro',
-  icon: 'i-heroicons-square-3-stack-3d',
-  to: '/pro'
-}, {
-  label: 'Releases',
-  icon: 'i-heroicons-rocket-launch',
-  to: '/releases'
-}]
-
-const { makecommunityChat } = $(aocommunityStore())
-
-const { postToken } = $(linktwitter())
-const test = ()=> {
-  const a = makecommunityChat()
-  //const a = postToken()
-
-}
-
 
 </script>
 
