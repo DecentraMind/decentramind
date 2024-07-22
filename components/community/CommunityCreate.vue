@@ -224,7 +224,15 @@ const removeSupplyGroup = (index: number) => {
             alt="logo"
             @click="uploadLogo"
           >
-          <UButton label="LOGO" size="xl" square variant="outline" class="flex justify-center w-[150px] h-[120px]" @click="uploadLogo" />
+          <UButton
+            v-if="!state.logoBase64Data"
+            label="LOGO"
+            size="xl"
+            square
+            variant="outline"
+            class="flex justify-center w-[150px] h-[120px]"
+            @click="uploadLogo"
+          />
           <Input id="logoUpload" type="file" size="sm" class="opacity-0" @change="handleUploadLogo" />
         </UFormGroup>
 
