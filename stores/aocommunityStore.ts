@@ -201,14 +201,8 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         communitychatid: CommunityChatid,
       }
     ]
-<<<<<<< HEAD
     const jsonString = JSON.stringify(communitySubmitList);
     const invite = "none"
-=======
-    console.log('--------gooods')
-    const jsonString = JSON.stringify(communitySubmitList)
-    const invite = 'none'
->>>>>>> a0bbbd85c33f74257893866dd30057c25644d293
     let createCommunity = await message({
       process: aoCommunityProcessID,
       tags: [
