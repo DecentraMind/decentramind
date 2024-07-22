@@ -308,7 +308,15 @@ export const taskStore = defineStore('taskStore', () => {
     showSuccess('Get all tasks success')
 
     const sortedTasks = communityTasks.sort((a, b) => {
-      return (a.createTime || a.startTime) >= (b.createTime || b.startTime) ? 1 : -1
+      if(a.createTime && !b.createTime) return -1
+
+      if(!a.createTime && b.createTime) return 1
+
+      if(a.createTime && b.createTime) {
+        return a.createTime >= b.createTime ? -1 : 1
+      }
+
+      return a.startTime >= b.startTime ? -1 : 1
     })
     console.log({sortedTasks})
     return sortedTasks
