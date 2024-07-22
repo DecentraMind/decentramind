@@ -196,9 +196,6 @@ const formattedTwitterLink = (twitter: string) => {
           </template>
           <template #description>
             <div class="flex flex-col w-5/6 px-12">
-              <Text class="mb-3">
-                {{ $t('community.detail') }}
-              </Text>
               <Text>
                 {{ communityInfo.desc }}
               </Text>
@@ -333,14 +330,6 @@ const formattedTwitterLink = (twitter: string) => {
                     <div class="w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[300px]">
                         {{ communityInfo.buildnum }}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex justify-between px-6 pt-2">
-                    <div>{{ $t('community.allreward') }}</div>
-                    <div class="max-w-48 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[300px]">
-                        {{ communityInfo && communityInfo.bounty ? communityInfo.bounty.length : 0 }}
                       </div>
                     </div>
                   </div>

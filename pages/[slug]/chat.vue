@@ -396,9 +396,18 @@ const test = async() => {
         <div class="w-full flex justify-center text-2xl">
           Sure to Forbid?
         </div>
-        <div v-if="!Forbid" class="w-full flex space-x-10 mt-6">
-          <UButton @click="exitButton = false">No</UButton>
-          <UButton @click="banSure">Yes</UButton>
+        <div v-if="!Forbid" class="w-full flex space-x-10 mt-6 justify-between">
+          <UButton 
+            variant="outline"
+            @click="exitButton = false">
+            No
+          </UButton>
+          <UButton 
+            variant="outline"
+            @click="banSure"
+          >
+            Yes
+          </UButton>
         </div>
         <div v-else class="h-[80px] flex flex-col items-center justify-center">
           <Text>Forbid...</Text>
