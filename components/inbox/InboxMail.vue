@@ -17,7 +17,7 @@ const msgTopIsVisible = useElementVisibility(msgTop)
 // auto load new message for this process and other process, so we can show last unread message on the left sidebar msg list
 const { sendMessage, loadInboxList, itemsCache } = $(inboxStore())
 const { showSuccess } = $(notificationStore())
-const { chatBanuser, currentUuid } = $(aocommunityStore())
+const { chatBanuser, currentUuid, getBan } = $(aocommunityStore())
 const { address } = $(aoStore())
 
 const msgBottom = $ref(null)
@@ -94,6 +94,7 @@ const test = () => {
   }
 }
 onMounted( () => {
+  getBan()
   if (!route.params.pid) return
   chatID = route.params.pid
 })

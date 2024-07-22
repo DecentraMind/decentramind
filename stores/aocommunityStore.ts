@@ -108,7 +108,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     console.log(communityId)
     console.log(userAddress)
     let result = await message({
-      process: processID,
+      process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'chatban' },
         { name: 'community', value: communityId },
@@ -123,7 +123,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     if (isLoading) return
     isLoading = true
     let result = await dryrun({
-      process: processID,
+      process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'getchatban' }
       ]
