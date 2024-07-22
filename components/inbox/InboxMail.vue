@@ -17,6 +17,7 @@ const msgTopIsVisible = useElementVisibility(msgTop)
 // auto load new message for this process and other process, so we can show last unread message on the left sidebar msg list
 const { sendMessage, loadInboxList, itemsCache } = $(inboxStore())
 const { showSuccess } = $(notificationStore())
+const { chatBanuser, currentUuid } = $(aocommunityStore())
 const { address } = $(aoStore())
 
 const msgBottom = $ref(null)
@@ -73,12 +74,33 @@ defineShortcuts({
 const route = useRoute()
 let chatID = $ref<string | string[] | null>(null)
 const test = () => {
-  if (!route.params.pid) return
+  console.log(chatBanuser)
+
+  const specificKey = 'cf919548-9292-4263-858e-b3fa1965a823';
+  console.log(currentUuid)
+  const dataForKey = chatBanuser[currentUuid];
+
+  // 检查是否找到该键并打印其值
+  if (dataForKey) {
+    console.log('Data for specific key:', dataForKey);
+    // 检查数组中是否存在与 address 相同的值
+    if (dataForKey.includes(address)) {
+      console.log('Address found in dataForKey');
+    } else {
+      console.log('Address not found in dataForKey');
+    }
+  } else {
+    console.log('Address not found');
+  }
 }
 onMounted( () => {
   if (!route.params.pid) return
   chatID = route.params.pid
 })
+
+const isTextareaDisabled = computed(() => {
+  return isLoading || (chatBanuser[currentUuid] && chatBanuser[currentUuid].includes(address));
+});
 
 </script>
 
@@ -114,9 +136,9 @@ onMounted( () => {
       <div class="" ref="msgBottom"> </div>
       <div class="-bottom-4 sticky">
         <form @submit.prevent="doSubmit">
-          <UTextarea :disabled="isLoading" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" placeholder="Reply to test">
+          <UTextarea :disabled="isTextareaDisabled" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" placeholder="Reply to test">
             <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->
-            <UButton :disabled="isLoading" type="submit" color="black" label="Send" icon="i-heroicons-paper-airplane" class="right-3.5 bottom-2.5 absolute">
+            <UButton :disabled="isTextareaDisabled" type="submit" color="black" label="Send" icon="i-heroicons-paper-airplane" class="right-3.5 bottom-2.5 absolute">
             </UButton>
           </UTextarea>
         </form>

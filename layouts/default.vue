@@ -119,7 +119,7 @@ const communityList1 = [
   { title: 'HelloRWA3', slug: 'hellorwa3', avatar: '/logo.png' },
 ]
 
-const { userInfo, joincommunityList, communityCreate, getCommunitylist, getInfo } = $(aocommunityStore())
+const { userInfo, joincommunityList, communityCreate, getBan, getCommunitylist, getInfo } = $(aocommunityStore())
 
 let result = $ref()
 const createCommunity = $ref(false)
@@ -134,12 +134,11 @@ const getCommunity = async () => {
 }
 
 onMounted(async () => {
-  console.log("---")
-  console.log(joincommunityList)
   try {
     if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
       communityLoading = false
     }
+    getBan()
     await getInfo()
     //await getCommunity()
   } catch (error) {

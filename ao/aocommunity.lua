@@ -2,6 +2,7 @@ community = community or {}
 usercommunity = usercommunity or {}
 userinfo = userinfo or {}
 githubcode = githubcode or {}
+userchatban = userchatban or {}
 
 local json = require("json")
 
@@ -67,6 +68,25 @@ Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "commun
   -- table.insert(community, msg.Data)
 
   Handlers.utils.reply("communitysetting")(msg)
+end)
+
+-- Modifying Community Information
+Handlers.add("chatban", Handlers.utils.hasMatchingTag("Action", "chatban"), function(msg)
+  -- 如果 userchatban[msg.Tags.community] 不存在，则初始化为一个空表格 {}
+  print('goods')
+  print(msg.Tags.community)
+  print(msg.Tags.user)
+  userchatban[msg.Tags.community] = userchatban[msg.Tags.community] or {}
+
+  -- 向 userchatban[msg.Tags.community] 表格中添加数据 msg.Tags.user
+  table.insert(userchatban[msg.Tags.community], msg.Tags.user)
+
+  Handlers.utils.reply("chatban")(msg)
+end)
+
+-- Modifying Community Information
+Handlers.add("getchatban", Handlers.utils.hasMatchingTag("Action", "getchatban"), function(msg)
+  Handlers.utils.reply(json.encode(userchatban))(msg)
 end)
 
 -- join community

@@ -22,6 +22,7 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
   let userInfo = $ref({})
   let communityUser = $ref({})
   let joincommunityList = $ref({})
+  let chatBanuser = $ref({})
   let isLoading = $ref(false)
   let joinisLoading = $ref(false)
   let exitisLoading = $ref(false)
@@ -38,18 +39,82 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
 
   //
   const vouch = async () => {
+    fetch('https://api.vouchdao.org/vouches', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        walletAddress: '8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw'
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        // analysis and get the Twitter ID
+        data.vouches.forEach(a => {
+          console.log('-test')
+          console.log(a)
+          if (a.method === 'twitter') {
+            console.log('Twitter ID:', a.identifier);
+          }
+        });
+      });
+
+
+    // let result2 = await message({
+    //   process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
+    //   tags: [
+    //     { name: 'Action', value: 'Get-Vouches' },
+    //     { name: 'ID', value: address }
+    //   ],
+    //   signer: createDataItemSigner(window.arweaveWallet),
+    // });
+    // const res = await result({
+    //   message: result2,
+    //   process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
+    // })
+    // console.log(res)
+    // console.log(result2)
+  }
+
+  const banchat = async (communityId, userAddress) => {
+    if (isLoading) return
+    isLoading = true
+    console.log('test---')
+    console.log(communityId)
+    console.log(userAddress)
     let result = await message({
-      process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
+      process: processID,
       tags: [
-        { name: 'Data-Protocol', value: 'Vouch' },
-        { name: 'Vouch-For', value: address },
-        { name: 'Variant', value: '0.2' },
-        { name: 'Method', value: 'Twiter' }
+        { name: 'Action', value: 'chatban' },
+        { name: 'community', value: communityId },
+        { name: 'user', value: userAddress }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     });
-    console.log(result)
+    isLoading = false
   }
+
+  const getBan = async () => {
+    if (isLoading) return
+    isLoading = true
+    let result = await dryrun({
+      process: processID,
+      tags: [
+        { name: 'Action', value: 'getchatban' }
+      ]
+    });
+    console.log('testaaa')
+    console.log(result.Messages[0].Data)
+    // Assuming chatBanuser is set to result.Messages[0].Data
+    const chatBanuserString = result.Messages[0].Data;
+
+    // Parse the JSON string
+    chatBanuser = JSON.parse(chatBanuserString);
+
+    isLoading = false
+  }
+
   //User registration method
   const registInfo = async () => {
     if (isLoading) return
@@ -112,7 +177,6 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
         "communitychatid": CommunityChatid,
       }
     ]
-    console.log("--------gooods")
     const jsonString = JSON.stringify(communitySubmitList);
     const invite = "none"
     let createCommunity = await message({
@@ -490,7 +554,10 @@ export const aocommunityStore = defineStore('aocommunityStore', () => {
     joincommunityList,
     communityCreate,
     currentUuid,
+    chatBanuser,
     vouch,
+    banchat,
+    getBan,
     setCurrentuuid,
     makecommunityChat,
     registInfo,

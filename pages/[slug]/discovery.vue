@@ -5,7 +5,7 @@ const {
   credBalance,
   init, doLogout, doLogin } = $(aoStore())
 
-const { communityList, userInfo, vouch, updataCommunity, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
+const { communityList, userInfo, getBan, updataCommunity, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
 const { gettoken } = $(linktwitter())
 
 const toast = useToast()
@@ -89,7 +89,8 @@ const jointocommunity = async(uuid: any) => {
 
 }
 const test = ()=> {
-  const a = vouch()
+  const a = getBan()
+  console.log('-test')
 }
 </script>
 

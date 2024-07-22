@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, communityUser, exitCommunity, updataCommunity, getLocalcommunityInfo, getCommunityuser } = $(aocommunityStore())
+const { currentUuid, communityUser, exitCommunity, updataCommunity, getLocalcommunityInfo, getCommunityuser, banchat } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 const { address } = $(aoStore())
@@ -162,6 +162,7 @@ const copyText = async () => {
 let Leaveout = $ref(false)
 
 let exitButton = $ref(false)
+let banButton =$ref(false)
 const router = useRouter();
 
 
@@ -187,10 +188,21 @@ const formattedTwitterLink = (twitter) => {
   if (!/^(http|https):\/\//.test(link)) {
     return `https://${link}`;
   }
-  console.log("-------",link)
   return link;
 };
 
+let currentUser = $ref('')
+let Forbid = $ref(false)
+const OpenBan = (index) => {
+  banButton = true
+  currentUser = index
+}
+const banSure = async() => {
+  Forbid = true
+  await banchat(currentUuid, currentUser)
+  Forbid = false
+  banButton = false
+}
 const test = async() => {
   console.log(communityUser)
 }
@@ -340,15 +352,23 @@ const test = async() => {
             </template>
           </UDashboardNavbar>
           <ULandingCard class="">
-            <div v-for="(user, index) in communityUser" :key="index" class="flex items-center">
-              <div class="mr-3">
-                <UAvatar v-if="user.avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
-                <UAvatar v-else size="xl" :src="user.avatar"/>
+            <div v-for="(user, index) in communityUser" :key="index" class="flex items-center justify-between pr-20">
+              <div class="flex items-center">
+                <div class="mr-3">
+                  <UAvatar v-if="user.avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
+                  <UAvatar v-else size="lg" :src="user.avatar"/>
+                </div>
+                <div class="flex text-2xl">
+                  <div v-if="user.name == 'N/A'" class="text-center">User</div>
+                  <div v-else class="text-center">{{ user.name }}</div>
+                </div>
               </div>
-              <div>
-                <div v-if="user.name == 'N/A'" class="flex text-center item-center text-3xl">User</div>
-                <div v-else class="flex text-center item-center text-3xl">{{ user.name }}</div>
-              </div>
+              <UButton 
+                v-if="communityInfo.creater === address"
+                color="gray"
+                variant="solid"
+                @click="OpenBan(index)"
+              >Ban</UButton>
             </div>
             <!--<UButton @click="test">test</UButton>-->
           </ULandingCard>
@@ -367,6 +387,21 @@ const test = async() => {
         </div>
         <div v-else class="h-[80px] flex flex-col items-center justify-center">
           <Text>Leave...</Text>
+          <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        </div>
+      </UCard>
+    </UModal>
+    <UModal v-model="banButton" :ui="{ width: w-full }">
+      <UCard class="min-w-[300px] flex justify-center">
+        <div class="w-full flex justify-center text-2xl">
+          Sure to Forbid?
+        </div>
+        <div v-if="!Forbid" class="w-full flex space-x-10 mt-6">
+          <UButton @click="exitButton = false">No</UButton>
+          <UButton @click="banSure">Yes</UButton>
+        </div>
+        <div v-else class="h-[80px] flex flex-col items-center justify-center">
+          <Text>Forbid...</Text>
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>
