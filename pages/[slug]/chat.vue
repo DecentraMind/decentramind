@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, communityUser, exitCommunity, updataCommunity, getLocalcommunityInfo, getCommunityuser, banchat } = $(aocommunityStore())
+const { currentUuid, communityUser, exitCommunity, updataCommunity, getLocalcommunityInfo, getCommunityuser, banchat, getBan } = $(aocommunityStore())
 let communityInfo = $ref({})
 let communityInfoJson = $ref({})
 const { address } = $(aoStore())
@@ -115,7 +115,9 @@ onMounted( () => {
 })
 onMounted(async () => {
   await loadCommunityInfo(currentUuid)
+  await getBan()
   const result = await getCommunityuser(communityInfo.uuid)
+  console.log('---------------')
   console.log(result)
   if (result && result.Messages && result.Messages.length > 0) {
     const dataStr = result.Messages[0].Data;
@@ -134,8 +136,6 @@ onMounted(async () => {
           }
         }
       }
-      console.log("----------")
-      console.log(communityuser)
       // You can further process the dataJson here
     } catch (error) {
       console.error('Error parsing JSON:', error);

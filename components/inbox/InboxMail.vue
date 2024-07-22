@@ -93,8 +93,8 @@ const test = () => {
     console.log('Address not found');
   }
 }
-onMounted( () => {
-  getBan()
+onMounted( async() => {
+
   if (!route.params.pid) return
   chatID = route.params.pid
 })
