@@ -23,6 +23,7 @@ export type CommunityListItem = {
   twitter: string
   whitebook: string
   github: string
+  /** how many user joined this community */
   buildnum: string
   bounty: TokenName[]
   ispublished: boolean
@@ -387,7 +388,11 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   //Getting information about a specific community from a cached community list
-  const getLocalCommunity = async (uuid: any) => {
+  const getLocalCommunity = async (uuid: string, reFetch = false) => {
+    if (!communityList || !communityList.length || reFetch) {
+      await getCommunityList()
+    }
+
     if (!communityList || !communityList.length) {
       await getCommunityList()
     }
@@ -396,11 +401,26 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     return communityInfo
   }
 
-  //Getting information about a specific community
-  const getCommunityInfo = async (uuid: any) => {
-    if (isLoading) return
-    isLoading = true
+  type Community = {
+    banner: `banner${1|2|3|4|5|6|7|8|9|10}`
+    bounty: TokenName[]
+    buildnum: number
+    communitytoken: CommunityToken[]
+    creater: string
+    github: string
+    ispublished: boolean
+    logo: string
+    name: string
+    support: TradePlatform[]
+    tokensupply: TokenSupply[]
+    twitter: string
+    uuid: string
+    website: string
+    communitychatid?: string
+  }
 
+  //Getting information about a specific community
+  const getCommunity = async (uuid: any) => {
     const result = await dryrun({
       process: aoCommunityProcessID,
       tags: [
@@ -408,8 +428,11 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
         { name: 'uuid', value: uuid }
       ]
     })
-    isLoading = false
-    return result
+
+    const json = extractResult<string>(result)
+    if(!json) return
+
+    return JSON.parse(json) as Community
   }
 
   //How to join the community
@@ -612,7 +635,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     getBan,
     setCurrentUuid,
     makeCommunityChat,
-    registerInfo: registerInfo,
+    registerInfo,
     getLocalCommunity,
     getCommunityList,
     updateCommunity,
@@ -625,7 +648,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     getUser,
     getCommunityUser,
     getJoinedCommunities,
-    getCommunityInfo
+    getCommunity
   })
 })
 

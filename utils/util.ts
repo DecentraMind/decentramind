@@ -1,3 +1,5 @@
+import {dryrun} from '@permaweb/aoconnect'
+
 export function createUuid() {
     const str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
     return str.replace(/[xy]/g, function (c) {
@@ -28,4 +30,10 @@ export function formatToLocale(isoString: string, locale: string = 'en-US') {
 
   console.log({isoString})
   return new Intl.DateTimeFormat(locale, options).format(date).replace(/\sat\s/, ' ')
+}
+
+export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
+  if(!result.Messages) return
+
+  return result.Messages[0].Data as T
 }

@@ -6,7 +6,6 @@ import type { CommunitySetting } from '~/types'
 import { communitySettingSchema, type CommunitySettingSchema } from '~/utils/schemas'
 
 const route = useRoute()
-const slug = $computed(() => route.params.slug)
 
 const tradePlatformSelected = $ref([])
 const tokenSelected = $ref([])
@@ -86,16 +85,17 @@ const CreateCommunity = async () => {
     isCommunityCreateModalOpen = true
   } catch (error) {
     console.error('Error creating community:', error)
+
     isCommunityCreateModalOpen = false
+    createSuccess = false
     alert('Failed to create community!')
-    // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
+    throw new Error('create community Error' + error)
   } finally {
     isLoading = false
-    createSuccess = true
+    //createSuccess = true
   }
   createSuccess = true
-  isCommunityCreateModalOpen = true
-  isLoading = false
+
 }
 
 const handleUploadLogo = (event: Event) => {
@@ -439,7 +439,7 @@ const removeSupplyGroup = (index: number) => {
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/community/${createdCommunityID}`" @click="getCommunityList(); emit('close-modal'); isCommunityCreateModalOpen = false">
+            <UButton @click="getCommunityList(); emit('close-modal'); $router.push(`/community/${createdCommunityID}`); isCommunityCreateModalOpen = false">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>

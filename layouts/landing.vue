@@ -59,7 +59,7 @@ let loginLoading = $ref(false)
       <!--<slot />-->
       <div class="flex flex-col h-screen items-center gap-4 justify-center">
         <UColorModeImage src="DMLogo.png" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-[600px] mb-6" />
-        <div class="text-7xl font-bold">Start your real community journey</div>
+        <div class="text-7xl font-bold text-center">Start your real community journey</div>
         <div class="mt-3 mb-6" text-3xl>Try a better way than airdrop to build your community.</div>
         <UButton size="xl" color="black" @click="loginModal = true">
           Open to Build
