@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
-import { taskStore } from '~/stores/taskStore'
-import { aoCommunityStore } from '~/stores/aoCommunityStore'
 
 import { z } from 'zod'
 import type { Dayjs } from 'dayjs'
