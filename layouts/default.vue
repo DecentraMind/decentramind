@@ -10,7 +10,7 @@ const links = $computed(() => {
       id: 'home',
       label: 'Home',
       icon: 'i-heroicons-home',
-      to: `/${slug}/`,
+      to: '/',
       tooltip: {
         text: 'Home',
         shortcuts: ['G', 'H'],
@@ -20,7 +20,7 @@ const links = $computed(() => {
       id: 'tasks',
       label: 'Tasks',
       icon: 'i-arcticons-x-twitter',
-      to: `/${slug}/tasks`,
+      to: '/tasks',
       badge: '4',
       tooltip: {
         text: 'Inbox',
@@ -42,7 +42,7 @@ const links = $computed(() => {
       id: 'users',
       label: 'Users',
       icon: 'i-heroicons-user-group',
-      to: `/${slug}/users`,
+      to: '/users',
       tooltip: {
         text: 'Users',
         shortcuts: ['G', 'U'],

@@ -6,6 +6,18 @@ export default defineAppConfig({
       default: {
         openDelay: 500
       }
+    },
+    icons: {
+      dynamic: true
     }
   }
 })
+
+declare module '@nuxt/schema' {
+  interface AppConfigInput {
+    // myLayer?: {
+    //   /** Project name */
+    //   name?: string
+    // }
+  }
+}

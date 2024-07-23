@@ -4,10 +4,10 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/i18n',
-    // '@nuxt/content',
+    '@nuxt/content',
     '@nuxt/image',
     '@nuxt/ui',
-    // '@nuxt/fonts',
+    '@nuxt/fonts',
     '@vueuse/nuxt',
     'nuxt-og-image',
     '@vue-macros/nuxt',
