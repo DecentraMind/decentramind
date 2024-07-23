@@ -1,4 +1,4 @@
-import {tokenProcessIDs} from '~/utils/constants'
+import { tokenProcessIDs } from '~/utils/constants'
 import {
   createDataItemSigner,
   result,
@@ -9,6 +9,14 @@ import {
   // unmonitor,
   dryrun
 } from '@permaweb/aoconnect'
+
+// import * as Othent from "@othent/kms";
+
+// import {
+//   connect,
+//   disconnect,
+//   getActiveAddress,
+// } from "@othent/kms";
 
 declare const window: any
 import type { PermissionType } from 'arconnect'
@@ -85,25 +93,25 @@ export const aoStore = defineStore('aoStore', () => {
   }
 
   const othentLogin = async () => {
-    /*
-    if (typeof window !== 'undefined') {
-      try {
-        let res = await connect();
-        window.arweaveWallet = Othent;
-        if (Othent) {
-          address = res.walletAddress;
-        }
-      } catch (error) {
-        console.error('An error occurred:', error);
-      }
-    } else {
-      console.error('This code must be run in a browser environment.');
-    }
-    */
-    try {
-      // address = await window.arweaveWallet.getActiveAddress()
 
-      let result = await message({
+    // if (typeof window !== 'undefined') {
+    //   try {
+    //     const res = await connect()
+    //     window.arweaveWallet = Othent
+    //     if (Othent) {
+    //       address = res.walletAddress
+    //     }
+    //   } catch (error) {
+    //     console.error('An error occurred:', error)
+    //   }
+    // } else {
+    //   console.error('This code must be run in a browser environment.')
+    // }
+
+    try {
+      address = await window.arweaveWallet.getActiveAddress()
+
+      const result = await message({
         process: processID,
         tags: [
           { name: 'Action', value: 'registInfo' },

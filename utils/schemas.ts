@@ -29,3 +29,12 @@ export const communitySettingSchema = z.object({
 })
 
 export type CommunitySettingSchema = z.infer<typeof communitySettingSchema>
+
+// 定义新的 schema
+export const createTokenSchema = z.object({
+  name: z.string().min(3).max(30),
+  ticker: z.string().email(),
+})
+
+// 导出新的 schema
+export type CreateTokenSchema = z.infer<typeof createTokenSchema>

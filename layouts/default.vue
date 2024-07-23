@@ -3,6 +3,7 @@ import defaultCommunityLogo from '@/utils/defaultCommunityLogo'
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
 
+const selectModal = $ref(0)
 const links = $computed(() => {
   return [
     {
@@ -128,7 +129,7 @@ onMounted(async () => {
             </div>
           </NuxtLink>
 
-          <UButton class="w-full mt-2" variant="soft" @click="isCreateModalOpen = true">
+          <UButton class="w-full mt-2" variant="soft" @click="selectModal=0;isCreateModalOpen = true">
             <UIcon name="ion:add" class="h-full w-full " />
           </UButton>
         </div>
@@ -166,7 +167,12 @@ onMounted(async () => {
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: w-full }">
       <UCard>
-        <CommunityCreate @close-modal="isCreateModalOpen = false" />
+        <div v-if="selectModal === 0" class="flex justify-between w-[300px]">
+          <UButton @click="selectModal=1">Create Community</UButton>
+          <UButton @click="selectModal=2">Create Tokens</UButton>
+        </div>
+        <CommunityCreate v-if="selectModal === 1" @close-modal="isCreateModalOpen = false" />
+        <TokenCreate v-if="selectModal === 2" />
       </UCard>
     </UModal>
   </UDashboardLayout>

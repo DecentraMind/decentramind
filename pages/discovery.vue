@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, getUser: getInfo, getCommunityList, joinCommunity } = $(aoCommunityStore())
+const { communityList, getUser: getInfo, getCommunityList, joinCommunity, createToken } = $(aoCommunityStore())
 
 const toast = useToast()
 const router = useRouter()
@@ -63,6 +63,9 @@ const joinToCommunity = async(uuid: any) => {
     joinLoading = false
   }
 
+}
+const test = async () => {
+  const a = await createToken('testone', 'tTn')
 }
 </script>
 

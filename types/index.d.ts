@@ -91,6 +91,11 @@ export type CommunitySetting = {
   time: string | undefined;
 }
 
+export type CreateToken = {
+  ticker: string;
+  name: string;
+}
+
 export type Tokens = {
   [key: string]: {
     ticker: string;

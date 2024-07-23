@@ -79,7 +79,7 @@ let loginLoading = $ref(false)
             </template>
             ArConnect
           </UButton>
-          <UButton color="white" disabled class="w-[120px]" @click="othent">
+          <UButton color="white" class="w-[120px]" disabled @click="othent">
             <template #leading>
               <UIcon
                 name="logos:google-icon"

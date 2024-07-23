@@ -1,6 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [process.env.NUXT_UI_PRO_PATH || '@nuxt/ui-pro'],
+
   modules: [
     '@nuxtjs/i18n',
     // '@nuxt/content',
@@ -25,9 +26,11 @@ export default defineNuxtConfig({
       '*/5 * * * *': 'testo'
     }
   },
+
   colorMode: {
     preference: 'light'
   },
+
   i18n: {
     legacy: false,
     globalInjection: true,
@@ -45,10 +48,14 @@ export default defineNuxtConfig({
     langDir: 'lang/',
     defaultLocale: 'en',
   },
+
   ui: {
     safelistColors: ['primary', 'red', 'orange', 'green']
   },
+
   devtools: {
     enabled: true
   },
+
+  compatibilityDate: '2024-07-23',
 })
