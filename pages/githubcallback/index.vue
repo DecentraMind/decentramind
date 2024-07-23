@@ -1,46 +1,35 @@
 <template>
-<div>
+  <div>
     <h1>正在认证...</h1>
     <!--<UButton @click=test>test</UButton>-->
-
-</div>
+  </div>
 </template>
 
 
 <script setup>
 
 definePageMeta({
-  layout: "wip",
-});
+  layout: 'wip',
+})
 
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const toast = useToast()
 const router = useRouter()
-let getGithub = $ref(false)
-const { userInfo, getInfo, personalGithub } = $(aocommunityStore())
-const { github } = $(linktwitter())
+const { userInfo, getUser } = $(aoCommunityStore())
 
-const user = useSupabaseUser()
-
-const test = async() => {
-    console.log(user.value.user_metadata.provider_id)    
-}
-const backCommunity = async() => {
-    router.push('/dm')
-}
 onMounted(async () => {
     const code = new URLSearchParams(window.location.search).get('code')
     const state = new URLSearchParams(window.location.search).get('state')
-    
-    await getInfo()
-    
-    const connectGithub = "Success"
+
+    await getUser()
+
+    const connectGithub = 'Success'
     //const connectGithub = user.value.user_metadata.provider_id
     if (code && state === 'state') {
         try {
-            const githubCode = await personalInfo(
+            await personalInfo(
                 userInfo[0].avatar,
                 userInfo[0].name,
                 userInfo[0].twitter,
@@ -61,7 +50,7 @@ onMounted(async () => {
     }
 
     router.push('/dm')
-    
+
 })
 
 </script>

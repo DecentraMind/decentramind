@@ -1,17 +1,9 @@
 <script setup lang="ts">
-import type { FormError, FormSubmitEvent } from '#ui/types'
-
 import { z } from 'zod'
-
-const { auth } = useSupabaseClient()
-
-const redirectTo = 'http://localhost:3000/githubcallback'
 
 const toast = useToast()
 
-let info = $ref({})
-let infoJson = $ref({})
-let accountForm = $ref({
+const accountForm = $ref({
   avatar: '',
   name: '',
   twitter: '',
@@ -22,7 +14,6 @@ let accountForm = $ref({
   showtelegram: true,
   github: '',
 })
-let isLoading = $ref(false)
 
 
 const schema = z.object({
@@ -35,7 +26,7 @@ function onSubmitAccount() {
   console.log('Submitted form:', accountForm)
 }
 
-const { userInfo, getInfo, personalInfo } = $(aocommunityStore())
+const { userInfo, getUser: getInfo, personalInfo } = $(aoCommunityStore())
 const client = useSupabaseClient()
 const saveInfo = async () => {
 
@@ -70,14 +61,14 @@ onMounted(async () => {
     //console.log(infoJson)
     await getInfo()
     accountForm.avatar = userInfo[0].avatar
-    accountForm.name = userInfo[0].name;
-    accountForm.twitter = userInfo[0].twitter;
-    accountForm.showtwitter = userInfo[0].showtwitter;
-    accountForm.mail = userInfo[0].mail;
-    accountForm.showmail = userInfo[0].showmail;
-    accountForm.phone = userInfo[0].phone;
-    accountForm.showtelegram = userInfo[0].showphone;
-    accountForm.github = userInfo[0].github;
+    accountForm.name = userInfo[0].name
+    accountForm.twitter = userInfo[0].twitter
+    accountForm.showtwitter = userInfo[0].showtwitter
+    accountForm.mail = userInfo[0].mail
+    accountForm.showmail = userInfo[0].showmail
+    accountForm.phone = userInfo[0].phone
+    accountForm.showtelegram = userInfo[0].showphone
+    accountForm.github = userInfo[0].github
     if (accountForm.twitter == 'Success') {
       connectTwitter = true
     }
@@ -85,9 +76,9 @@ onMounted(async () => {
       connectGithub = true
     }
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error)
   }
-});
+})
 
 
 
@@ -98,23 +89,23 @@ const logoupload = () => {
 
 
 const handleUp = (event) => {
-  const file = event.target?.files[0];
+  const file = event.target?.files[0]
   if (file) {
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = (e) => {
-      const img = new Image();
+      const img = new Image()
       img.onload = () => {
         if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
-          accountForm.avatar = e.target.result;
+          accountForm.avatar = e.target.result
         } else {
-          alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.');
+          alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
         }
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+      }
+      img.src = e.target.result
+    }
+    reader.readAsDataURL(file)
   }
-};
+}
 </script>
 
 <template>
@@ -150,7 +141,7 @@ const handleUp = (event) => {
       <!--
       <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">{{ $t('setting.person.social') }}
       </div>
-      
+
       <UFormGroup label="twitter" name="twitter" class="mb-5 pl-10">
         <template #label>
           {{ $t('setting.person.twitter') }}

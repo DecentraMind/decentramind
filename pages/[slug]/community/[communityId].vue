@@ -1,22 +1,21 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
-import { taskStore } from '../../../stores/taskStore'
-import { aocommunityStore } from '~/stores/aocommunityStore'
+import { taskStore } from '~/stores/taskStore'
+import { aoCommunityStore } from '~/stores/aoCommunityStore'
 
 import { z } from 'zod'
-import { ref } from 'vue'
 import type { Dayjs } from 'dayjs'
 import { tokenOptions, timeZoneOptions } from '~/utils/constants'
 import type { Task } from '~/types'
 
 const { t } = useI18n()
 const { denomination, createTask, getAllTasks, getAllTaskSubmitInfo } = $(taskStore())
-const { getLocalcommunityInfo, setCurrentuuid, exitCommunity, getCommunitylist } = $(aocommunityStore())
+const { getLocalCommunity, setCurrentUuid, exitCommunity, getCommunityList } = $(aoCommunityStore())
 
 const { add } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
-const communityId = $computed(() => route.params.communityId)
+const communityId = $computed(() => route.params.communityId) as string
 
 const isSettingModalOpen = $ref(false)
 
@@ -71,10 +70,11 @@ const chainOptions = [
 ]
 
 type RangeValue = [Dayjs, Dayjs];
-let selectStartTime = $ref()
-let selectEndTime = $ref()
-const value2 = ref<RangeValue>()
-function handleDateChange(value) {
+let selectStartTime = $ref<string>()
+let selectEndTime = $ref<string>()
+const value2 = $ref<RangeValue>()
+
+function handleDateChange(value: string[]) {
   selectStartTime = value[0]
   selectEndTime = value[1]
   // const currentDate = new Date()
@@ -231,27 +231,19 @@ const slug = $computed(() => route.params.slug)
 console.log('slug = ' + slug)
 
 console.log('get community info of ', communityId)
-let communityInfo = $ref<Awaited<ReturnType<typeof getLocalcommunityInfo>> | {}>({})
-
-const loadCommunityInfo = async (pid: string) => {
-  try {
-    communityInfo = await getLocalcommunityInfo(pid)
-    console.log('get communityInfo', communityInfo, pid)
-  } catch (error) {
-    console.error('Error fetching data:', error)
-  }
-}
+let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 
 let isCommunityOwner = $ref(false)
 
 onMounted(async () => {
-  // if(!communityInfo) {
-  //   console.error('communityInfo is null')
-  //   return
-  // }
+  setCurrentUuid(communityId)
 
-  setCurrentuuid(route.params.communityId)
-  await loadCommunityInfo(communityId)
+  try {
+    communityInfo = await getLocalCommunity(communityId)
+    console.log('get communityInfo', communityInfo, communityId)
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
 
   const rz = await add(communityInfo.name, communityInfo.communitychatid)
   if (rz.err) {
@@ -338,7 +330,7 @@ const quitCommunity = async (communityuuid: any) => {
   leaveOut = true
   try {
     await exitCommunity(communityuuid)
-    await getCommunitylist()
+    await getCommunityList()
     console.log('exitCommunity 操作成功')
     leaveOut = false
     router.push(`/${slug}/discovery`)

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const { joinCommunity } = $(aocommunityStore())
+const { joinCommunity } = $(aoCommunityStore())
 definePageMeta({
-  layout: "wip",
-});
-const { address, doLogin } = $(aoStore())
+  layout: 'wip',
+})
+const { doLogin } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId)
 const slug = $computed(() => route.params.slug)
@@ -37,7 +37,7 @@ onMounted( () => {
   <UPage>
     <UCard>
       <template #header>
-        DecentralMind
+        DecentraMind
       </template>
       <div class="flex justify-between">
         <div><Text>Invite to community:</Text></div>
@@ -46,7 +46,7 @@ onMounted( () => {
 
       <template #footer>
         <div class="flex justify-center">
-          <UButton color="white" label="Join" @click="join"/>
+          <UButton color="white" label="Join" @click="join" />
         </div>
       </template>
     </UCard>

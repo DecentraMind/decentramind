@@ -10,15 +10,8 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
-// import * as Othent from '@othent/kms';
-
-import {
-  connect,
-  disconnect,
-  getActiveAddress,
-} from '@othent/kms';
-declare const window: any;
-import { PermissionType } from 'arconnect'
+declare const window: any
+import type { PermissionType } from 'arconnect'
 
 const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
@@ -27,13 +20,13 @@ const permissions: PermissionType[] = [
   'DISPATCH'
 ]
 
-import Arweave from 'arweave';
+import Arweave from 'arweave'
 
 const arweave = Arweave.init({
   host: 'arweave.net', // 这是主网节点的 URL
   port: 443,
   protocol: 'https'
-});
+})
 
 export const aoStore = defineStore('aoStore', () => {
 
@@ -55,16 +48,16 @@ export const aoStore = defineStore('aoStore', () => {
     FIRE: 0,
     AIR: 0,
     FIREEARTH: 0
-  });
+  })
   let credBalance = $(lsItemRef('credBalance', 0))
   let aoCoinBalance = $(lsItemRef('aoCoinBalance', 0))
   const { showError } = $(notificationStore())
 
   const doLogin = async () => {
     if (!window.arweaveWallet) {
-      console.error('Arweave Wallet no install');
-      alert('Please install Arweave Wallet to continue');
-      window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh';
+      console.error('Arweave Wallet no install')
+      alert('Please install Arweave Wallet to continue')
+      window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh'
       return;
     }
     try {
@@ -83,7 +76,7 @@ export const aoStore = defineStore('aoStore', () => {
           { name: 'userAddress', value: address }
         ],
         signer: createDataItemSigner(window.arweaveWallet),
-      });
+      })
       const success = 'success'
       return success
 
@@ -119,7 +112,7 @@ export const aoStore = defineStore('aoStore', () => {
           { name: 'userAddress', value: address }
         ],
         signer: createDataItemSigner(window.arweaveWallet),
-      });
+      })
       const success = 'success'
       return success
 
@@ -154,7 +147,7 @@ export const aoStore = defineStore('aoStore', () => {
         process,
       })
       rz = useGet(useGet(rz, 'Messages[0].Tags').find(tag => tag.name === 'Balance'), 'value', '0')
-      totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0);
+      totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0)
 
       return parseFloat(rz)
     } catch (err) {
@@ -254,7 +247,7 @@ export const aoStore = defineStore('aoStore', () => {
     tokenBalances.FIRE = (await getBalance('FIRE')) / 1e12
     tokenBalances.AIR = (await getBalance('AIR')) / 1e12
     tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) / 1e12
-    totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0);
+    totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0)
 
 
   }
@@ -262,12 +255,12 @@ export const aoStore = defineStore('aoStore', () => {
   const getarbalance = async () => {
     try {
       // 查询地址余额
-      const balance = await arweave.wallets.getBalance(address);
-      console.log('Balance (in winston):', balance);
+      const balance = await arweave.wallets.getBalance(address)
+      console.log('Balance (in winston):', balance)
 
       // 将余额从 winston 转换为 AR
-      const arBalance = arweave.ar.winstonToAr(balance);
-      console.log('Balance (in AR):', arBalance);
+      const arBalance = arweave.ar.winstonToAr(balance)
+      console.log('Balance (in AR):', arBalance)
       return arBalance
     } catch (error) {
       console.log(error)

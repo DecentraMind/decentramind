@@ -5,9 +5,13 @@ import defaultCommunityLogo from '~/utils/defaultCommunityLogo'
 import type { CommunitySetting } from '~/types'
 import { communitySettingSchema, type CommunitySettingSchema } from '~/utils/schemas'
 
+const route = useRoute()
+const slug = $computed(() => route.params.slug)
+
 const tradePlatformSelected = $ref([])
 const tokenSelected = $ref([])
-let isCreated = $ref(false)
+let isCommunityCreateModalOpen = $ref(false)
+let createdCommunityID = $ref('')
 
 const state = $ref<CommunitySetting>({
   logoBase64Data: undefined,
@@ -44,7 +48,7 @@ async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
 
 const emit = defineEmits(['close-modal'])
 
-const { addCommunity, getCommunitylist, makecommunityChat } = $(aocommunityStore())
+const { addCommunity, getCommunityList, makeCommunityChat} = $(aoCommunityStore())
 
 let isLoading = $ref(false)
 let createSuccess = $ref(false)
@@ -52,15 +56,15 @@ let createSuccess = $ref(false)
 const CreateCommunity = async () => {
   if (isLoading) return
   isLoading = true
-  isCreated = true
+  isCommunityCreateModalOpen = true
   try {
-    state.communityChatID = await makecommunityChat()
+    state.communityChatID = await makeCommunityChat()
 
     if (!state.communityChatID) {
       throw new Error('Failed to create community chat')
     }
 
-    await addCommunity(
+    createdCommunityID = await addCommunity(
       state.logoBase64Data,
       state.banner,
       state.name,
@@ -77,11 +81,12 @@ const CreateCommunity = async () => {
       token.tokenSupply, // 社区token分配比例详情
       state.communityChatID
     )
+
     createSuccess = true
-    isCreated = true
+    isCommunityCreateModalOpen = true
   } catch (error) {
     console.error('Error creating community:', error)
-    isCreated = false
+    isCommunityCreateModalOpen = false
     alert('Failed to create community!')
     // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
   } finally {
@@ -89,7 +94,7 @@ const CreateCommunity = async () => {
     createSuccess = true
   }
   createSuccess = true
-  isCreated = true
+  isCommunityCreateModalOpen = true
   isLoading = false
 }
 
@@ -420,7 +425,7 @@ const removeSupplyGroup = (index: number) => {
         </div>
       </UForm>
 
-      <UModal v-model="isCreated" prevent-close>
+      <UModal v-model="isCommunityCreateModalOpen" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
             <div class="flex items-center justify-center">
@@ -434,7 +439,7 @@ const removeSupplyGroup = (index: number) => {
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton @click="getCommunitylist(); emit('close-modal'); isCreated = false">
+            <UButton :to="`/${slug}/community/${createdCommunityID}`" @click="getCommunityList(); emit('close-modal'); isCommunityCreateModalOpen = false">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>

@@ -1,37 +1,21 @@
 <script setup lang="ts">
-const {
-  // currentChain, selectedWallet,
-  address,
-  credBalance,
-  init, doLogout, doLogin } = $(aoStore())
+const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, userInfo, getBan, updataCommunity, getInfo, getCommunitylist, joinCommunity, getLocalcommunityInfo } = $(aocommunityStore())
-const { gettoken } = $(linktwitter())
+const { communityList, getUser: getInfo, getCommunityList, joinCommunity } = $(aoCommunityStore())
 
 const toast = useToast()
 const route = useRoute()
-const router = useRouter();
+const router = useRouter()
 const slug = $computed(() => route.params.slug)
 
 let communityLoading = $ref(true)
-let LinktoTwitter = $ref(false)
+const linkToTwitter = $ref(false)
 
-let result = $ref()
+let result = $ref<Awaited<ReturnType<typeof getCommunityList>>>()
 
 const getCommunity = async () => {
-  result = await getCommunitylist()
+  result = await getCommunityList()
   communityLoading = false
-}
-
-const communityJoin = async (uuid: any) => {
-  if(!userInfo[0].twitter || userInfo[0].twitter !== 'Success'){
-    LinktoTwitter = true
-  } else {
-    const invite = "none"
-    await joinCommunity(uuid, invite)
-    toast.add({ title: 'joined success' })
-    await getCommunity()
-  }
 }
 
 onMounted(async () => {
@@ -50,12 +34,11 @@ const translate = [
   [
   //   {
   //   label: '简体中文',
-  // }, 
+  // },
   {
     label: 'English'
   }]
 ]
-const { t, locale , defaultLocale } = useI18n()
 
 const Logout = async() => {
   await doLogout()
@@ -64,33 +47,24 @@ const Logout = async() => {
 
 let joinLoading = $ref(false)
 
-const jointocommunity = async(uuid: any) => {
+const joinToCommunity = async(uuid: any) => {
   joinLoading = true
   try {
-
-    const invite = "none"
-    const result = await joinCommunity(uuid, invite)
+    const invite = 'none'
+    await joinCommunity(uuid, invite)
     toast.add({ title: 'joined success' })
     // 查找uuid匹配的元素并更新isJoined属性
-    await getCommunitylist()
+    await getCommunityList()
     joinLoading = false
-    
+
     // joinLoading = true
-    // 如果 communityJoin 没有抛出异常，则认为操作成功
-    console.log('communityJoin 操作成功');
+    console.log('communityJoin 操作成功')
   } catch (error) {
-    // 如果 communityJoin 抛出了异常，则在这里处理异常
-    alert('communityJoin 操作失败:', result);
-    // 可以在这里做一些失败处理，比如显示错误信息、重试等
+    alert('communityJoin 操作失败')
   } finally {
-    // 无论是否成功，都在最后将 loading 状态设为 false
-    joinLoading = false;
+    joinLoading = false
   }
 
-}
-const test = ()=> {
-  const a = getBan()
-  console.log('-test')
 }
 </script>
 
@@ -164,7 +138,7 @@ const test = ()=> {
                       :ui="{ font: 'font-medium'}"
                       color="white"
                       variant="outline"
-                      @click="() => jointocommunity(community.uuid)"
+                      @click="() => joinToCommunity(community.uuid)"
                     >
                       {{ $t('community.list.join') }}
                     </UButton>
@@ -176,7 +150,7 @@ const test = ()=> {
         </div>
       </div>
     </div>
-    <UModal v-model="LinktoTwitter">
+    <UModal v-model="linkToTwitter">
       <div class="h-[200px] flex flex-col items-center justify-center">
         <Text class="text-2xl">No link to twitter</Text>
         <NuxtLink :to="`/${slug}/settings`">

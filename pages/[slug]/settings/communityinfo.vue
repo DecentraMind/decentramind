@@ -3,7 +3,7 @@
 const communityForm = $ref({
   showAll: true,
   communityName: '',
-  showCommunitynum: true,
+  showCommunityNum: true,
 })
 function onSubmit() {
   console.log('Submitted form:', communityForm)
@@ -13,27 +13,26 @@ const light = 'https://source.unsplash.com/random/200x200?sky'
 const dark = 'https://source.unsplash.com/random/200x200?stars'
 
 
-const { joincommunityList, getCommunitylist } = $(aocommunityStore())
+const { joinedCommunities, getCommunityList } = $(aoCommunityStore())
 
 let communityLoading = $ref(true)
 
 let result = $ref()
 const getCommunity = async () => {
-
-  result = await getCommunitylist()
+  result = await getCommunityList()
   communityLoading = false
 }
 
 onMounted(async () => {
   try {
-    if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
+    if (Array.isArray(joinedCommunities) && joinedCommunities.length !== 0) {
       communityLoading = false
     }
     await getCommunity()
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error)
   }
-});
+})
 </script>
 
 <template>
@@ -55,7 +54,7 @@ onMounted(async () => {
         <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
       </div>
       <div class="flex flex-wrap">
-        <div v-for="(item, index) in joincommunityList" :key="index" class="w-1/2 pl-5">
+        <div v-for="(item, index) in joinedCommunities" :key="index" class="w-1/2 pl-5">
           <div class="flex items-center mb-5">
             <UColorModeImage :src="item.logo" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
             <UFormGroup :label="item.label" :name="item.name" class="ml-5 w-[300px]">
@@ -77,9 +76,9 @@ onMounted(async () => {
         <template #label>
           <div class="mt-20 text-xl flex items-center pl-5">
             <Text class="w-[420px]">
-              {{ $t('setting.community.isjoin') }}： {{ joincommunityList.length }}
+              {{ $t('setting.community.isjoin') }}： {{ joinedCommunities.length }}
             </Text>
-            <UToggle v-model="communityForm.showCommunitynum" class="ml-10" size="xl" />
+            <UToggle v-model="communityForm.showCommunityNum" class="ml-10" size="xl" />
             <div class="ml-3">{{ $t('show') }}</div>
           </div>
         </template>

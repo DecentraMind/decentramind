@@ -82,20 +82,14 @@ const groups = [
   },
 ]
 
-const { userInfo, joincommunityList, getBan, getInfo } = $(aocommunityStore())
+const { userInfo, joinedCommunities, getBan, getUser } = $(aoCommunityStore())
 
 const isCreateModalOpen = $ref(false)
 
-let communityLoading = $ref(true)
-
 onMounted(async () => {
   try {
-    if (Array.isArray(joincommunityList) && joincommunityList.length !== 0) {
-      communityLoading = false
-    }
     getBan()
-    await getInfo()
-
+    await getUser()
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -119,7 +113,7 @@ onMounted(async () => {
 
         <div class="overflow-y-auto h-full" style="-ms-overflow-style: none; scrollbar-width: none;">
           <NuxtLink
-            v-for="item in joincommunityList"
+            v-for="item in joinedCommunities"
             :key="item.uuid"
             :to="`/${slug}/community/${item.uuid}`"
             class="w-full block mt-2"

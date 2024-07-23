@@ -48,7 +48,7 @@ async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
 }
 
 
-const { settingCommunity, currentUuid, getLocalcommunityInfo } = $(aocommunityStore())
+const { settingCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
 let isLoading = $ref(false)
 let createSuccess = $ref(false)
 const CreateCommunity = async () => {
@@ -188,7 +188,7 @@ const removeSupplyGroup = (index: number) => {
 }
 
 const setCommunityState = async () => {
-  const communityInfo = await getLocalcommunityInfo(currentUuid)
+  const communityInfo = await getLocalCommunity(currentUuid)
   if (!communityInfo) return
 
   console.log({ communityInfo })

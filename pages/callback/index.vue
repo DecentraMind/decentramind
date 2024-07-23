@@ -19,14 +19,14 @@
 <script setup>
 
 definePageMeta({
-  layout: "wip",
-});
+  layout: 'wip',
+})
 
 import {onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 
 const toast = useToast()
-const {userInfo, getInfo, personalInfo} = $(aocommunityStore())
+const {userInfo, getUser: getInfo, personalInfo} = $(aoCommunityStore())
 const Sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }

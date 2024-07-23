@@ -3,14 +3,6 @@ const colorMode = useColorMode()
 
 const color = computed(() => colorMode.value === 'dark' ? '#111827' : 'white')
 
-const {
-  // currentChain, selectedWallet,
-  address,
-  credBalance,
-  init, doLogout, doLogin } = $(aoStore())
-
-const { registInfo } = $(aocommunityStore())
-
 useHead({
   meta: [
     { charset: 'utf-8' },
@@ -37,16 +29,6 @@ useSeoMeta({
   twitterImage: ogImage,
   twitterCard: 'summary_large_image'
 })
-
-const router = useRouter()
-
-const community = async() => {
-  await doLogin()
-  await registInfo()
-  if (address) {
-    router.push('/signup')
-  }
-}
 </script>
 
 <template>

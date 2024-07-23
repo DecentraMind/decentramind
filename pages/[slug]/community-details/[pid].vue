@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {tokenProcessIDs} from '~/utils/constants'
-const { getLocalcommunityInfo } = $(aocommunityStore())
+const { getLocalCommunity } = $(aoCommunityStore())
 
 const { t } = useI18n()
 
@@ -52,11 +52,9 @@ const ranks = [{
 const pending = $ref(true)
 
 const route = useRoute()
-const pid = $computed(() => route.params.pid)
+const pid = $computed(() => route.params.pid) as string
 
-let communityInfo = $ref<Awaited<ReturnType<typeof getLocalcommunityInfo>>>()
-
-let communityLoading = $ref(true)
+let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 
 watchEffect(() => {
   if (!route.params.pid) return
@@ -83,14 +81,13 @@ onMounted(async () => {
   }
 })
 
-watch(() => route.params.pid, async (newPid) => {
-  await loadCommunityInfo(newPid)
+watch(() => route.params.pid, (newPid: string) => {
+  loadCommunityInfo(newPid)
 })
 
-const loadCommunityInfo = async (pid) => {
+const loadCommunityInfo = async (pid: string) => {
   try {
-    communityInfo = await getLocalcommunityInfo(pid)
-    communityLoading = false
+    communityInfo = await getLocalCommunity(pid)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -99,7 +96,6 @@ const loadCommunityInfo = async (pid) => {
 const tokenMap = $ref(tokenProcessIDs)
 
 import * as echarts from 'echarts'
-import type { StringLiteral } from 'typescript';
 
 const chart = ref(null)
 let chartInstance = null

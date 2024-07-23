@@ -2,7 +2,7 @@
 
 import {taskStore} from '~/stores/taskStore'
 
-const { getLocalcommunityInfo } = $(aocommunityStore())
+const { getLocalCommunity } = $(aoCommunityStore())
 const { getAllInviteInfo, allInviteInfo } = $(taskStore())
 const { address } = $(aoStore())
 
@@ -21,8 +21,6 @@ let communityLoading = $ref(true)
 let communities = $ref([])
 let invitedByCid = $ref([])
 let avas  = $ref({})
-let avasLength = $ref(0)
-
 
 onMounted(async () => {
   try {
@@ -48,7 +46,7 @@ onMounted(async () => {
   const cIds = getUniqueCommunityIds()
   console.log('cIds = ' + cIds)
   for(let i = 0; i < cIds.length; ++i){
-    const temp = await getLocalcommunityInfo(cIds[i])
+    const temp = await getLocalCommunity(cIds[i])
     if(temp && temp != 'undefined'){
       console.log('get cInfo = ' + JSON.stringify(temp))
       const cInfo = {
@@ -64,13 +62,13 @@ onMounted(async () => {
 let inviteDetail = $ref(false)
 
 function getUniqueCommunityIds(): string[] {
-  const uniqueCommunityIds = new Set<string>();
+  const uniqueCommunityIds = new Set<string>()
 
   allInviteInfo.forEach(invite => {
-    uniqueCommunityIds.add(invite.communityId);
-  });
+    uniqueCommunityIds.add(invite.communityId)
+  })
 
-  return Array.from(uniqueCommunityIds);
+  return Array.from(uniqueCommunityIds)
 }
 const findInvitedById = (cId: string) => {
   inviteDetail = true

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-const { id, pendingMsg } = $defineProps<{
+const { id } = $defineProps<{
   id: string, // process id
 }>()
 
-import audioFile from '@/assets/notify.mp3'; // Adjust the path accordingly
+import audioFile from '@/assets/notify.mp3' // Adjust the path accordingly
 
 const emitLoaded = defineEmit('loaded')
 
 const { state, itemsCache, loadInboxList, isInboxLoading: isLoading, getInboxCount } = $(inboxStore())
-const { communityUser } = $(aocommunityStore())
+const { communityUser } = $(aoCommunityStore())
 //const { address, getActiveAddress } = $(arweaveWalletStore())
 const { address } = $(aoStore())
 const items = $computed(() => {
@@ -60,7 +60,7 @@ const getUserAvatar = (from) => {
   const user = communityUser[from]
   return user && user.length > 0 ? user[0].avatar : '/community/chatavatar.jpg'
 }
-//const makecommunityChat = $(aocommunityStore())
+//const makecommunityChat = $(aoCommunityStore())
 
 //const test = async()=> {
 //  const a = await makecommunityChat()
@@ -77,8 +77,8 @@ const getUserAvatar = (from) => {
     <div v-for="item in items" :key="item.id" class="flex gap-2.5 items-start" :class="isSelf(item) ? 'flex-row-reverse' : ''">
       <!--<DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />-->
       <UAvatar :src="getUserAvatar(item.From)" alt="Avatar" size="2xl" />
-            
-      
+
+
       <div class="flex flex-col w-full max-w-[400px]">
         <div class="flex space-x-2 items-center rtl:space-x-reverse" :class="isSelf(item) ? 'justify-end' : ''">
           <span class="font-semibold text-sm text-gray-900 dark:text-white">{{ getUserName(item.From) }}</span>

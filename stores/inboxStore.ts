@@ -3,9 +3,6 @@ import {
   result,
   results,
   message,
-  spawn,
-  monitor,
-  unmonitor,
   dryrun
 } from '@permaweb/aoconnect'
 
@@ -39,7 +36,7 @@ export const inboxStore = defineStore('inboxStore', () => {
     })
   })
 
-  const add = async (name, id) => {
+  const add = async (name: string, id: string) => {
     if (state[id]) {
       return {
         err: 'alreadyExist',

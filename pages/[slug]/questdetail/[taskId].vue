@@ -7,7 +7,7 @@ import type { Task } from '~/types'
 
 const { t } = useI18n()
 const { denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
-const { userInfo, getInfo, getLocalcommunityInfo } = $(aocommunityStore())
+const { userInfo, getUser, getLocalCommunity } = $(aoCommunityStore())
 // 用户钱包地址
 const { address } = $(aoStore())
 const { compareImages } = $(ssimStore())
@@ -32,7 +32,7 @@ let taskJoinRecord = $ref<Awaited<ReturnType<typeof getTaskJoinRecord>>>()
 taskJoinRecord = await getTaskJoinRecord(taskId)
 
 let spaceTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>()
-const communityInfo = await getLocalcommunityInfo(communityId)
+const communityInfo = await getLocalCommunity(communityId)
 spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
 console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
 
@@ -113,7 +113,7 @@ onMounted(async () => {
   console.log(isSettle)
   console.log(isCal)
   await getAllInviteInfo()
-  await getInfo()
+  await getUser()
   console.log('userInfo', JSON.stringify(userInfo))
 })
 
@@ -352,9 +352,8 @@ async function submitTask() {
 
 let selected = $ref([])
 
-
 async function sendBountyByAo() {
-  if(!blogPost) return
+  if(!blogPost || !spaceTaskSubmitInfo) return
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
   sendBountyLoading = true
 

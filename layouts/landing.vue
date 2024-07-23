@@ -1,63 +1,53 @@
 <script setup lang="ts">
-import type { ParsedContent } from "@nuxt/content/dist/runtime/types";
+// const { data: navigation } = await useAsyncData('navigation', () => fetchContentNavigation(), { default: () => [] })
 
-const { data: navigation } = await useAsyncData("navigation", () => fetchContentNavigation(), { default: () => [] });
-const { data: files } = useLazyFetch<ParsedContent[]>("/api/search.json", { default: () => [], server: false });
+// provide('navigation', navigation)
 
+const { doLogin, othentLogin } = $(aoStore())
 
-
-provide("navigation", navigation);
-
-const {
-  // currentChain, selectedWallet,
-  address,
-  credBalance,
-  init, doLogout, doLogin, othentLogin } = $(aoStore())
-
-const { registInfo } = $(aocommunityStore())
-const router = useRouter();
-const isLoading = ref(false);
+const router = useRouter()
+const isLoading = ref(false)
 
 const handleButtonClick = async () => {
-  isLoading.value = true;
-  loginLoading = true;
+  isLoading.value = true
+  loginLoading = true
   try {
-    const result = await doLogin();
+    const result = await doLogin()
     if (result) {
-      loginLoading = false;
-      router.push('/explore');
+      loginLoading = false
+      router.push('/explore')
     } else {
-      loginLoading = false;
-      console.log('User did not connect the wallet, not navigating to /signup');
+      loginLoading = false
+      console.log('User did not connect the wallet, not navigating to /signup')
     }
   } catch (error) {
-    loginLoading = false;
-    console.error('Error during async operation', error);
-    alert('Please connect your Arweave Wallet to continue');
+    loginLoading = false
+    console.error('Error during async operation', error)
+    alert('Please connect your Arweave Wallet to continue')
   } finally {
-    loginLoading = false;
-    isLoading.value = false;
+    loginLoading = false
+    isLoading.value = false
   }
-};
+}
 
 const othent = async () => {
   try {
-    loginLoading = true;
+    loginLoading = true
     const result = await othentLogin()
     if (result) {
-      loginLoading = false;
-      router.push('/dm');
+      loginLoading = false
+      router.push('/dm')
     } else {
-      loginLoading = false;
-      console.log('User did not connect the wallet, not navigating to /signup');
+      loginLoading = false
+      console.log('User did not connect the wallet, not navigating to /signup')
     }
   } catch (error) {
-    loginLoading = false;
+    loginLoading = false
     console.error(error)
   }
 }
 
-let loginModal = $ref(false)
+const loginModal = $ref(false)
 let loginLoading = $ref(false)
 </script>
 
@@ -105,9 +95,5 @@ let loginLoading = $ref(false)
       </UCard>
     </UModal>
     <Footer />
-
-    <ClientOnly>
-      <LazyUContentSearch :files="files" :navigation="navigation" />
-    </ClientOnly>
   </div>
 </template>

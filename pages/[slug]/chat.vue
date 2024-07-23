@@ -1,37 +1,15 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, communityUser, exitCommunity, updataCommunity, getLocalcommunityInfo, getCommunityuser, banchat, getBan } = $(aocommunityStore())
-let communityInfo = $ref({})
-let communityInfoJson = $ref({})
+const { currentUuid, communityUser, exitCommunity, updateCommunity, getLocalCommunity, getCommunityUser, banChat, getBan } = $(aoCommunityStore())
+let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 const { address } = $(aoStore())
-const { t } = useI18n()
 
 useSeoMeta({
   title: 'AO Chat'
 })
 
-const tabItems = [{
-  label: 'All'
-}, {
-  label: 'Unread'
-}]
 const selectedTab = $ref(0)
-
-const dropdownItems = [[{
-  label: 'Mark as unread',
-  icon: 'i-heroicons-check-circle'
-}, {
-  label: 'Mark as important',
-  icon: 'i-heroicons-exclamation-circle'
-}], [{
-  label: 'Star thread',
-  icon: 'i-heroicons-star'
-}, {
-  label: 'Mute thread',
-  icon: 'i-heroicons-pause-circle'
-}]]
-
 
 const { stateArr: mails } = $(inboxStore())
 
@@ -46,17 +24,6 @@ const filteredMails = $computed(() => {
 
 let selectedMail = $ref<Mail | null>()
 
-const isMailPanelOpen = computed({
-  get() {
-    return !!selectedMail
-  },
-  set(value: boolean) {
-    if (!value) {
-      selectedMail = null
-    }
-  }
-})
-
 const route = useRoute()
 const slug = $computed(() => route.params.slug)
 watchEffect(() => {
@@ -70,36 +37,10 @@ watchEffect(() => {
     }
   }
 })
-const light = 'https://source.unsplash.com/random/200x200?sky'
-const dark = 'https://source.unsplash.com/random/200x200?stars'
-const communityInfo2 = {
-  communityName: 'permadao',
-  website: 'www.demo.com',
-  socialMedia: 'twitter',
-  token: 'USDT',
-  platform: 'Binance',
-  github: 'www.github.com',
-  builderNumber: 100
-}
 
-const footerLinks = $computed(() => {
-  return [
-    {
-      label: 'Invite people',
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/settings/communityinfo`,
-    },
-    {
-      label: 'Chat Room',
-      icon: 'i-heroicons-plus',
-      to: `/${slug}/inbox`,
-    },
-  ]
-})
-
-const loadCommunityInfo = async (pid) => {
+const loadCommunityInfo = async (pid: string) => {
   try {
-    communityInfo = await getLocalcommunityInfo(pid)
+    communityInfo = await getLocalCommunity(pid)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -116,80 +57,80 @@ onMounted( () => {
 onMounted(async () => {
   await loadCommunityInfo(currentUuid)
   await getBan()
-  const result = await getCommunityuser(communityInfo.uuid)
+  const result = await getCommunityUser(communityInfo.uuid)
   console.log('---------------')
   console.log(result)
   if (result && result.Messages && result.Messages.length > 0) {
-    const dataStr = result.Messages[0].Data;
+    const dataStr = result.Messages[0].Data
 
     try {
 
-      communityuser = JSON.parse(dataStr);
+      communityuser = JSON.parse(dataStr)
       console.log(communityuser)
       for (let key in communityuser) {
         if (communityuser.hasOwnProperty(key)) {
           try {
             // 解析每个键的JSON字符串
-            communityuser[key] = JSON.parse(communityuser[key]);
+            communityuser[key] = JSON.parse(communityuser[key])
           } catch (e) {
-            console.error(`Failed to parse JSON for key ${key}:`, e);
+            console.error(`Failed to parse JSON for key ${key}:`, e)
           }
         }
       }
       // You can further process the dataJson here
     } catch (error) {
-      console.error('Error parsing JSON:', error);
+      console.error('Error parsing JSON:', error)
     }
   } else {
-    console.error('No messages found in result');
+    console.error('No messages found in result')
   }
 })
 
 
-const textToCopy = $ref('');
-const copySuccess = $ref(false);
+const textToCopy = $ref('')
+const copySuccess = $ref(false)
 
 const copyText = async () => {
   try {
     // Copy text with navigator.clipboard.writeText
-    await navigator.clipboard.writeText(textToCopy.innerText);
+    await navigator.clipboard.writeText(textToCopy.innerText)
     // Hide the alert message after a certain period of time after successful copying
   } catch (err) {
-    console.error('Code Failed: ', err);
+    console.error('Code Failed: ', err)
   }
-};
+}
 
 let Leaveout = $ref(false)
 
 let exitButton = $ref(false)
 let banButton =$ref(false)
-const router = useRouter();
+const router = useRouter()
 
 
 
 const quitCommunity = async(communityuuid: any) => {
   Leaveout = true
   try {
-    await exitCommunity(communityuuid);
-    await updataCommunity(communityuuid, "exit")
-    console.log('exitCommunity 操作成功');
-    Leaveout = false;
-    router.push(`/${slug}/discovery`);
+    await exitCommunity(communityuuid)
+    await updateCommunity(communityuuid, "exit")
+    console.log('exitCommunity 操作成功')
+    Leaveout = false
+    router.push(`/${slug}/discovery`)
   } catch (error) {
-    alert('exitCommunity Fail:', error);
+    alert('exitCommunity Fail:', error)
   } finally {
-    Leaveout = false;
+    Leaveout = false
   }
 }
 
 const formattedTwitterLink = (twitter) => {
-  const link = twitter;
+  const link = twitter
   // Add https:// prefix if the link doesn't start with http:// or https://
   if (!/^(http|https):\/\//.test(link)) {
-    return `https://${link}`;
+    return `https://${link}`
   }
-  return link;
-};
+  return link
+}
 
 let currentUser = $ref('')
 let Forbid = $ref(false)
@@ -199,7 +140,7 @@ const OpenBan = (index) => {
 }
 const banSure = async() => {
   Forbid = true
-  await banchat(currentUuid, currentUser)
+  await banChat(currentUuid, currentUser)
   Forbid = false
   banButton = false
 }
@@ -363,7 +304,7 @@ const test = async() => {
                   <div v-else class="text-center">{{ user.name }}</div>
                 </div>
               </div>
-              <UButton 
+              <UButton
                 v-if="communityInfo.creater === address"
                 color="gray"
                 variant="solid"
@@ -397,12 +338,12 @@ const test = async() => {
           Sure to Forbid?
         </div>
         <div v-if="!Forbid" class="w-full flex space-x-10 mt-6 justify-between">
-          <UButton 
+          <UButton
             variant="outline"
             @click="exitButton = false">
             No
           </UButton>
-          <UButton 
+          <UButton
             variant="outline"
             @click="banSure"
           >
