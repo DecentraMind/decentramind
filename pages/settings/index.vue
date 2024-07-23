@@ -27,7 +27,7 @@ function onSubmitAccount() {
 }
 
 const { userInfo, getUser: getInfo, personalInfo } = $(aoCommunityStore())
-const client = useSupabaseClient()
+
 const saveInfo = async () => {
 
   await personalInfo(
