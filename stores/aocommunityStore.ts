@@ -576,17 +576,37 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       scheduler: '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA',
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    await Sleep(2000)
+    await Sleep(5000)
     const luaCode = 'Handlers.add(    "inboxCount",    Handlers.utils.hasMatchingTag("Action", "#Inbox"),    function (msg)      local inboxCount = #Inbox      ao.send({      Target = msg.From,      Tags = {      InboxCount = tostring(inboxCount)      }      })      Handlers.utils.reply("Echo back")(msg)    end  )      Handlers.add(    "inboxMessage",    Handlers.utils.hasMatchingTag("Action", "CheckInbox"),    function (msg)      local index = tonumber(msg.Tags.Index)      if index and index > 0 and index <= #Inbox then      local message = Inbox[index]      ao.send({      Target = msg.From,      Tags = {      Action = "Inbox",      Index = tostring(index),      MessageDetails = message      }      }) else      ao.send({      Target = msg.From,      Tags = {      Error = "Invalid inbox message index"      }      })      end      Handlers.utils.reply("Echo back")(msg)    end  )'
 
-    await message({
-      process: processId2,
-      tags: [
-        { name: 'Action', value: 'Eval' }
-      ],
-      data: luaCode,
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        await message({
+          process: processId2,
+          tags: [
+            { name: 'Action', value: 'Eval' }
+          ],
+          data: luaCode,
+          signer: createDataItemSigner(window.arweaveWallet),
+        });
+        // 如果成功执行，跳出循环
+        break;
+      } catch (error) {
+        console.error(`Attempt ${retryCount + 1} failed:`, error);
+        retryCount++;
+
+        if (retryCount === maxRetries) {
+          console.error('Max retries reached. Operation failed.');
+          throw error; // 或者根据需求处理最终的失败情况
+        }
+
+        // 可选：在重试之前等待一段时间
+        await Sleep(2000); // 等待2秒后重试
+      }
+    }
     return processId2
   }
 
