@@ -10,7 +10,7 @@ const { t } = useI18n()
 const { denomination, createTask, getAllTasks, getAllTaskSubmitInfo } = $(taskStore())
 const { getLocalCommunity, setCurrentUuid, exitCommunity, getCommunityList } = $(aoCommunityStore())
 
-const { add } = $(inboxStore())
+const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
 const route = useRoute()
 const communityId = $computed(() => route.params.communityId) as string
@@ -217,19 +217,8 @@ async function countSubmitOfTask(allTaskSubmitInfo: Awaited<ReturnType<typeof ge
   return allTaskSubmitInfo.filter(submit => submit.taskId === taskID).length
 }
 
-async function countSubmitOfCommunity(allTaskSubmitInfo: Awaited<ReturnType<typeof getAllTaskSubmitInfo>>, tasks: Array<Task & {reward: string}>, communityID: string) {
-return allTaskSubmitInfo.filter(submit => {
-  const task = tasks.find(task => task.taskId === submit.taskId)
-    if(!task) return false
-    return task.communityId === communityID
-  }).length
-}
-
-const slug = $computed(() => route.params.slug)
-console.log('slug = ' + slug)
-
 console.log('get community info of ', communityId)
-let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
+let community = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 
 let isCommunityOwner = $ref(false)
 
@@ -237,24 +226,24 @@ onMounted(async () => {
   setCurrentUuid(communityId)
 
   try {
-    communityInfo = await getLocalCommunity(communityId)
-    console.log('get communityInfo', communityInfo, communityId)
+    community = await getLocalCommunity(communityId)
+    console.log('get communityInfo', community, communityId)
   } catch (error) {
     console.error('Error fetching data:', error)
+    return
+  }
+  if(!community) return
+
+  if(community.communitychatid) {
+    await inboxAdd(community.name, community.communitychatid)
   }
 
-  const rz = await add(communityInfo.name, communityInfo.communitychatid)
-  if (rz.err) {
-    console.log(rz.msg)
-    //return
-  }
-
-  tasks = await getAllTasks(communityId as string)
+  tasks = await getAllTasks(communityId)
   if(!tasks) {
     console.error('allTasks undefined', communityId)
   }
 
-  if (communityInfo.creater === address) {
+  if (community.creater === address) {
     isCommunityOwner = true
   }
 
@@ -266,8 +255,6 @@ onMounted(async () => {
     t.status = await checkSubmit(allTaskSubmitInfo, t.taskId, address) ? 'Y' : 'N'
     t.buildNumber = await countSubmitOfTask(allTaskSubmitInfo, t.taskId)
   }
-
-  communityInfo.buildNumber = await countSubmitOfCommunity(allTaskSubmitInfo, tasks, communityId as string)
 })
 
 const banners = [
@@ -376,12 +363,12 @@ const formattedTwitterLink = (twitter: string) => {
 <template>
   <UDashboardLayout :ui="{wrapper: 'w-full static'}">
     <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
-      <UDashboardSidebar v-if="communityInfo">
+      <UDashboardSidebar v-if="community">
         <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
         <div class="pt-8">
           <div class="flex justify-between  my-3 items-center">
-            <div class="text-3xl">{{ communityInfo.name }}</div>
+            <div class="text-3xl">{{ community.name }}</div>
             <div>
               <UButton color="white" variant="solid" :to="`/community/detail/${communityId}`">
                 {{ $t('View Details') }}
@@ -391,20 +378,20 @@ const formattedTwitterLink = (twitter: string) => {
 
           <UDivider />
 
-          <div v-if="communityInfo.website" class="flex justify-between my-3 mt-5 items-center">
+          <div v-if="community.website" class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
             <div>
               <div class="flex justify-center border rounded-lg w-full pl-2 pr-2">
-                {{ communityInfo.website }}
+                {{ community.website }}
               </div>
             </div>
           </div>
 
-          <div v-if="communityInfo.twitter" class="flex justify-between my-3 items-center">
+          <div v-if="community.twitter" class="flex justify-between my-3 items-center">
             <div>{{ $t('SocialOfCommunityDetail') }}</div>
             <div>
               <ULink
-                :to="formattedTwitterLink(communityInfo.twitter)"
+                :to="formattedTwitterLink(community.twitter)"
                 active-class="text-primary"
                 target="_blank"
                 inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -419,9 +406,9 @@ const formattedTwitterLink = (twitter: string) => {
 
           <div class="flex justify-between my-3 mt-10 items-center">
             <div>{{ $t('TokenOfCommunityDetail') }}</div>
-            <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="flex space-x-3">
+            <div v-if="community.communitytoken && community.communitytoken.length > 0" class="flex space-x-3">
               <div
-                v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
+                v-for="(token, index) in community.communitytoken.slice(0,2)"
                 :key="index"
                 class="flex justify-center border rounded-lg w-full pl-2 pr-2"
               >
@@ -432,9 +419,9 @@ const formattedTwitterLink = (twitter: string) => {
 
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('Trading Support') }}</div>
-            <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex space-x-3">
+            <div v-if="community.support && community.support.length > 0" class="flex space-x-3">
               <div
-                v-for="(token, index) in communityInfo.support.slice(0,2)"
+                v-for="(token, index) in community.support.slice(0,2)"
                 :key="index"
                 class="flex justify-center border rounded-lg w-full pl-2 pr-2"
               >
@@ -443,11 +430,11 @@ const formattedTwitterLink = (twitter: string) => {
             </div>
           </div>
 
-          <div v-if="communityInfo.github" class="flex justify-between my-3 items-center">
+          <div v-if="community.github" class="flex justify-between my-3 items-center">
             <div>{{ $t('GithubOfCommunityDetail') }}</div>
             <div>
               <ULink
-                :to="formattedTwitterLink(communityInfo.github)"
+                :to="formattedTwitterLink(community.github)"
                 active-class="text-primary"
                 target="_blank"
                 inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -462,10 +449,10 @@ const formattedTwitterLink = (twitter: string) => {
 
           <div class="flex justify-between my-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-            <div>{{ communityInfo.buildNumber }}</div>
+            <div>{{ community.buildnum }}</div>
           </div>
 
-          <div v-if="communityInfo.creater !== address" class="flex">
+          <div v-if="community.creater !== address" class="flex">
             <UButton
               color="white"
               variant="solid"
@@ -484,7 +471,7 @@ const formattedTwitterLink = (twitter: string) => {
         <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
         <div class="flex-1" />
-        <div v-if="communityInfo.creater == address" class="flex">
+        <div v-if="community.creater == address" class="flex">
           <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="isSettingModalOpen = true" />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60]">
@@ -502,10 +489,10 @@ const formattedTwitterLink = (twitter: string) => {
             </div>
           </template>
         </UPopover>
-        <NuxtLink :to="`/community/${communityInfo.uuid}`">
+        <NuxtLink :to="`/community/${community.uuid}`">
           <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
         </NuxtLink>
-        <NuxtLink :to="`/chat/${communityInfo.communitychatid}`">
+        <NuxtLink :to="`/chat/${community.communitychatid}`">
           <Button class="center-text border rounded-lg w-full">Chatroom</Button>
         </NuxtLink>
         <!--<UDashboardSidebarLinks :links="footerLinks" />-->
@@ -521,7 +508,7 @@ const formattedTwitterLink = (twitter: string) => {
 
     <UDashboardPage>
       <UPage class="overflow-y-auto h-full w-full">
-        <div v-if="communityInfo" class=" flex flex-col mx-10 pt-10 items-center h-full">
+        <div v-if="community" class=" flex flex-col mx-10 pt-10 items-center h-full">
           <div class="flex w-full justify-between mb-4">
             <div>
               <UTabs :items="items" @change="onChange" />
@@ -529,7 +516,7 @@ const formattedTwitterLink = (twitter: string) => {
             <div class="flex">
               <div>
                 <!-- <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/> -->
-                <UDropdown :items="taskTypes" v-if="communityInfo.creater == address" :popper="{ placement: 'bottom-start' }" >
+                <UDropdown :items="taskTypes" v-if="community.creater == address" :popper="{ placement: 'bottom-start' }" >
                   <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
                 </UDropdown>
               </div>
@@ -544,7 +531,7 @@ const formattedTwitterLink = (twitter: string) => {
                   </div>
                 </div>
                 <div class="flex mt-10 justify-center items-center">
-                  <div v-if="communityInfo.creater == address" class="flex justify-center items-center" >
+                  <div v-if="community.creater == address" class="flex justify-center items-center" >
                     <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                       <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
                     </UDropdown>
