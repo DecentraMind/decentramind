@@ -10,13 +10,9 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
-// import * as Othent from "@othent/kms";
+import * as Othent from "@othent/kms";
 
-// import {
-//   connect,
-//   disconnect,
-//   getActiveAddress,
-// } from "@othent/kms";
+
 
 declare const window: any
 import type { PermissionType } from 'arconnect'
@@ -94,19 +90,22 @@ export const aoStore = defineStore('aoStore', () => {
 
   const othentLogin = async () => {
 
-    // if (typeof window !== 'undefined') {
-    //   try {
-    //     const res = await connect()
-    //     window.arweaveWallet = Othent
-    //     if (Othent) {
-    //       address = res.walletAddress
-    //     }
-    //   } catch (error) {
-    //     console.error('An error occurred:', error)
-    //   }
-    // } else {
-    //   console.error('This code must be run in a browser environment.')
-    // }
+    if (typeof window !== 'undefined') {
+      try {
+        const OthentModule = await import("@othent/kms")
+        const res = await OthentModule.connect()
+        if (OthentModule) {
+          window.arweaveWallet = OthentModule
+          // 使用 address 进行后续操作
+        } else {
+          console.error('Othent is not defined in the module')
+        }
+      } catch (error) {
+        console.error('An error occurred:', error)
+      }
+    } else {
+      console.log('Running on server side, connect() is not available')
+    }
 
     try {
       address = await window.arweaveWallet.getActiveAddress()

@@ -79,15 +79,17 @@ let loginLoading = $ref(false)
             </template>
             ArConnect
           </UButton>
-          <UButton color="white" class="w-[120px]" disabled @click="othent">
-            <template #leading>
-              <UIcon
-                name="logos:google-icon"
-                class="w-[25px] h-[23px]"
-              />
-            </template>
-            Google
-          </UButton>
+          <ClientOnly fallback-tag="span" fallback="Loading comments...">
+            <UButton color="white" class="w-[120px]" @click="othent">
+              <template #leading>
+                <UIcon
+                  name="logos:google-icon"
+                  class="w-[25px] h-[23px]"
+                />
+              </template>
+              Google
+            </UButton>
+          </ClientOnly>
         </div>
         <div v-else class="flex justify-center">
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
