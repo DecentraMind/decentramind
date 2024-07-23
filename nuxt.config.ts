@@ -3,10 +3,10 @@ export default defineNuxtConfig({
   extends: [process.env.NUXT_UI_PRO_PATH || '@nuxt/ui-pro'],
   modules: [
     '@nuxtjs/i18n',
-    // '@nuxt/content',
+    '@nuxt/content',
     '@nuxt/image',
     '@nuxt/ui',
-    // '@nuxt/fonts',
+    '@nuxt/fonts',
     '@vueuse/nuxt',
     'nuxt-og-image',
     '@vue-macros/nuxt',
