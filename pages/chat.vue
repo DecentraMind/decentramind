@@ -33,7 +33,7 @@ watchEffect(() => {
 
   if (!route.params.pid) {
     if (mails.length > 0) {
-      navigateTo(`/${slug}/chat/${mails[0].id}`)
+      navigateTo(`/chat/${mails[0].id}`)
     }
   }
 })
@@ -115,7 +115,7 @@ const quitCommunity = async(communityuuid: any) => {
     await updateCommunity(communityuuid, "exit")
     console.log('exitCommunity 操作成功')
     Leaveout = false
-    router.push(`/${slug}/discovery`)
+    router.push('/discovery')
   } catch (error) {
     alert('exitCommunity Fail:', error)
   } finally {
@@ -159,7 +159,7 @@ const test = async() => {
           <div class="flex justify-between  my-3 items-center">
             <div class="text-3xl">{{ communityInfo.name }}</div>
             <div>
-              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${currentUuid}`">
+              <UButton color="white" variant="solid" :to="`/community/detail/${currentUuid}`">
                 {{ $t('View Details') }}
               </UButton>
             </div>
@@ -261,14 +261,14 @@ const test = async() => {
               <div>Invite Url: </div>
               <div class="flex items-center">
                 <p ref="textToCopy">
-                  dm-demo.vercel.app/{{ slug }}/invite/?community={{ communityId }}&invitor={{ address }}
+                  dm-demo.vercel.app/invite/?community={{ communityId }}&invitor={{ address }}
                 </p>
                 <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
               </div>
             </div>
           </template>
         </UPopover>
-        <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
+        <NuxtLink :to="`/community/${communityInfo.uuid}`">
           <Button class="center-text border rounded-lg w-full">Quests Home</Button>
         </NuxtLink>
         <Button class="center-text border rounded-lg bg-black text-white">Chatroom</Button>

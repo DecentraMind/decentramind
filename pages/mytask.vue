@@ -1,8 +1,4 @@
 <script setup lang="ts">
-
-const route = useRoute()
-const slug = $computed(() => route.params.slug)
-
 const {t} = useI18n()
 
 const links = [[

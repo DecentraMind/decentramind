@@ -115,7 +115,7 @@ const initChart = (tokensupply) => {
 
       const option = {
         title: {
-          text: `Token Allocation\nTotal Supply ${communityInfo.alltoken}`,
+          text: `Token Allocation\n${communityInfo?.alltoken ? 'Total Supply ' + communityInfo.alltoken : ''}`,
           left: 'center'
         },
         tooltip: {
@@ -185,8 +185,8 @@ const formattedTwitterLink = (twitter: string) => {
           <template #title>
             <div class="w-full flex justify-between text-3xl mb-12 mt-3 px-12">
               {{ communityInfo.name }}
-              <NuxtLink :to="`/explore/community/${communityInfo.uuid}`">
-                <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg"/>
+              <NuxtLink :to="`/community/${communityInfo.uuid}`">
+                <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
               </NuxtLink>
             </div>
           </template>
@@ -347,8 +347,8 @@ const formattedTwitterLink = (twitter: string) => {
                 </template>
               </UTable>
             </ULandingCard>
-            <ULandingCard class="col-span-8 row-span-2" v-if="communityInfo?.tokensupply">
-              <div ref="chart" :style="{ width: '100%', height: '400px' }"></div>
+            <ULandingCard v-if="communityInfo?.tokensupply" class="col-span-8 row-span-2">
+              <div ref="chart" :style="{ width: '100%', height: '400px' }" />
             </ULandingCard>
           </ULandingGrid>
         </UPageBody>

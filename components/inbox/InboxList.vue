@@ -74,13 +74,13 @@ watchEffect(() => {
 <template>
   <UDashboardPanelContent class="p-0">
     <div v-for="(mail, index) in mails" :key="index" :ref="el => { mailsRefs[mail.id] = el as Element }">
-      <NuxtLink 
-        class="cursor-pointer border-l-2 text-sm p-4 block" 
+      <NuxtLink
+        class="cursor-pointer border-l-2 text-sm p-4 block"
         :class="[
           mail.unread ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300',
           selectedMail && selectedMail.id === mail.id ? 'border-primary-500 dark:border-primary-400 bg-primary-100 dark:bg-primary-900/25' : 'border-white dark:border-gray-900 hover:border-primary-500/25 dark:hover:border-primary-400/25 hover:bg-primary-100/50 dark:hover:bg-primary-900/10'
-        ]" 
-        :to="`/${slug}/chat/${mail.id}`"
+        ]"
+        :to="`/chat/${mail.id}`"
       >
         <div class="flex items-center justify-between" :class="[mail.unread && 'font-semibold']">
           <div class="flex gap-3 items-center">

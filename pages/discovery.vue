@@ -4,9 +4,7 @@ const { address, doLogout, doLogin } = $(aoStore())
 const { communityList, getUser: getInfo, getCommunityList, joinCommunity } = $(aoCommunityStore())
 
 const toast = useToast()
-const route = useRoute()
 const router = useRouter()
-const slug = $computed(() => route.params.slug)
 
 let communityLoading = $ref(true)
 const linkToTwitter = $ref(false)
@@ -74,7 +72,7 @@ const joinToCommunity = async(uuid: any) => {
       <template #right>
         <!--<UButton @click="test">test</UButton>-->
         <UBadge color="white">
-          <NuxtLink :to="`/${slug}/mytask`">
+          <NuxtLink :to="'/mytask'">
             <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
           </NuxtLink>
           |
@@ -153,7 +151,7 @@ const joinToCommunity = async(uuid: any) => {
     <UModal v-model="linkToTwitter">
       <div class="h-[200px] flex flex-col items-center justify-center">
         <Text class="text-2xl">No link to twitter</Text>
-        <NuxtLink :to="`/${slug}/settings`">
+        <NuxtLink :to="'/settings'">
           <UButton class="mt-10">go to link</UButton>
         </NuxtLink>
       </div>

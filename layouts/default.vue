@@ -30,7 +30,7 @@ const links = $computed(() => {
       id: 'inbox',
       label: 'Inbox',
       icon: 'i-heroicons-inbox',
-      to: `/${slug}/inbox`,
+      to: '/inbox',
       badge: '4',
       tooltip: {
         text: 'Inbox',
@@ -51,7 +51,7 @@ const links = $computed(() => {
       id: 'community-discovery',
       label: 'Cmmunity-discovery',
       icon: 'i-heroicons-user-group',
-      to: `/${slug}/discovery`,
+      to: '/discovery',
       tooltip: {
         text: 'Community-discovery',
         shortcuts: ['G', 'U'],
@@ -102,7 +102,7 @@ onMounted(async () => {
     <UDashboardPanel :width="96" class="w-24">
       <UDashboardSidebar>
         <template #header>
-          <NuxtLink :to="`/${slug}/discovery`">
+          <NuxtLink :to="'/discovery'">
             <div class="w-full flex justify-center items-center">
               <img src="/export.png" class="h-4/5 w-4/5 transition duration-300 ease-in-out transform hover:brightness-75">
             </div>
@@ -115,7 +115,7 @@ onMounted(async () => {
           <NuxtLink
             v-for="item in joinedCommunities"
             :key="item.uuid"
-            :to="`/${slug}/community/${item.uuid}`"
+            :to="`/community/${item.uuid}`"
             class="w-full block mt-2"
           >
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
@@ -139,8 +139,8 @@ onMounted(async () => {
 
         <template #footer>
           <!-- <UserDropdownMini /> -->
-          <UPopover mode="hover" :to="`/${slug}/settings`">
-            <NuxtLink :to="`/${slug}/settings`">
+          <UPopover mode="hover" :to="'/settings'">
+            <NuxtLink :to="'/settings'">
               <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
                 <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
               </template>

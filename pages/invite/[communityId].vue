@@ -5,11 +5,10 @@ definePageMeta({
 })
 const { doLogin } = $(aoStore())
 const route = useRoute()
-const communityId = $computed(() => route.params.communityId)
-const slug = $computed(() => route.params.slug)
+const slug = $computed(() => route.params.communityId)
 //const invitor = $computed(() => route.params.invitor)
 
-let communityIdPart = $ref()
+let communityID = $ref<string>()
 let inviterAddress = $ref()
 
 // onMounted(async () => {
@@ -19,17 +18,16 @@ let inviterAddress = $ref()
 async function join() {
   await doLogin()
 
-  await joinCommunity(communityIdPart, inviterAddress)
-  const p = '/' + slug + '/discovery'
+  await joinCommunity(communityID, inviterAddress)
+  const p = '/discovery'
   console.log('join success')
   await useRouter().push({path: p})
 }
 
 onMounted( () => {
-  const parts = communityId.split('&')
-  communityIdPart = parts[0]
+  const parts = slug.split('&')
+  communityID = parts[0]
   inviterAddress = parts[1]
-
 })
 </script>
 
@@ -41,7 +39,7 @@ onMounted( () => {
       </template>
       <div class="flex justify-between">
         <div><Text>Invite to community:</Text></div>
-        <div>{{ communityIdPart }}</div>
+        <div>{{ communityID }}</div>
       </div>
 
       <template #footer>

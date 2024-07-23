@@ -503,7 +503,7 @@ const trueRows = computed(() => {
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
-            <NuxtLink :to="`/${slug}/community/${communityId}`">
+            <NuxtLink :to="`/community/${communityId}`">
               <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
             </NuxtLink>
           </div>

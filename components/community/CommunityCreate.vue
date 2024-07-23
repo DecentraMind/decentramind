@@ -439,7 +439,7 @@ const removeSupplyGroup = (index: number) => {
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton :to="`/${slug}/community/${createdCommunityID}`" @click="getCommunityList(); emit('close-modal'); isCommunityCreateModalOpen = false">
+            <UButton :to="`/community/${createdCommunityID}`" @click="getCommunityList(); emit('close-modal'); isCommunityCreateModalOpen = false">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>

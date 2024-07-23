@@ -324,18 +324,17 @@ const taskTypes = [
 const exitButton = $ref(false)
 const router = useRouter()
 
-
 let leaveOut = $ref(false)
-const quitCommunity = async (communityuuid: any) => {
+const quitCommunity = async (communityUuid: string) => {
   leaveOut = true
   try {
-    await exitCommunity(communityuuid)
+    await exitCommunity(communityUuid)
     await getCommunityList()
     console.log('exitCommunity 操作成功')
     leaveOut = false
-    router.push(`/${slug}/discovery`)
+    router.push('/discovery')
   } catch (error) {
-    alert('exitCommunity Fail:', error)
+    alert('Exit community failed.')
   } finally {
     leaveOut = false
   }
@@ -367,14 +366,12 @@ const finalStatus = (isBegin: string) => {
   return res
 }
 
-const formattedTwitterLink = (twitter) => {
-  const link = twitter
+const formattedTwitterLink = (twitter: string) => {
   // Add https:// prefix if the link doesn't start with http:// or https://
-  if (!/^(http|https):\/\//.test(link)) {
-    return `https://${link}`
+  if (!/^(http|https):\/\//.test(twitter)) {
+    return `https://${twitter}`
   }
-  console.log('-------', link)
-  return link
+  return twitter
 }
 
 </script>
@@ -388,7 +385,7 @@ const formattedTwitterLink = (twitter) => {
           <div class="flex justify-between  my-3 items-center">
             <div class="text-3xl">{{ communityInfo.name }}</div>
             <div>
-              <UButton color="white" variant="solid" :to="`/${slug}/community-details/${communityId}`">
+              <UButton color="white" variant="solid" :to="`/community/detail/${communityId}`">
                 {{ $t('View Details') }}
               </UButton>
             </div>
@@ -500,17 +497,17 @@ const formattedTwitterLink = (twitter) => {
               <div>Invite URL: </div>
               <div class="flex items-center">
                 <p ref="textToCopy">
-                  decentramind.club/{{ slug }}/invite/{{ communityId }}&{{ address }}
+                  decentramind.club/invite/{{ communityId }}&{{ address }}
                 </p>
                 <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
               </div>
             </div>
           </template>
         </UPopover>
-        <NuxtLink :to="`/${slug}/community/${communityInfo.uuid}`">
+        <NuxtLink :to="`/community/${communityInfo.uuid}`">
           <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
         </NuxtLink>
-        <NuxtLink :to="`/${slug}/chat/${communityInfo.communitychatid}`">
+        <NuxtLink :to="`/chat/${communityInfo.communitychatid}`">
           <Button class="center-text border rounded-lg w-full">Chatroom</Button>
         </NuxtLink>
         <!--<UDashboardSidebarLinks :links="footerLinks" />-->
@@ -621,7 +618,7 @@ const formattedTwitterLink = (twitter) => {
                     </div>
                   </div>
                 </template>
-                <UButton :to="`/${slug}/questdetail/${task.taskId}`" class="absolute right-0" color="white" variant="outline">
+                <UButton :to="`/quest/${task.taskId}`" class="absolute right-0" color="white" variant="outline">
                   {{ $t("View Details") }}
                 </UButton>
               </UBlogPost>
