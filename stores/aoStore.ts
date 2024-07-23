@@ -58,18 +58,17 @@ export const aoStore = defineStore('aoStore', () => {
       console.error('Arweave Wallet no install')
       alert('Please install Arweave Wallet to continue')
       window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh'
-      return;
+      return false
     }
     try {
       await window.arweaveWallet.connect(permissions)
     } catch (error) {
-      const fail = 'fail'
-      return fail
+      return false
     }
     try {
       address = await window.arweaveWallet.getActiveAddress()
 
-      let result = await message({
+      const result = await message({
         process: processID,
         tags: [
           { name: 'Action', value: 'registInfo' },
@@ -77,8 +76,7 @@ export const aoStore = defineStore('aoStore', () => {
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       })
-      const success = 'success'
-      return success
+      return result
 
       //await init()
     } catch (error) {

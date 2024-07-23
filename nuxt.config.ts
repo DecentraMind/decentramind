@@ -1,23 +1,21 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  extends: [process.env.WEB3_FULL_STACK_LAYER_PATH || '@web3-fullstack/layer'],
-  modules: [// '@nuxtjs/axios',
-  // '@nuxtjs/proxy'
-  '@nuxtjs/i18n', "@ant-design-vue/nuxt"],
-  // nitro: {
-  //   devProxy: {
-  //     "/user": {
-  //       target: "https://api.twitter.com", // 这里是接口地址
-  //       changeOrigin: true
-  //     },
-  //   },
-  //
-  //   routeRules: {
-  //     '/user': {
-  //       proxy: 'https://api.twitter.com'
-  //     }
-  //   }
-  // },
+  extends: [process.env.NUXT_UI_PRO_PATH || '@nuxt/ui-pro'],
+  modules: [
+    '@nuxtjs/i18n',
+    // '@nuxt/content',
+    '@nuxt/image',
+    '@nuxt/ui',
+    // '@nuxt/fonts',
+    '@vueuse/nuxt',
+    'nuxt-og-image',
+    '@vue-macros/nuxt',
+    'nuxt-lodash',
+    'nuxt-gtag',
+    '@pinia/nuxt',
+    '@ant-design-vue/nuxt'
+  ],
+
   nitro: {
     experimental: {
       tasks: true
@@ -53,14 +51,4 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true
   },
-  supabase: {
-    redirect: false,
-    redirectOptions: {
-      login: '/login',
-      callback: '/confirm',
-      include: undefined,
-      exclude: ['/'],
-      cookieRedirect: false,
-    }
-  }
 })

@@ -36,7 +36,7 @@ const othent = async () => {
     const result = await othentLogin()
     if (result) {
       loginLoading = false
-      router.push('/dm')
+      router.push('/discovery')
     } else {
       loginLoading = false
       console.log('User did not connect the wallet, not navigating to /signup')
