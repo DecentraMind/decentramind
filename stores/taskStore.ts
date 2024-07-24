@@ -647,22 +647,22 @@ export const taskStore = defineStore('taskStore', () => {
     }
   }
 
-  const storeBounty = async (bounties: any) => {
+  const storeBounty = async (bounties: {
+    walletAddress: string;
+    tokenNumber: number;
+    tokenType: TokenName;
+  }[]) => {
     await window.arweaveWallet.connect(permissions)
-    try {
-      const messageId = await message({
-        process: tasksProcessID,
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: 'storeBounty' }],
-        data: JSON.stringify(bounties)
-      })
-      console.log('return message = ' + messageId)
-      return messageId
-    } catch (error) {
-      console.log('messageToAo -> error:', error)
-      return ''
-    }
+    const messageId = await message({
+      process: tasksProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: 'Action', value: 'storeBounty' }],
+      data: JSON.stringify(bounties)
+    })
+    console.log('return message = ' + messageId)
+    return messageId
   }
+
   const getAllBounty = async () => {
     let res
     try {

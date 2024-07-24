@@ -6,7 +6,7 @@ import { formatToLocale } from '~/utils/util'
 import type { Task } from '~/types'
 
 const { t } = useI18n()
-const { denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { denomination, storeBounty, sendBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo, getUser, getLocalCommunity } = $(aoCommunityStore())
 
 const { showError, showSuccess } = $(notificationStore())
@@ -366,7 +366,11 @@ async function sendBountyByAo() {
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
   sendBountyLoading = true
 
-  const bounties = []
+  const bounties:{
+    walletAddress: string;
+    tokenNumber: number;
+    tokenType: TokenName;
+  }[] = []
   const bounty1 = blogPost.tokenNumber
   const bounty2 = blogPost.tokenNumber1
   console.log({selected, bounty1, bounty2})
@@ -429,7 +433,7 @@ async function sendBountyByAo() {
     const bountyData = {
       walletAddress: blogPost.ownerId,
       tokenNumber: returnBounties.bounty1,
-      tokenType: blogPost.tokenType
+      tokenType: blogPost.tokenType as TokenName
     }
     bounties.push(bountyData)
   }
@@ -437,13 +441,14 @@ async function sendBountyByAo() {
     const bountyData = {
       walletAddress: blogPost.ownerId,
       tokenNumber: returnBounties.bounty2,
-      tokenType: blogPost.tokenType1
+      tokenType: blogPost.tokenType1 as TokenName
     }
     bounties.push(bountyData)
   }
 
+  // TODO try catch
   console.log('selected = ' + JSON.stringify(bounties))
-  // await sendBounty(blogPost.processId, bounties)
+  await sendBounty(blogPost.processId, bounties)
   await updateTaskAfterSettle(blogPost.taskId)
 
   // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
