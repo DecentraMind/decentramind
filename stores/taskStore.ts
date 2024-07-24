@@ -80,7 +80,7 @@ export const taskStore = defineStore('taskStore', () => {
     // 把此次任务需要的钱转给process两种bounty，转两次，如果不为0的话
     // TODO use Promise.all here
     if (data.tokenNumber && data.tokenNumber != 0) {
-      await transferBounty(taskProcessID, data.tokenType, data.tokenNames)
+      await transferBounty(taskProcessID, data.tokenType, data.tokenNumber)
     }
 
     if(data.tokenNumber1 && data.tokenNumber1 != 0) {
@@ -688,6 +688,7 @@ async function transferBounty(receiver: string, tokenName: string, amount: numbe
     throw new Error(`Bounty token ${tokenName} not supported.`)
   }
   console.log(tokenName, 'token processID: ', tokenProcess)
+  console.log({tokenName, amount, receiver})
   await window.arweaveWallet.connect(permissions)
 
   const mTags = await retry({
