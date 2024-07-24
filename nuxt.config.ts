@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       // Run `cms:update` task every minute
-      '*/5 * * * * *': 'updateTask'
+      '*/15 * * * * *': 'updateTask'
     }
   },
 
