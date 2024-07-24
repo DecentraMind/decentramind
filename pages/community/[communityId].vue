@@ -542,29 +542,30 @@ const formattedTwitterLink = (twitter: string) => {
           </div>
 
           <div v-if="tasks.length" class="mx-auto w-full">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-10">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-10">
               <UBlogPost
                 v-for="task in tasks"
                 :key="task.taskId"
                 :image="`/task/${task.taskLogo}.jpg`"
                 :description="task.taskInfo"
+                class="relative"
               >
                 <template #title>
                   <div class="flex justify-between">
                     <div>{{ task.taskName }}</div>
                   </div>
                   <div class="flex">
-                    <div class="mx-2">
+                    <div class="mr-2">
                       <UBadge size="xs" color="black" variant="solid">
                         {{ finalStatus(task.isBegin) }}
                       </UBadge>
                     </div>
-                    <div v-if="task.status === 'Y'">
+                    <div v-if="task.status === 'Y'" class="mr-2">
                       <UBadge color="black" variant="solid">
                         {{ t('task.isjoin') }}
                       </UBadge>
                     </div>
-                    <div v-if="task.ownerId === address && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-2">
+                    <div v-if="task.ownerId === address && task.isSettle === 'N' && task.isBegin === 'N'">
                       <UBadge size="xs" color="black" variant="solid">
                         {{ $t('Unsettled') }}
                       </UBadge>
@@ -603,7 +604,7 @@ const formattedTwitterLink = (twitter: string) => {
                     </div>
                   </div>
                 </template>
-                <UButton :to="`/quest/${task.taskId}`" class="absolute right-0" color="white" variant="outline">
+                <UButton :to="`/quest/${task.taskId}`" class="relative right-0 mt-2" color="white" variant="outline">
                   {{ $t("View Details") }}
                 </UButton>
               </UBlogPost>
