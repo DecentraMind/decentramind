@@ -9,78 +9,92 @@ export const tradePlatforms: TradePlatform[] = [
 
 /**
  * Token list with unique keys
+ * TODO update token info from AO
  */
 export const tokens = {
   AR: {
-    ticker: 'AR ',
-    label: 'AR',
+    ticker: 'AR',
+    label: 'AR', // Wrapped AR in AO
     processID: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
-    // denotion: 
+    denomination: 12
   },
   USDA: {
-    ticker: 'USDA ',
-    label: 'USDA',
+    ticker: 'USDA-TST',
+    label: 'USDA', // Astro USD (Test)
     processID: 'GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU',
+    denomination: 12
   },
   AO: {
     ticker: 'AO',
     label: 'AO',
     processID: 'm3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w',
+    denomination: 12
   },
   FIZI: {
-    ticker: 'FIZI',
+    ticker: 'PNTS',
     label: 'FIZI',
     processID: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
+    denomination: 12
   },
   LINUX: {
-    ticker: 'LINUX',
+    ticker: 'PNTS',
     label: 'LINUX',
     processID: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+    denomination: 12
   },
   Arena: {
-    ticker: 'Arena',
+    ticker: 'PNTS',
     label: 'Arena',
     processID: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
+    denomination: 12
   },
   BRKTST: {
     ticker: 'BRKTST',
-    label: 'BRKTST',
+    label: 'BRKTST', // Bark
     processID: '8p7ApPZxC_37M06QHVejCQrKsHbcJEerd3jWNkDUWPQ',
+    denomination: 3
   },
   TRUNK: {
     ticker: 'TRUNK',
     label: 'TRUNK',
     processID: 'OT9qTE2467gcozb2g8R6D6N3nQS94ENcaAIJfUzHCww',
+    denomination: 3
   },
   EXP: {
     ticker: 'EXP',
-    label: 'EXP',
+    label: 'EXP', // AR.IO EXP
     processID: 'aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw',
+    denomination: 6
   },
   '0rbit': {
-    ticker: '0rbit',
-    label: '0rbit',
+    ticker: '0RBT',
+    label: '0rbit', // 0rbit Points
     processID: 'BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc',
+    denomination: 12
   },
   EARTH: {
     ticker: 'EARTH',
     label: 'Earth',
     processID: 'PBg5TSJPQp9xgXGfjN27GA28Mg5bQmNEdXH2TXY4t-A',
+    denomination: 12
   },
   FIRE: {
     ticker: 'FIRE',
     label: 'Fire',
     processID: 'KmGmJieqSRJpbW6JJUFQrH3sQPEG9F6DQETlXNt4GpM',
+    denomination: 12
   },
   AIR: {
     ticker: 'AIR',
     label: 'Air',
     processID: '2nfFJb8LIA69gwuLNcFQezSuw4CXPE4--U-j-7cxKOU',
+    denomination: 12
   },
   'FIRE-EARTH': {
     ticker: 'FIRE-EARTH',
     label: 'Lava',
     processID: 'NkXX3uZ4oGkQ3DPAWtjLb2sTA-yxmZKdlOlEHqMfWLQ',
+    denomination: 12
   },
 }
 

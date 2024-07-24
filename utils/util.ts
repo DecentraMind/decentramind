@@ -37,3 +37,39 @@ export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
 
   return result.Messages[0].Data as T
 }
+
+export const sleep = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * This function will attempt to run fn multiple times until fn successfully return
+ * or reaches @param args.maxAttempts.
+ * */
+export async function retry<T>(args: {
+  /** the function you need to run */
+  fn: () => Promise<T>,
+  maxAttempts: number,
+  /** interval between two tries */
+  interval?: number
+}) {
+  const {fn, maxAttempts: maxTimes, interval = 3000} = args
+  let triedTimes = 1
+  while (triedTimes <= maxTimes) {
+    try {
+      console.info(`Attempt ${triedTimes}, max ${maxTimes}`)
+      const res = await fn()
+      return res
+    } catch (error) {
+      console.info(`Attempt ${triedTimes} failed:`, error)
+      triedTimes++
+
+      if (triedTimes === maxTimes) {
+        console.error('Max retries reached. Operation failed.' + error)
+        throw error
+      }
+
+      await sleep(interval)
+    }
+  }
+}
