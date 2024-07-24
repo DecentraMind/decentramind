@@ -78,29 +78,32 @@ export const taskStore = defineStore('taskStore', () => {
 
 
     // 把此次任务需要的钱转给process两种bounty，转两次，如果不为0的话
+    // TODO use Promise.all here
     if (data.tokenNumber && data.tokenNumber != 0) {
-      transferBounty(taskProcessID, data.tokenType, data.tokenNames)
+      await transferBounty(taskProcessID, data.tokenType, data.tokenNames)
     }
 
     if(data.tokenNumber1 && data.tokenNumber1 != 0) {
-      transferBounty(taskProcessID, data.tokenType1, data.tokenNumber1)
+      await transferBounty(taskProcessID, data.tokenType1, data.tokenNumber1)
     }
 
     // 向新的 process 里写入 sendBounty action
     await evalTaskProcess(taskProcessID, data.ownerId)
     showSuccess('Create task success')
 
-    try {
-      await message({
-        process: tasksProcessID,
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: 'CreateTask' }],
-        data: JSON.stringify(data)
-      })
-    } catch (error) {
-      // alertError('messageToAo -> error:' + error)
-      // return '';
-    }
+    return await retry({
+      fn: async () => {
+        return await message({
+          process: tasksProcessID,
+          signer: createDataItemSigner(window.arweaveWallet),
+          tags: [{ name: 'Action', value: 'CreateTask' }],
+          data: JSON.stringify(data)
+        })
+      },
+      maxAttempts: 3,
+      interval: 5000
+    })
+
   }
 
   async function evalTaskProcess(processID: string, ownerId: string) {
@@ -706,7 +709,7 @@ async function transferBounty(receiver: string, tokenName: string, amount: numbe
       })
       return Messages[0].Tags as {name: string, value: string}[]
     },
-    maxAttempts: 5,
+    maxAttempts: 3,
     interval: 500
   })
 
