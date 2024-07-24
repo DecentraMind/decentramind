@@ -430,6 +430,7 @@ export const taskStore = defineStore('taskStore', () => {
     console.log(userAvatar)
     console.log(userCreatedAt)
   }
+
   const testTransfer = async() => {
     await window.arweaveWallet.connect(permissions)
     try{
@@ -474,6 +475,7 @@ export const taskStore = defineStore('taskStore', () => {
       return ''
     }
   }
+
   const updateTaskAfterCal = async (taskId: string) => {
     // 计算之后将任务信息中的是否已计算修改为Y
     console.log('in updataTask')
@@ -489,21 +491,21 @@ export const taskStore = defineStore('taskStore', () => {
       return ''
     }
   }
+
+  /**
+   * 结算之后将任务信息中的是否已结算修改为Y
+   * @param taskId
+   * @returns Promise<string>
+   */
   const updateTaskAfterSettle = async (taskId: string) => {
-    // 结算之后将任务信息中的是否已结算修改为Y
-    console.log('in updataTask')
-    try {
-      await message({
-        process: tasksProcessID,
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: 'updateTaskAfterSettle' }],
-        data: taskId
-      })
-    } catch (error) {
-      alertMessage(error)
-      return ''
-    }
+    return await message({
+      process: tasksProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: 'Action', value: 'updateTaskAfterSettle' }],
+      data: taskId
+    })
   }
+
   const updateTaskSubmitInfoAfterCal = async (taskId: string, data: any) => {
     // 计算之后将分数信息更新到提交信息中
     console.log(JSON.stringify(data))
@@ -527,6 +529,7 @@ export const taskStore = defineStore('taskStore', () => {
       // return '';
     }
   }
+
   const getSpaceTaskSubmitInfo = async (taskId: string) => {
     let res
     let spaceTaskSubmitInfo = []

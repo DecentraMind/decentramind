@@ -6,14 +6,16 @@ import { formatToLocale } from '~/utils/util'
 import type { Task } from '~/types'
 
 const { t } = useI18n()
-const { denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTaskById, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { denomination, storeBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo, getUser, getLocalCommunity } = $(aoCommunityStore())
+
+const { showError, showSuccess } = $(notificationStore())
+
 // 用户钱包地址
 const { address } = $(aoStore())
 const { compareImages } = $(ssimStore())
 const route = useRoute()
 const taskId = $computed(() => route.params.taskId) as string
-const slug = $computed(() => route.params.slug)
 
 console.log('route params', route.params)
 
@@ -68,7 +70,7 @@ console.log({isSubmitted})
 
 let isIng = $ref(false)
 let submitStatus = $ref('')
-let settleStatus = $ref(false)
+
 submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
 // console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
 // console.log('isJoined = ' + isJoined)
@@ -84,7 +86,6 @@ onMounted(async () => {
     isIng = false
   }
   const isSettle = blogPost!.isSettle
-  settleStatus = isSettle === 'Y'
   const isCal = blogPost!.isCal
 
   // TODO don't use spaceTaskSubmitInfo array, use submitInfo of current task only
@@ -353,110 +354,122 @@ async function submitTask() {
 let selected = $ref([])
 
 async function sendBountyByAo() {
-  if(!blogPost || !spaceTaskSubmitInfo) return
+  if(!blogPost || !spaceTaskSubmitInfo || !communityInfo) {
+    showError('Data loading does not completed. Please wait or try refresh.')
+    return
+  }
+
+  if (selected.length > 0 && blogPost.isCal !== 'Y'){
+    alert('This quest is not calculate store or has settled.')
+  }
+
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
   sendBountyLoading = true
 
-  // TODO if no submitted info, don't need isCal==='Y'
+  const bounties = []
+  const bounty1 = blogPost.tokenNumber
+  const bounty2 = blogPost.tokenNumber1
+  console.log({selected, bounty1, bounty2})
+  // if no submitted info, don't need isCal==='Y'
 
-  if (blogPost.isCal === 'Y') {
-    const bounties = []
-    if (selected.length != 0) {
-
-      for (let i = 0;i < selected.length;++i) {
-        const address = selected[i].address
-        for (let j = 0;j < spaceTaskSubmitInfo.length;++j) {
-          if (address === spaceTaskSubmitInfo[j].address) {
-            console.log(spaceTaskSubmitInfo[j].bounty1)
-            console.log(spaceTaskSubmitInfo[j].bounty2)
-            if (spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0) {
-              const bountyData = {
-                walletAddress: address,
-                tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
-                tokenType: spaceTaskSubmitInfo[j].bountyType1
-              }
-              bounties.push(bountyData)
-            }
-            if (spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0) {
-              const bountyData = {
-                walletAddress: address,
-                tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
-                tokenType: spaceTaskSubmitInfo[j].bountyType2,
-              }
-              bounties.push(bountyData)
-            }
-            break
+  for (const selectedItem of selected) {
+    const address = selectedItem.address
+    for (let j = 0;j < spaceTaskSubmitInfo.length;++j) {
+      if (address === spaceTaskSubmitInfo[j].address) {
+        console.log(spaceTaskSubmitInfo[j].bounty1)
+        console.log(spaceTaskSubmitInfo[j].bounty2)
+        if (spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0) {
+          const bountyData = {
+            walletAddress: address,
+            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
+            tokenType: spaceTaskSubmitInfo[j].bountyType1
           }
+          bounties.push(bountyData)
         }
-
-        // TODO add bountyData of 5%
-
-        // const bountyData = {
-        //         walletAddress: ,
-        //         tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
-        //         tokenType: spaceTaskSubmitInfo[j].bountyType2,
-        //       }
-      }
-    }
-    // ji算剩余token，返还给任务创建人
-    let bounty1 = blogPost.tokenNumber
-    let bounty2 = blogPost.tokenNumber1
-    for (let j = 0;j < bounties.length;++j) {
-      if (bounties[j].tokenType === blogPost.tokenType) {
-        bounty1 = bounty1 - bounties[j].tokenNumber
-      }
-      if (bounties[j].tokenType === blogPost.tokenType1) {
-        bounty2 = bounty2 - bounties[j].tokenNumber
+        if (spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0) {
+          const bountyData = {
+            walletAddress: address,
+            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+            tokenType: spaceTaskSubmitInfo[j].bountyType2,
+          }
+          bounties.push(bountyData)
+        }
+        break
       }
     }
 
-    // TODO 如果bounties.length>0 收取5%手续费
+    // TODO add bountyData of 5%
 
-    if (bounty1 && bounty1 > 0 && bounty1 != 'undefined') {
-      const bountyData = {
-        walletAddress: address,
-        tokenNumber: bounty1,
-        tokenType: blogPost.tokenType
-      }
-      bounties.push(bountyData)
-    }
-    if (bounty2 && bounty2 > 0 && bounty2 != 'undefined') {
-      const bountyData = {
-        walletAddress: address,
-        tokenNumber: bounty2,
-        tokenType: blogPost.tokenType1
-      }
-      bounties.push(bountyData)
-    }
-    console.log('selected = ' + JSON.stringify(bounties))
-    // await sendBounty(blogPost.processId, bounties)
-    await updateTaskAfterSettle(blogPost.id)
-    blogPost = await getTaskById(taskId)
-
-    console.log({ blogPost })
-    // settleStatus = isSettle === 'Y'
-    // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
-    // 将发送出去的bounty信息保存
-    const sentBounties = []
-    for (let k = 0;k < bounties.length;++k) {
-      const tt = bounties[k]
-      const sent = {
-        send: address,
-        receive: tt.walletAddress,
-        tokenNumber: tt.tokenNumber,
-        tokenType: tt.tokenType,
-        taskId: blogPost.id,
-        taskName: blogPost.name,
-        communityId: communityInfo.uuid,
-        communityName: communityInfo.name
-      }
-      sentBounties.push(sent)
-    }
-    await storeBounty(sentBounties)
-  } else {
-    alert('This quest is not calculate store or has settled.')
+    // const bountyData = {
+    //         walletAddress: ,
+    //         tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+    //         tokenType: spaceTaskSubmitInfo[j].bountyType2,
+    //       }
   }
+
+  // 计算应返还给任务创建人的 token
+  const returnBounties = {bounty1, bounty2}
+  for (const bounty of bounties) {
+    if (bounty.tokenType === blogPost.tokenType) {
+      returnBounties.bounty1 -= bounty.tokenNumber
+    }
+    if (bounty.tokenType === blogPost.tokenType1) {
+      returnBounties.bounty2 -= bounty.tokenNumber
+    }
+  }
+
+  // TODO use reduce to calculate return bounties
+  // const returnBounties = bounties.reduce(bounty => {
+  //   return bounty.tokenNumber
+  // })
+
+  // TODO 如果bounties.length>0 收取5%手续费
+
+  if (bounty1 && bounty1 > 0 && bounty1 != 'undefined') {
+    const bountyData = {
+      walletAddress: blogPost.ownerId,
+      tokenNumber: returnBounties.bounty1,
+      tokenType: blogPost.tokenType
+    }
+    bounties.push(bountyData)
+  }
+  if (bounty2 && bounty2 > 0 && bounty2 != 'undefined') {
+    const bountyData = {
+      walletAddress: blogPost.ownerId,
+      tokenNumber: returnBounties.bounty2,
+      tokenType: blogPost.tokenType1
+    }
+    bounties.push(bountyData)
+  }
+
+  console.log('selected = ' + JSON.stringify(bounties))
+  // await sendBounty(blogPost.processId, bounties)
+  await updateTaskAfterSettle(blogPost.taskId)
+
+  // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
+  // 将发送出去的bounty信息保存
+  const sentBounties = []
+  for (let k = 0;k < bounties.length;++k) {
+    const tt = bounties[k]
+    const sent = {
+      send: address,
+      receive: tt.walletAddress,
+      tokenNumber: tt.tokenNumber,
+      tokenType: tt.tokenType,
+      taskId: blogPost?.taskId,
+      taskName: blogPost?.taskName,
+      communityId: communityInfo.uuid,
+      communityName: communityInfo.name
+    }
+    sentBounties.push(sent)
+  }
+  await storeBounty(sentBounties)
   sendBountyLoading = false
+
+  blogPost = await getTask(taskId)
+  console.log({ blogPostSettled: blogPost })
+
+  showSuccess('Congrats! This task has been successfully settled.')
 }
 
 const finalStatus = (isBegin: string) => {
@@ -473,6 +486,21 @@ const finalStatus = (isBegin: string) => {
   return res
 }
 
+function labelName() {
+  if (!spaceTaskSubmitInfo || spaceTaskSubmitInfo.length === 0 || !spaceTaskSubmitInfo) {
+    return 'Return Bounty'
+  } else {
+    return t('Send Bounty')
+  }
+}
+
+const page = ref(1)
+const pageCount = 5
+const trueRows = computed(() => {
+  if (!filteredRows.value) return
+  return filteredRows.value.slice((page.value - 1) * pageCount, (page.value) * pageCount)
+})
+
 const maxSelection = blogPost.rewardTotal
 // 监视 selected 数组的变化
 watch(() => selected, (newVal) => {
@@ -481,19 +509,6 @@ watch(() => selected, (newVal) => {
     // 如果选择的数量超过最大值，取消超出的选择项
     selected = newVal.slice(0, maxSelection)
   }
-})
-function labelName() {
-  if (!spaceTaskSubmitInfo || spaceTaskSubmitInfo.length === 0 || !spaceTaskSubmitInfo) {
-    return 'Return Bounty'
-  } else {
-    return t('Send Bounty')
-  }
-}
-const page = ref(1)
-const pageCount = 5
-const trueRows = computed(() => {
-  if (!filteredRows.value) return
-  return filteredRows.value.slice((page.value - 1) * pageCount, (page.value) * pageCount)
 })
 </script>
 
@@ -528,7 +543,7 @@ const trueRows = computed(() => {
                     {{ submitStatus }}
                   </UBadge>
                 </div>
-                <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-2">
+                <div v-if="isOwner && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-2">
                   <UBadge color="black" variant="solid">
                     {{ $t('Unsettled') }}
                   </UBadge>
@@ -649,17 +664,19 @@ const trueRows = computed(() => {
                 </div>
               </div>
             </div>
-            <div v-if="isJoined" class="flex justify-center my-8">
+
+            <div v-if="isJoined || isOwner" class="flex justify-center my-8">
               <!--              <div class="mx-4">-->
               <!--                <UButton color="white" label="testuser" @click="test" />-->
               <!--              </div>-->
               <div v-if="isIng && !isSubmitted" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-              <div v-if="isOwner && !settleStatus && blogPost.isBegin === 'N'" class="mx-4">
+              <div v-if="isOwner && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-4">
                 <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo" />
               </div>
             </div>
+
             <div class="flex mt-4">
               <div class="flex-none w-60">
                 <div>
