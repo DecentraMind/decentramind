@@ -558,9 +558,7 @@ Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAll
       }
       for info_key, info_value in pairs(userinfo) do
         if info_key == key then
-          local v = json.decode(info_value)
-          temp.userAvatar = v[1].avatar
-          temp.userName = v[1].name
+          temp.userInfo = json.decode(info_value)
         end
       end
       table.insert(resp, json.encode(temp))
