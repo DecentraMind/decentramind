@@ -2,7 +2,8 @@ import {
   createDataItemSigner,
   message,
   spawn,
-  dryrun
+  dryrun,
+  result
 } from '@permaweb/aoconnect'
 import type { CommunitySetting, TradePlatform } from '~/types'
 import type { TokenName, CommunityToken, TokenSupply } from '~/utils/constants'
@@ -42,6 +43,7 @@ export type CommunityList = CommunityListItem[]
 
 export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   const { address } = $(aoStore())
+  let linkTwitter = $ref(false)
   let communityList = $ref<CommunityList>([])
   let userInfo = $ref({})
   let communityUser = $ref({})
@@ -59,43 +61,68 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
   //
   const vouch = async () => {
-    fetch('https://api.vouchdao.org/vouches', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        walletAddress: '8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw'
-      })
-    })
-      .then(response => response.json())
-      .then(data => {
-        // analysis and get the Twitter ID
-        data.vouches.forEach(a => {
-          console.log('-test')
-          console.log(a)
-          if (a.method === 'twitter') {
-            console.log('Twitter ID:', a.identifier)
-          }
-        })
-      })
-
-
-    // let result2 = await message({
-    //   process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
-    //   tags: [
-    //     { name: 'Action', value: 'Get-Vouches' },
-    //     { name: 'ID', value: address }
-    //   ],
-    //   signer: createDataItemSigner(window.arweaveWallet),
-    // });
-    // const res = await result({
-    //   message: result2,
-    //   process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
-    // })
-    // console.log(res)
-    // console.log(result2)
-  }
+    try {
+      const result2 = await message({
+        process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
+        tags: [
+          { name: 'Action', value: 'Get-Vouches' },
+          { name: 'ID', value: address }
+        ],
+        signer: createDataItemSigner(window.arweaveWallet),
+      });
+      
+      console.log(result2)
+      const res = await result({
+        message: result2,
+        process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
+      });
+      if (!res.Messages || res.Messages.length === 0) {
+        linkTwitter = false
+        console.log('No Messages found in the response.')
+        return false
+      }
+      if (!res.Messages[0].Data) {
+        linkTwitter = false
+        console.log('No Data found in the first Message.')
+        return false
+      }
+      console.log(res)
+      // Parse the JSON string
+      const data = JSON.parse(res.Messages[0].Data)
+      
+      // Check if Vouchers exist in the data
+      if (!data.Vouchers || Object.keys(data.Vouchers).length === 0) {
+        linkTwitter = false
+        console.log('No Vouchers found in the data.')
+        return false
+      }
+  
+      // Get the Vouchers object
+      const vouchers = data.Vouchers;
+      
+      // Get all Identifiers
+      const identifiers = Object.values(vouchers)
+        .map(voucher => voucher.Identifier)
+        .filter(identifier => identifier) // Remove any undefined or null values
+  
+      if (identifiers.length === 0) {
+        console.log('No valid Identifiers found in Vouchers.')
+        linkTwitter = false
+        return false
+      }
+      
+      console.log('Identifiers:', identifiers)
+    
+      // If you only want the first (or only) Identifier:
+      const firstIdentifier = identifiers[0]
+      console.log('First Identifier:', firstIdentifier)
+      linkTwitter = true
+      return true
+    } catch (error) {
+      console.error('An error occurred:', error)
+      // You might want to show an error message to the user here
+    }
+  };
 
   const banChat = async (communityId: string, userAddress: string) => {
     if (isLoading) return
@@ -633,6 +660,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     joinedCommunities,
     currentUuid,
     chatBanuser,
+    linkTwitter,
     vouch,
     banChat: banChat,
     createToken,

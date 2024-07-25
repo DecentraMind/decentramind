@@ -1,13 +1,13 @@
 <script setup lang="ts">
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, getUser: getInfo, getCommunityList, joinCommunity, createToken } = $(aoCommunityStore())
+const { communityList, getUser: getInfo, vouch, linkTwitter, getCommunityList, joinCommunity, createToken } = $(aoCommunityStore())
 
 const toast = useToast()
 const router = useRouter()
 
 let communityLoading = $ref(true)
-const linkToTwitter = $ref(false)
+let linkToTwitter = $ref(false)
 
 let result = $ref<Awaited<ReturnType<typeof getCommunityList>>>()
 
@@ -17,6 +17,7 @@ const getCommunity = async () => {
 }
 
 onMounted(async () => {
+  getVouchInfo()
   try {
     if (Array.isArray(communityList) && communityList.length !== 0) {
       communityLoading = false
@@ -46,6 +47,10 @@ const Logout = async() => {
 let joinLoading = $ref(false)
 
 const joinToCommunity = async(uuid: any) => {
+  if (!linkTwitter) {
+    linkToTwitter = true
+    return
+  }
   joinLoading = true
   try {
     const invite = 'none'
@@ -64,8 +69,11 @@ const joinToCommunity = async(uuid: any) => {
   }
 
 }
-const test = async () => {
-  const a = await createToken('testone', 'tTn')
+const getVouchInfo = async () => {
+  const res = await vouch()
+  if (!res) {
+    linkToTwitter = true
+  }
 }
 </script>
 
@@ -154,7 +162,7 @@ const test = async () => {
     <UModal v-model="linkToTwitter">
       <div class="h-[200px] flex flex-col items-center justify-center">
         <Text class="text-2xl">No link to twitter</Text>
-        <NuxtLink :to="'/settings'">
+        <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank" rel="noopener noreferrer">
           <UButton class="mt-10">go to link</UButton>
         </NuxtLink>
       </div>
