@@ -3,11 +3,11 @@ import type { FormSubmitEvent } from '#ui/types'
 
 import { z } from 'zod'
 import type { Dayjs } from 'dayjs'
-import { tokenOptions, timeZoneOptions } from '~/utils/constants'
+import { tokenOptions, timeZoneOptions, tokens } from '~/utils/constants'
 import type { Task } from '~/types'
 
 const { t } = useI18n()
-const { denomination, createTask, getAllTasks, getAllTaskSubmitInfo } = $(taskStore())
+const { createTask, getAllTasks, getAllTaskSubmitInfo } = $(taskStore())
 const { getLocalCommunity, setCurrentUuid, exitCommunity, getCommunityList } = $(aoCommunityStore())
 
 const { add: inboxAdd } = $(inboxStore())
@@ -146,18 +146,19 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     alert('Please complete the quest information.')
     return
   }
+
   // Do something with state
   transData.taskId = uuid()
   transData.taskLogo = state.taskLogo
   transData.taskName = state.taskName
   transData.taskInfo = state.taskInfo
   transData.taskRule = t('taskRule')
-  transData.tokenNumber = state.tokenNumber ? Number(state.tokenNumber) * denomination[state.tokenType.value] : 0
-  transData.tokenType = state.tokenType ? state.tokenType.value : 'none'
-  transData.tokenChain = state.tokenChain ? state.tokenChain.value : 'none'
-  transData.tokenNumber1 = state.tokenNumber1 ? Number(state.tokenNumber1) * denomination[state.tokenType1.value] : 0
-  transData.tokenType1 = state.tokenType1 ? state.tokenType1.value : 'none'
-  transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1.value : 'none'
+  transData.tokenNumber = (state.tokenNumber && state.tokenType) ? Number(state.tokenNumber) * Math.pow(10, tokens[state.tokenType as TokenName].denomination) : 0
+  transData.tokenType = state.tokenType ? state.tokenType : 'none'
+  transData.tokenChain = state.tokenChain ? state.tokenChain : 'none'
+  transData.tokenNumber1 = (state.tokenNumber1 && state.tokenType1) ? Number(state.tokenNumber1) * Math.pow(10, tokens[state.tokenType1 as TokenName].denomination) : 0
+  transData.tokenType1 = state.tokenType1 ? state.tokenType1 : 'none'
+  transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1 : 'none'
   transData.rewardTotal = state.rewardTotal
   transData.zone = state.zone
   transData.startTime = selectStartTime

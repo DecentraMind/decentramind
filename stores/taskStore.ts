@@ -11,6 +11,7 @@ import { defineStore } from 'pinia'
 import { notificationStore } from './notificationStore'
 import type { Task } from '~/types'
 import { sleep, retry } from '~/utils/util'
+import { tokens } from '~/utils/constants'
 import { aoCommunityProcessID, tasksProcessID, moduleID, schedulerID } from '~/utils/processID'
 
 const permissions: PermissionType[] = [
@@ -255,10 +256,12 @@ export const taskStore = defineStore('taskStore', () => {
       // console.log('trans communityId = ' + communityId)
       let reward = ''
       if(element.tokenNumber != '0'){
-        reward = Number(element.tokenNumber) /  denomination[element.tokenType] + ' ' + element.tokenType
+        const token = tokens[element.tokenType as TokenName]
+        reward = Number(element.tokenNumber) /  Math.pow(10, token.denomination) + ' ' + element.tokenType
       }
       if(element.tokenNumber1 != '0'){
-        reward = reward +  '+' + Number(element.tokenNumber1) /  denomination[element.tokenType1] + ' ' + element.tokenType1
+        const token = tokens[element.tokenType1 as TokenName]
+        reward = reward +  '+' + Number(element.tokenNumber1) /  Math.pow(10, token.denomination) + ' ' + element.tokenType1
       }
       const respData = {
         id: element.taskId,
@@ -670,7 +673,7 @@ export const taskStore = defineStore('taskStore', () => {
         process: tasksProcessID,
         tags: [{ name: 'Action', value: 'getAllBounties' }]
       })
-      console.log('all bounties = ' + res.Messages[0].Data)
+      // console.log('all bounties = ' + res.Messages[0].Data)
       return JSON.parse(res.Messages[0].Data)
     } catch (error) {
       console.log('messageToAo -> error:', error)
@@ -678,7 +681,12 @@ export const taskStore = defineStore('taskStore', () => {
     }
   }
 
-  return $$({ denomination, storeBounty, getAllBounty, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
+  const getBountiesByCommunityID = async (communityID: string) => {
+    const bounties = await getAllBounty()
+    return bounties.filter(bounty => bounty.communityId === communityID)
+  }
+
+  return $$({ denomination, storeBounty, getAllBounty, getBountiesByCommunityID, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
 })
 
 async function transferBounty(receiver: string, tokenName: string, amount: number) {

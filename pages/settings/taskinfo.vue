@@ -1,11 +1,6 @@
 <script setup lang="ts">
-const state = $ref<{ [key: string]: boolean }>({
-  email: true,
-  desktop: false,
-  product_updates: true,
-  weekly_digest: false,
-  important_updates: true
-})
+import { denominations } from '~/utils/constants'
+
 interface TaskData {
   communityName: string;
   taskName: string;
@@ -16,24 +11,22 @@ interface TaskData {
   taskId: string;
   tokenType: string;
 }
-async function onChange () {
-  // Do something with data
-  console.log(state)
-}
-const { getAllBounty, denomination } = $(taskStore())
+
+const { getAllBounty } = $(taskStore())
 const { address } = $(aoStore())
 let bounties = $ref([])
 let did = $ref([])
 let created = $ref([])
 let result = $ref(0)
+
 function categorizeByTaskId(data: TaskData[]): Record<string, TaskData[]> {
   return data.reduce((acc, item) => {
     if (!acc[item.taskId]) {
-      acc[item.taskId] = [];
+      acc[item.taskId] = []
     }
-    acc[item.taskId].push(item);
-    return acc;
-  }, {} as Record<string, TaskData[]>);
+    acc[item.taskId].push(item)
+    return acc
+  }, {} as Record<string, TaskData[]>)
 }
 onMounted( async () => {
   bounties = await getAllBounty()
@@ -56,7 +49,7 @@ onMounted( async () => {
     if (categorizedC.hasOwnProperty(taskId)) {
       const taskArray = categorizedC[taskId]
       if(taskArray.length > 1){
-        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / denomination[taskArray[1].tokenType]) + ' ' + taskArray[1].tokenType
+        const b = (taskArray[0].tokenNumber / denominations[taskArray[0].tokenType as TokenName]) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / denominations[taskArray[1].tokenType as TokenName]) + ' ' + taskArray[1].tokenType
 
         const combine = {
           communityName: taskArray[0].communityName,
@@ -71,7 +64,7 @@ onMounted( async () => {
         }
         created.push(combine)
       }else{
-        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType
+        const b = (taskArray[0].tokenNumber / denominations[taskArray[0].tokenType as TokenName]) + ' ' + taskArray[0].tokenType
         const combine = {
           communityName: taskArray[0].communityName,
           taskName: taskArray[0].taskName,
@@ -92,7 +85,7 @@ onMounted( async () => {
     if (categorizedD.hasOwnProperty(taskId)) {
       const taskArray = categorizedD[taskId]
       if(taskArray.length > 1){
-        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / denomination[taskArray[1].tokenType]) + ' ' + taskArray[1].tokenType
+        const b = (taskArray[0].tokenNumber / denominations[taskArray[0].tokenType as TokenName]) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / denominations[taskArray[1].tokenType as TokenName]) + ' ' + taskArray[1].tokenType
         const combine = {
           communityName: taskArray[0].communityName,
           taskName: taskArray[0].taskName,
@@ -106,7 +99,7 @@ onMounted( async () => {
         }
         did.push(combine)
       }else{
-        const b = (taskArray[0].tokenNumber / denomination[taskArray[0].tokenType]) + ' ' + taskArray[0].tokenType
+        const b = (taskArray[0].tokenNumber / denominations[taskArray[0].tokenType as TokenName]) + ' ' + taskArray[0].tokenType
         const combine = {
           communityName: taskArray[0].communityName,
           taskName: taskArray[0].taskName,

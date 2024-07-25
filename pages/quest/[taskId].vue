@@ -4,9 +4,10 @@ import { shortAddress } from '~/utils/web3'
 import { ssimStore } from '~/stores/ssimStore'
 import { formatToLocale } from '~/utils/util'
 import type { Task } from '~/types'
+import { tokens } from '~/utils/constants'
 
 const { t } = useI18n()
-const { denomination, storeBounty, sendBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { storeBounty, sendBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 const { userInfo, getUser, getLocalCommunity } = $(aoCommunityStore())
 
 const { showError, showSuccess } = $(notificationStore())
@@ -153,18 +154,20 @@ function calculateScore() {
   console.log('totalScore = ' + totalScore)
   for (let i = 0;i < spaceTaskSubmitInfo.length;++i) {
     if (blogPost!.tokenNumber) {
+      const token = tokens[spaceTaskSubmitInfo[i].bountyType1 as TokenName]
       // TODO 5% 手续费
       spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType1 = blogPost!.tokenType
-      // TODO use token.denomination
-      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / denomination[spaceTaskSubmitInfo[i].bountyType1]).toString() + spaceTaskSubmitInfo[i].bountyType1
+
+      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / Math.pow(10, token.denomination)).toString() + spaceTaskSubmitInfo[i].bountyType1
     }
     if (blogPost!.tokenNumber1) {
+      const token = tokens[spaceTaskSubmitInfo[i].bountyType2 as TokenName]
       // TODO 5% 手续费
       spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber1)).toFixed(4)
       spaceTaskSubmitInfo[i].bountyType2 = blogPost!.tokenType1
-      // TODO use token.denomination
-      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / denomination[spaceTaskSubmitInfo[i].bountyType2]).toString() + spaceTaskSubmitInfo[i].bountyType2
+
+      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / Math.pow(10, token.denomination)).toString() + spaceTaskSubmitInfo[i].bountyType2
     }
 
     // console.log('bounty = ' + spaceTaskSubmitInfo[i].score / totalScore * 100)
@@ -474,7 +477,11 @@ async function sendBountyByAo() {
   blogPost = await getTask(taskId)
   console.log({ blogPostSettled: blogPost })
 
-  showSuccess('Congrats! This task has been successfully settled.')
+  if(!selected.length) {
+    showSuccess('The Bounty Has Been Returned!')
+  } else {
+    showSuccess('Congrats! This quest has been successfully settled.')
+  }
 }
 
 const finalStatus = (isBegin: string) => {
@@ -652,7 +659,7 @@ watch(() => selected, (newVal) => {
                   target="_blank"
                   inactive-class="text-primary"
                 >
-                  AO Process
+                  Transaction Book
                 </ULink>
               </div>
               <div v-if="isJoined">

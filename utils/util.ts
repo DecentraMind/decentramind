@@ -73,3 +73,11 @@ export async function retry<T>(args: {
     }
   }
 }
+
+export function shortString(str: string, startLength: number = 6, endLength: number = 4) {
+  if (!str || str.length <= startLength + endLength) {
+    return str || ''
+  }
+
+  return `${str.slice(0, startLength)}...${str.slice(-endLength)}`
+}

@@ -114,6 +114,11 @@ export const tokenProcessIDs = tokenNames.reduce((carry, name) => {
   return carry
 }, {} as { [key in TokenName]: string })
 
+export const denominations = tokenNames.reduce((carry, name) => {
+  carry[name] = Math.pow(10, tokens[name].denomination)
+  return carry
+}, {} as { [key in TokenName]: number })
+
 export type CommunityToken = {
   tokenName: TokenName;
   showTokenName: boolean;
