@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {tokenProcessIDs} from '~/utils/constants'
+import { shortString } from '~/utils/util'
 const { getLocalCommunity } = $(aoCommunityStore())
 
 const { t } = useI18n()
@@ -9,50 +10,13 @@ const columns = [{
   label: t('community.detail.contribute.rank'),
   class: 'text-xl'
 }, {
-  key: 'rank',
+  key: 'bountyCount',
 }]
 
-const ranks = [{
-  name: 'Lindsay Walton',
-  rank: 1,
-  avatar: {
-    src: 'https://i.pravatar.cc/128?u=20'
-  },
-}, {
-  name: 'Courtney Henry',
-  rank: 2,
-  avatar: {
-    src: 'https://i.pravatar.cc/128?u=20'
-  },
-}, {
-  name: 'Tom Cook',
-  rank: 3,
-  avatar: {
-    src: 'https://i.pravatar.cc/128?u=20'
-  },
-}, {
-  name: 'Whitney Francis',
-  rank: 4,
-  avatar: {
-    src: 'https://i.pravatar.cc/128?u=20'
-  },
-}, {
-  name: 'Leonard Krasner',
-  rank: 5,
-  avatar: {
-    src: 'https://i.pravatar.cc/128?u=20'
-  },
-}, {
-  name: 'Floyd Miles',
-  rank: 6,
-  avatar: {
-    src: 'https://i.pravatar.cc/128?u=20'
-  },
-}]
 const pending = $ref(true)
 
 const route = useRoute()
-const pid = $computed(() => route.params.pid) as string
+const communityID = $computed(() => route.params.pid) as string
 
 let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 
@@ -62,9 +26,46 @@ watchEffect(() => {
   console.log(route.params.pid)
 })
 
+type Rank = {
+  receiver: string
+  bountyCount: number
+}
 
-onMounted(async () => {
-  await loadCommunityInfo(pid)
+type Bounty = {
+  communityId: string
+  communityName: string
+  receive: string
+  send: string
+  taskId: string
+  taskName: string
+  tokenNumber: number
+  tokenType: string
+}
+
+const { getBountiesByCommunityID } = $(taskStore())
+let rankings = $ref<Rank[]>()
+onMounted( async () => {
+  try {
+    const bounties = await getBountiesByCommunityID(communityID) as Bounty[]
+    console.log({bounties})
+    rankings = bounties.reduce((ranks, bounty) => {
+      const index = ranks.findIndex(rank => rank.receiver === bounty.receive)
+      if (index >= 0) {
+        ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
+      } else {
+        ranks.push({receiver: bounty.receive, bountyCount: 1})
+      }
+      return ranks
+    }, [] as Rank[]).sort((a, b) => {
+      return a.receiver > b.receiver ? 1 : -1
+    })
+
+  } catch (e) {
+    console.error(e)
+    showError('Failed to get ranking data.')
+  }
+
+  await loadCommunityInfo(communityID)
 
   if (communityInfo && communityInfo.tokensupply) {
     initChart(communityInfo.tokensupply)
@@ -332,12 +333,13 @@ const formattedTwitterLink = (twitter: string) => {
                 </div>
               </div>
             </ULandingCard>
+
             <ULandingCard class="col-span-4 row-span-4">
-              <UTable :columns="columns" :rows="ranks" :loading="pending" class="pl-12">
+              <UTable :columns="columns" :rows="rankings" :loading="pending" class="pl-12">
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
-                    <UAvatar v-bind="row.avatar" :alt="row.name" size="xs" />
-                    <span class="text-gray-900 dark:text-white font-medium">{{ row.name }}</span>
+                    <!-- <UAvatar v-bind="row.avatar" :alt="row.receiver" size="xs" /> -->
+                    <span class="text-gray-900 dark:text-white font-medium">{{ shortString(row.receiver, 20) }}</span>
                   </div>
                 </template>
                 <template #loading-state>
@@ -347,6 +349,7 @@ const formattedTwitterLink = (twitter: string) => {
                 </template>
               </UTable>
             </ULandingCard>
+
             <ULandingCard v-if="communityInfo?.tokensupply" class="col-span-8 row-span-2">
               <div ref="chart" :style="{ width: '100%', height: '400px' }" />
             </ULandingCard>
