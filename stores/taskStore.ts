@@ -437,23 +437,6 @@ export const taskStore = defineStore('taskStore', () => {
     console.log(userCreatedAt)
   }
 
-  const testTransfer = async() => {
-    await window.arweaveWallet.connect(permissions)
-    try{
-      const messageId = await message({
-        process: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [
-          { name: 'Action', value: 'Transfer' },
-          {name: 'Recipient', value: 'AWdD90gYRc6C76x4yC4CZHJS7Ts_jakzL7b_nirgw1c'},
-          {name: 'Quantity', value: '1000'}
-        ]
-      })
-    }catch(error){
-      console.log(error)
-    }
-  }
-
   const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: number, friend: string, audi: string) => {
     console.log('audi = ' + audi)
     const data = {
@@ -686,7 +669,7 @@ export const taskStore = defineStore('taskStore', () => {
     return bounties.filter(bounty => bounty.communityId === communityID)
   }
 
-  return $$({ denomination, storeBounty, getAllBounty, getBountiesByCommunityID, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testTransfer, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
+  return $$({ denomination, storeBounty, getAllBounty, getBountiesByCommunityID, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
 })
 
 async function transferBounty(receiver: string, tokenName: string, amount: number) {

@@ -3,7 +3,7 @@ import type { FormSubmitEvent } from '#ui/types'
 
 import { z } from 'zod'
 import type { Dayjs } from 'dayjs'
-import { tokenOptions, timeZoneOptions, tokens } from '~/utils/constants'
+import { tokenOptions, timeZoneOptions, tokens, type TokenName } from '~/utils/constants'
 import type { Task } from '~/types'
 
 const { t } = useI18n()
@@ -90,15 +90,14 @@ const state = $ref({
   taskInfo: undefined,
   taskRule: undefined,
   tokenNumber: undefined,
-  tokenType: undefined,
+  tokenType: {label: '', value: ''},
   tokenChain: undefined,
   tokenNumber1: undefined,
-  tokenType1: undefined,
+  tokenType1: {label: '', value: ''},
   tokenChain1: undefined,
   rewardTotal: undefined,
   zone: undefined,
 })
-
 
 const transData = {
   taskId: '',
@@ -147,17 +146,34 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     return
   }
 
+  const token = tokens[state.tokenType.value as TokenName]
+  if (!token) {
+    alert('Bounty 1 token is not valid.')
+    return
+  }
+
+  let token1
+  if (state.tokenType1.value) {
+    token1 = tokens[state.tokenType1.value as TokenName]
+    if(!token1) {
+      alert('Bounty 2 token is not valid.')
+      return
+    }
+  }
+
+  console.log({transData, state})
+
   // Do something with state
   transData.taskId = uuid()
   transData.taskLogo = state.taskLogo
   transData.taskName = state.taskName
   transData.taskInfo = state.taskInfo
   transData.taskRule = t('taskRule')
-  transData.tokenNumber = (state.tokenNumber && state.tokenType) ? Number(state.tokenNumber) * Math.pow(10, tokens[state.tokenType as TokenName].denomination) : 0
-  transData.tokenType = state.tokenType ? state.tokenType : 'none'
+  transData.tokenNumber = (state.tokenNumber && state.tokenType.value) ? Number(state.tokenNumber) * Math.pow(10, token.denomination) : 0
+  transData.tokenType = state.tokenType.value ? state.tokenType.value : 'none'
   transData.tokenChain = state.tokenChain ? state.tokenChain : 'none'
-  transData.tokenNumber1 = (state.tokenNumber1 && state.tokenType1) ? Number(state.tokenNumber1) * Math.pow(10, tokens[state.tokenType1 as TokenName].denomination) : 0
-  transData.tokenType1 = state.tokenType1 ? state.tokenType1 : 'none'
+  transData.tokenNumber1 = (state.tokenNumber1 && state.tokenType1.value) ? Number(state.tokenNumber1) * Math.pow(10, token1.denomination) : 0
+  transData.tokenType1 = state.tokenType1.value ? state.tokenType1.value : 'none'
   transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1 : 'none'
   transData.rewardTotal = state.rewardTotal
   transData.zone = state.zone
