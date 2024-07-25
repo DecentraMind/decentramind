@@ -133,3 +133,32 @@ export type Task = {
   zone: string;
   createTime: number;
 }
+
+export type InviteInfo = {
+  userId: string
+  communityId: string
+  invited: string
+  inviteTime: string
+  userInfo: {
+    showtwitter: boolean
+    showmail: boolean
+    mail: string
+    avatar: string
+    showphone: boolean
+    name: string
+    twitter: string
+    phone: string
+    github: string
+  }
+}
+
+export type Bounty = {
+  communityId: string
+  communityName: string
+  receive: string
+  send: string
+  taskId: string
+  taskName: string
+  tokenNumber: number
+  tokenType: string
+}

@@ -5,11 +5,14 @@ import type { CommunitySetting } from '~/types'
 
 export const communitySettingSchema = z.object({
   // banner: z.enum(['banner6', 'banner7', 'banner8', 'banner9', 'banner10']),
-  name: z.string().min(2).max(10),
+  name: z.string().min(2).max(28),
   inbro: z.string().min(3).max(100), // introduction
+
+  // TODO add message: url must start with http:// or https://
   website: z.string().url().optional(),
   twitter: z.string().url().optional(),
   github: z.string().url().optional(),
+
   typeReward: z.enum(tokenNames as [string, ...string[]]).array().min(1).max(4),
 
   tradePlatform: z.enum(tradePlatforms as [string, ...string[]]).array().min(0).max(tradePlatforms.length),

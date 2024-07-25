@@ -7,11 +7,17 @@ export const tradePlatforms: TradePlatform[] = [
   'Coinbase',
 ]
 
+type Token = {
+  ticker: string
+  label: string
+  processID: string
+  denomination: number
+}
 /**
  * Token list with unique keys
  * TODO update token info from AO
  */
-export const tokens = {
+export const tokens: Record<string, Token> = {
   AR: {
     ticker: 'AR',
     label: 'AR', // Wrapped AR in AO
@@ -113,6 +119,11 @@ export const tokenProcessIDs = tokenNames.reduce((carry, name) => {
   carry[name] = tokens[name].processID
   return carry
 }, {} as { [key in TokenName]: string })
+
+export const tokensByProcessID = tokenNames.reduce((carry, name) => {
+  carry[tokens[name].processID] = tokens[name]
+  return carry
+}, {} as { [key: string]: Token })
 
 export const denominations = tokenNames.reduce((carry, name) => {
   carry[name] = Math.pow(10, tokens[name].denomination)

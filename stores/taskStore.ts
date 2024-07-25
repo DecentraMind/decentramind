@@ -9,7 +9,7 @@ import {
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
 import { notificationStore } from './notificationStore'
-import type { Task } from '~/types'
+import type { Bounty, InviteInfo, Task } from '~/types'
 import { sleep, retry } from '~/utils/util'
 import { tokens } from '~/utils/constants'
 import { aoCommunityProcessID, tasksProcessID, moduleID, schedulerID } from '~/utils/processID'
@@ -60,7 +60,7 @@ export const taskStore = defineStore('taskStore', () => {
   let respArray = $ref([])
   let allTaskSubmitInfo = $ref<TaskSubmitInfo[]>([])
   let allTasks = $ref([])
-  let allInviteInfo = $ref([])
+  let allInviteInfo = $ref<InviteInfo[]>([])
   const createTask = async (data: any) => {
     // create a task process，then add process ID to task info
     await window.arweaveWallet.connect(permissions)
@@ -123,7 +123,6 @@ export const taskStore = defineStore('taskStore', () => {
     })
   }
 
-
   const getAllInviteInfo = async() => {
     await window.arweaveWallet.connect(permissions)
     try{
@@ -134,29 +133,26 @@ export const taskStore = defineStore('taskStore', () => {
           { name: 'Action', value: 'getAllInviteInfo' }
         ]
       })
-    if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
+      if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
         respArray = []
         return ''
       }
       const resp = JSON.parse(res.Messages[0].Data)
       allInviteInfo = []
+
       for (let index = 0; index < resp.length; index++) {
         // console.log('resp[index] = ' + JSON.parse(resp[index]).invited)
-        const element = JSON.parse(resp[index])
+        const element = JSON.parse(resp[index]) as InviteInfo
         if(element.invited === 'none'){
           continue
         }
-        const inviteInfo = {
-          invited: element.invited,
-          communityId: element.communityId,
-          inviteTime: element.inviteTime,
-          userId: element.userId,
-          userName: element.userName,
-          userAvatar: element.userAvatar
-        }
-        console.log({inviteInfo})
-        allInviteInfo.push(inviteInfo)
+
+        console.log({inviteInfo: element})
+        allInviteInfo.push(element)
       }
+
+      return allInviteInfo
+
     } catch (error){
       console.log(error)
     }
@@ -657,10 +653,10 @@ export const taskStore = defineStore('taskStore', () => {
         tags: [{ name: 'Action', value: 'getAllBounties' }]
       })
       // console.log('all bounties = ' + res.Messages[0].Data)
-      return JSON.parse(res.Messages[0].Data)
+      return JSON.parse(res.Messages[0].Data) as Bounty[]
     } catch (error) {
       console.log('messageToAo -> error:', error)
-      return ''
+      throw new Error('Get bounty error')
     }
   }
 
@@ -721,6 +717,6 @@ async function transferBounty(receiver: string, tokenName: string, amount: numbe
   }
 
   if(transError){
-    throw new Error('Pay bounty failed.' + errorMessage)
+    throw new Error('Pay bounty failed. ' + errorMessage)
   }
 }
