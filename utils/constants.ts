@@ -120,8 +120,8 @@ export type CommunityToken = {
 };
 
 export type TokenSupply = {
-  name: TokenName;
-  supply: string;
+  name: string;
+  supply: number;
 };
 
 export const timeZoneOptions = [
@@ -152,3 +152,6 @@ export const timeZoneOptions = [
   { label: 'GMT+13:00', value: 'GMT+13:00' },
   { label: 'GMT+14:00', value: 'GMT+14:00' },
 ]
+
+// 接受手续费的地址
+export const decentraMindReceiver = 'C0Q61xdmhFnpi5bksiGH88N7Kisz_vjTeBSgpNQ1gdo'

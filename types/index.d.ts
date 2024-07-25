@@ -76,13 +76,13 @@ export type CommunitySetting = {
   github: string | undefined;
   builderNum: string | undefined;
   allReward: string | undefined;
-  typeReward: string | undefined;
+  typeReward: TokenName[];
   /** 是否有发行 token */
   isPublished: boolean;
   tokenName: string | undefined;
   showTokenName: boolean;
   isTradable: boolean | undefined;
-  tradePlatform: string | undefined;
+  tradePlatform: TradePlatform[];
   /** 分配的 token 总量  */
   allToken: string | undefined;
   communityToken: string | undefined;

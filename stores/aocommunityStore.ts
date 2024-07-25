@@ -70,7 +70,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       });
-      
+
       console.log(result2)
       const res = await result({
         message: result2,
@@ -89,30 +89,30 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       console.log(res)
       // Parse the JSON string
       const data = JSON.parse(res.Messages[0].Data)
-      
+
       // Check if Vouchers exist in the data
       if (!data.Vouchers || Object.keys(data.Vouchers).length === 0) {
         linkTwitter = false
         console.log('No Vouchers found in the data.')
         return false
       }
-  
+
       // Get the Vouchers object
       const vouchers = data.Vouchers;
-      
+
       // Get all Identifiers
       const identifiers = Object.values(vouchers)
         .map(voucher => voucher.Identifier)
         .filter(identifier => identifier) // Remove any undefined or null values
-  
+
       if (identifiers.length === 0) {
         console.log('No valid Identifiers found in Vouchers.')
         linkTwitter = false
         return false
       }
-      
+
       console.log('Identifiers:', identifiers)
-    
+
       // If you only want the first (or only) Identifier:
       const firstIdentifier = identifiers[0]
       console.log('First Identifier:', firstIdentifier)
@@ -565,6 +565,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   //Obtaining Personal Information
   const getUser = async () => {
     if (isLoading) return
+
     isLoading = true
     const user = await dryrun({
       process: aoCommunityProcessID,

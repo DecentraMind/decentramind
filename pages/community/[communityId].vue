@@ -188,7 +188,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     isBegin = 'N'
   }
   transData.isBegin = isBegin
-  transData.communityId = String(communityId)
+  transData.communityId = communityId
 
   try{
     await createTask(transData)
