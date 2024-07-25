@@ -43,11 +43,6 @@ onMounted(async () => {
           <h3 class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white">
             {{ $t('setting.community.list') }}
           </h3>
-          <div class="flex items-center text-xl space-x-5">
-            <div>{{ $t('hideall') }}</div>
-            <UToggle v-model="communityForm.showAll" size="xl" />
-            <div>{{ $t('showall') }}</div>
-          </div>
         </div>
       </template>
       <div v-if="communityLoading" class="w-full flex justify-center">
@@ -65,10 +60,6 @@ onMounted(async () => {
               </template>
               <!--<UInput v-model="item.value" />-->
             </UFormGroup>
-            <UToggle v-model="item.show" class="ml-10 mr-3" size="xl" />
-            <Text>
-              {{ $t('show') }}
-            </Text>
           </div>
         </div>
       </div>
@@ -78,19 +69,10 @@ onMounted(async () => {
             <Text class="w-[420px]">
               {{ $t('setting.community.isjoin') }}： {{ joinedCommunities.length }}
             </Text>
-            <UToggle v-model="communityForm.showCommunityNum" class="ml-10" size="xl" />
-            <div class="ml-3">{{ $t('show') }}</div>
           </div>
         </template>
       </UFormGroup>
 
-      <template #footer>
-        <div class="flex justify-center">
-          <UButton type="submit" color="black">
-            {{ $t('setting.save') }}
-          </UButton>
-        </div>
-      </template>
     </UCard>
   </UDashboardPanelContent>
 </template>

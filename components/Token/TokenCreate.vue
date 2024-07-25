@@ -8,6 +8,7 @@ const { createToken } = $(aoCommunityStore())
 const state = $ref<CreateToken>({
   name: '',
   ticker: '',
+  balance: 0,
 })
 
 
@@ -22,7 +23,7 @@ let createResult = $ref('')
 const create = async() => {
   creating = true
   try {
-    const result = await createToken(state.name, state.ticker)
+    const result = await createToken(state.name, state.ticker, state.balance)
     creating = false
     creatEnd = true
     createResult = result
@@ -62,13 +63,19 @@ const create = async() => {
           </template>
           <UInput v-model="state.ticker" placeholder="Ticker" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
+        <UFormGroup name="Balance" class="flex flex-row items-center space-x-1">
+          <template #label>
+            <div class=" w-[100px]">Balance</div>
+          </template>
+          <UInput v-model="state.balance" placeholder="Ticker" class="min-w-[100px] w-[430px]" />
+        </UFormGroup>
         <div class="flex justify-center">
           <UButton color="white" type="submit" size="xl" :loading="creating" @click="create">
             {{ $t('add') }}
           </UButton>
         </div>
       </UForm>
-      <div v-if="creatEnd" class="w-[520px] mt-6">
+      <div v-if="creatEnd" class="w-[550px] mt-6">
         {{ createResult }}
       </div>
     </DashboardPanelContent>

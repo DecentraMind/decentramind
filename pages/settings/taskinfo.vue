@@ -142,7 +142,6 @@ function onSubmitTask () {
     <UCard class="pl-10 pt-10 text-xl" @submit.prevent="onSubmitTask">
       <div class="flex items-center">
         {{ $t('setting.task.completed')}}： {{result}}
-        <UToggle v-model="taskForm.showTasknum" class="ml-10 mr-3" size="xl" />{{ $t('show')}}
       </div>
     </UCard>
   </udashboardpanelcontent>

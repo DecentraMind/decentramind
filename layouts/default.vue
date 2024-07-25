@@ -168,8 +168,8 @@ onMounted(async () => {
     <UModal v-model="isCreateModalOpen" :ui="{ width: w-full }">
       <UCard>
         <div v-if="selectModal === 0" class="flex justify-between w-[300px]">
-          <UButton @click="selectModal=1">Create Community</UButton>
-          <UButton @click="selectModal=2">Create Tokens</UButton>
+          <UButton color="white" @click="selectModal=1">Create Community</UButton>
+          <UButton color="white" @click="selectModal=2">Create Tokens</UButton>
         </div>
         <CommunityCreate v-if="selectModal === 1" @close-modal="isCreateModalOpen = false" />
         <TokenCreate v-if="selectModal === 2" />

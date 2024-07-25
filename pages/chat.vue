@@ -55,6 +55,7 @@ onMounted( () => {
   chatID = route.params.pid
 })
 onMounted(async () => {
+  console.log('--------------test')
   await loadCommunityInfo(currentUuid)
   await getBan()
   const result = await getCommunityUser(communityInfo.uuid)
@@ -309,7 +310,7 @@ const test = async() => {
                 color="gray"
                 variant="solid"
                 @click="OpenBan(index)"
-              >Ban</UButton>
+              >mute</UButton>
             </div>
             <!--<UButton @click="test">test</UButton>-->
           </ULandingCard>

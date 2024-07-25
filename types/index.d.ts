@@ -94,6 +94,7 @@ export type CommunitySetting = {
 export type CreateToken = {
   ticker: string;
   name: string;
+  balance: number;
 }
 
 export type Tokens = {
