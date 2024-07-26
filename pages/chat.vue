@@ -2,7 +2,8 @@
 import type { Mail } from '~/types'
 
 const { currentUuid, communityUser, exitCommunity, updateCommunity, getLocalCommunity, getCommunityUser, banChat, getBan } = $(aoCommunityStore())
-let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
+//let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
+let communityInfo = $ref({})
 const { address } = $(aoStore())
 
 useSeoMeta({
