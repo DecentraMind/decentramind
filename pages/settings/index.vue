@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { arUrl, userAvatar } from '~/utils/arAssets'
 import { z } from 'zod'
 
 const toast = useToast()
@@ -80,55 +81,56 @@ onMounted(async () => {
   }
 })
 
+const uploadInput = $ref<HTMLInputElement>()
 
+const updateAvatar = () => {
+  if (!uploadInput) return
+  if (!uploadInput.files?.length) {
+    throw new Error('No file selected.')
+  }
+  const file = uploadInput.files[0]
 
-const logoupload = () => {
-  const input = document.querySelector('#logoupload') as any
-  input.click()
-}
-
-
-const handleUp = (event) => {
-  const file = event.target?.files[0]
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const img = new Image()
       img.onload = () => {
         if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
-          accountForm.avatar = e.target.result
+          // console.log({res: e.target?.result})
+          accountForm.avatar = e.target!.result as string
         } else {
           alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
         }
       }
-      img.src = e.target.result
+      img.src = e.target!.result as string
     }
     reader.readAsDataURL(file)
   }
 }
+
 </script>
 
 <template>
   <UDashboardPanelContent class="pb-24">
-    <Input id="logoupload" type="file" size="sm" class="opacity-0" @change="handleUp" />
-    <UForm ref="form" :schema="schema" :state="accountForm" @submit.prevent="onSubmitAccount">
-      <div class="flex mb-10 mt-3">
-        <div @click="logoupload">
+    <Input ref="uploadInput" type="file" size="sm" class="opacity-0" @change="updateAvatar" />
+    <UForm ref="form" :schema="schema" :state="accountForm" class="w-1/3" @submit.prevent="onSubmitAccount">
+      <div class="flex items-center mb-4 mt-3">
+        <div @click="uploadInput && uploadInput.click()">
           <UAvatar
             v-if="accountForm.avatar === 'N/A'"
             alt=""
             class="ml-5"
-            size="3xl"
+            size="2xl"
           />
           <UAvatar
             v-else
-            :src="accountForm.avatar"
+            :src="accountForm.avatar || arUrl(userAvatar)"
             alt="Avatar"
             class="ml-5"
-            size="3xl"
+            size="2xl"
           />
         </div>
-        <div class="flex items-center p-3 ml-5">
+        <div class="flex items-center p-3 ml-2">
           <UFormGroup name="name" class="mb-3">
             <template #label>
               {{ $t('setting.person.name') }}
@@ -138,58 +140,9 @@ const handleUp = (event) => {
         </div>
       </div>
 
-      <!--
-      <div class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white mb-10 ml-5">{{ $t('setting.person.social') }}
-      </div>
-
-      <UFormGroup label="twitter" name="twitter" class="mb-5 pl-10">
-        <template #label>
-          {{ $t('setting.person.twitter') }}
-        </template>
-        <div class="flex items-center space-x-3">
-          <UButton v-if="connectTwitter" color="white" class="mr-5 w-[150px]" disabled>Connected Twitter</UButton>
-          <UButton v-else color="white" class="mr-20 w-[90px]" @click="gettwitter">{{ $t('twitter.link')}}</UButton>
-          <UToggle v-model="accountForm.showtwitter" />
-          <div>{{ $t('show') }}</div>
-        </div>
-      </UFormGroup>
-      <UFormGroup label="mail" name="mail" class="mb-5 pl-10">
-        <template #label>
-          {{ $t('setting.person.mail') }}
-        </template>
-        <div class="flex items-center space-x-3">
-          <UInput v-model="accountForm.mail" />
-          <UToggle v-model="accountForm.showmail" />
-          <div>{{ $t('show') }}</div>
-        </div>
-      </UFormGroup>
-      <UFormGroup label="phone" name="phone" class="mb-5 pl-10">
-        <template #label>
-          Telegram
-        </template>
-        <div class="flex items-center space-x-3">
-          <UInput v-model="accountForm.phone" />
-          <UToggle v-model="accountForm.showtelegram" />
-          <div>{{ $t('show') }}</div>
-        </div>
-      </UFormGroup>
-
-      <UFormGroup label="github" name="github" class="mb-5 pl-10">
-        <template #label>
-          Github
-        </template>
-        <div class="flex items-center space-x-3">
-          <UButton v-if="connectGithub" color="white" class="mr-5 w-[150px]" disabled>Connected Github</UButton>
-
-          <UButton v-else variant="soft" @click="auth.signInWithOAuth({ provider: 'github', options: { redirectTo } })">
-            Link to Github
-          </UButton>
-        </div>
-      </UFormGroup>
-    -->
       <div class="flex justify-center">
         <UButton type="submit" color="black" @click="saveInfo">
-          {{ $t('setting.save')}}
+          {{ $t('setting.save') }}
         </UButton>
       </div>
     </UForm>

@@ -139,7 +139,7 @@ export type InviteInfo = {
   communityId: string
   invited: string
   inviteTime: string
-  userInfo: {
+  userInfo?: {
     showtwitter: boolean
     showmail: boolean
     mail: string
@@ -161,4 +161,19 @@ export type Bounty = {
   taskName: string
   tokenNumber: number
   tokenType: string
+}
+
+/**
+ * user info from aoCommunity Process getInfo
+ */
+export type UserInfo = {
+  avatar : string
+  github : string
+  mail : string
+  name : string
+  phone : string
+  showmail : boolean
+  showphone : boolean
+  showtwitter : boolean
+  twitter : string
 }
