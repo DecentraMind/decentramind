@@ -564,9 +564,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
   //Obtaining Personal Information
   const getUser = async () => {
-    if (isLoading) return
-
-    isLoading = true
     const user = await dryrun({
       process: aoCommunityProcessID,
       tags: [
@@ -582,10 +579,10 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     // Check if you have successfully obtained the Info
     const jsonData = user.Messages[0].Data
     const jsonObjects = jsonData.match(/\{.*?\}/g)
+    console.log({user: jsonObjects})
     const infoJson = jsonObjects.map(item => JSON.parse(item))
     userInfo = infoJson
 
-    isLoading = false
     return user
   }
 

@@ -83,7 +83,7 @@ const getVouchInfo = async () => {
       <template #right>
         <!--<UButton @click="test">test</UButton>-->
         <UBadge color="white">
-          <NuxtLink :to="'/mytask'">
+          <NuxtLink :to="'/dashboard/quests'">
             <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
           </NuxtLink>
           |
