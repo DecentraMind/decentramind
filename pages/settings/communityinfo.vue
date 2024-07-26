@@ -36,12 +36,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UDashboardPanelContent class="pb-24">
-    <UCard @submit.prevent="onSubmit">
+  <UDashboardPanelContent>
+    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none'}" @submit.prevent="onSubmit">
       <template #header>
-        <div class="flex justify-between pl-5 pr-20 items-center">
-          <h3 class="text-3xl font-semibold leading-6 text-gray-900 dark:text-white">
-            {{ $t('setting.community.list') }}
+        <div class="text-xl flex items-center pl-5">
+          <h3 class="w-[420px]">
+            {{ $t('setting.community.isjoin') }}： {{ joinedCommunities.length }}
           </h3>
         </div>
       </template>
@@ -63,16 +63,6 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <UFormGroup name="new">
-        <template #label>
-          <div class="mt-20 text-xl flex items-center pl-5">
-            <Text class="w-[420px]">
-              {{ $t('setting.community.isjoin') }}： {{ joinedCommunities.length }}
-            </Text>
-          </div>
-        </template>
-      </UFormGroup>
-
     </UCard>
   </UDashboardPanelContent>
 </template>

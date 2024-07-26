@@ -131,11 +131,15 @@ function onSubmitTask () {
 </script>
 
 <template>
-  <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
-    <UCard class="pl-10 pt-10 text-xl" @submit.prevent="onSubmitTask">
-      <div class="flex items-center">
-        {{ $t('setting.task.completed')}}： {{result}}
-      </div>
+  <UDashboardPanelContent class="p-4 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
+    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none'}" @submit.prevent="onSubmitTask">
+      <template #header>
+        <div class="text-xl flex items-center pl-5">
+          <h3 class="w-[420px]">
+            {{ $t('setting.task.completed') }}： {{ result }}
+          </h3>
+        </div>
+      </template>
     </UCard>
-  </udashboardpanelcontent>
+  </UDashboardPanelContent>
 </template>

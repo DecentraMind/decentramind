@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import defaultCommunityLogo from '@/utils/defaultCommunityLogo'
+import { arUrl, communityLogo, userAvatar } from '~/utils/arAssets'
+
 const route = useRoute()
-const slug = $computed(() => route.params.slug)
 
 const selectModal = $ref(0)
 const links = $computed(() => {
@@ -122,7 +122,7 @@ onMounted(async () => {
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
             <div class="aspect-w-1 aspect-h-1">
               <img
-                :src="item.logo || defaultCommunityLogo"
+                :src="item.logo || arUrl(communityLogo)"
                 :title="item.name"
                 class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
               >
@@ -142,11 +142,11 @@ onMounted(async () => {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
-              <template v-if="userInfo.length && userInfo[0].avatar !== 'N/A'">
-                <UAvatar :src="userInfo[0].avatar" alt="Avatar" size="2xl" />
+              <template v-if="userInfo.length && userInfo[0].avatar && userInfo[0].avatar !== 'N/A'">
+                <UAvatar :src="userInfo[0].avatar" alt="User Settings" size="2xl" />
               </template>
               <template v-else>
-                <UAvatar alt=" " size="2xl" />
+                <UAvatar :src="arUrl(userAvatar)" alt="User Settings" size="2xl" />
               </template>
             </NuxtLink>
           </UPopover>
