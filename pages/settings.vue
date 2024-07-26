@@ -9,15 +9,15 @@ const links = [[{
   }, {
     label: t('setting.community'),
     icon: 'i-heroicons-user-group',
-    to: '/settings/communityinfo'
+    to: '/settings/community'
   }, {
     label: t('setting.task'),
     icon: 'eos-icons:abstract-instance-outlined',
-    to: '/settings/taskinfo'
+    to: '/settings/quest'
   }, {
     label: t('setting.invite'),
     icon: 'i-heroicons-bell',
-    to: '/settings/myinvite'
+    to: '/settings/my-invite'
   }]/*, [{
     label: 'Documentation',
     icon: 'i-heroicons-book-open',

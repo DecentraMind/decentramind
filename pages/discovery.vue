@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { replace2ARBanner } from '~/utils/arAssets'
+
 const { address, doLogout, doLogin } = $(aoStore())
 
 const { communityList, getUser: getInfo, vouch, linkTwitter, getCommunityList, joinCommunity, createToken } = $(aoCommunityStore())
@@ -113,7 +115,7 @@ const getVouchInfo = async () => {
       </div>
       <div class=" mx-auto w-full">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
-          <UBlogPost v-for="community in communityList" :key="community.uuid" :image="`/task/${community.banner}.jpg`" :description="community.decs">
+          <UBlogPost v-for="community in communityList" :key="community.uuid" :image="replace2ARBanner(community.banner)" :description="community.decs">
             <template #title>
               <div class="flex items-center">
                 <UAvatar :src="community.logo" alt="Avatar" size="md" />

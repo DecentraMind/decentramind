@@ -26,6 +26,9 @@ export function arUrl(tx: string, gateWayIndex: number = 0) {
   return gateWays[gateWayIndex] + tx
 }
 
-export function replaceBanner(banner: string) {
-  
+export function replace2ARBanner(banner: string, banners: string[] = communityBanners) {
+  const matched = banner.match(/\d+$/)
+  const bannerIndex = matched ? parseInt(matched[0]) - 6 : 0
+  console.log({banner, bannerIndex})
+  return arUrl(banners[bannerIndex])
 }

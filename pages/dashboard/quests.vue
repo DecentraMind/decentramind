@@ -61,10 +61,10 @@ const awardedSums = $computed(() => Object.values(awarded.sum))
  * 此处不需要考虑输入参数为 tokenName 的情况
  **/
 function getToken(processID: string | TokenName) {
-  console.log({tokenType: processID})
+  // console.log({tokenType: processID})
   const token = tokensByProcessID[processID] || tokens[processID]
 
-  console.log({foundToken: token})
+  // console.log({foundToken: token})
   return {
     label: token ? token.label : processID,
     denomination: token ? Math.pow(10, token.denomination) : 1e12,
