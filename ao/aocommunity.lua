@@ -72,16 +72,38 @@ end)
 
 -- Modifying Community Information
 Handlers.add("chatban", Handlers.utils.hasMatchingTag("Action", "chatban"), function(msg)
-  -- 如果 userchatban[msg.Tags.community] 不存在，则初始化为一个空表格 {}
-  print('goods')
-  print(msg.Tags.community)
-  print(msg.Tags.user)
   userchatban[msg.Tags.community] = userchatban[msg.Tags.community] or {}
 
-  -- 向 userchatban[msg.Tags.community] 表格中添加数据 msg.Tags.user
-  table.insert(userchatban[msg.Tags.community], msg.Tags.user)
+  local userExists = false
+  for _, user in ipairs(userchatban[msg.Tags.community]) do
+    if user == msg.Tags.user then
+      userExists = true
+      break
+    end
+  end
+
+  if not userExists then
+    table.insert(userchatban[msg.Tags.community], msg.Tags.user)
+    print("User " .. msg.Tags.user .. " has been added to the chat ban list for community " .. msg.Tags.community)
+  else
+    print("User " .. msg.Tags.user .. " is already in the chat ban list for community " .. msg.Tags.community)
+  end
 
   Handlers.utils.reply("chatban")(msg)
+end)
+
+-- Modifying Community Information
+Handlers.add("unchatban", Handlers.utils.hasMatchingTag("Action", "unchatban"), function(msg)
+  if userchatban[msg.Tags.community] then
+    for i, user in ipairs(userchatban[msg.Tags.community]) do
+      if user == msg.Tags.user then
+        table.remove(userchatban[msg.Tags.community], i)
+        break
+      end
+    end
+  end
+
+  Handlers.utils.reply("unchatban")(msg)
 end)
 
 -- Modifying Community Information
@@ -235,7 +257,7 @@ Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "community
   --print(usercommunity)
   -- 目标 uuid 从消息中获取，例如 msg.Tags.uuid
   local target_uuid = msg.Tags.uuid
-
+  print(target_uuid)
   -- 用于存储找到的键的表
   local matching_keys = {}
 
@@ -250,6 +272,8 @@ Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "community
         for info_key, info_value in pairs(userinfo) do
           if info_key == key then
             matching_keys[info_key] = info_value
+            print('goods')
+            print(info_value)
           end
         end
       end
@@ -443,13 +467,13 @@ Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo")
     avatar = "N/A",
     -- "data:image/jpeg;base64,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",
     name = "N/A",
-    twitter = "N/A",
-    showtwitter = true,
-    mail = "N/A",
-    showmail = true,
-    phone = "N/A",
-    showphone = true,
-    github = 'N/A'
+    -- twitter = "N/A",
+    -- showtwitter = true,
+    -- mail = "N/A",
+    -- showmail = true,
+    -- phone = "N/A",
+    -- showphone = true,
+    -- github = 'N/A'
   }
   local enjson = json.encode(jsonColum)
   if not userinfo[newColum] then
@@ -483,9 +507,9 @@ Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTe
   --end
 
   -- userinfo['-IYO-pLS_lBegYkJOq0ZkWpDwqZ5-d3jgY9rvyWKWCY'] = nil
-  for k, _ in pairs(usercommunity) do
+  for k, _ in pairs(userinfo) do
     print("---")
-    usercommunity[k] = nil
+    userinfo[k] = nil
   end
 
   -- for k, _ in pairs(userinfo) do

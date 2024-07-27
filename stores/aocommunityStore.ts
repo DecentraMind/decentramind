@@ -142,6 +142,21 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     isLoading = false
   }
 
+  const unbanChat = async (communityId: string, userAddress: string) => {
+    if (isLoading) return
+    isLoading = tryUseNuxtApp
+    await message({
+      process: aoCommunityProcessID,
+      tags: [
+        { name: 'Action', value: 'unchatban' },
+        { name: 'community', value: communityId },
+        { name: 'user', value: userAddress }
+      ],
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+    isLoading = false
+  }
+
   const getBan = async () => {
     if (isLoading) return
     isLoading = true
@@ -374,17 +389,19 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       const dataStr = result.Messages[0].Data
 
       communityUser = JSON.parse(dataStr)
-      console.log(communityUser)
-      for (let key of communityUser) {
+      let parsedCommunityUser = {}
+
+      for (const key in communityUser) {
         if (communityUser.hasOwnProperty(key)) {
           try {
-            // 解析每个键的JSON字符串
-            communityUser[key] = JSON.parse(communityUser[key])
+            parsedCommunityUser[key] = JSON.parse(communityUser[key])
           } catch (e) {
-            console.error(`Failed to parse JSON for key ${key}:`, e)
+            console.error(`Error parsing JSON for key ${key}:`, e)
+            parsedCommunityUser[key] = communityUser[key]
           }
         }
       }
+      communityUser = reactive(parsedCommunityUser)
     }
     isLoading = false
     return result
@@ -421,7 +438,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   type Community = {
-    banner: `banner${1|2|3|4|5|6|7|8|9|10}`
+    banner: `banner${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10}`
     bounty: TokenName[]
     buildnum: number
     communitytoken: CommunityToken[]
@@ -449,7 +466,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     })
 
     const json = extractResult<string>(result)
-    if(!json) return
+    if (!json) return
 
     return JSON.parse(json) as Community
   }
@@ -500,20 +517,13 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   //Modification of personal information
-  const updateUser = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone, github) => {
+  const updateUser = async (avatar, username) => {
     //if (isLoading) return
     //isLoading = true
     const personal = [
       {
         avatar: avatar,
         name: username,
-        twitter: twitter,
-        showtwitter: showtwitter,
-        mail: mail,
-        showmail: showmail,
-        phone: phone,
-        showphone: showphone,
-        github: github,
       }
     ]
     const jsonString = JSON.stringify(personal)
@@ -579,7 +589,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     // Check if you have successfully obtained the Info
     const jsonData = user.Messages[0].Data
     const jsonObjects = jsonData.match(/\{.*?\}/g)
-    console.log({user: jsonObjects})
+    console.log({ user: jsonObjects })
     const infoJson = jsonObjects.map(item => JSON.parse(item))
     userInfo = infoJson
 
@@ -615,7 +625,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
     console.log('make chat result', resultMessageID)
 
-    if(resultMessageID) {
+    if (resultMessageID) {
       return processId2
     }
   }
@@ -631,7 +641,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       })
       await sleep(5000)
       const tokenName = 'Name = "' + Name + '"  ' + 'Ticker = "' + Ticker + '"'
-      const luaCode = tokenName + '  local bint = require(".bint")(256)  local ao = require("ao")  local json = require("json")  if not Balances then Balances = { [ao.id] = tostring(bint('+ Balance + ' * 1e12)) } end  if Denomination ~= 12 then Denomination = 12 end  if not Logo then Logo = "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY" end  Handlers.add("info", Handlers.utils.hasMatchingTag("Action", "Info"), function(msg) ao.send({ Target = msg.From, Name = Name, Ticker = Ticker, Logo = Logo, Denomination = tostring(Denomination) }) end)  Handlers.add("balance", Handlers.utils.hasMatchingTag("Action", "Balance"), function(msg) local bal = "0" if (msg.Tags.Target and Balances[msg.Tags.Target]) then bal = Balances[msg.Tags.Target] elseif Balances[msg.From] then bal = Balances[msg.From] end ao.send({ Target = msg.From, Balance = bal, Ticker = Ticker, Account = msg.Tags.Target or msg.From, Data = bal }) end)  Handlers.add("balances", Handlers.utils.hasMatchingTag("Action", "Balances"), function(msg) ao.send({ Target = msg.From, Data = json.encode(Balances) }) end)  Handlers.add("transfer", Handlers.utils.hasMatchingTag("Action", "Transfer"), function(msg) assert(type(msg.Recipient) == "string", "Recipient is required!") assert(type(msg.Quantity) == "string", "Quantity is required!") assert(bint.__lt(0, bint(msg.Quantity)), "Quantity must be greater than 0") if not Balances[msg.From] then Balances[msg.From] = "0" end if not Balances[msg.Recipient] then Balances[msg.Recipient] = "0" end local qty = bint(msg.Quantity) local balance = bint(Balances[msg.From]) if bint.__le(qty, balance) then Balances[msg.From] = tostring(bint.__sub(balance, qty)) Balances[msg.Recipient] = tostring(bint.__add(Balances[msg.Recipient], qty)) if not msg.Cast then ao.send({ Target = msg.From, Action = "Debit-Notice", Recipient = msg.Recipient, Quantity = tostring(qty), Data = Colors.gray .. "You transferred " .. Colors.blue .. msg.Quantity .. Colors.gray .. " to " .. Colors.green .. msg.Recipient .. Colors.reset }) ao.send({ Target = msg.Recipient, Action = "Credit-Notice", Sender = msg.From, Quantity = tostring(qty), Data = Colors.gray .. "You received " .. Colors.blue .. msg.Quantity .. Colors.gray .. " from " .. Colors.green .. msg.Recipient .. Colors.reset }) end else ao.send({ Target = msg.From, Action = "Transfer-Error", ["Message-Id"] = msg.Id, Error = "Insufficient Balance!" }) end end)  Handlers.add("mint", Handlers.utils.hasMatchingTag("Action", "Mint"), function (msg) assert(type(msg.Quantity) == "string", "Quantity is required!") assert(bint.__lt(0, msg.Quantity), "Quantity must be greater than zero!") if not Balances[ao.id] then Balances[ao.id] = "0" end if msg.From == ao.id then Balances[msg.From] = tostring(bint.__add(Balances[Owner], msg.Quantity)) ao.send({ Target = msg.From, Data = Colors.gray .. "Successfully minted " .. Colors.blue .. msg.Quantity .. Colors.reset }) else ao.send({ Target = msg.From, Action = "Mint-Error", ["Message-Id"] = msg.Id, Error = "Only the Process Owner can mint new " .. Ticker .. " tokens!" }) end end)'
+      const luaCode = tokenName + '  local bint = require(".bint")(256)  local ao = require("ao")  local json = require("json")  if not Balances then Balances = { [ao.id] = tostring(bint(' + Balance + ' * 1e12)) } end  if Denomination ~= 12 then Denomination = 12 end  if not Logo then Logo = "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY" end  Handlers.add("info", Handlers.utils.hasMatchingTag("Action", "Info"), function(msg) ao.send({ Target = msg.From, Name = Name, Ticker = Ticker, Logo = Logo, Denomination = tostring(Denomination) }) end)  Handlers.add("balance", Handlers.utils.hasMatchingTag("Action", "Balance"), function(msg) local bal = "0" if (msg.Tags.Target and Balances[msg.Tags.Target]) then bal = Balances[msg.Tags.Target] elseif Balances[msg.From] then bal = Balances[msg.From] end ao.send({ Target = msg.From, Balance = bal, Ticker = Ticker, Account = msg.Tags.Target or msg.From, Data = bal }) end)  Handlers.add("balances", Handlers.utils.hasMatchingTag("Action", "Balances"), function(msg) ao.send({ Target = msg.From, Data = json.encode(Balances) }) end)  Handlers.add("transfer", Handlers.utils.hasMatchingTag("Action", "Transfer"), function(msg) assert(type(msg.Recipient) == "string", "Recipient is required!") assert(type(msg.Quantity) == "string", "Quantity is required!") assert(bint.__lt(0, bint(msg.Quantity)), "Quantity must be greater than 0") if not Balances[msg.From] then Balances[msg.From] = "0" end if not Balances[msg.Recipient] then Balances[msg.Recipient] = "0" end local qty = bint(msg.Quantity) local balance = bint(Balances[msg.From]) if bint.__le(qty, balance) then Balances[msg.From] = tostring(bint.__sub(balance, qty)) Balances[msg.Recipient] = tostring(bint.__add(Balances[msg.Recipient], qty)) if not msg.Cast then ao.send({ Target = msg.From, Action = "Debit-Notice", Recipient = msg.Recipient, Quantity = tostring(qty), Data = Colors.gray .. "You transferred " .. Colors.blue .. msg.Quantity .. Colors.gray .. " to " .. Colors.green .. msg.Recipient .. Colors.reset }) ao.send({ Target = msg.Recipient, Action = "Credit-Notice", Sender = msg.From, Quantity = tostring(qty), Data = Colors.gray .. "You received " .. Colors.blue .. msg.Quantity .. Colors.gray .. " from " .. Colors.green .. msg.Recipient .. Colors.reset }) end else ao.send({ Target = msg.From, Action = "Transfer-Error", ["Message-Id"] = msg.Id, Error = "Insufficient Balance!" }) end end)  Handlers.add("mint", Handlers.utils.hasMatchingTag("Action", "Mint"), function (msg) assert(type(msg.Quantity) == "string", "Quantity is required!") assert(bint.__lt(0, msg.Quantity), "Quantity must be greater than zero!") if not Balances[ao.id] then Balances[ao.id] = "0" end if msg.From == ao.id then Balances[msg.From] = tostring(bint.__add(Balances[Owner], msg.Quantity)) ao.send({ Target = msg.From, Data = Colors.gray .. "Successfully minted " .. Colors.blue .. msg.Quantity .. Colors.reset }) else ao.send({ Target = msg.From, Action = "Mint-Error", ["Message-Id"] = msg.Id, Error = "Only the Process Owner can mint new " .. Ticker .. " tokens!" }) end end)'
 
       await message({
         process: processId2,
@@ -661,6 +671,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     linkTwitter,
     vouch,
     banChat: banChat,
+    unbanChat,
     createToken,
     getBan,
     setCurrentUuid,

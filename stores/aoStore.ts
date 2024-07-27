@@ -71,7 +71,6 @@ export const aoStore = defineStore('aoStore', () => {
     }
     try {
       address = await window.arweaveWallet.getActiveAddress()
-
       const result = await message({
         process: processID,
         tags: [

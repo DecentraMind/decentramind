@@ -34,13 +34,6 @@ const saveInfo = async () => {
   await personalInfo(
     accountForm.avatar,
     accountForm.name,
-    accountForm.twitter,
-    accountForm.showtwitter,
-    accountForm.mail,
-    accountForm.showmail,
-    accountForm.phone,
-    accountForm.showtelegram,
-    accountForm.github
   )
   toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
   await getInfo()

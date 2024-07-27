@@ -163,9 +163,9 @@ const getVouchInfo = async () => {
     </div>
     <UModal v-model="linkToTwitter">
       <div class="h-[200px] flex flex-col items-center justify-center">
-        <Text class="text-2xl">No link to twitter</Text>
+        <Text class="text-2xl">Not Vouched</Text>
         <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank" rel="noopener noreferrer">
-          <UButton class="mt-10">go to link</UButton>
+          <UButton class="mt-10">Get Vouched</UButton>
         </NuxtLink>
       </div>
     </UModal>

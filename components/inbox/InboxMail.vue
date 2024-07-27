@@ -135,7 +135,7 @@ const isTextareaDisabled = computed(() => {
         <InboxListMessage :id="chatID" />
       </div>
       <div class="" ref="msgBottom"> </div>
-      <div class="-bottom-4 sticky">
+      <div class="-bottom-4 sticky mt-2">
         <form @submit.prevent="doSubmit">
           <UTextarea :disabled="isTextareaDisabled" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" placeholder="Reply to test">
             <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->

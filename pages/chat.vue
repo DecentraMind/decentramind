@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, communityUser, exitCommunity, updateCommunity, getLocalCommunity, getCommunityUser, banChat, getBan } = $(aoCommunityStore())
+const { currentUuid, communityUser, chatBanuser, exitCommunity, updateCommunity, getLocalCommunity, getCommunityUser, banChat, unbanChat, getBan } = $(aoCommunityStore())
 //let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 let communityInfo = $ref({})
 const { address } = $(aoStore())
@@ -106,6 +106,7 @@ let Leaveout = $ref(false)
 
 let exitButton = $ref(false)
 let banButton =$ref(false)
+let unbanButton =$ref(false)
 const router = useRouter()
 
 
@@ -146,8 +147,26 @@ const banSure = async() => {
   Forbid = false
   banButton = false
 }
+
+let unForbid = $ref(false)
+const OpenunBan = (index) => {
+  unbanButton = true
+  currentUser = index
+}
+const unbanSure = async() => {
+  unForbid = true
+  await unbanChat(currentUuid, currentUser)
+  unForbid = false
+  unbanButton = false
+}
+
+const isUserBanned = (userAddress) => {
+  return chatBanuser[currentUuid] && chatBanuser[currentUuid].includes(userAddress);
+}
 const test = async() => {
-  console.log(communityUser)
+  console.log('test')
+  const a = isUserBanned('8Ys7hXzLXIk4iJvaCzYSeuoCcDjXF0JBQZSRfiktwfw')
+  console.log(a)
 }
 </script>
 
@@ -281,12 +300,13 @@ const test = async() => {
     <UPage class="w-full">
       <!--<UContainer class="w-full">-->
       <UPageGrid class="w-full h-full">
-        <div class="flex xl:col-span-2 w-full h-full ml-10">
-          <div v-if="chatID" class="w-full">
+        <div class="flex col-span-2 w-full h-full ml-6">
+          <div v-if="chatID" class="w-full mr-2">
             <InboxMail :mail="chatID" class="" />
           </div>
+          <UDivider orientation="vertical" />
         </div>
-        <div class="pt-10 pr-10 pl-32">
+        <div class="pt-2 pr-10 pl-2"> 
           <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="Object.keys(communityUser).length">
             <template #title>
               <Text class="text-3xl">
@@ -294,35 +314,46 @@ const test = async() => {
               </Text>
             </template>
           </UDashboardNavbar>
-          <ULandingCard class="">
+          <div class="pt-2 pl-2">
             <div v-for="(user, index) in communityUser" :key="index" class="flex items-center justify-between pr-20">
               <div class="flex items-center">
                 <div class="mr-3">
-                  <UAvatar v-if="user.avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
-                  <UAvatar v-else size="lg" :src="user.avatar"/>
+                  <UAvatar v-if="user[0].avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
+                  <UAvatar v-else size="lg" :src="user[0].avatar"/>
                 </div>
                 <div class="flex text-2xl">
-                  <div v-if="user.name == 'N/A'" class="text-center">User</div>
-                  <div v-else class="text-center">{{ user.name }}</div>
+                  <div v-if="user[0].name == 'N/A'" class="text-center">User</div>
+                  <div v-else class="text-center">{{ user[0].name }}</div>
                 </div>
               </div>
               <UButton
-                v-if="communityInfo.creater === address"
+                v-if="communityInfo.creater === address && !isUserBanned(index)"
                 color="gray"
                 variant="solid"
                 @click="OpenBan(index)"
-              >mute</UButton>
+              >
+                mute
+              </UButton>
+              <UButton
+                v-else-if="communityInfo.creater === address && isUserBanned(index)"
+                color="gray"
+                variant="solid"
+                @click="OpenunBan(index)"
+              >
+                unmute
+              </UButton>
             </div>
             <!--<UButton @click="test">test</UButton>-->
-          </ULandingCard>
+          </div>
         </div>
       </UPageGrid>
       <!--</UContainer>-->
     </UPage>
+
     <UModal v-model="exitButton" :ui="{ width: w-full }">
       <UCard class="min-w-[300px] flex justify-center">
         <div class="w-full flex justify-center text-2xl">
-          Sure to exit
+          Sure to Exit
         </div>
         <div v-if="!Leaveout" class="w-full flex space-x-10 mt-6">
           <UButton @click="exitButton = false">No</UButton>
@@ -337,7 +368,7 @@ const test = async() => {
     <UModal v-model="banButton" :ui="{ width: w-full }">
       <UCard class="min-w-[300px] flex justify-center">
         <div class="w-full flex justify-center text-2xl">
-          Sure to Forbid?
+          Sure to Mute?
         </div>
         <div v-if="!Forbid" class="w-full flex space-x-10 mt-6 justify-between">
           <UButton
@@ -354,6 +385,30 @@ const test = async() => {
         </div>
         <div v-else class="h-[80px] flex flex-col items-center justify-center">
           <Text>Forbid...</Text>
+          <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        </div>
+      </UCard>
+    </UModal>
+    <UModal v-model="unbanButton" :ui="{ width: w-full }">
+      <UCard class="min-w-[300px] flex justify-center">
+        <div class="w-full flex justify-center text-2xl">
+          Sure to unMute?
+        </div>
+        <div v-if="!unForbid" class="w-full flex space-x-10 mt-6 justify-between">
+          <UButton
+            variant="outline"
+            @click="exitButton = false">
+            No
+          </UButton>
+          <UButton
+            variant="outline"
+            @click="unbanSure"
+          >
+            Yes
+          </UButton>
+        </div>
+        <div v-else class="h-[80px] flex flex-col items-center justify-center">
+          <Text>unForbid...</Text>
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>
