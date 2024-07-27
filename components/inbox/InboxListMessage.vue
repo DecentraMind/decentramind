@@ -58,7 +58,7 @@ const getUserName = (from) => {
 
 const getUserAvatar = (from) => {
   const user = communityUser[from]
-  return user && user.length > 0 ? user[0].avatar : '/community/chatavatar.jpg'
+  return user && user.length > 0 ? user[0].avatar : ''
 }
 //const makecommunityChat = $(aoCommunityStore())
 
@@ -76,7 +76,7 @@ const getUserAvatar = (from) => {
     -->
     <div v-for="item in items" :key="item.id" class="flex gap-2.5 items-start" :class="isSelf(item) ? 'flex-row-reverse' : ''">
       <!--<DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />-->
-      <UAvatar :src="getUserAvatar(item.From)" alt="Avatar" size="2xl" />
+      <UAvatar :src="getUserAvatar(item.From)" alt="" size="2xl" />
 
 
       <div class="flex flex-col w-full max-w-[400px]">
