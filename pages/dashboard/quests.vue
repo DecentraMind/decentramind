@@ -161,7 +161,7 @@ let isAwardedBountyModalOpen = $ref(false)
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           />
           <div class="flex justify-between px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
-            <UButton color="white" @click="isAwardedBountyModalOpen=true">Bounty</UButton>
+            <UButton color="white" @click="isAwardedBountyModalOpen=true">Total Bounty</UButton>
             <UPagination v-model="page" :page-count="pageCount" :total="awardedBounties.length" />
           </div>
         </UCard>
