@@ -20,7 +20,7 @@ const isSettingModalOpen = $ref(false)
 let tasks = $ref<Array<Task & {reward: string}>>([])
 
 let postQuestLoading = $ref(false)
-const items = [
+const tabItems = [
   {
     label: t('Public Quests'),
     content: '',
@@ -33,7 +33,7 @@ const items = [
 let isCreateTaskModalOpen = $ref(false)
 
 function onChange(index: number) {
-  const item = items[index]
+  const item = tabItems[index]
   // console.log(item)
   if (item.label === 'Private Quests') {
     alert('Being Cooked!')
@@ -211,7 +211,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     await createTask(transData)
     isCreateTaskModalOpen = false
   } catch (e) {
-    showError('Failed to create task.' + ((e as unknown as Error).message || ''))
+    if (e instanceof Error) {
+      if ((e as unknown as Error).message.includes('Insufficient Balance')) {
+        showError('Balance Error!')
+        return
+      }
+      showError('Failed to create task.' + ((e as unknown as Error).message || ''))
+    }
     console.error('create task error', e)
   }
 
@@ -239,6 +245,7 @@ let community = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 
 let isCommunityOwner = $ref(false)
 
+let isLoading = $ref(true)
 onMounted(async () => {
   setCurrentUuid(communityId)
 
@@ -272,6 +279,8 @@ onMounted(async () => {
     t.status = await checkSubmit(allTaskSubmitInfo, t.taskId, address) ? 'Y' : 'N'
     t.buildNumber = await countSubmitOfTask(allTaskSubmitInfo, t.taskId)
   }
+
+  isLoading = false
 })
 
 const banners = [
@@ -376,6 +385,10 @@ const formattedTwitterLink = (twitter: string) => {
   return twitter
 }
 
+const shortedWebsite = $computed(() => {
+  return community?.website.replace(/^https?:\/\//, '')
+    .replace(/\/.*$/, '')
+})
 </script>
 <template>
   <UDashboardLayout :ui="{wrapper: 'w-full static'}">
@@ -383,7 +396,7 @@ const formattedTwitterLink = (twitter: string) => {
       <UDashboardSidebar v-if="community">
         <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
         <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
-        <div class="pt-8">
+        <div class="pt-6">
           <div class="flex justify-between  my-3 items-center">
             <div class="text-3xl">{{ community.name }}</div>
             <div>
@@ -397,11 +410,10 @@ const formattedTwitterLink = (twitter: string) => {
 
           <div v-if="community.website" class="flex justify-between my-3 mt-5 items-center">
             <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
-            <div>
-              <div class="flex justify-center border rounded-lg w-full pl-2 pr-2">
-                {{ community.website }}
-              </div>
-            </div>
+
+            <UButton variant="link" class="text-right border rounded-lg max-w-[60%] overflow-hidden pl-2 pr-2 text-nowrap" :title="community.website" style="direction: rtl;">
+              <a :href="community.website" _target="_blank">{{ shortedWebsite }}</a>
+            </UButton>
           </div>
 
           <div v-if="community.twitter" class="flex justify-between my-3 items-center">
@@ -416,6 +428,23 @@ const formattedTwitterLink = (twitter: string) => {
                 <UButton variant="link">
                   <UIcon name="ri:twitter-fill" class="h-full w-full " />
                   Twitter
+                </UButton>
+              </ULink>
+            </div>
+          </div>
+
+          <div v-if="community.github" class="flex justify-between my-3 items-center">
+            <div>{{ $t('GithubOfCommunityDetail') }}</div>
+            <div>
+              <ULink
+                :to="formattedTwitterLink(community.github)"
+                active-class="text-primary"
+                target="_blank"
+                inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                <UButton variant="link">
+                  <UIcon name="ri:github-line" class="h-full w-full " />
+                  Github
                 </UButton>
               </ULink>
             </div>
@@ -447,24 +476,7 @@ const formattedTwitterLink = (twitter: string) => {
             </div>
           </div>
 
-          <div v-if="community.github" class="flex justify-between my-3 items-center">
-            <div>{{ $t('GithubOfCommunityDetail') }}</div>
-            <div>
-              <ULink
-                :to="formattedTwitterLink(community.github)"
-                active-class="text-primary"
-                target="_blank"
-                inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                <UButton variant="link">
-                  <UIcon name="ri:github-line" class="h-full w-full " />
-                  Github
-                </UButton>
-              </ULink>
-            </div>
-          </div>
-
-          <div class="flex justify-between my-3 items-center">
+          <div class="flex justify-between my-3 pr-3 items-center">
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
             <div>{{ community.buildnum }}</div>
           </div>
@@ -488,18 +500,18 @@ const formattedTwitterLink = (twitter: string) => {
         <!--        @update:links="(colors) => (defaultColors = colors)" />-->
 
         <div class="flex-1" />
-        <div v-if="community.creater == address" class="flex">
-          <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="isSettingModalOpen = true" />
+        <div v-if="community.creater == address" class="text-right">
+          <UButton size="lg" variant="ghost" icon="quill:cog-alt" @click="isSettingModalOpen = true" />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60]">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
-          <Button class="center-text border rounded-lg w-full">Invite people</Button>
+          <Button class="center-text border rounded-lg w-full h-8">Invite People</Button>
           <template #panel>
-            <div class="p-4 ">
+            <div class="p-4 w-96">
               <div>Invite URL: </div>
               <div class="flex items-center">
-                <p ref="textToCopy">
-                  decentramind.club/invite/{{ communityId }}&{{ address }}
+                <p ref="textToCopy" class="break-all mr-2">
+                  https://decentramind.club/invite/{{ communityId }}&{{ address }}
                 </p>
                 <UButton icon="carbon:align-box-bottom-right" variant="ghost" @click="copyText" />
               </div>
@@ -507,10 +519,10 @@ const formattedTwitterLink = (twitter: string) => {
           </template>
         </UPopover>
         <NuxtLink :to="`/community/${community.uuid}`">
-          <Button class="center-text border rounded-lg bg-black text-white w-full">Quests Home</Button>
+          <Button class="center-text border rounded-lg bg-black text-white w-full h-8">Quests Home</Button>
         </NuxtLink>
         <NuxtLink :to="`/chat/${community.communitychatid}`">
-          <Button class="center-text border rounded-lg w-full">Chatroom</Button>
+          <Button class="center-text border rounded-lg w-full h-8">Chatroom</Button>
         </NuxtLink>
         <!--<UDashboardSidebarLinks :links="footerLinks" />-->
 
@@ -524,38 +536,34 @@ const formattedTwitterLink = (twitter: string) => {
     </UDashboardPanel>
 
     <UDashboardPage>
-      <UPage class="overflow-y-auto h-full w-full">
-        <div v-if="community" class=" flex flex-col mx-10 pt-10 items-center h-full">
-          <div class="flex w-full justify-between mb-4">
-            <div>
-              <UTabs :items="items" @change="onChange" />
-            </div>
-            <div class="flex">
-              <div>
-                <!-- <UButton color="white" label="teest" trailing-icon="i-heroicons-chevron-down-20-solid" @click="testAO"/> -->
-                <UDropdown :items="taskTypes" v-if="community.creater == address" :popper="{ placement: 'bottom-start' }" >
-                  <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
-                </UDropdown>
-              </div>
-            </div>
+      <UPage class="bg-grid overflow-y-auto h-full w-full">
+        <div class="relative flex flex-col mx-10 pt-10 items-center h-full">
+          <div class="flex w-full justify-between items-center mb-6">
+            <UTabs :items="tabItems" :ui="{wrapper: 'space-y-0'}" @change="onChange" />
+            <UDropdown v-if="community && community.creater == address" :items="taskTypes" :popper="{ placement: 'bottom-start' }" :ui="{wrapper: 'h-8'}">
+              <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+            </UDropdown>
           </div>
-          <div v-if="!tasks.length" class="h-full w-full flex justify-center items-center">
-            <div v-if="!tasks.length" class="w-2/3">
-              <Card highlight orientation="vertical">
-                <div class="flex justify-center items-center text-center whitespace-pre-line">
-                  <div class="text-xl">
-                    {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
-                  </div>
+
+          <div v-if="!tasks.length && !isLoading" class="h-[calc(100%-var(--header-height))-40px] w-2/3 flex justify-center items-center">
+            <Card highlight orientation="vertical">
+              <div class="flex justify-center items-center text-center whitespace-pre-line">
+                <div class="text-xl">
+                  {{ isCommunityOwner ? $t('Nothing here,\nclick to start your first public quest.') : 'Nothing here, \nthe quests will coming soon.' }}
                 </div>
-                <div class="flex mt-10 justify-center items-center">
-                  <div v-if="community.creater == address" class="flex justify-center items-center" >
-                    <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
-                      <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
-                    </UDropdown>
-                  </div>
+              </div>
+              <div class="flex mt-10 justify-center items-center">
+                <div v-if="community.creater == address" class="flex justify-center items-center">
+                  <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
+                    <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
+                  </UDropdown>
                 </div>
-              </Card>
-            </div>
+              </div>
+            </Card>
+          </div>
+
+          <div v-if="isLoading" class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center">
+            <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
           </div>
 
           <div v-if="tasks.length" class="mx-auto w-full">
@@ -566,6 +574,15 @@ const formattedTwitterLink = (twitter: string) => {
                 :image="`/task/${task.taskLogo}.jpg`"
                 :description="task.taskInfo"
                 class="relative"
+                :to="`/quest/${task.taskId}`"
+                :ui="{
+                  wrapper: 'bg-white gap-y-0 ring-1 ring-gray-100 hover:ring-gray-200 rounded-lg overflow-hidden cursor-pointer',
+                  container: 'group-hover:bg-dot py-4',
+                  inner: 'flex-1 px-4 overflow-hidden',
+                  image: {
+                    wrapper: 'ring-0 rounded-none'
+                  }
+                }"
               >
                 <template #title>
                   <div class="flex justify-between">

@@ -135,26 +135,26 @@ export const taskStore = defineStore('taskStore', () => {
       })
       if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
         respArray = []
-        return ''
+        return []
       }
+
       const resp = JSON.parse(res.Messages[0].Data)
       allInviteInfo = []
 
       for (let index = 0; index < resp.length; index++) {
         // console.log('resp[index] = ' + JSON.parse(resp[index]).invited)
         const element = JSON.parse(resp[index]) as InviteInfo
-        if(element.invited === 'none'){
+        if (element.invited === 'none') {
           continue
         }
 
-        console.log({inviteInfo: element})
         allInviteInfo.push(element)
       }
 
       return allInviteInfo
-
     } catch (error){
-      console.log(error)
+      console.error(error)
+      throw Error('getAllInviteInfo failed:' + error)
     }
   }
 
@@ -228,24 +228,19 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   const getAllTasksNoCommunity = async () => {
-    let res
-    try {
-      res = await dryrun({
-        process: tasksProcessID,
-        tags: [{ name: 'Action', value: 'GetAllTasks' }],
-      })
-    } catch (error) {
-      alertMessage(error)
-      return ''
-    }
+    const res = await dryrun({
+      process: tasksProcessID,
+      tags: [{ name: 'Action', value: 'GetAllTasks' }],
+    })
+
     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
       respArray = []
       return ''
     }
     let resp = res.Messages[0].Data.split(';')
+
     allTasks = []
     for (let index = 0; index < resp.length; index++) {
-
       let element = JSON.parse(resp[index])
       // console.log('communityId = ' + element.communityId)
       // console.log('trans communityId = ' + communityId)
@@ -285,14 +280,7 @@ export const taskStore = defineStore('taskStore', () => {
         processId: element.processId
       }
       allTasks.push(respData)
-
     }
-    // console.log("respArray = " + respArray)
-    // for (let index = 0; index < respArray.length; index++) {
-    //     const e = respArray[index];
-    //     console.log(e.id)
-    // }
-    showSuccess('Get all tasks success')
   }
 
   const getTask = async (taskID: string) => {
@@ -300,21 +288,14 @@ export const taskStore = defineStore('taskStore', () => {
       throw new Error('taskID is required to get task info')
     }
 
-    let res
-    try {
-      res = await dryrun({
-        process: tasksProcessID,
-        tags: [{ name: 'Action', value: 'GetAllTasks' }],
-      })
-    } catch (error) {
-      console.error('getTask error:', error)
-      alertMessage(error)
-      return
-    }
+    const res = await dryrun({
+      process: tasksProcessID,
+      tags: [{ name: 'Action', value: 'GetAllTasks' }],
+    })
 
     console.log(`getTask ${taskID} res:`, res)
     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
-      return
+      throw new Error('Failed to get data from dryrun result.')
     }
     const resp = res.Messages[0].Data.split(';')
 
@@ -344,8 +325,7 @@ export const taskStore = defineStore('taskStore', () => {
       }
     }
 
-    console.error('Not found this task')
-    return
+    throw new Error('Not found task ' + taskID)
   }
 
   // TODO replace this with getTask

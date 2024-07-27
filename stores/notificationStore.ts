@@ -8,11 +8,15 @@ export const notificationStore = defineStore('notificationStore', () => {
     toast.add({ title: 'succeed', description, icon: 'i-heroicons-check-circle', color: 'green' })
   }
 
+  const showMessage = (message: string) => {
+    toast.add({ title: message, icon: 'i-heroicons-check-circle' })
+  }
+
   const alertMessage = (description: string) => {
     alert(description)
   }
 
-  return $$({ showError, showSuccess, alertMessage })
+  return $$({ showError, showSuccess, alertMessage, showMessage })
 })
 
 if (import.meta.hot)

@@ -1,96 +1,27 @@
 <script setup lang="ts">
+import type { UserInfo } from '~/types'
 import { arUrl, communityLogo, userAvatar } from '~/utils/arAssets'
 
-const route = useRoute()
+const router = useRouter()
 
 const selectModal = $ref(0)
-const links = $computed(() => {
-  return [
-    {
-      id: 'home',
-      label: 'Home',
-      icon: 'i-heroicons-home',
-      to: '/',
-      tooltip: {
-        text: 'Home',
-        shortcuts: ['G', 'H'],
-      },
-    },
-    {
-      id: 'tasks',
-      label: 'Tasks',
-      icon: 'i-arcticons-x-twitter',
-      to: '/tasks',
-      badge: '4',
-      tooltip: {
-        text: 'Inbox',
-        shortcuts: ['G', 'I'],
-      },
-    },
-    {
-      id: 'inbox',
-      label: 'Inbox',
-      icon: 'i-heroicons-inbox',
-      to: '/inbox',
-      badge: '4',
-      tooltip: {
-        text: 'Inbox',
-        shortcuts: ['G', 'I'],
-      },
-    },
-    {
-      id: 'users',
-      label: 'Users',
-      icon: 'i-heroicons-user-group',
-      to: '/users',
-      tooltip: {
-        text: 'Users',
-        shortcuts: ['G', 'U'],
-      },
-    },
-    {
-      id: 'community-discovery',
-      label: 'Cmmunity-discovery',
-      icon: 'i-heroicons-user-group',
-      to: '/discovery',
-      tooltip: {
-        text: 'Community-discovery',
-        shortcuts: ['G', 'U'],
-      },
-    },
-  ]
-})
 
-const groups = [
-  {
-    key: 'links',
-    label: 'Go to',
-    commands: links.map((link) => ({ ...link, shortcuts: link.tooltip?.shortcuts })),
-  },
-  {
-    key: 'code',
-    label: 'Code',
-    commands: [
-      {
-        id: 'source',
-        label: 'View page source',
-        icon: 'i-simple-icons-github',
-        click: () => {
-          window.open(`https://github.com/nuxt-ui-pro/dashboard/blob/main/pages${route.path === '/' ? '/index' : route.path}.vue`, '_blank')
-        },
-      },
-    ],
-  },
-]
-
-const { userInfo, joinedCommunities, getBan, getUser } = $(aoCommunityStore())
+const { address } = $(aoStore())
+const { joinedCommunities, getBan, getUserByAddress } = $(aoCommunityStore())
 
 const isCreateModalOpen = $ref(false)
 
+let user = $ref<UserInfo>()
+let isLoading = $ref(true)
 onMounted(async () => {
   try {
+    if (!address) {
+      router.push('/')
+      return
+    }
     getBan()
-    await getUser()
+    user = await getUserByAddress(address)
+    isLoading = false
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -114,17 +45,17 @@ onMounted(async () => {
 
         <div class="overflow-y-auto h-full" style="-ms-overflow-style: none; scrollbar-width: none;">
           <NuxtLink
-            v-for="item in joinedCommunities"
-            :key="item.uuid"
-            :to="`/community/${item.uuid}`"
-            class="w-full block mt-2"
+            v-for="community in joinedCommunities"
+            :key="community.uuid"
+            :to="`/community/${community.uuid}`"
+            class="w-full block mt-2 rounded-lg border border-gray-100 overflow-hidden"
           >
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
             <div class="aspect-w-1 aspect-h-1">
               <img
-                :src="item.logo || arUrl(communityLogo)"
-                :title="item.name"
-                class="w-full h-full object-cover rounded-lg transition duration-300 ease-in-out transform hover:brightness-75"
+                :src="community.logo || arUrl(communityLogo)"
+                :title="community.name"
+                class="w-full h-full object-cover transition duration-300 ease-in-out transform hover:brightness-75"
               >
             </div>
           </NuxtLink>
@@ -142,11 +73,13 @@ onMounted(async () => {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
-              <template v-if="userInfo.length && userInfo[0].avatar && userInfo[0].avatar !== 'N/A'">
-                <UAvatar :src="userInfo[0].avatar" alt="User Settings" size="2xl" />
+              <template v-if="isLoading || !user">
+                <UAvatar
+                  size="2xl"
+                />
               </template>
               <template v-else>
-                <UAvatar :src="arUrl(userAvatar)" alt="User Settings" size="2xl" />
+                <UAvatar :src="user.avatar || arUrl(userAvatar)" alt="User Settings" size="2xl" />
               </template>
             </NuxtLink>
           </UPopover>
@@ -155,15 +88,6 @@ onMounted(async () => {
     </UDashboardPanel>
 
     <slot />
-
-    <!-- ~/components/HelpSlideover.vue -->
-    <HelpSlideover />
-    <!-- ~/components/NotificationsSlideover.vue -->
-    <NotificationsSlideover />
-
-    <ClientOnly>
-      <LazyUDashboardSearch :groups="groups" />
-    </ClientOnly>
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: w-full }">
       <UCard>
@@ -175,5 +99,9 @@ onMounted(async () => {
         <TokenCreate v-if="selectModal === 2" />
       </UCard>
     </UModal>
+    <!-- ~/components/HelpSlideover.vue -->
+    <HelpSlideover />
+    <!-- ~/components/NotificationsSlideover.vue -->
+    <NotificationsSlideover />
   </UDashboardLayout>
 </template>

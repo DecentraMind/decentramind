@@ -32,7 +32,7 @@ onMounted( async () => {
   bounties = await getAllBounty()
   let cori = []
   let dori = []
-  console.log('bounties = ' + bounties)
+
   for(let i = 0; i < bounties.length; ++i){
     const tt = bounties[i]
     if(address === tt.send){

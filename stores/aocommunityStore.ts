@@ -5,7 +5,7 @@ import {
   dryrun,
   result
 } from '@permaweb/aoconnect'
-import type { CommunitySetting, TradePlatform } from '~/types'
+import type { CommunitySetting, TradePlatform, UserInfo } from '~/types'
 import type { TokenName, CommunityToken, TokenSupply } from '~/utils/constants'
 import { createUuid, sleep, retry } from '~/utils/util'
 import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
@@ -20,7 +20,7 @@ export type CommunityListItem = {
   twitter: string
   whitebook: string
   github: string
-  /** how many user joined this community */
+  /** how many user joined in this community */
   buildnum: string
   bounty: TokenName[]
   ispublished: boolean
@@ -45,7 +45,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   const { address } = $(aoStore())
   let linkTwitter = $ref(false)
   let communityList = $ref<CommunityList>([])
-  let userInfo = $ref({})
+  let userInfo = $ref<UserInfo[]>()
   let communityUser = $ref({})
   let joinedCommunities = $ref<CommunityList>({})
   let chatBanuser = $ref({})
@@ -574,6 +574,12 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
   //Obtaining Personal Information
   const getUser = async () => {
+    userInfo = [await getUserByAddress(address)]
+
+    return userInfo
+  }
+
+  const getUserByAddress = async (address: string) => {
     const user = await dryrun({
       process: aoCommunityProcessID,
       tags: [
@@ -582,18 +588,18 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       ]
     })
 
-    if (!user.Messages) {
-      console.error('get user info failed', user)
+    if (!user.Messages || !user.Messages.length) {
+      console.error('get user error:', user.Error, address)
+      throw new Error('Get user info failed.')
     }
 
-    // Check if you have successfully obtained the Info
-    const jsonData = user.Messages[0].Data
-    const jsonObjects = jsonData.match(/\{.*?\}/g)
-    console.log({ user: jsonObjects })
-    const infoJson = jsonObjects.map(item => JSON.parse(item))
-    userInfo = infoJson
+    const userInfos = JSON.parse(user.Messages[0].Data) as UserInfo[]
+    if (!userInfos.length) {
+      throw new Error('Get user info failed.')
+    }
 
-    return user
+    console.log({userInfos, address})
+    return userInfos[0]
   }
 
   //Create a community chat room
@@ -687,6 +693,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     personalInfo: updateUser,
     personalGithub,
     getUser,
+    getUserByAddress,
     getCommunityUser,
     getJoinedCommunities,
     getCommunity

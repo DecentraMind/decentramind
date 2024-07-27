@@ -1,7 +1,9 @@
 import { skipHydrate } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
 
-export const lsItemRef = (key, defaultVal) => skipHydrate(useLocalStorage(key, defaultVal))
+/** hydrate skipped value cached in localStorage */
+export const lsItemRef = <T>(key: string, defaultVal: T) => skipHydrate(useLocalStorage<T>(key, defaultVal))
+
 export const setLsItem = (key: string | any, val = '') => {
   if (typeof window === 'undefined')
     return false
