@@ -247,6 +247,9 @@ let isCommunityOwner = $ref(false)
 
 let isLoading = $ref(true)
 onMounted(async () => {
+  if (!address) {
+    router.push('/')
+  }
   setCurrentUuid(communityId)
 
   try {

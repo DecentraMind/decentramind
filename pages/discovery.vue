@@ -20,6 +20,10 @@ const sortedCommunities = $computed(() => {
 })
 
 onMounted(async () => {
+  if (!address) {
+    router.push('/')
+  }
+  getVouchInfo()
   try {
     await Promise.all([getCommunityList(), getVouchInfo()])
     communityLoading = false

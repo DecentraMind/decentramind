@@ -52,6 +52,9 @@ let communityuser = $ref({})
 let chatID = $ref<string | string[] | null>(null)
 
 onMounted( () => {
+  if (!address) {
+    router.push('/')
+  }
   if (!route.params.pid) return
   chatID = route.params.pid
 })

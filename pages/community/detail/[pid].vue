@@ -2,8 +2,9 @@
 import {tokenProcessIDs} from '~/utils/constants'
 import { shortString } from '~/utils/util'
 const { getLocalCommunity } = $(aoCommunityStore())
-
+const { address } = $(aoStore())
 const { t } = useI18n()
+const router = useRouter()
 
 const columns = [{
   key: 'name',
@@ -45,6 +46,9 @@ type Bounty = {
 const { getBountiesByCommunityID } = $(taskStore())
 let rankings = $ref<Rank[]>()
 onMounted( async () => {
+  if (!address) {
+    router.push('/')
+  }
   try {
     const bounties = await getBountiesByCommunityID(communityID) as Bounty[]
     console.log({bounties})
