@@ -40,6 +40,8 @@ export const aoStore = defineStore('aoStore', () => {
   /** current connected address */
   let address = $(lsItemRef<string>('address', ''))
 
+  let isLoginModalOpen = $ref(false)
+
   const tokenBalances = $ref({
     //CRED: 0,
     AOCOIN: 0,
@@ -272,7 +274,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance })
+  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance, isLoginModalOpen })
 })
 
 if (import.meta.hot)

@@ -1,76 +1,55 @@
 <script setup lang="ts">
-// const { data: navigation } = await useAsyncData('navigation', () => fetchContentNavigation(), { default: () => [] })
-
-// provide('navigation', navigation)
-
-const { doLogin, othentLogin } = $(aoStore())
+const { doLogin, othentLogin, isLoginModalOpen } = $(aoStore())
 
 const router = useRouter()
-const isLoading = ref(false)
+let isLoading = $ref(false)
+let loginLoading = $ref(false)
 
-const handleButtonClick = async () => {
-  isLoading.value = true
+const onClickArConnect = async () => {
+  isLoading = true
   loginLoading = true
   try {
     const result = await doLogin()
     if (result) {
-      loginLoading = false
       router.push('/discovery')
     } else {
-      loginLoading = false
       console.log('User did not connect the wallet, not navigating to /signup')
     }
   } catch (error) {
-    loginLoading = false
     console.error('Error during async operation', error)
     alert('Please connect your Arweave Wallet to continue')
   } finally {
     loginLoading = false
-    isLoading.value = false
+    isLoading = false
   }
 }
 
-const othent = async () => {
+const onClickOthent = async () => {
+  loginLoading = true
   try {
-    loginLoading = true
     const result = await othentLogin()
     if (result) {
-      loginLoading = false
       router.push('/discovery')
     } else {
-      loginLoading = false
       console.log('User did not connect the wallet, not navigating to /signup')
     }
   } catch (error) {
-    loginLoading = false
     console.error(error)
   }
+  loginLoading = false
 }
-
-const loginModal = $ref(false)
-let loginLoading = $ref(false)
 </script>
 
 <template>
   <div>
     <Header />
 
-    <UMain>
-      <!--<slot />-->
-      <div class="flex flex-col h-screen items-center gap-4 justify-center">
-        <UColorModeImage src="DMLogo.png" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-[600px] mb-6" />
-        <div class="text-7xl font-bold text-center">Start your real community journey</div>
-        <div class="mt-3 mb-6" text-3xl>Try a better way than airdrop to build your community.</div>
-        <UButton size="xl" color="black" @click="loginModal = true">
-          Open to Build
-          <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
-        </UButton>
-      </div>
-    </UMain>
-    <UModal v-model="loginModal">
+    <slot />
+
+    <UModal v-model="isLoginModalOpen">
       <UCard class="h-[200px] flex items-center justify-center">
         <div v-if="!loginLoading" class="flex justify-center space-x-3">
-          <UButton color="white" class="w-[120px]" @click="handleButtonClick">
+          <UButton color="white" class="w-[120px]" @click="onClickArConnect">
             <template #leading>
               <UAvatar
                 src="wallet/arconnect.svg"
@@ -80,7 +59,7 @@ let loginLoading = $ref(false)
             ArConnect
           </UButton>
           <ClientOnly fallback-tag="span" fallback="Loading comments...">
-            <UButton color="white" class="w-[120px]" @click="othent">
+            <UButton color="white" class="w-[120px]" @click="onClickOthent">
               <template #leading>
                 <UIcon
                   name="logos:google-icon"
@@ -96,6 +75,5 @@ let loginLoading = $ref(false)
         </div>
       </UCard>
     </UModal>
-    <Footer />
   </div>
 </template>
