@@ -7,12 +7,12 @@ const router = useRouter()
 const selectModal = $ref(0)
 
 const { address } = $(aoStore())
-const { joinedCommunities, getBan, getUserByAddress } = $(aoCommunityStore())
+const { joinedCommunities, getBan, getUserByAddress, getCommunityList } = $(aoCommunityStore())
 
 const isCreateModalOpen = $ref(false)
 
 let user = $ref<UserInfo>()
-let isLoading = $ref(true)
+
 onMounted(async () => {
   try {
     if (!address) {
@@ -21,12 +21,12 @@ onMounted(async () => {
     }
     getBan()
     user = await getUserByAddress(address)
-    isLoading = false
+    // this will fetch all communities, ans set joinedCommunities if address is not ''
+    getCommunityList()
   } catch (error) {
     console.error('Error fetching data:', error)
   }
 })
-
 </script>
 
 <template>
@@ -73,7 +73,7 @@ onMounted(async () => {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
-              <template v-if="isLoading || !user">
+              <template v-if="!user">
                 <UAvatar
                   size="2xl"
                 />
