@@ -180,21 +180,17 @@ export type Task = {
 }
 
 export type InviteInfo = {
+  /** inviter address */
   userId: string
   communityId: string
+  /** invitee address */
   invited: string
   inviteTime: string
+  /** invitee's user info */
   userInfo?: {
-    showtwitter: boolean
-    showmail: boolean
-    mail: string
     avatar: string
-    showphone: boolean
     name: string
-    twitter: string
-    phone: string
-    github: string
-  }
+  }[]
 }
 
 export type Bounty = {

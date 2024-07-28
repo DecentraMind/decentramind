@@ -2,10 +2,12 @@
 import {taskStore} from '~/stores/taskStore'
 import type { InviteInfo } from '~/types'
 import { arUrl, userAvatar, communityLogo } from '~/utils/arAssets'
+import { shortString } from '~/utils/util'
 
 const { getLocalCommunity } = $(aoCommunityStore())
 const { getAllInviteInfo } = $(taskStore())
 const { address } = $(aoStore())
+const { showError } = $(notificationStore())
 
 
 const taskForm = $ref({
@@ -24,68 +26,67 @@ const communities = $ref<{
   logo: string
   name: string
 }[]>([])
-let invites = $ref<InviteInfo[]>([])
+
+let isDetailModalOpen = $ref(false)
+/** invites data of a community for detail modal */
+let inviteDetails = $ref<InviteInfo[]>([])
+
 const invitedByMe  = $ref<Record<string, InviteInfo[]>>({})
 
 let allInviteInfo = $ref<InviteInfo[]>([])
 onMounted( async () => {
   try {
     allInviteInfo = await getAllInviteInfo()
-    loading = false
   } catch (error) {
+    const message = error instanceof Error ? error.message : error
+    showError('Error fetching data:' + message)
     loading = false
-    console.error('Error fetching data:', error)
+    return
   }
 
   // console.log('allInviteInfo = ' + JSON.stringify(allInviteInfo))
 
-  for (const invite of allInviteInfo) {
-    if(invite.invited === address || invite.userId === 'none'){
+  const communityIDs = []
+  for (const inviteInfo of allInviteInfo) {
+    if(inviteInfo.userId !== address || inviteInfo.invited === address || inviteInfo.userId === 'none'){
       continue
     }
-    if(!invitedByMe[invite.communityId]){
-      invitedByMe[invite.communityId] = []
+    const { communityId } = inviteInfo
+    if(!invitedByMe[communityId]){
+      invitedByMe[communityId] = []
     }
-    invitedByMe[invite.communityId].push(invite)
+    invitedByMe[communityId].push(inviteInfo)
+    communityIDs.push(communityId)
   }
   console.log({invitedByMe})
 
-  const communityIDs = Array.from(allInviteInfo.reduce((uniqueIDs, invite) => {
-    if (!uniqueIDs.has(invite.communityId)) {
-      uniqueIDs.add(invite.communityId)
-    }
-    return uniqueIDs
-  }, new Set<string>))
   console.log('communityIDs = ', communityIDs)
 
   for (const communityID of communityIDs) {
-    const temp = await getLocalCommunity(communityID)
-    if(temp){
-      const community = {
-        uuid: temp.uuid,
-        logo: temp.logo,
-        name: temp.name
-      }
-      communities.push(community)
+    const community = await getLocalCommunity(communityID)
+    if(community){
+      communities.push({
+        uuid: community.uuid,
+        logo: community.logo,
+        name: community.name
+      })
     }
   }
   console.log({communities})
+  loading = false
 })
 
-let inviteDetail = $ref(false)
-
 const findInvitedByCommunityID = (communityID: string) => {
-  inviteDetail = true
-  invites = []
-  console.log('cid = ' + communityID)
-  for (let index = 0; index < allInviteInfo.length; index++) {
-    const temp = allInviteInfo[index]
-    if(temp.userId === address && temp.communityId === communityID){
-      console.log('1111111111111111')
-      invites.push(temp)
+  isDetailModalOpen = true
+  inviteDetails = []
+  console.log('search for community ' + communityID)
+  for (const inviteInfo of allInviteInfo) {
+    if(inviteInfo.userId === address && inviteInfo.communityId === communityID){
+      console.log('found user invited by me:', inviteInfo)
+      inviteDetails.push(inviteInfo)
     }
   }
-  console.log({ communityID, invites })
+  console.log({ communityID, invites: inviteDetails })
 }
 
 </script>
@@ -97,28 +98,36 @@ const findInvitedByCommunityID = (communityID: string) => {
         <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
       </div>
 
-      <div v-for="(community, index) in communities" :key="index" class="flex items-center justify-between pr-[120px]">
-        <div v-if="invitedByMe[community.uuid] && community.name" class="flex items-center mt-5">
-          <UColorModeImage :src="community.logo || arUrl(communityLogo)" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
-          <div class="ml-10 text-xl w-[100px]">{{ community.name }}</div>
-          <div class="ml-10 text-xl">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
-          <UAvatarGroup :key="index" size="sm" :max="2" class="ml-10">
-            <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
-              <UAvatar :src="invite.userInfo?.avatar || arUrl(userAvatar)" :alt="invite.userInfo?.name || invite.userId" />
-            </div>
-          </UAvatarGroup>
-          <UButton color="white" class="flex-endtext-center" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>
+      <div v-if="!loading && !communities.length" class="flex">
+        No user invited by me.
+      </div>
+
+      <div v-for="community in communities" :key="community.uuid">
+        <div v-if="invitedByMe[community.uuid] && community.name" class="flex items-center justify-start mt-5">
+          <div class="flex items-center">
+            <UColorModeImage :src="community.logo || arUrl(communityLogo)" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
+            <div class="ml-10 text-xl w-[160px] overflow-hidden">{{ community.name }}</div>
+            <div class="ml-20 text-xl w-[250px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
+          </div>
+          <div class="flex">
+            <UAvatarGroup size="sm" :max="2" class="ml-10">
+              <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
+                <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(userAvatar)" :alt="invite.userInfo?.[0].name || invite.userId" />
+              </div>
+            </UAvatarGroup>
+            <UButton color="white" class="ml-4" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>
+          </div>
         </div>
       </div>
     </UCard>
 
-    <UModal v-model="inviteDetail" :ui="{ width: w-full }">
-      <div class="flex justify-center min-h-[300px] min-w-[600px] pt-10 pl-6">
-        <div class="border h-full pl-6 pb-2 pr-10">
-          <div v-for="(invite, index) in invites" :key="index" class="flex items-center space-x-3">
-            <UAvatar :src="invite.userAvatar" alt="user avatar" />
-            <div>{{ invite.userName }}</div>
-            <div>{{ invite.invited }}</div>
+    <UModal v-model="isDetailModalOpen" :ui="{ width: w-full }">
+      <div class="flex justify-center min-h-[300px] pt-10 px-6">
+        <div class="border h-full px-2 py-2 mb-2">
+          <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
+            <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(userAvatar)" alt="user avatar" />
+            <div class="w-fit">{{ invite.userInfo?.[0].name }}</div>
+            <div class="w-90">{{ invite.invited }}</div>
           </div>
         </div>
       </div>

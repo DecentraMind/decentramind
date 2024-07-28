@@ -158,6 +158,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'registInfo' },
+        // TODO remove userAddress here
         { name: 'userAddress', value: address }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
@@ -434,7 +435,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   //How to join the community
-  const joinCommunity = async (uuid: string, invite: string) => {
+  const joinCommunity = async (communityID: string, inviterAddress: string) => {
     if (isJoining) return
     isJoining = true
     try {
@@ -445,11 +446,11 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
         tags: [
           { name: 'Action', value: 'join' },
           { name: 'userAddress', value: address },
-          { name: 'invite', value: invite },
+          { name: 'invite', value: inviterAddress },
           { name: 'time', value: time.toString() }
         ],
         signer: createDataItemSigner(window.arweaveWallet),
-        data: uuid,
+        data: communityID,
       })
       console.log(join)
       isJoining = false

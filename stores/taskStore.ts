@@ -152,7 +152,7 @@ export const taskStore = defineStore('taskStore', () => {
       }
 
       return allInviteInfo
-    } catch (error){
+    } catch (error) {
       console.error(error)
       throw Error('getAllInviteInfo failed:' + error)
     }
