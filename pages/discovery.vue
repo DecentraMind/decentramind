@@ -19,6 +19,9 @@ const getCommunity = async () => {
 }
 
 onMounted(async () => {
+  if (!address) {
+    router.push('/')
+  }
   getVouchInfo()
   try {
     if (Array.isArray(communityList) && communityList.length !== 0) {

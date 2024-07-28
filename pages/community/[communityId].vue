@@ -240,6 +240,9 @@ let community = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 let isCommunityOwner = $ref(false)
 
 onMounted(async () => {
+  if (!address) {
+    router.push('/')
+  }
   setCurrentUuid(communityId)
 
   try {
