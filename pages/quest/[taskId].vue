@@ -7,10 +7,12 @@ import type { Task } from '~/types'
 import { tokens } from '~/utils/constants'
 
 const { t } = useI18n()
-const { storeBounty, sendBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
-const { userInfo, getUser, getLocalCommunity } = $(aoCommunityStore())
 
-const { showError, showSuccess } = $(notificationStore())
+const { storeBounty, sendBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+
+const { getLocalCommunity } = $(aoCommunityStore())
+
+const { showError, showSuccess, showMessage } = $(notificationStore())
 
 // 用户钱包地址
 const { address } = $(aoStore())
@@ -20,24 +22,19 @@ const taskId = $computed(() => route.params.taskId) as string
 
 console.log('route params', route.params)
 
-let blogPost = $ref<Task & {
+let task = $ref<Task & {
   reward: string
 }>()
 
-blogPost = await getTask(taskId)
-console.log('blogPost of task id ' + taskId + JSON.stringify(blogPost))
+console.log('blogPost of task id ' + taskId + JSON.stringify(task))
 
-const communityId = blogPost!.communityId
+const communityId = $computed(() => task.communityId)
 
-const isOwner = blogPost!.ownerId === address
+const isOwner = $computed(() => task.ownerId === address)
 
 let taskJoinRecord = $ref<Awaited<ReturnType<typeof getTaskJoinRecord>>>()
-taskJoinRecord = await getTaskJoinRecord(taskId)
 
 let spaceTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>()
-const communityInfo = await getLocalCommunity(communityId)
-spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
 
 const checkSubmit = () => {
   if (!spaceTaskSubmitInfo) return false
@@ -79,44 +76,59 @@ submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
 
 let submittedBuilderCount = $ref<number>(0)
 
+let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
+
 onMounted(async () => {
-  const isBegin = blogPost!.isBegin
-  if (isBegin === 'Y') {
-    isIng = true
-  } else {
-    isIng = false
-  }
-  const isSettle = blogPost!.isSettle
-  const isCal = blogPost!.isCal
+  try {
+    task = await getTask(taskId)
+    console.log('getTask ' + JSON.stringify(task))
 
-  // TODO don't use spaceTaskSubmitInfo array, use submitInfo of current task only
-  if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
-    // TODO update task.submittedCount after every task submit in cronjob
-    submittedBuilderCount = spaceTaskSubmitInfo.reduce((count, info) => {
-      return count + (info.taskId === taskId ? 1 : 0)
-    }, 0)
-
-    if (isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N') {
-    // 计算分数
-      calculateScore()
-      console.log(taskId)
-      // 更新任务状态和已提交信息
-      await updateTaskAfterCal(taskId)
-      await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+    if (!task) {
+      throw new Error('Failed to get task ' + taskId)
     }
-  }
-  // calculateScore()
-  // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
-  // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
 
-  blogPost = await getTask(taskId)
-  console.log('getTask ' + JSON.stringify(blogPost))
-  console.log(isBegin)
-  console.log(isSettle)
-  console.log(isCal)
-  await getAllInviteInfo()
-  await getUser()
-  console.log('userInfo', JSON.stringify(userInfo))
+    const isBegin = task.isBegin
+    if (isBegin === 'Y') {
+      isIng = true
+    } else {
+      isIng = false
+    }
+    const isSettle = task!.isSettle
+    const isCal = task!.isCal
+    console.log(isBegin)
+    console.log(isSettle)
+    console.log(isCal)
+
+    // TODO don't use spaceTaskSubmitInfo array, use submitInfo of current task only
+    if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
+      // TODO update task.submittedCount after every task submit in cronjob
+      submittedBuilderCount = spaceTaskSubmitInfo.reduce((count, info) => {
+        return count + (info.taskId === taskId ? 1 : 0)
+      }, 0)
+
+      if (isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N') {
+      // 计算分数
+        calculateScore()
+        console.log(taskId)
+        // 更新任务状态和已提交信息
+        await updateTaskAfterCal(taskId)
+        await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+      }
+    }
+    // calculateScore()
+    // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
+    // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+
+    taskJoinRecord = await getTaskJoinRecord(taskId)
+    communityInfo = await getLocalCommunity(task.communityId)
+    spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
+    console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
+
+    await getAllInviteInfo()
+  } catch (e) {
+    console.error(e)
+    showError('Data loading failed.')
+  }
 })
 
 // spaceTaskSubmitInfo = people
@@ -153,19 +165,19 @@ function calculateScore() {
   }
   console.log('totalScore = ' + totalScore)
   for (let i = 0;i < spaceTaskSubmitInfo.length;++i) {
-    if (blogPost!.tokenNumber) {
+    if (task!.tokenNumber) {
       const token = tokens[spaceTaskSubmitInfo[i].bountyType1 as TokenName]
       // TODO 5% 手续费
-      spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber)).toFixed(4)
-      spaceTaskSubmitInfo[i].bountyType1 = blogPost!.tokenType
+      spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(task!.tokenNumber)).toFixed(4)
+      spaceTaskSubmitInfo[i].bountyType1 = task!.tokenType
 
       spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / Math.pow(10, token.denomination)).toString() + spaceTaskSubmitInfo[i].bountyType1
     }
-    if (blogPost!.tokenNumber1) {
+    if (task!.tokenNumber1) {
       const token = tokens[spaceTaskSubmitInfo[i].bountyType2 as TokenName]
       // TODO 5% 手续费
-      spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(blogPost!.tokenNumber1)).toFixed(4)
-      spaceTaskSubmitInfo[i].bountyType2 = blogPost!.tokenType1
+      spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(task!.tokenNumber1)).toFixed(4)
+      spaceTaskSubmitInfo[i].bountyType2 = task!.tokenType1
 
       spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / Math.pow(10, token.denomination)).toString() + spaceTaskSubmitInfo[i].bountyType2
     }
@@ -250,7 +262,7 @@ function openJoin() {
   isOpenJoin = true
 }
 
-async function onClick() {
+async function onClickJoin() {
   //  调用参与任务方法，只计数不提交
   await joinTask(taskId, address)
   // blogPost = await getTaskById(taskId)
@@ -291,7 +303,7 @@ async function submitTask() {
     return
   }
 
-  console.log('data = ' + JSON.stringify(data))
+  console.log('data from twitter = ' + JSON.stringify(data))
   // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
   const spaceStart_at = data._rawValue.data.started_at
   const spaceEnded_at = data._rawValue.data.ended_at
@@ -357,13 +369,13 @@ async function submitTask() {
 let selected = $ref([])
 
 async function sendBountyByAo() {
-  if(!blogPost || !spaceTaskSubmitInfo || !communityInfo) {
+  if(!task || !spaceTaskSubmitInfo || !communityInfo) {
     showError('Data loading does not completed. Please wait or try refresh.')
     return
   }
 
-  if (selected.length > 0 && blogPost.isCal !== 'Y'){
-    alert('This quest is not calculate store or has settled.')
+  if (selected.length > 0 && task.isCal !== 'Y'){
+    showMessage('Being Cooked.')
   }
 
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
@@ -374,8 +386,8 @@ async function sendBountyByAo() {
     tokenNumber: number;
     tokenType: TokenName;
   }[] = []
-  const bounty1 = blogPost.tokenNumber
-  const bounty2 = blogPost.tokenNumber1
+  const bounty1 = task.tokenNumber
+  const bounty2 = task.tokenNumber1
   console.log({selected, bounty1, bounty2})
   // if no submitted info, don't need isCal==='Y'
 
@@ -417,10 +429,10 @@ async function sendBountyByAo() {
   // 计算应返还给任务创建人的 token
   const returnBounties = {bounty1, bounty2}
   for (const bounty of bounties) {
-    if (bounty.tokenType === blogPost.tokenType) {
+    if (bounty.tokenType === task.tokenType) {
       returnBounties.bounty1 -= bounty.tokenNumber
     }
-    if (bounty.tokenType === blogPost.tokenType1) {
+    if (bounty.tokenType === task.tokenType1) {
       returnBounties.bounty2 -= bounty.tokenNumber
     }
   }
@@ -434,25 +446,25 @@ async function sendBountyByAo() {
 
   if (bounty1 && bounty1 > 0 && bounty1 != 'undefined') {
     const bountyData = {
-      walletAddress: blogPost.ownerId,
+      walletAddress: task.ownerId,
       tokenNumber: returnBounties.bounty1,
-      tokenType: blogPost.tokenType as TokenName
+      tokenType: task.tokenType as TokenName
     }
     bounties.push(bountyData)
   }
   if (bounty2 && bounty2 > 0 && bounty2 != 'undefined') {
     const bountyData = {
-      walletAddress: blogPost.ownerId,
+      walletAddress: task.ownerId,
       tokenNumber: returnBounties.bounty2,
-      tokenType: blogPost.tokenType1 as TokenName
+      tokenType: task.tokenType1 as TokenName
     }
     bounties.push(bountyData)
   }
 
   // TODO try catch
   console.log('selected = ' + JSON.stringify(bounties))
-  await sendBounty(blogPost.processId, bounties)
-  await updateTaskAfterSettle(blogPost.taskId)
+  await sendBounty(task.processId, bounties)
+  await updateTaskAfterSettle(task.taskId)
 
   // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
   // 将发送出去的bounty信息保存
@@ -464,8 +476,8 @@ async function sendBountyByAo() {
       receive: tt.walletAddress,
       tokenNumber: tt.tokenNumber,
       tokenType: tt.tokenType,
-      taskId: blogPost?.taskId,
-      taskName: blogPost?.taskName,
+      taskId: task?.taskId,
+      taskName: task?.taskName,
       communityId: communityInfo.uuid,
       communityName: communityInfo.name
     }
@@ -474,8 +486,8 @@ async function sendBountyByAo() {
   await storeBounty(sentBounties)
   sendBountyLoading = false
 
-  blogPost = await getTask(taskId)
-  console.log({ blogPostSettled: blogPost })
+  task = await getTask(taskId)
+  console.log({ blogPostSettled: task })
 
   if(!selected.length) {
     showSuccess('The Bounty Has Been Returned!')
@@ -513,7 +525,7 @@ const trueRows = computed(() => {
   return filteredRows.value.slice((page.value - 1) * pageCount, (page.value) * pageCount)
 })
 
-const maxSelection = blogPost.rewardTotal
+const maxSelection = $computed(() => task.rewardTotal)
 // 监视 selected 数组的变化
 watch(() => selected, (newVal) => {
   if (newVal.length > maxSelection) {
@@ -526,7 +538,7 @@ watch(() => selected, (newVal) => {
 
 <template>
   <UDashboardPage>
-    <UPage v-if="blogPost" class="overflow-y-auto h-full w-full">
+    <UPage v-if="task" class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full ">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
@@ -540,14 +552,14 @@ watch(() => selected, (newVal) => {
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
         -->
-        <UBlogPost :key="blogPost.taskId" :description="blogPost.taskInfo" class="p-10">
+        <UBlogPost :key="task.taskId" :description="task.taskInfo" class="p-10">
           <template #title>
             <div class="flex justify-start">
-              <div class="flex-none w-60"><div>{{ blogPost?.taskName }}</div></div>
+              <div class="flex-none w-60"><div>{{ task?.taskName }}</div></div>
               <div class="flex justify-start">
                 <div>
                   <UBadge color="black" variant="solid">
-                    {{ finalStatus(blogPost.isBegin) }}
+                    {{ finalStatus(task.isBegin) }}
                   </UBadge>
                 </div>
                 <div v-if="isSubmitted" class="mx-2">
@@ -555,7 +567,7 @@ watch(() => selected, (newVal) => {
                     {{ submitStatus }}
                   </UBadge>
                 </div>
-                <div v-if="isOwner && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-2">
+                <div v-if="isOwner && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-2">
                   <UBadge color="black" variant="solid">
                     {{ $t('Unsettled') }}
                   </UBadge>
@@ -566,7 +578,7 @@ watch(() => selected, (newVal) => {
           <template #description>
             <div class="flex flex-col space-y-2">
               <div class="h-6 overflow-hidden">
-                {{ blogPost.taskInfo }}
+                {{ task.taskInfo }}
               </div>
               <div class="flex ...">
                 <div class="flex-none w-60">
@@ -576,7 +588,7 @@ watch(() => selected, (newVal) => {
                 </div>
                 <div>
                   <div>
-                    {{ blogPost.zone }}
+                    {{ task.zone }}
                   </div>
                 </div>
               </div>
@@ -588,7 +600,7 @@ watch(() => selected, (newVal) => {
                 </div>
                 <div>
                   <div>
-                    {{ formatToLocale(blogPost.startTime) }} - {{ formatToLocale(blogPost.endTime) }}
+                    {{ formatToLocale(task.startTime) }} - {{ formatToLocale(task.endTime) }}
                   </div>
                 </div>
               </div>
@@ -600,7 +612,7 @@ watch(() => selected, (newVal) => {
                 </div>
                 <div>
                   <div>
-                    {{ blogPost.reward }}
+                    {{ task.reward }}
                   </div>
                 </div>
               </div>
@@ -612,7 +624,7 @@ watch(() => selected, (newVal) => {
                 </div>
                 <div>
                   <div>
-                    {{ blogPost.rewardTotal }}
+                    {{ task.rewardTotal }}
                   </div>
                 </div>
               </div>
@@ -636,7 +648,7 @@ watch(() => selected, (newVal) => {
                 </div>
                 <div>
                   <div style="white-space: pre-line">
-                    {{ blogPost.taskRule }}
+                    {{ task.taskRule }}
                   </div>
                 </div>
               </div>
@@ -654,7 +666,7 @@ watch(() => selected, (newVal) => {
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
                 <ULink
-                  :to="`https://www.ao.link/#/entity/${blogPost.processId}?tab=source-code`"
+                  :to="`https://www.ao.link/#/entity/${task.processId}?tab=source-code`"
                   active-class="text-primary"
                   target="_blank"
                   inactive-class="text-primary"
@@ -684,7 +696,7 @@ watch(() => selected, (newVal) => {
               <div v-if="isIng && !isSubmitted" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
-              <div v-if="isOwner && blogPost.isSettle === 'N' && blogPost.isBegin === 'N'" class="mx-4">
+              <div v-if="isOwner && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-4">
                 <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo" />
               </div>
             </div>
@@ -749,7 +761,7 @@ watch(() => selected, (newVal) => {
           </div>
 
           <div class="flex justify-center">
-            <UButton color="white" @click="onClick">
+            <UButton color="white" @click="onClickJoin">
               {{ $t('I have read all rules') }}
             </UButton>
           </div>

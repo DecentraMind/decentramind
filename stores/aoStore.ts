@@ -33,12 +33,15 @@ const arweave = Arweave.init({
 })
 
 export const aoStore = defineStore('aoStore', () => {
-
-
   let totalBalance = $ref(0)
   const tokenMap = $ref(tokenProcessIDs)
   const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
-  let address = $(lsItemRef('address', ''))
+
+  /** current connected address */
+  let address = $(lsItemRef<string>('address', ''))
+
+  let isLoginModalOpen = $ref(false)
+
   const tokenBalances = $ref({
     //CRED: 0,
     AOCOIN: 0,
@@ -271,7 +274,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance })
+  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance, isLoginModalOpen })
 })
 
 if (import.meta.hot)

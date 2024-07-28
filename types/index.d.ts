@@ -168,12 +168,5 @@ export type Bounty = {
  */
 export type UserInfo = {
   avatar : string
-  github : string
-  mail : string
   name : string
-  phone : string
-  showmail : boolean
-  showphone : boolean
-  showtwitter : boolean
-  twitter : string
 }

@@ -2,71 +2,46 @@
 import { arUrl, userAvatar } from '~/utils/arAssets'
 import { z } from 'zod'
 
-const toast = useToast()
-
-const accountForm = $ref({
+const userForm = $ref({
   avatar: '',
-  name: '',
-  twitter: '',
-  showtwitter: true,
-  mail: '',
-  showmail: true,
-  phone: '',
-  showtelegram: true,
-  github: '',
+  name: ''
 })
 
-
 const schema = z.object({
-  name: z.string().min(2).max(10),
+  name: z.string().min(2).max(28),
 })
 
 type Schema = z.infer<typeof schema>
 
-function onSubmitAccount() {
-  console.log('Submitted form:', accountForm)
-}
-
-const { userInfo, getUser: getInfo, personalInfo } = $(aoCommunityStore())
+const { address } = $(aoStore())
+const { getUserByAddress, personalInfo } = $(aoCommunityStore())
+const { showMessage } = $(notificationStore())
 
 const saveInfo = async () => {
-
   await personalInfo(
-    accountForm.avatar,
-    accountForm.name,
+    userForm.avatar,
+    userForm.name,
   )
-  toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
-  await getInfo()
-}
-const { gettoken, getAccessToken } = $(linktwitter())
-const gettwitter = async () => {
-  await getAccessToken()
+  showMessage('Profile updated')
 }
 
-let connectTwitter = $ref(false)
-let connectGithub = $ref(false)
+const router = useRouter()
+let isLoading = $ref(true)
 onMounted(async () => {
+  if(!address) {
+    router.push('/')
+    return
+  }
+
   try {
-    //info = await getInfo();
-    //console.log("--",info)
-    //const jsonData = info.Messages[0].Data;
-    //const jsonObjects = jsonData.match(/\{.*?\}/g);
-    //infoJson = jsonObjects.map(item => JSON.parse(item));
-    //console.log(infoJson)
-    accountForm.avatar = userInfo[0].avatar
-    accountForm.name = userInfo[0].name
-    await getInfo()
-    accountForm.avatar = userInfo[0].avatar
-    accountForm.name = userInfo[0].name
-    if (accountForm.twitter == 'Success') {
-      connectTwitter = true
-    }
-    if (accountForm.github == 'Success') {
-      connectGithub = true
-    }
+    const user = await getUserByAddress(address)
+    userForm.avatar = user.avatar
+    userForm.name = user.name
   } catch (error) {
     console.error('Error fetching data:', error)
   }
+
+  isLoading = false
 })
 
 const uploadInput = $ref<HTMLInputElement>()
@@ -85,7 +60,7 @@ const updateAvatar = () => {
       img.onload = () => {
         if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
           // console.log({res: e.target?.result})
-          accountForm.avatar = e.target!.result as string
+          userForm.avatar = e.target!.result as string
         } else {
           alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
         }
@@ -101,34 +76,34 @@ const updateAvatar = () => {
 <template>
   <UDashboardPanelContent class="pb-24">
     <Input ref="uploadInput" type="file" size="sm" class="opacity-0" @change="updateAvatar" />
-    <UForm ref="form" :schema="schema" :state="accountForm" class="w-1/3" @submit.prevent="onSubmitAccount">
+    <UForm ref="form" :schema="schema" :state="userForm" class="w-fit">
       <div class="flex items-center mb-4 mt-3">
         <div @click="uploadInput && uploadInput.click()">
           <UAvatar
-            v-if="accountForm.avatar === 'N/A'"
+            v-if="userForm.avatar === 'N/A' || isLoading"
             alt=""
             class="ml-5"
             size="2xl"
           />
           <UAvatar
             v-else
-            :src="accountForm.avatar || arUrl(userAvatar)"
+            :src="userForm.avatar || arUrl(userAvatar)"
             alt="Avatar"
             class="ml-5"
             size="2xl"
           />
         </div>
-        <div class="flex items-center p-3 ml-2">
+        <div class="flex items-center ml-6">
           <UFormGroup name="name" class="mb-3">
             <template #label>
               {{ $t('setting.person.name') }}
             </template>
-            <UInput v-model="accountForm.name" />
+            <UInput v-model="userForm.name" />
           </UFormGroup>
         </div>
       </div>
 
-      <div class="flex justify-center">
+      <div class="flex justify-end">
         <UButton type="submit" color="black" @click="saveInfo">
           {{ $t('setting.save') }}
         </UButton>

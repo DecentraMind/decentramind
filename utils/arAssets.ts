@@ -1,3 +1,4 @@
+/** @see https://network-portal.app/#/gateways  */
 export const gateWays = ['https://ar-io.dev/', 'https://permagate.io/']
 
 export const userAvatar = 'h3GpQlrBODufN2StZhf_er2egNU-9UcQiZQYAWg6AY4'
@@ -29,6 +30,6 @@ export function arUrl(tx: string, gateWayIndex: number = 0) {
 export function replace2ARBanner(banner: string, banners: string[] = communityBanners) {
   const matched = banner.match(/\d+$/)
   const bannerIndex = matched ? parseInt(matched[0]) - 6 : 0
-  console.log({banner, bannerIndex})
+
   return arUrl(banners[bannerIndex])
 }
