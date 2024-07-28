@@ -1,3 +1,4 @@
+/** @see https://network-portal.app/#/gateways  */
 export const gateWays = ['https://ar-io.dev/', 'https://permagate.io/']
 
 export const userAvatar = 'h3GpQlrBODufN2StZhf_er2egNU-9UcQiZQYAWg6AY4'

@@ -58,6 +58,10 @@ export default defineNuxtConfig({
     safelistColors: ['primary', 'red', 'orange', 'green']
   },
 
+  macros: {
+    setupSFC: true,
+  },
+
   devtools: {
     enabled: true
   },

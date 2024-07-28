@@ -51,7 +51,7 @@ onMounted(async () => {
             class="w-full block mt-2 rounded-lg border border-gray-100 overflow-hidden"
           >
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
-            <div class="aspect-w-1 aspect-h-1">
+            <div class="aspect-square">
               <img
                 :src="community.logo || arUrl(communityLogo)"
                 :title="community.name"
@@ -60,8 +60,8 @@ onMounted(async () => {
             </div>
           </NuxtLink>
 
-          <UButton class="w-full mt-2" variant="soft" @click="selectModal=0;isCreateModalOpen = true">
-            <UIcon name="ion:add" class="h-full w-full " />
+          <UButton class="w-full mt-2 aspect-square" variant="soft" @click="selectModal=0; isCreateModalOpen = true">
+            <UIcon name="ion:add" class="h-full w-full" />
           </UButton>
         </div>
 
