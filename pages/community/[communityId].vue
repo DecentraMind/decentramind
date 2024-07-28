@@ -4,11 +4,13 @@ import type { FormSubmitEvent } from '#ui/types'
 import { z } from 'zod'
 import type { Dayjs } from 'dayjs'
 import { tokenOptions, timeZoneOptions, tokens, type TokenName } from '~/utils/constants'
-import type { Task } from '~/types'
+import type { Community, Task } from '~/types'
+import { arUrl, taskBanners, getTaskBannerUrl } from '~/utils/arAssets'
+import { createUuid } from '~/utils/util'
 
 const { t } = useI18n()
 const { createTask, getAllTasks, getAllTaskSubmitInfo } = $(taskStore())
-const { getLocalCommunity, setCurrentUuid, exitCommunity, getCommunityList } = $(aoCommunityStore())
+const { setCurrentUuid, exitCommunity, getCommunity, getCommunityList } = $(aoCommunityStore())
 
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
@@ -40,9 +42,9 @@ function onChange(index: number) {
   }
 }
 
-const schema = z.object({
-  taskName: z.string().min(2).max(10),
-  taskInfo: z.string().min(3).max(30),
+const taskSchema = z.object({
+  taskName: z.string().min(2).max(30),
+  taskInfo: z.string().min(3).max(100),
   rewardTotal: z.string()
     .min(1, { message: 'Must be more than 0' }) // This ensures the string is not empty
     .refine((value: string) => {
@@ -61,7 +63,7 @@ const schema = z.object({
   */
 })
 
-type Schema = z.infer<typeof schema>
+type TaskSchema = z.infer<typeof taskSchema>
 
 const chainOptions = [
   { label: 'AO', value: 'AO' }
@@ -126,18 +128,10 @@ const transData = {
   processId: 'N'
 }
 const form = $ref()
-function uuid() {
-  const str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-  return str.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0,
-      v = c == 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
-}
 
 const { showError } = $(notificationStore())
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmitTaskForm(event: FormSubmitEvent<TaskSchema>) {
   postQuestLoading = true
   if (!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime) {
     postQuestLoading = false
@@ -164,7 +158,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   console.log({transData, state})
 
   // Do something with state
-  transData.taskId = uuid()
+  transData.taskId = createUuid()
   transData.taskLogo = state.taskLogo
   transData.taskName = state.taskName
   transData.taskInfo = state.taskInfo
@@ -241,7 +235,7 @@ async function countSubmitOfTask(allTaskSubmitInfo: Awaited<ReturnType<typeof ge
 }
 
 console.log('get community info of ', communityId)
-let community = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
+let community = $ref<Community>()
 
 let isCommunityOwner = $ref(false)
 
@@ -253,13 +247,16 @@ onMounted(async () => {
   setCurrentUuid(communityId)
 
   try {
-    community = await getLocalCommunity(communityId)
-    console.log('get communityInfo', community, communityId)
+    community = await getCommunity(communityId)
+    console.log('get communityInfo', community.name, community, communityId)
   } catch (error) {
     console.error('Error fetching data:', error)
     return
   }
-  if(!community) return
+  if(!community) {
+    showError('Failed to load community info. Please try again later.')
+    return
+  }
 
   if(community.communitychatid) {
     await inboxAdd(community.name, community.communitychatid)
@@ -267,6 +264,7 @@ onMounted(async () => {
 
   tasks = await getAllTasks(communityId)
   if(!tasks) {
+    showError('Failed to load tasks of community. Please try again later.')
     console.error('allTasks undefined', communityId)
   }
 
@@ -286,25 +284,11 @@ onMounted(async () => {
   isLoading = false
 })
 
-const banners = [
-  '/task/banner1.jpg',
-  '/task/banner2.jpg',
-  '/task/banner3.jpg',
-  '/task/banner4.jpg',
-  '/task/banner5.jpg'
-]
+const taskBannersUrl = taskBanners.map(banner => arUrl(banner))
 const currentIndex = $ref(0) // 用于存储当前选中的索引
 const updateBanner = (index: number) => {
-  if (index === 1) {
-    state.taskLogo = 'banner1'
-  } else if (index === 2) {
-    state.taskLogo = 'banner2'
-  } else if (index === 3) {
-    state.taskLogo = 'banner3'
-  } else if (index === 4) {
-    state.taskLogo = 'banner4'
-  } else if (index === 5) {
-    state.taskLogo = 'banner5'
+  if (taskBanners[index - 1]) {
+    state.taskLogo = taskBanners[index - 1]
   }
 }
 
@@ -398,9 +382,8 @@ const shortedWebsite = $computed(() => {
     <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
       <UDashboardSidebar v-if="community">
         <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
-        <!--<div v-for="Info in communityInfo" :key="Info.uuid">-->
         <div class="pt-6">
-          <div class="flex justify-between  my-3 items-center">
+          <div class="flex justify-between my-3 items-center">
             <div class="text-3xl">{{ community.name }}</div>
             <div>
               <UButton color="white" variant="solid" :to="`/community/detail/${communityId}`">
@@ -556,7 +539,7 @@ const shortedWebsite = $computed(() => {
                 </div>
               </div>
               <div class="flex mt-10 justify-center items-center">
-                <div v-if="community.creater == address" class="flex justify-center items-center">
+                <div v-if="community && community.creater == address" class="flex justify-center items-center">
                   <UDropdown :items="taskTypes" :popper="{ placement: 'bottom-start' }">
                     <UButton color="white" :label="$t('Start a Public Quest')" trailing-icon="i-heroicons-chevron-down-20-solid" />
                   </UDropdown>
@@ -574,7 +557,7 @@ const shortedWebsite = $computed(() => {
               <UBlogPost
                 v-for="task in tasks"
                 :key="task.taskId"
-                :image="`/task/${task.taskLogo}.jpg`"
+                :image="getTaskBannerUrl(task.taskLogo)"
                 :description="task.taskInfo"
                 class="relative"
                 :to="`/quest/${task.taskId}`"
@@ -660,7 +643,7 @@ const shortedWebsite = $computed(() => {
               <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreateTaskModalOpen = false" />
             </div>
           </template>
-          <UForm ref="form" :schema="schema" :state="state" class="space-y-4 ml-10" @submit="onSubmit">
+          <UForm ref="form" :schema="taskSchema" :state="state" class="space-y-4 ml-10" @submit="onSubmitTaskForm">
             <UFormGroup name="taskLogo" :label="$t('Banner')">
               <template #label>
                 <div class="w-[300px]">
@@ -669,7 +652,7 @@ const shortedWebsite = $computed(() => {
               </template>
               <UCarousel
                 v-model="currentIndex"
-                :items="banners"
+                :items="taskBannersUrl"
                 :ui="{
                   item: 'basis-full',
                   container: 'rounded-lg',

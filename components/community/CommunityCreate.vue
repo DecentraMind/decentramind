@@ -4,6 +4,7 @@ import { tradePlatforms, tokenNames, type TokenSupply } from '~/utils/constants'
 import defaultCommunityLogo from '~/utils/defaultCommunityLogo'
 import type { CommunitySetting } from '~/types'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
+import { getCommunityBannerUrl } from '~/utils/arAssets'
 
 let isCommunityCreateModalOpen = $ref(false)
 let createdCommunityID = $ref('')
@@ -128,11 +129,11 @@ const uploadLogo = () => {
 }
 
 const bannerItems = [
-  '/task/banner6.jpg',
-  '/task/banner7.jpg',
-  '/task/banner8.jpg',
-  '/task/banner9.jpg',
-  '/task/banner10.jpg',
+  'banner6',
+  'banner7',
+  'banner8',
+  'banner9',
+  'banner10',
 ]
 const currentIndex = $ref(0) // 用于存储当前选中的索引
 
@@ -270,7 +271,7 @@ const removeSupplyGroup = (index: number) => {
             class="w-64 mx-auto"
           >
             <template #default="{ item }">
-              <img :src="item" class="w-full" draggable="false">
+              <img :src="getCommunityBannerUrl(item)" class="w-full" draggable="false">
             </template>
 
             <template #indicator="{ onClick, page, active }">
@@ -469,7 +470,7 @@ const removeSupplyGroup = (index: number) => {
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton @click="getCommunityList(); emit('close-modal'); $router.push(`/community/${createdCommunityID}`); isCommunityCreateModalOpen = false">
+            <UButton @click="getCommunityList().then(() => $router.push(`/community/${createdCommunityID}`)); emit('close-modal'); isCommunityCreateModalOpen = false">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>

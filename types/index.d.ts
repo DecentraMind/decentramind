@@ -62,6 +62,49 @@ export interface Range {
   end: Date;
 }
 
+export type Community = {
+  /** total supply of community token */
+  alltoken: string
+  banner: `banner${6 | 7 | 8 | 9 | 10}`
+  bounty: TokenName[]
+  /** how many user joined in this community */
+  buildnum: string
+  /** ID of community's chatroom */
+  communitychatid: string
+  communitytoken: CommunityToken[]
+  /** creator's address TODO rename this to 'creator' */
+  creater: string
+  /** description */
+  desc: string
+  github: string
+  ispublished: boolean
+  istradable: boolean
+  /** base64 encoded data URI */
+  logo: string
+  name: string
+  /** owner's address */
+  owner: string
+  /** trade platforms */
+  support: TradePlatform[]
+  /** created time */
+  timestamp: string
+  tokensupply: TokenSupply[]
+  twitter: string
+  uuid: string
+  website: string
+}
+
+export type CommunityListItem = Community & {
+  whitebook: string
+  isJoined?: boolean
+  joinTime?: string
+}
+
+export type CommunityList = CommunityListItem[]
+
+/**
+ * type of community setting form
+ * */
 export type CommunitySetting = {
   owner: string | undefined;
   creator: string | undefined;
@@ -70,12 +113,14 @@ export type CommunitySetting = {
   input: string | undefined;
   inputMenu: string | undefined;
   name: string | undefined;
+  /** TODO rename this to desc */
   inbro: string | undefined;
   website: string | undefined;
   twitter: string | undefined;
   github: string | undefined;
   builderNum: string | undefined;
   allReward: string | undefined;
+  /** TODO rename this to bountyTokenNames */
   typeReward: TokenName[];
   /** 是否有发行 token */
   isPublished: boolean;
