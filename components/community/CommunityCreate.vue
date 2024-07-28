@@ -50,12 +50,12 @@ const emit = defineEmits(['close-modal'])
 
 const { addCommunity, getCommunityList, makeCommunityChat} = $(aoCommunityStore())
 
-let isLoading = $ref(false)
+let isCreating = $ref(false)
 let createSuccess = $ref(false)
 
 const createCommunity = async () => {
-  if (isLoading) return
-  isLoading = true
+  if (isCreating) return
+  isCreating = true
   isCommunityCreateModalOpen = true
   try {
     state.communityChatID = await makeCommunityChat()
@@ -92,7 +92,7 @@ const createCommunity = async () => {
     alert('Failed to create community!')
     throw new Error('create community Error' + error)
   } finally {
-    isLoading = false
+    isCreating = false
     //createSuccess = true
   }
   createSuccess = true
@@ -127,7 +127,7 @@ const uploadLogo = () => {
   input.click()
 }
 
-const items = [
+const bannerItems = [
   '/task/banner6.jpg',
   '/task/banner7.jpg',
   '/task/banner8.jpg',
@@ -258,7 +258,7 @@ const removeSupplyGroup = (index: number) => {
           </template>
           <UCarousel
             v-model="currentIndex"
-            :items="items"
+            :items="bannerItems"
             :ui="{
               item: 'basis-full',
               container: 'rounded-lg',
@@ -449,7 +449,7 @@ const removeSupplyGroup = (index: number) => {
         </div>
 
         <div class="flex justify-center">
-          <UButton color="white" type="submit" size="xl">
+          <UButton color="white" type="submit" size="xl" :disabled="isCreating" :loading="isCreating">
             {{ $t('add') }}
           </UButton>
         </div>

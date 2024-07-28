@@ -152,11 +152,10 @@ const getVouchInfo = async () => {
                 <div class="self-end">
                   <UButton
                     v-if="community.isJoined"
-                    class="w-[65px] ring-gray-200"
+                    class="w-[65px] text-slate-400"
                     size="md"
                     color="white"
-                    variant="outline"
-                    disabled
+                    variant="ghost"
                   >
                     {{ $t('community.list.isjoin') }}
                   </UButton>

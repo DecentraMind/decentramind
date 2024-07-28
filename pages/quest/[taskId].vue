@@ -262,7 +262,9 @@ function openJoin() {
   isOpenJoin = true
 }
 
+let isJoinLoading = $ref(false)
 async function onClickJoin() {
+  isJoinLoading = true
   //  调用参与任务方法，只计数不提交
   await joinTask(taskId, address)
   // blogPost = await getTaskById(taskId)
@@ -270,15 +272,14 @@ async function onClickJoin() {
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isJoined = checkJoin()
   isOpenJoin = false
+  isJoinLoading = false
 }
 
-const emit = defineEmits(['success'])
 const submitUrl = $ref('')
 let submitLoading = $ref(false)
-let sendBountyLoading = $ref(false)
 async function submitTask() {
-  if (!spaceTaskSubmitInfo) {
-    console.error('spaceTaskSubmitInfo is null')
+  if(!spaceTaskSubmitInfo || !allInviteInfo) {
+    showError('Data loading does not completed. Please wait or try refresh.')
     return
   }
 
@@ -339,7 +340,7 @@ async function submitTask() {
   const audience = participated
   // 邀请人数
   let inviteCount = 0
-  if (allInviteInfo && allInviteInfo.length != 0) {
+  if (allInviteInfo.length != 0) {
     for (let i = 0;i < allInviteInfo.length;++i) {
       const temp = allInviteInfo[i]
       if (temp.userId === address
@@ -368,6 +369,7 @@ async function submitTask() {
 
 let selected = $ref([])
 
+let sendBountyLoading = $ref(false)
 async function sendBountyByAo() {
   if(!task || !spaceTaskSubmitInfo || !communityInfo) {
     showError('Data loading does not completed. Please wait or try refresh.')
@@ -484,7 +486,6 @@ async function sendBountyByAo() {
     sentBounties.push(sent)
   }
   await storeBounty(sentBounties)
-  sendBountyLoading = false
 
   task = await getTask(taskId)
   console.log({ blogPostSettled: task })
@@ -494,6 +495,8 @@ async function sendBountyByAo() {
   } else {
     showSuccess('Congrats! This quest has been successfully settled.')
   }
+
+  sendBountyLoading = false
 }
 
 const finalStatus = (isBegin: string) => {
@@ -666,7 +669,7 @@ watch(() => selected, (newVal) => {
                   <UInput v-model="q" placeholder="Filter..." />
                 </div>
                 <ULink
-                  :to="`https://www.ao.link/#/entity/${task.processId}?tab=source-code`"
+                  :to="`https://www.ao.link/#/entity/${task.processId}?tab=incoming`"
                   active-class="text-primary"
                   target="_blank"
                   inactive-class="text-primary"
@@ -697,7 +700,7 @@ watch(() => selected, (newVal) => {
                 <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
               </div>
               <div v-if="isOwner && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-4">
-                <UButton color="white" :label="labelName()" :disabled="sendBountyLoading" @click="sendBountyByAo" />
+                <UButton color="white" :label="labelName()" :loading="sendBountyLoading" :disabled="sendBountyLoading" @click="sendBountyByAo" />
               </div>
             </div>
 
@@ -761,7 +764,7 @@ watch(() => selected, (newVal) => {
           </div>
 
           <div class="flex justify-center">
-            <UButton color="white" @click="onClickJoin">
+            <UButton color="white" :loading="isJoinLoading" :disabled="isJoinLoading" @click="onClickJoin">
               {{ $t('I have read all rules') }}
             </UButton>
           </div>
@@ -792,7 +795,7 @@ watch(() => selected, (newVal) => {
             <UInput v-model="submitUrl" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>
           <div class="flex justify-center my-8">
-            <UButton :disabled="submitLoading" @click="submitTask">
+            <UButton :loading="submitLoading" :disabled="submitLoading" @click="submitTask">
               {{ $t("Submit Quest") }}
             </UButton>
           </div>
