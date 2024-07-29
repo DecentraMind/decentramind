@@ -80,6 +80,11 @@ const getVouchInfo = async () => {
     linkToTwitter = true
   }
 }
+const test = async() => {
+  const res = await vouch()
+  console.log('-test')
+  console
+}
 </script>
 
 <template>
@@ -187,7 +192,7 @@ const getVouchInfo = async () => {
       <div class="h-[200px] flex flex-col items-center justify-center">
         <Text class="text-2xl">Not Vouched</Text>
         <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank" rel="noopener noreferrer">
-          <UButton class="mt-10">Get Vouched</UButton>
+          <UButton color="white" class="mt-10">Get Vouched</UButton>
         </NuxtLink>
       </div>
     </UModal>

@@ -43,7 +43,7 @@ export type CommunityList = CommunityListItem[]
 
 export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   const { address } = $(aoStore())
-  let linkTwitter = $ref(false)
+  let linkTwitter = $ref(true)
   let communityList = $ref<CommunityList>([])
   let userInfo = $ref<UserInfo[]>()
   let communityUser = $ref({})
@@ -62,6 +62,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   //
   const vouch = async () => {
     try {
+      console.log(address)
       const result2 = await message({
         process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
         tags: [
@@ -598,7 +599,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       throw new Error('Get user info failed.')
     }
 
-    console.log({userInfos, address})
+    console.log({ userInfos, address })
     return userInfos[0]
   }
 
