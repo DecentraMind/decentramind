@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type { UserInfo } from '~/types'
 import { arUrl, communityLogo, userAvatar } from '~/utils/arAssets'
+import { normalizeClass } from 'vue'
 
 const router = useRouter()
+const communityID = $computed(() => {
+  const params = router.currentRoute.value.params
+  return params.communityId || ''
+})
 
 const selectModal = $ref(0)
 
@@ -14,6 +19,7 @@ const isCreateModalOpen = $ref(false)
 let user = $ref<UserInfo>()
 
 onMounted(async () => {
+  console.log({router})
   try {
     if (!address) {
       router.push('/')
@@ -32,7 +38,7 @@ onMounted(async () => {
 <template>
   <UDashboardLayout>
     <UDashboardPanel :width="96" class="w-24">
-      <UDashboardSidebar>
+      <UDashboardSidebar :ui="{ body: 'px-0' }">
         <template #header>
           <NuxtLink :to="'/discovery'">
             <div class="w-full flex justify-center items-center">
@@ -43,19 +49,25 @@ onMounted(async () => {
 
         <UDivider />
 
-        <div class="overflow-y-auto h-full" style="-ms-overflow-style: none; scrollbar-width: none;">
+        <div class="overflow-y-auto h-full px-4" style="-ms-overflow-style: none; scrollbar-width: none;">
           <NuxtLink
             v-for="community in joinedCommunities"
             :key="community.uuid"
             :to="`/community/${community.uuid}`"
-            class="w-full block mt-2 rounded-lg border border-gray-100 overflow-hidden"
+            class="group w-full block mt-2 relative"
           >
+            <div
+              :class="normalizeClass([
+                'transition-all ease-in-out duration-500 rounded-sm bg-gray-900 absolute left-[-6px]',
+                community.uuid === communityID ? 'w-1 h-12 top-2 bg-opacity-80' : 'w-0 group-hover:w-1 h-8 top-4 bg-opacity-0 group-hover:bg-opacity-60'
+              ])"
+            />
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
-            <div class="aspect-square">
+            <div class="aspect-square rounded-lg border border-gray-100 bg-white z-10 overflow-hidden">
               <img
                 :src="community.logo || arUrl(communityLogo)"
                 :title="community.name"
-                class="w-full h-full object-cover transition duration-300 ease-in-out transform hover:brightness-75"
+                class="w-full h-full object-cover"
               >
             </div>
           </NuxtLink>
