@@ -37,19 +37,24 @@ onMounted(async () => {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel :width="96" class="w-24">
-      <UDashboardSidebar :ui="{ body: 'px-0' }">
+    <UDashboardPanel :width="80" class="w-20">
+      <UDashboardSidebar
+        :ui="{
+          wrapper: 'bg-slate-50',
+          body: 'px-0 py-0', footer: 'px-0 gap-x-0 justify-center'
+        }"
+      >
         <template #header>
           <NuxtLink :to="'/discovery'">
             <div class="w-full flex justify-center items-center">
-              <img src="/export.png" class="h-4/5 w-4/5 transition duration-300 ease-in-out transform hover:brightness-75">
+              <img src="/export.png" class="h-full w-full transition duration-300 ease-in-out transform hover:brightness-200">
             </div>
           </NuxtLink>
         </template>
 
         <UDivider />
 
-        <div class="overflow-y-auto h-full px-4" style="-ms-overflow-style: none; scrollbar-width: none;">
+        <div class="overflow-y-auto h-full px-2" style="-ms-overflow-style: none; scrollbar-width: none;">
           <NuxtLink
             v-for="community in joinedCommunities"
             :key="community.uuid"
@@ -63,16 +68,28 @@ onMounted(async () => {
               ])"
             />
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
-            <div class="aspect-square rounded-lg border border-gray-100 bg-white z-10 overflow-hidden">
-              <img
-                :src="community.logo || arUrl(communityLogo)"
-                :title="community.name"
-                class="w-full h-full object-cover"
-              >
-            </div>
+
+            <CuteRadius width="64" height="64">
+              <div class="aspect-square rounded-lg bg-white z-10 overflow-hidden">
+                <img
+                  :src="community.logo || arUrl(communityLogo)"
+                  :title="community.name"
+                  class="w-full h-full object-cover"
+                >
+              </div>
+            </CuteRadius>
           </NuxtLink>
 
-          <UButton class="w-full mt-2 aspect-square" variant="soft" @click="selectModal=0; isCreateModalOpen = true">
+          <UButton
+            class="w-full mt-2 aspect-square"
+            variant="soft"
+            :ui="{
+              variant: {
+                soft: 'bg-{color}-100'
+              }
+            }"
+            @click="selectModal=0; isCreateModalOpen = true"
+          >
             <UIcon name="ion:add" class="h-full w-full" />
           </UButton>
         </div>
