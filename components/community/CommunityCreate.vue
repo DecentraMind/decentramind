@@ -47,7 +47,7 @@ async function onFormSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   createCommunity()
 }
 
-const emit = defineEmits(['close-modal'])
+const emit = defineEmits(['close-modal', 'created'])
 
 const { addCommunity, getCommunityList, makeCommunityChat} = $(aoCommunityStore())
 
@@ -470,7 +470,7 @@ const removeSupplyGroup = (index: number) => {
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton @click="getCommunityList().then(() => $router.push(`/community/${createdCommunityID}`)); emit('close-modal'); isCommunityCreateModalOpen = false">
+            <UButton @click="$router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); isCommunityCreateModalOpen = false">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>

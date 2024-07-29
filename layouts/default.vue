@@ -95,7 +95,7 @@ onMounted(async () => {
           <UButton color="white" @click="selectModal=1">Create Community</UButton>
           <UButton color="white" @click="selectModal=2">Create Tokens</UButton>
         </div>
-        <CommunityCreate v-if="selectModal === 1" @close-modal="isCreateModalOpen = false" />
+        <CommunityCreate v-if="selectModal === 1" @created="getCommunityList()" @close-modal="isCreateModalOpen = false" />
         <TokenCreate v-if="selectModal === 2" />
       </UCard>
     </UModal>
