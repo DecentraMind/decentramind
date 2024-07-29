@@ -8,7 +8,7 @@ export const communityLogo = 'vtUgAy-qAyVFlMfOfKIF31izy9-Ms7m2v-Rp33UpGEw'
 export const tokenLogo = 'Rk1xvMAm-z_TMGresU6zDpGjD0UNK6TjvZ_r6fFSrzQ'
 
 export const taskBanners = [
-  'rL_eONrQI7IHo70Aq19tl53Bai-jheSeQs6TxWjqig',
+  'erL_eONrQI7IHo70Aq19tl53Bai-jheSeQs6TxWjqig',
   'pVRDeHl4srK-ZI6zDayD5WO79Gzfe_4Tj0UbIMYSFnI',
   'C7jXwg2VNJwLVTkfXIfcVCT7Mi-0zpk0we6WSlM7XbM',
   'TyQujh7bXwCrTtRhuQtJVn7-Jdn94A1B3qbTgGGyYOI',
@@ -27,9 +27,31 @@ export function arUrl(tx: string, gateWayIndex: number = 0) {
   return gateWays[gateWayIndex] + tx
 }
 
-export function replace2ARBanner(banner: string, banners: string[] = communityBanners) {
+export function getCommunityBannerUrl(banner: string, banners: string[] = communityBanners) {
   const matched = banner.match(/\d+$/)
   const bannerIndex = matched ? parseInt(matched[0]) - 6 : 0
 
   return arUrl(banners[bannerIndex])
+}
+
+export function getTaskBannerUrl(bannerName: string) {
+  const legacyBannerNames = [
+    'banner1',
+    'banner2',
+    'banner3',
+    'banner4',
+    'banner5',
+  ]
+
+  if (legacyBannerNames.includes(bannerName)) {
+    const matched = bannerName.match(/\d+$/)
+    const bannerIndex = matched ? parseInt(matched[0]) - 1 : 0
+
+    if (taskBanners[bannerIndex]) {
+      return arUrl(taskBanners[bannerIndex])
+    }
+    return `/task/${bannerName}.jpg`
+  }
+
+  return arUrl(bannerName)
 }

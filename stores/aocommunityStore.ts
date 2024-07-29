@@ -5,38 +5,10 @@ import {
   dryrun,
   result
 } from '@permaweb/aoconnect'
-import type { CommunitySetting, TradePlatform, UserInfo } from '~/types'
-import type { TokenName, CommunityToken, TokenSupply } from '~/utils/constants'
+import type { Community, CommunityList, CommunityListItem, CommunitySetting, UserInfo } from '~/types'
+import type { CommunityToken, TokenSupply } from '~/utils/constants'
 import { createUuid, sleep, retry } from '~/utils/util'
 import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
-
-export type CommunityListItem = {
-  uuid: string
-  logo: string
-  banner: string
-  name: string
-  desc: string
-  website: string
-  twitter: string
-  whitebook: string
-  github: string
-  /** how many user joined in this community */
-  buildnum: string
-  bounty: TokenName[]
-  ispublished: boolean
-  communitytoken: CommunityToken[]
-  istradable: boolean
-  support: TradePlatform[]
-  alltoken: string
-  tokensupply: TokenSupply[]
-  creater: string
-  communitychatid: string
-  timestamp: string
-  isJoined?: boolean
-  joinTime?: string
-}
-export type CommunityList = CommunityListItem[]
-
 
 // Read the Lua file
 //const luaCode = fs.readFileSync('./AO/chat.lua', 'utf8')
@@ -187,6 +159,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'registInfo' },
+        // TODO remove userAddress here
         { name: 'userAddress', value: address }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
@@ -308,7 +281,9 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     isLoading = false
   }
 
-  //Get community list method (which generates a community table, and a joined community table)
+  /**
+   * Get community list method (which generates a community table, and a joined community table)
+   * */
   const getCommunityList = async () => {
     //if (isLoading) return
     //isLoading = true
@@ -434,26 +409,8 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       await getCommunityList()
     }
 
-    const communityInfo = communityList.find(community => community.uuid === uuid)
-    return communityInfo
-  }
-
-  type Community = {
-    banner: `banner${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10}`
-    bounty: TokenName[]
-    buildnum: number
-    communitytoken: CommunityToken[]
-    creater: string
-    github: string
-    ispublished: boolean
-    logo: string
-    name: string
-    support: TradePlatform[]
-    tokensupply: TokenSupply[]
-    twitter: string
-    uuid: string
-    website: string
-    communitychatid?: string
+    const community = communityList.find(community => community.uuid === uuid)
+    return community
   }
 
   //Getting information about a specific community
@@ -469,11 +426,17 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     const json = extractResult<string>(result)
     if (!json) return
 
-    return JSON.parse(json) as Community
+    const res = JSON.parse(json)
+    if (res.length) {
+      // TODO remove this branch if contract returns Community instead of Community[]
+      return (res[0] as Community)
+    } else {
+      return res as Community
+    }
   }
 
   //How to join the community
-  const joinCommunity = async (uuid: string, invite: string) => {
+  const joinCommunity = async (communityID: string, inviterAddress: string) => {
     if (isJoining) return
     isJoining = true
     try {
@@ -484,11 +447,11 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
         tags: [
           { name: 'Action', value: 'join' },
           { name: 'userAddress', value: address },
-          { name: 'invite', value: invite },
+          { name: 'invite', value: inviterAddress },
           { name: 'time', value: time.toString() }
         ],
         signer: createDataItemSigner(window.arweaveWallet),
-        data: uuid,
+        data: communityID,
       })
       console.log(join)
       isJoining = false

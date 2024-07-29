@@ -1,19 +1,27 @@
 <script setup lang="ts">
-import { replace2ARBanner, arUrl, communityLogo } from '~/utils/arAssets'
+import { getCommunityBannerUrl, arUrl, communityLogo } from '~/utils/arAssets'
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, linkTwitter, getCommunityList, joinCommunity, createToken } = $(aoCommunityStore())
+const { communityList, vouch, linkTwitter, getCommunityList, joinCommunity } = $(aoCommunityStore())
 
 const { showError } = $(notificationStore())
 
 const toast = useToast()
 const router = useRouter()
 
-let communityLoading = $ref(true)
 let linkToTwitter = $ref(false)
 
+let communityLoading = $ref(true)
+watch(communityList, async () => {
+  if(communityList.length) {
+    communityLoading = false
+  }
+})
+
 const sortedCommunities = $computed(() => {
+  // TODO if buildnum of a, b are equal, sort by create time (community.timestamp)
+
   return communityList.sort((a, b) => {
     return a.buildnum <= b.buildnum ? 1 : -1
   })
@@ -23,10 +31,9 @@ onMounted(async () => {
   if (!address) {
     router.push('/')
   }
-  getVouchInfo()
+
   try {
-    await Promise.all([getCommunityList(), getVouchInfo()])
-    communityLoading = false
+    await getVouchInfo()
   } catch (error) {
     const message = error instanceof Error ? error.message : error
     showError('Error fetching data:' + message)
@@ -119,7 +126,7 @@ const test = async() => {
     </UDashboardNavbar>
 
     <div class="w-full overflow-y-auto h-[calc(100%-var(--header-height))] p-10 pb-20 bg-grid">
-      <div v-if="!communityList && communityLoading" class="absolute top-0 left-0 w-full h-screen flex justify-center items-center">
+      <div v-if="!communityList.length && communityLoading" class="absolute top-0 left-0 w-full h-screen flex justify-center items-center">
         <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
       </div>
 
@@ -128,7 +135,7 @@ const test = async() => {
           <UBlogPost
             v-for="community in sortedCommunities"
             :key="community.uuid"
-            :image="replace2ARBanner(community.banner)"
+            :image="getCommunityBannerUrl(community.banner)"
             class="mb-2"
             :ui="{
               wrapper: 'bg-white gap-y-0 ring-1 ring-gray-100 hover:ring-gray-200 rounded-lg overflow-hidden cursor-pointer',
