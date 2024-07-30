@@ -71,11 +71,27 @@ export const validateCommunitySetting = (state: CommunitySetting & {tokenSupply:
   return errors
 }
 
-// 定义新的 schema
+export const taskSchema = z.object({
+  taskName: z.string().min(2).max(30),
+  taskInfo: z.string().min(3).max(100),
+  tokenNumber: z.number().min(0),
+  tokenNumber1: z.number().min(0).optional(),
+  rewardTotal: z.number()
+    .min(1, { message: 'Must be more than 0' })
+    .refine((value: number) => {
+      return !isNaN(value) && value > 0
+    }, { message: 'Must be a valid number more than 0' })
+    .refine((value: number) => {
+      const regex = /^\d+$/
+      return regex.test('' + value)
+    }, { message: 'Must be a valid integer' })
+})
+
+export type TaskSchema = z.infer<typeof taskSchema>
+
 export const createTokenSchema = z.object({
   name: z.string().min(3).max(30),
   ticker: z.string().email(),
 })
 
-// 导出新的 schema
 export type CreateTokenSchema = z.infer<typeof createTokenSchema>

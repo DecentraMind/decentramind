@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { UserInfo } from '~/types'
-import { arUrl, communityLogo, userAvatar } from '~/utils/arAssets'
+import { arUrl, defaultCommunityLogo, defaultUserAvatar } from '~/utils/arAssets'
 import { normalizeClass } from 'vue'
 
 const router = useRouter()
@@ -72,7 +72,7 @@ onMounted(async () => {
             <CuteRadius width="64" height="64">
               <div class="aspect-square rounded-lg bg-white z-10 overflow-hidden">
                 <img
-                  :src="community.logo || arUrl(communityLogo)"
+                  :src="community.logo || arUrl(defaultCommunityLogo)"
                   :title="community.name"
                   class="w-full h-full object-cover"
                 >
@@ -108,7 +108,7 @@ onMounted(async () => {
                 />
               </template>
               <template v-else>
-                <UAvatar :src="user.avatar || arUrl(userAvatar)" alt="User Settings" size="2xl" />
+                <UAvatar :src="user.avatar || arUrl(defaultUserAvatar)" alt="User Settings" size="2xl" />
               </template>
             </NuxtLink>
           </UPopover>

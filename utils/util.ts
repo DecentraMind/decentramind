@@ -62,12 +62,12 @@ export async function retry<T>(args: {
       return res
     } catch (error) {
       console.info(`Attempt ${triedTimes} failed:`, error)
-      triedTimes++
 
       if (triedTimes === maxTimes) {
         console.error('Max retries reached. Operation failed.' + error)
         throw error
       }
+      triedTimes++
 
       await sleep(interval)
     }

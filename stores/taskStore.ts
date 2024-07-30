@@ -657,28 +657,35 @@ async function transferBounty(receiver: string, tokenName: string, amount: numbe
   console.log({tokenName, amount, receiver})
   await window.arweaveWallet.connect(permissions)
 
-  const mTags = await retry({
-    fn: async () => {
-      const messageId = await message({
-        process: tokenProcess,
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [
-          { name: 'Action', value: 'Transfer' },
-          { name: 'Recipient', value: receiver },
-          { name: 'Quantity', value: String(amount) }
-        ]
-      })
-      const { Messages } = await result({
-        // the arweave TXID of the message
-        message: messageId,
-        // the arweave TXID of the process
-        process: tokenProcess,
-      })
-      return Messages[0].Tags as {name: string, value: string}[]
-    },
-    maxAttempts: 3,
-    interval: 500
-  })
+  let mTags
+  try {
+    mTags = await retry({
+      fn: async () => {
+        const messageId = await message({
+          process: tokenProcess,
+          signer: createDataItemSigner(window.arweaveWallet),
+          tags: [
+            { name: 'Action', value: 'Transfer' },
+            { name: 'Recipient', value: receiver },
+            { name: 'Quantity', value: String(amount) }
+          ]
+        })
+        const { Messages } = await result({
+          // the arweave TXID of the message
+          message: messageId,
+          // the arweave TXID of the process
+          process: tokenProcess,
+        })
+        return Messages[0].Tags as {name: string, value: string}[]
+      },
+      maxAttempts: 1,
+      interval: 500
+    })
+  } catch(e) {
+    if (e instanceof Error && e.message.includes('Cannot read properties of undefined')) {
+      throw new Error(`Transfer token ${tokenName} failed.`)
+    }
+  }
 
   if (!mTags) {
     throw new Error('Pay bounty failed.')

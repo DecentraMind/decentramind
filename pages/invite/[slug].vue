@@ -57,7 +57,7 @@ onMounted(async () => {
   <UMain class="flex flex-col justify-center items-center p-2">
     <UCard class="w-full md:w-2/3">
       <template #header>
-        <h2 class="font-bold">Invitation</h2>
+        <h2 class="font-bold text-center">Invitation</h2>
       </template>
 
       <div v-if="isLoading" class="w-full flex justify-center">
