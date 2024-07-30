@@ -1,47 +1,46 @@
 <script setup lang="ts">
 import { arUrl, defaultUserAvatar } from '~/utils/arAssets'
-import { z } from 'zod'
-
-const userForm = $ref({
-  avatar: '',
-  name: ''
-})
-
-const schema = z.object({
-  name: z.string().min(2).max(28),
-})
-
-type Schema = z.infer<typeof schema>
+import { userSchema } from '~/utils/schemas'
 
 const { address } = $(aoStore())
-const { getUserByAddress, personalInfo } = $(aoCommunityStore())
+const { userInfo, updateUser } = $(aoCommunityStore())
 const { showMessage } = $(notificationStore())
 
 const saveInfo = async () => {
-  await personalInfo(
+  await updateUser(
     userForm.avatar,
     userForm.name,
   )
+  // userInfo = [{...userForm}]
   showMessage('Profile updated')
 }
 
 const router = useRouter()
-let isLoading = $ref(true)
+const isLoading = $computed(() => !userInfo?.length)
+
+let userForm = $ref({
+  name: userInfo[0]?.name || '',
+  avatar: userInfo[0]?.avatar || ''
+})
+
+watch(() => userInfo, (userInfo) => {
+  console.log('userInfo changed:', userInfo)
+  if (userInfo?.length) {
+    userForm = {...userInfo[0]}
+  }
+})
+
 onMounted(async () => {
   if(!address) {
     router.push('/')
     return
   }
 
-  try {
-    const user = await getUserByAddress(address)
-    userForm.avatar = user.avatar
-    userForm.name = user.name
-  } catch (error) {
-    console.error('Error fetching data:', error)
+  if (userInfo?.length) {
+    console.log('use userInfo[0]')
+    userForm = {...userInfo[0]}
   }
-
-  isLoading = false
+  console.log({userForm})
 })
 
 const uploadInput = $ref<HTMLInputElement>()
@@ -74,37 +73,39 @@ const updateAvatar = () => {
 </script>
 
 <template>
-  <UDashboardPanelContent class="pb-24">
-    <Input ref="uploadInput" type="file" size="sm" class="opacity-0" @change="updateAvatar" />
-    <UForm ref="form" :schema="schema" :state="userForm" class="w-fit">
-      <div class="flex items-center mb-4 mt-3">
-        <div @click="uploadInput && uploadInput.click()">
-          <UAvatar
-            v-if="userForm.avatar === 'N/A' || isLoading"
-            alt=""
-            class="ml-5"
-            size="2xl"
-          />
-          <UAvatar
-            v-else
-            :src="userForm.avatar || arUrl(defaultUserAvatar)"
-            alt="Avatar"
-            class="ml-5"
-            size="2xl"
-          />
-        </div>
-        <div class="flex items-center ml-6">
-          <UFormGroup name="name" class="mb-3">
-            <template #label>
-              {{ $t('setting.person.name') }}
-            </template>
-            <UInput v-model="userForm.name" />
-          </UFormGroup>
-        </div>
-      </div>
+  <UDashboardPanelContent class="pt-10 pb-24">
+    <Input ref="uploadInput" type="file" size="sm" class="opacity-0 h-0" @change="updateAvatar" />
 
-      <div class="flex justify-end">
-        <UButton type="submit" color="black" @click="saveInfo">
+    <div v-if="isLoading" class="w-full h-52 flex justify-center items-center">
+      <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" />
+    </div>
+
+    <UForm v-if="!isLoading" :schema="userSchema" :state="userForm">
+      <div class="flex flex-col items-center mb-4 mt-3">
+        <UFormGroup name="avatar" @click="uploadInput && uploadInput.click()">
+          <div class="flex justify-center">
+            <UAvatar
+              v-if="userForm.avatar === 'N/A' || isLoading"
+              alt=""
+              size="2xl"
+            />
+            <UAvatar
+              v-else
+              :src="userForm.avatar || arUrl(defaultUserAvatar)"
+              alt="Avatar"
+              size="2xl"
+            />
+          </div>
+        </UFormGroup>
+
+        <UFormGroup name="name" class="mb-4 mt-4">
+          <template #label>
+            {{ $t('setting.person.name') }}
+          </template>
+          <UInput v-model="userForm.name" class="w-72" />
+        </UFormGroup>
+
+        <UButton type="submit" @click="saveInfo">
           {{ $t('setting.save') }}
         </UButton>
       </div>

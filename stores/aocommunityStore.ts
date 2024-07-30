@@ -17,7 +17,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   const { address } = $(aoStore())
   let linkTwitter = $ref(true)
   let communityList = $ref<CommunityList>([])
-  let userInfo = $ref<UserInfo[]>()
+  let userInfo = $ref<UserInfo[]>([])
   let communityUser = $ref({})
   let joinedCommunities = $ref<CommunityList>({})
   let chatBanuser = $ref({})
@@ -481,17 +481,13 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   //Modification of personal information
-  const updateUser = async (avatar, username) => {
-    //if (isLoading) return
-    //isLoading = true
-    const personal = [
-      {
-        avatar: avatar,
-        name: username,
-      }
-    ]
-    const jsonString = JSON.stringify(personal)
-    const user = await message({
+  const updateUser = async (avatar: string, name: string) => {
+    const userData = [{
+      avatar,
+      name
+    }]
+    const jsonString = JSON.stringify(userInfo)
+    const messageId = await message({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'personalInfo' },
@@ -500,8 +496,11 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       data: jsonString,
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    isLoading = false
-    return user
+
+    if (messageId) {
+      userInfo = userData
+    }
+    return messageId
   }
 
   //Modification of personal github information

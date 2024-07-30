@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { UserInfo } from '~/types'
 import { arUrl, defaultCommunityLogo, defaultUserAvatar } from '~/utils/arAssets'
 import { normalizeClass } from 'vue'
 
@@ -12,11 +11,9 @@ const communityID = $computed(() => {
 const selectModal = $ref(0)
 
 const { address } = $(aoStore())
-const { joinedCommunities, getBan, getUserByAddress, getCommunityList } = $(aoCommunityStore())
+const { joinedCommunities, getBan, userInfo, getUser, getCommunityList } = $(aoCommunityStore())
 
 const isCreateModalOpen = $ref(false)
-
-let user = $ref<UserInfo>()
 
 onMounted(async () => {
   console.log({router})
@@ -25,10 +22,8 @@ onMounted(async () => {
       router.push('/')
       return
     }
-    getBan()
-    user = await getUserByAddress(address)
-    // this will fetch all communities, ans set joinedCommunities if address is not ''
-    getCommunityList()
+
+    Promise.all([getCommunityList(), getUser(), getBan()])
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -70,7 +65,7 @@ onMounted(async () => {
             />
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
 
-            <CuteRadius width="64" height="64">
+            <CuteRadius :width="64" :height="64">
               <div class="aspect-square rounded-lg bg-white z-10 overflow-hidden">
                 <img
                   :src="community.logo || arUrl(defaultCommunityLogo)"
@@ -103,13 +98,13 @@ onMounted(async () => {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
-              <template v-if="!user">
+              <template v-if="!userInfo.length">
                 <UAvatar
                   size="2xl"
                 />
               </template>
               <template v-else>
-                <UAvatar :src="user.avatar || arUrl(defaultUserAvatar)" alt="User Settings" size="2xl" />
+                <UAvatar :src="userInfo[0].avatar || arUrl(defaultUserAvatar)" alt="User Settings" size="2xl" />
               </template>
             </NuxtLink>
           </UPopover>

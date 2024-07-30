@@ -126,7 +126,7 @@ const findInvitedByCommunityID = (communityID: string) => {
         <div class="border h-full px-2 py-2 mb-2">
           <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
             <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(defaultUserAvatar)" alt="user avatar" />
-            <div class="w-fit">{{ invite.userInfo?.[0].name }}</div>
+            <div class="w-fit">{{ invite.userInfo?.[0].name || shortString(invite.invited) }}</div>
             <div class="w-90">{{ invite.invited }}</div>
           </div>
         </div>
