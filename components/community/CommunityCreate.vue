@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
 import { tradePlatforms, tokenNames, type TokenSupply } from '~/utils/constants'
-import defaultCommunityLogo from '~/utils/defaultCommunityLogo'
 import type { CommunitySetting } from '~/types'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
-import { getCommunityBannerUrl } from '~/utils/arAssets'
+import { getCommunityBannerUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
 let isCommunityCreateModalOpen = $ref(false)
 let createdCommunityID = $ref('')
@@ -110,7 +109,7 @@ const handleUploadLogo = (event: Event) => {
   const reader = new FileReader()
   reader.onload = (e) => {
     const img = new Image()
-    const b64 = e.target!.result?.toString() || defaultCommunityLogo
+    const b64 = e.target!.result?.toString()
     img.onload = () => {
       if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
         state.logoBase64Data = b64
@@ -118,7 +117,7 @@ const handleUploadLogo = (event: Event) => {
         alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
       }
     }
-    img.src = b64
+    img.src = b64 || arUrl(defaultCommunityLogo)
   }
   reader.readAsDataURL(file)
 }

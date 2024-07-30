@@ -89,6 +89,13 @@ export const taskSchema = z.object({
 
 export type TaskSchema = z.infer<typeof taskSchema>
 
+export const userSchema = z.object({
+  name: z.string().min(2).max(28),
+  avatar: z.string().refine((avatar: string) => {
+    return avatar
+  }, { message: 'Avatar is required' })
+})
+
 export const createTokenSchema = z.object({
   name: z.string().min(3).max(30),
   ticker: z.string().email(),

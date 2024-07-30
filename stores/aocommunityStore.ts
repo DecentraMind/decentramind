@@ -654,7 +654,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     settingCommunity,
     joinCommunity,
     exitCommunity,
-    personalInfo: updateUser,
+    updateUser,
     personalGithub,
     getUser,
     getUserByAddress,

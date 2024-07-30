@@ -26,7 +26,7 @@ import {onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 
 const toast = useToast()
-const {userInfo, getUser: getInfo, personalInfo} = $(aoCommunityStore())
+const {userInfo, getUser, updateUser} = $(aoCommunityStore())
 const Sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -41,12 +41,12 @@ onMounted(async () => {
   await Sleep(500)
   await test()
   console.log('userId = ' + userId)
-  await getInfo()
+  await getUser()
   const connectTwitter = userId
 
   if (code && state === 'state' && userId) {
     try {
-      await personalInfo(
+      await updateUser(
         userInfo[0].avatar,
         userInfo[0].name,
         connectTwitter,
