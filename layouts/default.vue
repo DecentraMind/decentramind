@@ -41,7 +41,8 @@ onMounted(async () => {
       <UDashboardSidebar
         :ui="{
           wrapper: 'bg-slate-50',
-          body: 'px-0 py-0', footer: 'px-0 gap-x-0 justify-center'
+          body: 'px-0 py-0 gap-y-0',
+          footer: 'px-0 gap-x-0 justify-center'
         }"
       >
         <template #header>
@@ -54,7 +55,7 @@ onMounted(async () => {
 
         <UDivider />
 
-        <div class="overflow-y-auto h-full px-2" style="-ms-overflow-style: none; scrollbar-width: none;">
+        <div class="overflow-y-auto h-full px-2 pb-2" style="-ms-overflow-style: none; scrollbar-width: none;">
           <NuxtLink
             v-for="community in joinedCommunities"
             :key="community.uuid"
