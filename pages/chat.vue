@@ -159,6 +159,7 @@ const OpenunBan = (index) => {
 const unbanSure = async() => {
   unForbid = true
   await unbanChat(currentUuid, currentUser)
+  await getBan()
   unForbid = false
   unbanButton = false
 }
@@ -387,7 +388,7 @@ const test = async() => {
           </UButton>
         </div>
         <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <Text>Forbid...</Text>
+          <Text>Mute...</Text>
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>
@@ -411,7 +412,7 @@ const test = async() => {
           </UButton>
         </div>
         <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <Text>unForbid...</Text>
+          <Text>unMute...</Text>
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>
