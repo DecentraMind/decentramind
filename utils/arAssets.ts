@@ -1,11 +1,11 @@
 /** @see https://network-portal.app/#/gateways  */
-export const gateWays = ['https://ar-io.dev/', 'https://permagate.io/']
+export const gateways = ['https://ar-io.dev/', 'https://permagate.io/']
 
-export const userAvatar = 'h3GpQlrBODufN2StZhf_er2egNU-9UcQiZQYAWg6AY4'
+export const defaultUserAvatar = 'h3GpQlrBODufN2StZhf_er2egNU-9UcQiZQYAWg6AY4'
 
-export const communityLogo = 'vtUgAy-qAyVFlMfOfKIF31izy9-Ms7m2v-Rp33UpGEw'
+export const defaultCommunityLogo = 'vtUgAy-qAyVFlMfOfKIF31izy9-Ms7m2v-Rp33UpGEw'
 
-export const tokenLogo = 'Rk1xvMAm-z_TMGresU6zDpGjD0UNK6TjvZ_r6fFSrzQ'
+export const defaultTokenLogo = 'Rk1xvMAm-z_TMGresU6zDpGjD0UNK6TjvZ_r6fFSrzQ'
 
 export const taskBanners = [
   'erL_eONrQI7IHo70Aq19tl53Bai-jheSeQs6TxWjqig',
@@ -24,7 +24,7 @@ export const communityBanners = [
 ]
 
 export function arUrl(tx: string, gateWayIndex: number = 0) {
-  return gateWays[gateWayIndex] + tx
+  return gateways[gateWayIndex] + tx
 }
 
 export function getCommunityBannerUrl(banner: string, banners: string[] = communityBanners) {

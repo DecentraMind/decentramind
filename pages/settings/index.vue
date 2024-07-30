@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { arUrl, userAvatar } from '~/utils/arAssets'
+import { arUrl, defaultUserAvatar } from '~/utils/arAssets'
 import { z } from 'zod'
 
 const userForm = $ref({
@@ -87,7 +87,7 @@ const updateAvatar = () => {
           />
           <UAvatar
             v-else
-            :src="userForm.avatar || arUrl(userAvatar)"
+            :src="userForm.avatar || arUrl(defaultUserAvatar)"
             alt="Avatar"
             class="ml-5"
             size="2xl"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {taskStore} from '~/stores/taskStore'
 import type { InviteInfo } from '~/types'
-import { arUrl, userAvatar, communityLogo } from '~/utils/arAssets'
+import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils/util'
 
 const { getLocalCommunity } = $(aoCommunityStore())
@@ -105,14 +105,14 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div v-for="community in communities" :key="community.uuid">
         <div v-if="invitedByMe[community.uuid] && community.name" class="flex items-center justify-start mt-5">
           <div class="flex items-center">
-            <UColorModeImage :src="community.logo || arUrl(communityLogo)" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
+            <UColorModeImage :src="community.logo || arUrl(defaultCommunityLogo)" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
             <div class="ml-10 text-xl w-[160px] overflow-hidden">{{ community.name }}</div>
             <div class="ml-20 text-xl w-[250px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
           </div>
           <div class="flex">
             <UAvatarGroup size="sm" :max="2" class="ml-10">
               <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
-                <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(userAvatar)" :alt="invite.userInfo?.[0].name || invite.userId" />
+                <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(defaultUserAvatar)" :alt="invite.userInfo?.[0].name || invite.userId" />
               </div>
             </UAvatarGroup>
             <UButton color="white" class="ml-4" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>
@@ -125,7 +125,7 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div class="flex justify-center min-h-[300px] pt-10 px-6">
         <div class="border h-full px-2 py-2 mb-2">
           <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
-            <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(userAvatar)" alt="user avatar" />
+            <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(defaultUserAvatar)" alt="user avatar" />
             <div class="w-fit">{{ invite.userInfo?.[0].name }}</div>
             <div class="w-90">{{ invite.invited }}</div>
           </div>

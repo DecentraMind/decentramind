@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getCommunityBannerUrl, arUrl, communityLogo } from '~/utils/arAssets'
+import { getCommunityBannerUrl, arUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
 const { address, doLogout, doLogin } = $(aoStore())
 
@@ -142,14 +142,15 @@ const test = async() => {
               container: 'group-hover:bg-dot pt-4',
               inner: 'flex-1 px-4 overflow-hidden',
               image: {
-                wrapper: 'ring-0 rounded-none'
+                wrapper: 'ring-0 rounded-none',
+                base: 'ease-in-out'
               }
             }"
             @click="community.isJoined && $router.push('/community/' + community.uuid)"
           >
             <template #title>
               <div class="flex items-center">
-                <UAvatar :src="community.logo || arUrl(communityLogo)" :alt="community.name" class="ring-1 ring-gray-100" />
+                <UAvatar :src="community.logo || arUrl(defaultCommunityLogo)" :alt="community.name" class="ring-1 ring-gray-100" />
                 <div class="mx-3 text-xl">
                   {{ community.name }}
                 </div>

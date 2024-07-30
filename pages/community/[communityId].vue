@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import type { FormSubmitEvent } from '#ui/types'
-
-import { z } from 'zod'
 import type { Dayjs } from 'dayjs'
 import { tokenOptions, timeZoneOptions, tokens, type TokenName } from '~/utils/constants'
 import type { Community, Task } from '~/types'
 import { arUrl, taskBanners, getTaskBannerUrl } from '~/utils/arAssets'
 import { createUuid } from '~/utils/util'
+import { taskSchema } from '~/utils/schemas'
 
 const { t } = useI18n()
 const { createTask, getAllTasks, getAllTaskSubmitInfo } = $(taskStore())
@@ -21,7 +19,6 @@ const isSettingModalOpen = $ref(false)
 
 let tasks = $ref<Array<Task & {reward: string}>>([])
 
-let postQuestLoading = $ref(false)
 const tabItems = [
   {
     label: t('Public Quests'),
@@ -41,29 +38,6 @@ function onChange(index: number) {
     alert('Being Cooked!')
   }
 }
-
-const taskSchema = z.object({
-  taskName: z.string().min(2).max(30),
-  taskInfo: z.string().min(3).max(100),
-  rewardTotal: z.string()
-    .min(1, { message: 'Must be more than 0' }) // This ensures the string is not empty
-    .refine((value: string) => {
-      const num = parseInt(value, 10)
-      return !isNaN(num) && num > 0
-    }, { message: 'Must be a valid number more than 0' })
-    .refine((value: string) => {
-      const regex = /^\d+$/
-      return regex.test(value)
-    }, { message: 'Must be a valid integer' })
-  /*
-  Allreward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
-    const num = parseInt(value)
-    return !isNaN(num) && num <= 100
-  }, { message: 'Must be a valid number less than or equal to 20' }),
-  */
-})
-
-type TaskSchema = z.infer<typeof taskSchema>
 
 const chainOptions = [
   { label: 'AO', value: 'AO' }
@@ -131,10 +105,11 @@ const form = $ref()
 
 const { showError } = $(notificationStore())
 
-async function onSubmitTaskForm(event: FormSubmitEvent<TaskSchema>) {
-  postQuestLoading = true
+let isPostingTask = $ref(false)
+async function onSubmitTaskForm() {
+  isPostingTask = true
   if (!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime) {
-    postQuestLoading = false
+    isPostingTask = false
     // isOpen = false
     alert('Please complete the quest information.')
     return
@@ -142,7 +117,7 @@ async function onSubmitTaskForm(event: FormSubmitEvent<TaskSchema>) {
 
   const token = tokens[state.tokenType.value as TokenName]
   if (!token) {
-    alert('Bounty 1 token is not valid.')
+    showError('Bounty 1 token is not valid.')
     return
   }
 
@@ -150,7 +125,7 @@ async function onSubmitTaskForm(event: FormSubmitEvent<TaskSchema>) {
   if (state.tokenType1.value) {
     token1 = tokens[state.tokenType1.value as TokenName]
     if(!token1) {
-      alert('Bounty 2 token is not valid.')
+      showError('Bounty 2 token is not valid.')
       return
     }
   }
@@ -178,18 +153,18 @@ async function onSubmitTaskForm(event: FormSubmitEvent<TaskSchema>) {
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
   if (selectEndTime <= currentDate) {
-    postQuestLoading = false
-    alert('Quest end time cannot be earlier than current time.')
+    isPostingTask = false
+    showError('Quest end time cannot be earlier than current time.')
     return
   }
   if (selectStartTime <= currentDate) {
-    postQuestLoading = false
-    alert('Quest start time cannot be earlier than current time.')
+    isPostingTask = false
+    showError('Quest start time cannot be earlier than current time.')
     return
   }
   if (selectStartTime >= selectEndTime) {
-    postQuestLoading = false
-    alert('Quest end time cannot be earlier than start time.')
+    isPostingTask = false
+    showError('Quest end time cannot be earlier than start time.')
     return
   }
   let isBegin = 'NS'
@@ -205,18 +180,26 @@ async function onSubmitTaskForm(event: FormSubmitEvent<TaskSchema>) {
     await createTask(transData)
     isCreateTaskModalOpen = false
   } catch (e) {
+    const message = e instanceof Error ? e.message : e
+
     if (e instanceof Error) {
-      if ((e as unknown as Error).message.includes('Insufficient Balance')) {
+      const message = e instanceof Error ? e.message : e
+
+      if (message.includes('Insufficient Balance')) {
         showError('Balance Error!')
+        isPostingTask = false
         return
       }
-      showError('Failed to create task.' + ((e as unknown as Error).message || ''))
+
     }
+
+    showError('Failed to create task. ' + message || '')
     console.error('create task error', e)
+    isPostingTask = false
   }
 
   tasks = await getAllTasks(String(communityId))
-  postQuestLoading = false
+  isPostingTask = false
 }
 
 let allTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getAllTaskSubmitInfo>>>([])
@@ -248,7 +231,6 @@ onMounted(async () => {
 
   try {
     community = await getCommunity(communityId)
-    console.log('get communityInfo', community.name, community, communityId)
   } catch (error) {
     console.error('Error fetching data:', error)
     return
@@ -257,6 +239,7 @@ onMounted(async () => {
     showError('Failed to load community info. Please try again later.')
     return
   }
+  console.log('get communityInfo', community.name, community, communityId)
 
   if(community.communitychatid) {
     await inboxAdd(community.name, community.communitychatid)
@@ -338,10 +321,11 @@ const quitCommunity = async (communityUuid: string) => {
   }
 }
 
-const textToCopy = $ref('')
+const textToCopy = $ref<HTMLParagraphElement>()
 
 const copyText = async () => {
   try {
+    if (!textToCopy) return
     // 使用 navigator.clipboard.writeText 复制文本
     await navigator.clipboard.writeText(textToCopy.innerText)
     // 复制成功后设置一段时间后隐藏提示信息
@@ -531,7 +515,7 @@ const shortedWebsite = $computed(() => {
             </UDropdown>
           </div>
 
-          <div v-if="!tasks.length && !isLoading" class="h-[calc(100%-var(--header-height))-40px] w-2/3 flex justify-center items-center">
+          <div v-if="!tasks.length && !isLoading" class="absolute h-[calc(100vh-var(--header-height)-40px)] w-2/3 flex justify-center items-center">
             <Card highlight orientation="vertical">
               <div class="flex justify-center items-center text-center whitespace-pre-line">
                 <div class="text-xl">
@@ -566,7 +550,8 @@ const shortedWebsite = $computed(() => {
                   container: 'group-hover:bg-dot py-4',
                   inner: 'flex-1 px-4 overflow-hidden',
                   image: {
-                    wrapper: 'ring-0 rounded-none'
+                    wrapper: 'ring-0 rounded-none',
+                    base: 'ease-in-out'
                   }
                 }"
               >
@@ -654,7 +639,7 @@ const shortedWebsite = $computed(() => {
                 v-model="currentIndex"
                 :items="taskBannersUrl"
                 :ui="{
-                  item: 'basis-full',
+                  item: 'basis-full min-h-36',
                   container: 'rounded-lg',
                   indicators: {
                     wrapper: 'relative bottom-0 mt-4'
@@ -696,15 +681,15 @@ const shortedWebsite = $computed(() => {
             </UFormGroup>
 
             <UFormGroup name="textarea" :label="$t('Bounty')">
-              <div class="flex justify-between items-center">
-                <UInput v-model="state.tokenNumber" placeholder="Amount" />
+              <div class="flex justify-between items-center gap-x-1 mb-1">
+                <UInput v-model="state.tokenNumber" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
 
                 <UInputMenu v-model="state.tokenType" placeholder="Token" :options="tokenOptions" />
 
                 <UInputMenu v-model="state.tokenChain" placeholder="Chain" :options="chainOptions" />
               </div>
-              <div class="flex justify-between items-center">
-                <UInput v-model="state.tokenNumber1" placeholder="Amount" />
+              <div class="flex justify-between items-center gap-x-1">
+                <UInput v-model="state.tokenNumber1" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
 
                 <UInputMenu v-model="state.tokenType1" placeholder="Token" :options="tokenOptions" />
 
@@ -712,15 +697,15 @@ const shortedWebsite = $computed(() => {
               </div>
             </UFormGroup>
             <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
-              <UInput v-model="state.rewardTotal" :placeholder="$t('Total Chances')" />
+              <UInput v-model="state.rewardTotal" type="number" :placeholder="$t('Total Chances')" />
             </UFormGroup>
             <UFormGroup name="textarea" :label="$t('Time')">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center gap-x-1">
                 <USelect v-model="state.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
                 <a-range-picker v-model:value="value2" show-time @change="handleDateChange" />
               </div>
             </UFormGroup>
-            <UButton color="white" type="submit" :disabled="postQuestLoading">
+            <UButton color="white" type="submit" :loading="isPostingTask" :disabled="isPostingTask">
               {{ $t('Post the Quest') }}
             </UButton>
           </UForm>
