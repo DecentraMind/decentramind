@@ -198,9 +198,11 @@ const test = async() => {
     <UModal v-model="linkToTwitter">
       <div class="h-[200px] flex flex-col items-center justify-center">
         <Text class="text-2xl">Not Vouched</Text>
-        <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank" rel="noopener noreferrer">
+        <div>
+        <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank">
           <UButton color="white" class="mt-10">Get Vouched</UButton>
         </NuxtLink>
+      </div>
       </div>
     </UModal>
     <UModal v-model="joinLoading">
