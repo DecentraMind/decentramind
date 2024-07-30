@@ -507,7 +507,7 @@ const shortedWebsite = $computed(() => {
 
     <UDashboardPage>
       <UPage class="bg-grid overflow-y-auto h-full w-full">
-        <div class="relative flex flex-col mx-10 pt-10 items-center h-full">
+        <div class="relative flex flex-col mx-10 pt-10 items-center h-screen">
           <div class="flex w-full justify-between items-center mb-6">
             <UTabs :items="tabItems" :ui="{wrapper: 'space-y-0'}" @change="onChange" />
             <UDropdown v-if="community && community.creater == address" :items="taskTypes" :popper="{ placement: 'bottom-start' }" :ui="{wrapper: 'h-8'}">

@@ -301,21 +301,25 @@ async function submitTask() {
 
   if (error) {
     console.error('Error fetching data:', error)
+    showError('Failed to validate space URL.')
+    submitLoading = false
     return
   }
 
   console.log('data from twitter = ' + JSON.stringify(data))
   // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
-  const spaceStart_at = data._rawValue.data.started_at
-  const spaceEnded_at = data._rawValue.data.ended_at
-  // 计算时间差，如果不足15分钟，不允许提交
-  const timeDifference = (new Date(spaceEnded_at).getTime() - new Date(spaceStart_at).getTime()) / (1000 * 60)
-  if (timeDifference < 15) {
-    alert('Space lasts less than 15 minutes')
+  const { started_at, ended_at, participant_count } = data._rawValue.data
+  const spaceStartAt = new Date(started_at).getTime()
+  const spaceEndedAt = new Date(ended_at).getTime()
+  const validJoinStartAt = new Date(spaceEndedAt - 24*60*60*1000).getTime()
+
+  const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
+  if (minuteDifference < 15) {
+    showError('Space lasts less than 15 minutes')
     return
   }
   // space参与人数
-  const participated = data._rawValue.data.participant_count
+  const participated = participant_count
   // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
   const la = data._rawValue.includes.users[0].profile_image_url
   const resp = la.split('_')
@@ -339,19 +343,14 @@ async function submitTask() {
   // 听众
   const audience = participated
   // 邀请人数
-  let inviteCount = 0
-  if (allInviteInfo.length != 0) {
-    for (let i = 0;i < allInviteInfo.length;++i) {
-      const temp = allInviteInfo[i]
-      if (temp.userId === address
-        && temp.communityId === communityId
-        && temp.inviteTime < new Date(spaceEnded_at).getTime()
-      ) {
-        inviteCount = inviteCount + 1
-      }
-    }
-  }
-  console.log('spaceEnded_at = ' + spaceEnded_at)
+  const inviteCount = allInviteInfo.filter((inviteInfo) => {
+    return inviteInfo.userId === address
+      && inviteInfo.communityId === communityId
+      && parseInt(inviteInfo.inviteTime) < spaceEndedAt
+      && parseInt(inviteInfo.inviteTime) > validJoinStartAt
+  }).length
+
+  console.log('spaceEnded_at = ' + spaceEndedAt)
   console.log('participated = ' + participated)
   console.log('userAvatar = ' + userAvatar)
   //console.log('userCreatedAt = ' + userCreatedAt)

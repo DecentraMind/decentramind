@@ -525,7 +525,7 @@ export const taskStore = defineStore('taskStore', () => {
         id: index + 1,
         address: element.address,
         brandEffect: element.brandEffect,
-        getPerson: element.getPerson,
+        getPerson: element.getPerson, // invite count
         audience: element.audience,
         url: element.url,
         score: element.score,
