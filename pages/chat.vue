@@ -140,6 +140,9 @@ const formattedTwitterLink = (twitter) => {
 
 let currentUser = $ref('')
 let Forbid = $ref(false)
+
+let showButton = $ref(false);
+
 const OpenBan = (index) => {
   banButton = true
   currentUser = index
@@ -320,32 +323,40 @@ const test = async() => {
           </UDashboardNavbar>
           <div class="pt-2 pl-2">
             <div v-for="(user, index) in communityUser" :key="index" class="flex items-center justify-between pr-20">
-              <div class="flex items-center">
-                <div class="mr-3">
-                  <UAvatar v-if="user[0].avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
-                  <UAvatar v-else size="lg" :src="user[0].avatar"/>
+              <div 
+                class="relative flex items-center justify-between"
+                @mouseenter="showButton = true" 
+                @mouseleave="showButton = false"
+              >
+                <div class="flex items-center">
+                  <div class="mr-3">
+                    <UAvatar v-if="user[0].avatar == 'N/A'" size="xl" src="/community/chatavatar.jpg"/>
+                    <UAvatar v-else size="lg" :src="user[0].avatar"/>
+                  </div>
+                  <div class="flex text-2xl">
+                    <div v-if="user[0].name == 'N/A'" class="text-center">User</div>
+                    <div v-else class="text-center">{{ user[0].name }}</div>
+                  </div>
                 </div>
-                <div class="flex text-2xl">
-                  <div v-if="user[0].name == 'N/A'" class="text-center">User</div>
-                  <div v-else class="text-center">{{ user[0].name }}</div>
-                </div>
+                <transition
+                  enter-active-class="transition ease-out duration-300"
+                  enter-from-class="transform translate-x-5 opacity-0"
+                  enter-to-class="transform translate-x-0 opacity-100"
+                  leave-active-class="transition ease-in duration-300"
+                  leave-from-class="transform translate-x-0 opacity-100"
+                  leave-to-class="transform translate-x-5 opacity-0"
+                >
+                  <UButton
+                    v-show="showButton && communityInfo.creater === address"
+                    :color="isUserBanned(index) ? 'gray' : 'gray'"
+                    variant="solid"
+                    @click="isUserBanned(index) ? OpenunBan(index) : OpenBan(index)"
+                    class="absolute right-0 top-1/2 transform -translate-y-1/2"
+                  >
+                    {{ isUserBanned(index) ? 'unmute' : 'mute' }}
+                  </UButton>
+                </transition>
               </div>
-              <UButton
-                v-if="communityInfo.creater === address && !isUserBanned(index)"
-                color="gray"
-                variant="solid"
-                @click="OpenBan(index)"
-              >
-                mute
-              </UButton>
-              <UButton
-                v-else-if="communityInfo.creater === address && isUserBanned(index)"
-                color="gray"
-                variant="solid"
-                @click="OpenunBan(index)"
-              >
-                unmute
-              </UButton>
             </div>
             <!--<UButton @click="test">test</UButton>-->
           </div>
