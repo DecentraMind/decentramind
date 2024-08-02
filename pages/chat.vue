@@ -324,7 +324,7 @@ const test = async() => {
           <div class="pt-2 pl-2">
             <div v-for="(user, index) in communityUser" :key="index" class="flex items-center justify-between pr-20">
               <div 
-                class="relative flex items-center justify-between"
+                class="relative flex items-center justify-between overflow-hidden"
                 @mouseenter="showButton = true" 
                 @mouseleave="showButton = false"
               >
@@ -339,12 +339,12 @@ const test = async() => {
                   </div>
                 </div>
                 <transition
-                  enter-active-class="transition ease-out duration-300"
-                  enter-from-class="transform translate-x-5 opacity-0"
-                  enter-to-class="transform translate-x-0 opacity-100"
-                  leave-active-class="transition ease-in duration-300"
-                  leave-from-class="transform translate-x-0 opacity-100"
-                  leave-to-class="transform translate-x-5 opacity-0"
+                  enter-active-class="transition-all duration-300 ease-out"
+                  leave-active-class="transition-all duration-300 ease-in"
+                  enter-from-class="translate-x-full opacity-0"
+                  enter-to-class="translate-x-0 opacity-100"
+                  leave-from-class="translate-x-0 opacity-100"
+                  leave-to-class="translate-x-full opacity-0"
                 >
                   <UButton
                     v-show="showButton && communityInfo.creater === address"
