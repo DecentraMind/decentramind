@@ -16,11 +16,6 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@ant-design-vue/nuxt'
   ],
-  lodash: {
-    prefix: '_',
-    prefixSkip: ['string'],
-    upperAfterPrefix: false
-  },
 
   nitro: {
     experimental: {

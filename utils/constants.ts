@@ -171,3 +171,13 @@ export const timeZoneOptions = [
 
 // 接受手续费的地址
 export const decentraMindReceiver = 'C0Q61xdmhFnpi5bksiGH88N7Kisz_vjTeBSgpNQ1gdo'
+
+export const allowedImageType = ['image/jpeg', 'image/png']
+
+export const uploadPath = {
+  communityLogo: '/c',
+  tokenLogo: '/t',
+  userAvatar: '/u'
+}
+
+export const EverLandUrlPrefix = 'https://decentra.4everland.store'

@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@ant-design-vue/nuxt": "^1.4.2",
+    "@aws-sdk/client-s3": "^3.621.0",
     "@css-inline/css-inline-win32-x64-msvc": "^0.13.1",
+    "@iconify-json/heroicons": "^1.1.23",
     "@nuxt/content": "^2.12.1",
     "@nuxt/fonts": "^0.7.1",
     "@nuxt/image": "^1.4.0",

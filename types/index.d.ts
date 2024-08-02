@@ -208,6 +208,14 @@ export type Bounty = {
  * user info from aoCommunity Process getInfo
  */
 export type UserInfo = {
-  avatar : string
   name : string
+  avatar : string
+  avatarARHash?: string
+}
+
+export type UploadResponse = {
+  url?: string
+  ARHash?: string
+  success: boolean
+  message: string
 }

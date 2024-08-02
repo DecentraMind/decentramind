@@ -86,7 +86,7 @@ onMounted(async () => {
             }"
             @click="selectModal=0; isCreateModalOpen = true"
           >
-            <UIcon name="ion:add" class="h-full w-full" />
+            <UIcon name="heroicons:plus" class="h-full w-full" />
           </UButton>
         </div>
 

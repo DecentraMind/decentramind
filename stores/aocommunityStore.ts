@@ -19,7 +19,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   let communityList = $ref<CommunityList>([])
   let userInfo = $ref<UserInfo[]>([])
   let communityUser = $ref({})
-  let joinedCommunities = $ref<CommunityList>({})
+  let joinedCommunities = $ref<CommunityList>([])
   let chatBanuser = $ref({})
   let isLoading = $ref(false)
   let isJoining = $ref(false)
@@ -481,12 +481,8 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   //Modification of personal information
-  const updateUser = async (avatar: string, name: string) => {
-    const userData = [{
-      avatar,
-      name
-    }]
-    const jsonString = JSON.stringify(userInfo)
+  const updateUser = async (userData: UserInfo) => {
+    const jsonString = JSON.stringify(userData)
     const messageId = await message({
       process: aoCommunityProcessID,
       tags: [
@@ -498,41 +494,9 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     })
 
     if (messageId) {
-      userInfo = userData
+      userInfo = [userData]
     }
     return messageId
-  }
-
-  //Modification of personal github information
-  const personalGithub = async (avatar, username, twitter, showtwitter, mail, showmail, phone, showphone, github) => {
-    //if (isLoading) return
-    //isLoading = true
-    const personal = [
-      {
-        avatar: avatar,
-        name: username,
-        twitter: twitter,
-        showtwitter: showtwitter,
-        mail: mail,
-        showmail: showmail,
-        phone: phone,
-        showphone: showphone,
-        github: github,
-      }
-    ]
-    const jsonString = JSON.stringify(personal)
-    const userWithGitHub = await message({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'personalInfo' },
-        { name: 'userAddress', value: address },
-        { name: 'github', value: 'yes' }
-      ],
-      data: jsonString,
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-    isLoading = false
-    return userWithGitHub
   }
 
   //Obtaining Personal Information
@@ -556,13 +520,13 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       throw new Error('Get user info failed.')
     }
 
-    const userInfos = JSON.parse(user.Messages[0].Data) as UserInfo[]
-    if (!userInfos.length) {
-      throw new Error('Get user info failed.')
+    const userInfo = JSON.parse(user.Messages[0].Data) as UserInfo[]|UserInfo
+    if (Array.isArray(userInfo)) {
+      console.log({ userInfo, address })
+      return userInfo[0]
+    } else {
+      return userInfo
     }
-
-    console.log({ userInfos, address })
-    return userInfos[0]
   }
 
   //Create a community chat room
@@ -654,7 +618,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     joinCommunity,
     exitCommunity,
     updateUser,
-    personalGithub,
     getUser,
     getUserByAddress,
     getCommunityUser,
