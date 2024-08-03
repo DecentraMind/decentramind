@@ -1,23 +1,29 @@
 <script setup lang="ts">
-import type { AsyncData } from '#app'
-import type { FetchError } from 'ofetch'
-import type { UserInfo, UploadResponse } from '~/types'
+import { unref } from 'vue'
+import type { UserInfo } from '~/types'
 import { arUrl, defaultUserAvatar } from '~/utils/arAssets'
-import { allowedImageType } from '~/utils/constants'
 import { userSchema } from '~/utils/schemas'
 
 const { address } = $(aoStore())
 const { userInfo, updateUser } = $(aoCommunityStore())
 const { showSuccess, showError } = $(notificationStore())
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let isSaving = $ref(false)
 const saveInfo = async () => {
-  await updateUser({
-    name: userForm.name,
-    avatar: userForm.avatar,
-    avatarARHash: userForm.avatarARHash
-  })
-  // userInfo = [{...userForm}]
-  showSuccess('Profile updated')
+  isSaving = true
+  try {
+    await updateUser({
+      name: userForm.name,
+      avatar: userForm.avatar,
+      avatarARHash: userForm.avatarARHash
+    })
+    // userInfo = [{...userForm}]
+    showSuccess('Profile updated')
+  } catch (e) {
+    showError('Failed to save profile.', e as Error)
+  }
+  isSaving = false
 }
 
 const router = useRouter()
@@ -56,44 +62,25 @@ onMounted(async () => {
 
 const uploadInput = $ref<HTMLInputElement>()
 
+const { upload, isUploading, uploadError, uploadResponse } = useUpload()
+
 async function upload2AR() {
-  const file = uploadInput?.files?.[0]
-  if (!file) {
-    showError('No file selected.')
-    return
-  }
-  const { size, type } = file
-  if (size > 150000) {
-    showError('Max size of upload image is 150KB.')
-    return
-  }
-  if (!allowedImageType.includes(type)) {
-    showError('Only jpg and png files are allowed.')
-    return
-  }
+  await upload({
+    fileName: address.slice(-4),
+    pathName: 'userAvatar',
+    file: uploadInput?.files?.[0]
+  })
 
-  console.log('upload file:', file)
+  const error = unref(uploadError)
+  const res = unref(uploadResponse)
 
-  const formData = new FormData()
-  formData.append('pathName', 'userAvatar')
-  formData.append('file', file)
-  formData.append('fileName', address.slice(-4))
-  const { data, error } = await useFetch('/api/upload', {
-    method: 'PUT',
-    body: formData
-  }) as AsyncData<UploadResponse, FetchError>
-
-  console.log('upload result', {data, error})
-
-  if (error.value || !data.value.success || !data.value.url) {
-    showError('Failed to upload image.' +
-      data.value.message ? ' ' + data.value.message : ''
-    )
+  if (error || !res) {
+    showError('Failed to upload image.', error)
     return
   }
 
-  userForm.avatar = data.value.url
-  userForm.avatarARHash = data.value.ARHash
+  userForm.avatar = res.url!
+  userForm.avatarARHash = res.ARHash!
 }
 
 </script>
@@ -107,9 +94,8 @@ async function upload2AR() {
     </div>
 
     <UForm v-if="!isLoading" :schema="userSchema" :state="userForm">
-      <Input v-model="address" name="address" type="hidden" size="sm" class="opacity-0 h-0" />
       <div class="flex flex-col items-center gap-4 w-fit mb-4 mt-3">
-        <UFormGroup name="avatar" @click="uploadInput && uploadInput.click()">
+        <UFormGroup name="avatar" @click="uploadInput && !isUploading && uploadInput.click()">
           <div class="relative flex justify-center cursor-pointer">
             <UAvatar
               v-if="userForm.avatar === 'N/A' || isLoading"
@@ -122,7 +108,9 @@ async function upload2AR() {
               alt="Avatar"
               size="2xl"
             />
-            <div class="absolute bg-primary-500 bg-opacity-70 border-1 flex justify-center items-center w-6 h-6 right-0 bottom-0 rounded-full"><UIcon name="uil:image-upload" class="block w-4 h-4 text-white" /></div>
+            <div v-if="!isUploading" class="absolute bg-primary-500 bg-opacity-70 border-1 flex justify-center items-center w-6 h-6 right-0 bottom-0 rounded-full"><UIcon name="uil:image-upload" class="block w-4 h-4 text-white" /></div>
+
+            <div v-if="isUploading" class="absolute left-0 top-0 flex justify-center items-center bg-primary-200 bg-opacity-50 rounded-full w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
           </div>
         </UFormGroup>
 
@@ -164,7 +152,7 @@ async function upload2AR() {
           />
         </UFormGroup>
 
-        <UButton type="submit" class="mt-4 text-center w-fit" @click="saveInfo">
+        <UButton type="submit" class="mt-4 text-center w-fit" :disabled="isSaving" :loading="isSaving" @click="saveInfo">
           {{ $t('setting.save') }}
         </UButton>
       </div>

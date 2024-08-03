@@ -1,61 +1,59 @@
 import type { EventHandlerRequest, H3Event } from 'h3'
 import { PutObjectCommandInput, S3 } from '@aws-sdk/client-s3'
-import { allowedImageType, uploadPath, EverLandUrlPrefix } from '~/utils/constants'
-import { retry, sleep } from '~/utils/util'
+import { allowedImageType, uploadPath, type UploadPath, EverLandUrlPrefix } from '~/utils/constants'
+import { retry, sleep, toBase62 } from '~/utils/util'
 import type { UploadResponse } from '~/types'
 
 export default defineEventHandler(async (event: H3Event<EventHandlerRequest>): Promise<UploadResponse> => {
   const formData = await readFormData(event)
   const file = formData.get('file') as File
   const pathName = formData.get('pathName')
-  const fileName = formData.get('fileName')
-
-  const path = uploadPath[pathName as keyof typeof uploadPath]
-  if (!path) {
-    console.error('upload path not found.')
-    throw new Error('Upload path not found.')
-  }
-
-  console.log('upload image', file)
-  if (!file) {
-    console.error('No file uploaded.')
-    throw new Error('No file uploaded.')
-  }
-  if (!allowedImageType.includes(file.type)) {
-    throw new Error('Only jpg and png files are allowed.')
-  }
-  if (file.size > 150000) {
-    throw new Error('Max size of upload image is 150KB.')
-  }
-
-  const {
-    '4EVERLAND_API_ENDPOINT': endpoint,
-    '4EVERLAND_API_KEY': apiKey,
-    '4EVERLAND_API_SECRET': secret,
-    '4EVERLAND_API_REGION': region,
-    '4EVERLAND_BUCKET_NAME': bucketName
-  } = import.meta.env
-
-  const s3 = new S3({
-    endpoint: endpoint,
-    credentials: {
-      accessKeyId: apiKey,
-      secretAccessKey: secret
-    },
-    region: region,
-  })
-
-
-  const key = path + '/' + fileName + new Date().getTime().toString()
-  const params = {
-    Bucket: bucketName,
-    Key: key,
-    ContentType: file.type,
-    Body: await file.arrayBuffer(),
-    ACL: 'public-read'
-  } as PutObjectCommandInput
+  const fileName = formData.get('fileName')?.slice(-4)
 
   try {
+    const path = uploadPath[pathName as keyof UploadPath]
+    if (!path) {
+      console.error('upload path not found.')
+      throw new Error('Upload path not found.')
+    }
+
+    if (!file) {
+      console.error('No file uploaded.')
+      throw new Error('No file uploaded.')
+    }
+    if (!allowedImageType.includes(file.type)) {
+      throw new Error('Only jpg and png files are allowed.')
+    }
+    if (file.size > 150000) {
+      throw new Error('Max size of upload image is 150KB.')
+    }
+
+    const {
+      '4EVERLAND_API_ENDPOINT': endpoint,
+      '4EVERLAND_API_KEY': apiKey,
+      '4EVERLAND_API_SECRET': secret,
+      '4EVERLAND_API_REGION': region,
+      '4EVERLAND_BUCKET_NAME': bucketName
+    } = import.meta.env
+
+    const s3 = new S3({
+      endpoint: endpoint,
+      credentials: {
+        accessKeyId: apiKey,
+        secretAccessKey: secret
+      },
+      region: region,
+    })
+
+    const key = path + '/' + fileName + '@' + toBase62(new Date().getTime())
+    const params = {
+      Bucket: bucketName,
+      Key: key,
+      ContentType: file.type,
+      Body: await file.arrayBuffer(),
+      ACL: 'public-read'
+    } as PutObjectCommandInput
+
     await s3.putObject(params)
 
     await sleep(500)

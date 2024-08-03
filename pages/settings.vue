@@ -12,7 +12,7 @@ const links = [[{
     to: '/settings/community'
   }, {
     label: t('setting.task'),
-    icon: 'eos-icons:abstract-instance-outlined',
+    icon: 'heroicons:trophy',
     to: '/settings/quest'
   }, {
     label: t('setting.invite'),

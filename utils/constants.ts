@@ -179,5 +179,6 @@ export const uploadPath = {
   tokenLogo: '/t',
   userAvatar: '/u'
 }
+export type UploadPath = typeof uploadPath
 
 export const EverLandUrlPrefix = 'https://decentra.4everland.store'
