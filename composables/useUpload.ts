@@ -1,15 +1,15 @@
-import { ref, unref, readonly } from 'vue'
+import { unref, readonly } from 'vue'
 import { useFetch } from '@vueuse/core'
 import type { UploadResponse } from '~/types'
 import { allowedImageType, type UploadPath } from '~/utils/constants'
 
 export function useUpload() {
   // eslint-disable-next-line prefer-const
-  let uploadError = ref<Error>()
+  let uploadError = $ref<Error>()
   // eslint-disable-next-line prefer-const
-  let isUploading = ref(false)
+  let isUploading = $ref(false)
   // eslint-disable-next-line prefer-const
-  let uploadResponse = ref<UploadResponse>()
+  let uploadResponse = $ref<UploadResponse>()
 
   async function upload(options: {
     fileName: string,
@@ -20,7 +20,7 @@ export function useUpload() {
     const { fileName, pathName, file, maxSizeKB=150 } = options
 
     try {
-      isUploading.value = true
+      isUploading = true
       if (!file) {
         throw new Error('No file selected.')
       }
@@ -38,11 +38,11 @@ export function useUpload() {
       formData.append('pathName', pathName)
       formData.append('file', file)
 
-      const { data: response, error } = await useFetch<UploadResponse>('/api/upload', {
+      const { data, error } = await useFetch<UploadResponse>('/api/upload', {
         method: 'PUT',
         body: formData,
       }).json()
-      const res = unref(response)
+      const res = unref(data)
       const err = unref(error)
 
       if (err || !res || !res.success || !res.url || !res.ARHash) {
@@ -53,20 +53,20 @@ export function useUpload() {
         throw new Error(message)
       }
 
-      uploadResponse.value = res
+      uploadResponse = res
     } catch (e) {
       if (e instanceof Error) {
-        uploadError.value = e
+        uploadError = e
       }
     }
 
-    isUploading.value = false
+    isUploading = false
   }
 
-  return {
+  return $$({
     upload,
     uploadResponse,
     isUploading: readonly(isUploading),
     uploadError
-  }
+  })
 }

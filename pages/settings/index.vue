@@ -62,7 +62,7 @@ onMounted(async () => {
 
 const uploadInput = $ref<HTMLInputElement>()
 
-const { upload, isUploading, uploadError, uploadResponse } = useUpload()
+const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
 
 async function upload2AR() {
   await upload({
@@ -71,16 +71,13 @@ async function upload2AR() {
     file: uploadInput?.files?.[0]
   })
 
-  const error = unref(uploadError)
-  const res = unref(uploadResponse)
-
-  if (error || !res) {
-    showError('Failed to upload image.', error)
+  if (uploadError || !uploadResponse) {
+    showError('Failed to upload image.', uploadError)
     return
   }
 
-  userForm.avatar = res.url!
-  userForm.avatarARHash = res.ARHash!
+  userForm.avatar = uploadResponse.url!
+  userForm.avatarARHash = uploadResponse.ARHash!
 }
 
 </script>
