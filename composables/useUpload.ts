@@ -1,4 +1,4 @@
-import { ref, unref } from 'vue'
+import { ref, unref, readonly } from 'vue'
 import { useFetch } from '@vueuse/core'
 import type { UploadResponse } from '~/types'
 import { allowedImageType, type UploadPath } from '~/utils/constants'
@@ -66,7 +66,7 @@ export function useUpload() {
   return {
     upload,
     uploadResponse,
-    isUploading,
+    isUploading: readonly(isUploading),
     uploadError
   }
 }

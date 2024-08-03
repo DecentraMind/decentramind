@@ -35,13 +35,6 @@ const create = async() => {
 }
 </script>
 
-
-
-
-
-
-
-
 <template>
   <UDashboardPage>
     <DashboardPanelContent class="w-full overflow-y-auto px-10 pt-10">
@@ -65,7 +58,7 @@ const create = async() => {
         </UFormGroup>
         <UFormGroup name="Balance" class="flex flex-row items-center space-x-1">
           <template #label>
-            <div class=" w-[100px]">Balance</div>
+            <div class=" w-[100px]">Total Supply</div>
           </template>
           <UInput v-model="state.balance" placeholder="Ticker" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
