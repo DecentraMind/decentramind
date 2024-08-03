@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { useFetch } from '@vueuse/core'
 import { taskStore } from '~/stores/taskStore'
 import { shortAddress } from '~/utils/web3'
 import { ssimStore } from '~/stores/ssimStore'
 import { formatToLocale } from '~/utils/util'
-import type { Task } from '~/types'
+import type { Task, TwitterSpaceInfo } from '~/types'
 import { tokens } from '~/utils/constants'
 
 const { t } = useI18n()
@@ -34,7 +35,7 @@ const isOwner = $computed(() => task.ownerId === address)
 
 let taskJoinRecord = $ref<Awaited<ReturnType<typeof getTaskJoinRecord>>>()
 
-let spaceTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>()
+let spaceTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
 
 const checkSubmit = () => {
   if (!spaceTaskSubmitInfo) return false
@@ -223,43 +224,28 @@ const columns = [
   },
 ]
 
-const q = ref('')
-
-const filteredRows = computed(() => {
-  if (!q.value) {
-    console.info('spaceTaskSubmitInfo as filteredRows')
-    return spaceTaskSubmitInfo
-  }
-
-  if (!spaceTaskSubmitInfo) return []
-
-  return spaceTaskSubmitInfo.filter((info) => {
-    return Object.values(info).some((value) => {
-      return String(value).toLowerCase().includes(q.value.toLowerCase())
-    })
-  })
-})
-
-useModal()
-
-let isOpen = $ref(false)
-let isOpenJoin = $ref(false)
-function openModal() {
+const modal = useModal()
+let isSubmitModalOpen = $ref(false)
+let isJoinModalOpen = $ref(false)
+function checkVouch() {
+  // TODO check current address is vouched
+}
+function openSubmitModal() {
   // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
   //   modal.open(CommonAlert, { message: error_msg })
   // } else {
   //   isOpen = true
   // }
-  isOpen = true
+  isSubmitModalOpen = true
 }
 
-function openJoin() {
+function openJoinModal() {
   // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
   //   modal.open(CommonAlert, { message: error_msg })
   // } else {
   //   isOpenJoin = true
   // }
-  isOpenJoin = true
+  isJoinModalOpen = true
 }
 
 let isJoinLoading = $ref(false)
@@ -271,99 +257,107 @@ async function onClickJoin() {
   taskJoinRecord = await getTaskJoinRecord(taskId)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isJoined = checkJoin()
-  isOpenJoin = false
+  isJoinModalOpen = false
   isJoinLoading = false
 }
 
 const submitUrl = $ref('')
 let submitLoading = $ref(false)
+
 async function submitTask() {
-  if(!spaceTaskSubmitInfo || !allInviteInfo) {
-    showError('Data loading does not completed. Please wait or try refresh.')
-    return
-  }
-
   submitLoading = true
-  for (let i = 0;i < spaceTaskSubmitInfo.length;i++) {
-    if (spaceTaskSubmitInfo[i].address === address) {
-      alert('You have submitted this quest.')
-      return
-    }
-  }
-  // TODO 调用提交space链接并解析方法
-  console.log('submitUrl = ' + submitUrl)
-  const splitted = submitUrl.split('/', 6)
-  console.log(splitted)
-  // await testCallJava()
-  // 直接在vue中请求api接口 拿到需要的信息
-  const query = computed(() => ({ spaceId: splitted[splitted.length - 1] }))
-  const { data, error } = await useFetch('/api/twitter', { query })
 
-  if (error) {
-    console.error('Error fetching data:', error)
-    showError('Failed to validate space URL.')
+  try {
+    if(!spaceTaskSubmitInfo || !allInviteInfo || !communityInfo) {
+      throw new Error('Data loading does not completed. Please wait or try refresh.')
+    }
+
+    // for (let i = 0;i < spaceTaskSubmitInfo.length;i++) {
+    //   if (spaceTaskSubmitInfo[i].address === address) {
+    //     throw new Error('You have submitted this quest.')
+    //   }
+    // }
+    // TODO 调用提交space链接并解析方法
+    const matched = submitUrl.trim().match(/spaces\/([^/]+)\/?/)
+
+    if(!matched || !matched[1]) {
+      throw new Error('Invalid space URL.')
+    }
+    const spaceId = matched[1]
+
+    const { data, error } = await useFetch('/api/twitter?' + new URLSearchParams({ spaceId })).json<TwitterSpaceInfo>()
+    const spaceInfo = unref(data)
+
+    if (error.value || !spaceInfo) {
+      console.error('Error fetching data:', error)
+      throw new Error('Failed to validate space URL.')
+    }
+
+    console.log('data from twitter = ', spaceInfo)
+
+    const { started_at, ended_at, participant_count: participantCount } = spaceInfo.data
+    const spaceStartAt = new Date(started_at).getTime()
+    const spaceEndedAt = new Date(ended_at).getTime()
+    const validJoinStartAt = new Date(spaceEndedAt - 24*60*60*1000).getTime()
+
+    const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
+    if (minuteDifference < 15) {
+      throw Error('Space lasts less than 15 minutes')
+    }
+
+    // space创办人的ID 用于判断是否是本人提交任务
+    const userID = spaceInfo.includes.users[0].id
+    // TODO compare userID and user id from vouch info
+
+    // space参与人数
+    // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
+    const la = spaceInfo.includes.users[0].profile_image_url
+    const resp = la.split('_')
+    let url = ''
+    for (let i = 0;i < resp.length - 1;++i) {
+      url = url + resp[i]
+      if (i != resp.length - 2) {
+        url += '_'
+      }
+    }
+    url = url + '.png'
+    const userAvatar = url
+    // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
+    // const userCreatedAt = data._rawValue.includes.users[0].created_at
+
+    // const userAvatarBase64 = await url2Base64(userAvatar)
+    const ssim = await compareImages(communityInfo.logo, userAvatar)
+    // 品牌效应
+    const brandEffect = ssim && ssim >= 0.8 ? 10 : 0
+    // 听众
+    const audience = participantCount
+    // 邀请人数
+    const inviteCount = allInviteInfo.filter((inviteInfo) => {
+      return inviteInfo.userId === address
+        && inviteInfo.communityId === communityId
+        && parseInt(inviteInfo.inviteTime) < spaceEndedAt
+        && parseInt(inviteInfo.inviteTime) > validJoinStartAt
+    }).length
+
+    console.log('spaceEnded_at = ' + spaceEndedAt)
+    console.log('participated = ' + participantCount)
+    console.log('userAvatar = ' + userAvatar)
+    //console.log('userCreatedAt = ' + userCreatedAt)
+    console.log('userId = ' + userID)
+    // console.log('brand = ' + brandEffect)
+    // console.log(communityInfo.logo)
+    // console.log(userAvatarBase64)
+    await submitSpaceTask(taskId, address, submitUrl, brandEffect, inviteCount, audience)
+    spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
+    isSubmitted = checkSubmit()
+    submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
+
+    isSubmitModalOpen = false
+  } catch (e) {
+    showError('Submit failed.', e as Error)
+  } finally {
     submitLoading = false
-    return
   }
-
-  console.log('data from twitter = ' + JSON.stringify(data))
-  // space开始时间 从开始时间往前推24小时，统计邀请数量 记作friend参数
-  const { started_at, ended_at, participant_count } = data._rawValue.data
-  const spaceStartAt = new Date(started_at).getTime()
-  const spaceEndedAt = new Date(ended_at).getTime()
-  const validJoinStartAt = new Date(spaceEndedAt - 24*60*60*1000).getTime()
-
-  const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
-  if (minuteDifference < 15) {
-    showError('Space lasts less than 15 minutes')
-    return
-  }
-  // space参与人数
-  const participated = participant_count
-  // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
-  const la = data._rawValue.includes.users[0].profile_image_url
-  const resp = la.split('_')
-  let url = ''
-  for (let i = 0;i < resp.length - 1;++i) {
-    url = url + resp[i]
-    if (i != resp.length - 2) {
-      url += '_'
-    }
-  }
-  url = url + '.png'
-  const userAvatar = url
-  // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
-  // const userCreatedAt = data._rawValue.includes.users[0].created_at
-  // space创办人的ID 用于判断是否是本人提交任务
-  const userId = data._rawValue.includes.users[0].id
-  // const userAvatarBase64 = await url2Base64(userAvatar)
-  const ssim = await compareImages(communityInfo.logo, userAvatar)
-  // 品牌效应
-  const brandEffect = ssim >= 0.8 ? 10 : 0
-  // 听众
-  const audience = participated
-  // 邀请人数
-  const inviteCount = allInviteInfo.filter((inviteInfo) => {
-    return inviteInfo.userId === address
-      && inviteInfo.communityId === communityId
-      && parseInt(inviteInfo.inviteTime) < spaceEndedAt
-      && parseInt(inviteInfo.inviteTime) > validJoinStartAt
-  }).length
-
-  console.log('spaceEnded_at = ' + spaceEndedAt)
-  console.log('participated = ' + participated)
-  console.log('userAvatar = ' + userAvatar)
-  //console.log('userCreatedAt = ' + userCreatedAt)
-  console.log('userId = ' + userId)
-  // console.log('brand = ' + brandEffect)
-  // console.log(communityInfo.logo)
-  // console.log(userAvatarBase64)
-  await submitSpaceTask(taskId, address, url, brandEffect, inviteCount, audience)
-  spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-  isSubmitted = checkSubmit()
-  submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
-  submitLoading = false
-  isOpen = false
 }
 
 let selected = $ref([])
@@ -377,6 +371,7 @@ async function sendBountyByAo() {
 
   if (selected.length > 0 && task.isCal !== 'Y'){
     showMessage('Being Cooked.')
+    return
   }
 
   // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
@@ -520,18 +515,36 @@ function labelName() {
   }
 }
 
-const page = ref(1)
+const searchKeyword = $ref('')
+
+let filteredRows = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
+const page = $ref(1)
 const pageCount = 5
-const trueRows = computed(() => {
-  if (!filteredRows.value) return
-  return filteredRows.value.slice((page.value - 1) * pageCount, (page.value) * pageCount)
+let pageRows = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
+watch(() => [spaceTaskSubmitInfo, searchKeyword], () => {
+  console.log('changed')
+  if (!searchKeyword) {
+    console.info('spaceTaskSubmitInfo as filteredRows', spaceTaskSubmitInfo)
+    filteredRows = spaceTaskSubmitInfo
+  }
+
+  if (!spaceTaskSubmitInfo) filteredRows = []
+
+  filteredRows = spaceTaskSubmitInfo.filter(info => {
+    return Object.values(info).some(value => {
+      return String(value).toLowerCase().includes(searchKeyword.toLowerCase())
+    })
+  })
+
+  console.log('new pageRows', filteredRows.slice((page - 1) * pageCount, page * pageCount))
+  pageRows = filteredRows.slice((page - 1) * pageCount, page * pageCount)
 })
 
-const maxSelection = $computed(() => task.rewardTotal)
-// 监视 selected 数组的变化
+
 watch(() => selected, (newVal) => {
+  const maxSelection = task ? task.rewardTotal : 1
   if (newVal.length > maxSelection) {
-    alert('Selected items exceed 5!')
+    alert(`Selected items exceed ${maxSelection}!`)
     // 如果选择的数量超过最大值，取消超出的选择项
     selected = newVal.slice(0, maxSelection)
   }
@@ -655,17 +668,17 @@ watch(() => selected, (newVal) => {
                 </div>
               </div>
               <div v-if=" isIng && !isJoined" class="flex justify-center ">
-                <UButton color="white" :label="$t('Join Quest')" @click="openJoin" />
+                <UButton color="white" :label="$t('Join Quest')" @click="openJoinModal" />
               </div>
             </div>
             <!--            <UDivider class="mt-4" />-->
             <div class="mt-8">
               <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex ">
-                  <div class=" mr-8">
+                <div class="flex items-center">
+                  <div class="mr-8">
                     {{ $t("Quests Form") }}:
                   </div>
-                  <UInput v-model="q" placeholder="Filter..." />
+                  <UInput v-model="searchKeyword" placeholder="Filter..." />
                 </div>
                 <ULink
                   :to="`https://www.ao.link/#/entity/${task.processId}?tab=incoming`"
@@ -676,8 +689,8 @@ watch(() => selected, (newVal) => {
                   Transaction Book
                 </ULink>
               </div>
-              <div v-if="isJoined">
-                <UTable v-model="selected" :rows="trueRows" :columns="columns">
+              <div v-if="isJoined || isOwner">
+                <UTable v-model="selected" :rows="pageRows" :columns="columns">
                   <template #address-data="{ row }">
                     {{ isOwner ? row.address : shortAddress(row.address) }}
                   </template>
@@ -696,7 +709,7 @@ watch(() => selected, (newVal) => {
               <!--                <UButton color="white" label="testuser" @click="test" />-->
               <!--              </div>-->
               <div v-if="isIng && !isSubmitted" class="mx-4">
-                <UButton color="white" :label="$t('Submit Quest')" @click="openModal" />
+                <UButton color="white" :label="$t('Submit Quest')" @click="openSubmitModal" />
               </div>
               <div v-if="isOwner && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-4">
                 <UButton color="white" :label="labelName()" :loading="sendBountyLoading" :disabled="sendBountyLoading" @click="sendBountyByAo" />
@@ -734,7 +747,7 @@ watch(() => selected, (newVal) => {
         </UBlogPost>
       </div>
     </UPage>
-    <UModal v-model="isOpenJoin">
+    <UModal v-model="isJoinModalOpen">
       <UCard>
         <!--        <template #header>-->
         <!--          <div class="flex items-center justify-center">-->
@@ -770,7 +783,7 @@ watch(() => selected, (newVal) => {
         </div>
       </UCard>
     </UModal>
-    <UModal v-model="isOpen">
+    <UModal v-model="isSubmitModalOpen">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
@@ -782,7 +795,7 @@ watch(() => selected, (newVal) => {
               variant="ghost"
               icon="i-heroicons-x-mark-20-solid"
               class="-my-1"
-              @click="isOpen = false"
+              @click="isSubmitModalOpen = false"
             />
           </div>
         </template>
@@ -791,7 +804,7 @@ watch(() => selected, (newVal) => {
           <!--            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />-->
           <!--          </div>-->
           <div class="my-8">
-            <UInput v-model="submitUrl" color="primary" variant="outline" :placeholder="$t('Space Url')" />
+            <UInput v-model="submitUrl" :model-modifiers="{trim: true}" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>
           <div class="flex justify-center my-8">
             <UButton :loading="submitLoading" :disabled="submitLoading" @click="submitTask">

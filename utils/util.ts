@@ -28,7 +28,6 @@ export function formatToLocale(isoString: string, locale: string = 'en-US') {
     // timeZoneName: 'short'
   }
 
-  console.log({isoString})
   return new Intl.DateTimeFormat(locale, options).format(date).replace(/\sat\s/, ' ')
 }
 

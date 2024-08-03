@@ -162,7 +162,7 @@ export type Task = {
   joined: number;
   ownerId: string;
   processId: string;
-  rewardTotal: string;
+  rewardTotal: number;
   startTime: string;
   taskId: string;
   taskInfo: string;
@@ -218,4 +218,26 @@ export type UploadResponse = {
   ARHash?: string
   success: boolean
   message: string
+}
+
+export type TwitterSpaceInfo = {
+  data: {
+    id: string
+    state: string
+    started_at: string
+    ended_at: string
+    creator_id: string
+    participant_count: number
+    speaker_ids: string[]
+  }
+  includes: {
+    users: Array<{
+      created_at: string
+      username: string
+      profile_image_url: string
+      /** twitter handle */
+      name: string
+      id: string
+    }>
+  }
 }

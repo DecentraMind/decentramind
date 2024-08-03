@@ -412,14 +412,14 @@ export const taskStore = defineStore('taskStore', () => {
     console.log(userCreatedAt)
   }
 
-  const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: number, friend: string, audi: string) => {
-    console.log('audi = ' + audi)
+  const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: number, friend: string, audience: string) => {
+    console.log('audi = ' + audience)
     const data = {
       taskId: taskId,
       address: walletAddress,
       brandEffect: brand,
       getPerson: friend,
-      audience: audi,
+      audience: audience,
       url: spaceUrl,
       score: 0,
       bounty: 0

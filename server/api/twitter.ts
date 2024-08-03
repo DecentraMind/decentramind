@@ -6,8 +6,8 @@ export default eventHandler(async (event) => {
   const url = 'https://api.twitter.com/2/spaces/' + spaceId + '?space.fields=speaker_ids,creator_id,participant_count,started_at,ended_at&expansions=creator_id&user.fields=created_at,profile_image_url'
   console.log('ask twitter url = ' + url)
   // 配置 headers
+  const { TWITTER_BEARER_TOKEN: token } = import.meta.env
 
-  const token = 'Bearer AAAAAAAAAAAAAAAAAAAAAG5XuAEAAAAAsHa0%2F76ticMwaliNA8bkU5G7Syw%3DSBCZ8LgCt5ka6jD68atZfyPAsHgUjuhQPSD5tXMaLg1Jcaqpd2'
   // const params = {
   //   'space.fields': 'creator_id,speaker_ids',
   //   'expansions': 'creator_id',
@@ -23,7 +23,7 @@ export default eventHandler(async (event) => {
     baseURL: url,
     method: 'get',
     headers: {
-      'Authorization': token
+      Authorization: 'Bearer ' + token
     }
   })
 
