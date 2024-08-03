@@ -420,7 +420,7 @@ const shortedWebsite = $computed(() => {
             </div>
           </div>
 
-          <div class="flex justify-between my-3 mt-10 items-center">
+          <div class="flex justify-between my-3 items-center">
             <div>{{ $t('TokenOfCommunityDetail') }}</div>
             <div v-if="community.communitytoken && community.communitytoken.length > 0" class="flex space-x-3">
               <div
