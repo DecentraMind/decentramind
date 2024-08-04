@@ -1,5 +1,27 @@
 community = community or {}
+
+---@class InviteInfo
+---@field invite string The inviter's address, who invited this user.
+---@field time string The timestamp when user join community.
+
+
+--[[
+User's community related data
+@type UserCommunity = {
+  [address: string]: { -- the user
+    [communityID: string]: InviteInfo
+  }
+}
+]]--
 usercommunity = usercommunity or {}
+--[[
+type UserInfo = {
+  [address: string]: {
+    name: string
+    avatar: string
+  }
+}
+]]--
 userinfo = userinfo or {}
 githubcode = githubcode or {}
 userchatban = userchatban or {}
@@ -69,6 +91,23 @@ Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "commun
 
   Handlers.utils.reply("communitysetting")(msg)
 end)
+
+-- clear all logo and avatar
+-- Handlers.add('clearImages', Handlers.utils.hasMatchingTag("Action", "communitysetting"), function(msg)
+--   local communityID = msg.Tags.communityID
+--   local communityIndex = findCommunityIndexByUUID(community, communityID)
+
+--   -- Find the column in community that matches testDataUUID
+--   if communityIndex then
+--     -- Replace the logo in this column with msg.Data
+--     community[communityIndex].logo = msg.Data
+--   else
+--     print("Community not found")
+--   end
+
+--   Handlers.utils.reply()(msg)
+-- end)
+
 
 -- Modifying Community Information
 Handlers.add("chatban", Handlers.utils.hasMatchingTag("Action", "chatban"), function(msg)
@@ -286,18 +325,16 @@ end)
 
 -- 获取指定社区的信息
 Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "communityInfo"), function(msg)
-  -- 创建 communityCopy 数组
   local communityCopy = {}
   for _, communityItem in ipairs(community) do
     local dCom = json.decode(communityItem)
     print(dCom[1].uuid)
 
     if msg.Tags.uuid == dCom[1].uuid then
-      local itemCopy = {}
       for key, value in pairs(dCom[1]) do
-        itemCopy[key] = value
+        communityCopy[key] = value
       end
-      table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
+      break
     end
   end
   -- 需要将table转成json字符串传回
@@ -355,39 +392,9 @@ end)
 
 -- 获取个人信息
 Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), function(msg)
-  local tempInfo = {}
   -- 检查 userinfo 中是否存在指定用户
   local userInfo = userinfo[msg.Tags.userAddress]
-  --[[
-  if userInfo then
-    -- 将用户信息添加到临时表
-    tempInfo.avatar = userInfo.avatar or "N/A"
-    tempInfo.username = userInfo.username or "N/A"
-    tempInfo.twitter = userInfo.twitter or "N/A"
-    tempInfo.showtwitter = userInfo.showtwitter or true
-    tempInfo.mail = userInfo.mail or "N/A"
-    tempInfo.showmail = userInfo.showmail or true
-    tempInfo.phone = userInfo.phone or "N/A"
-    tempInfo.showphone = userInfo.showphone or true
-  else
-    -- 用户信息不存在时，设置默认值
-    tempInfo.avatar = "N/A"
-    tempInfo.username = "N/A"
-    tempInfo.twitter = "N/A"
-    tempInfo.showtwitter = true
-    tempInfo.mail = "N/A"
-    tempInfo.showmail = true
-    tempInfo.phone = "N/A"
-    tempInfo.showphone = true
-  end
 
-  print(userinfo[msg.Tags.userAddress])
-  -- 需要将table转成json字符串传回
-  local iJson = json.encode(tempInfo)
-  ]]
-
-  -- 尝试将 userInfo 解析为 JSON
-  local jsonInfo = json.encode(userInfo)
   Handlers.utils.reply(userInfo)(msg)
 end)
 
@@ -441,7 +448,6 @@ Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo")
   local newColum = msg.From
   local jsonColum = {
     avatar = "N/A",
-    -- "data:image/jpeg;base64,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",
     name = "N/A",
     -- twitter = "N/A",
     -- showtwitter = true,
@@ -542,29 +548,38 @@ Handlers.add("GetJoinInfoByTaskId", Handlers.utils.hasMatchingTag("Action", "Get
   Handlers.utils.reply(table.concat(resp, ";"))(msg)
 end)
 
--- 获取所有invite信息
+-- invite info and related user info
 Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAllInviteInfo"), function(msg)
-  local resp = {}
+  local invites = {}
+  local relatedUsers = {}
 
-  for key, value in pairs(usercommunity) do
-    for subkey, subvalue in pairs(value) do
+  for inviteeAddress, value in pairs(usercommunity) do
+    for communityID, subvalue in pairs(value) do
       local temp = {
-        userId = subvalue.invite,
-        communityId = subkey,
-        invited = key,
-        inviteTime = subvalue.time,
-        userAvatar = "none",
-        userName = "none"
+        inviterAddress = subvalue.invite,   -- inviter
+        communityID = communityID,
+        inviteeAddress = inviteeAddress,    -- invitee address
+        time = subvalue.time,
       }
-      for info_key, info_value in pairs(userinfo) do
-        if info_key == key then
-          temp.userInfo = json.decode(info_value)
-        end
+      table.insert(invites, temp)
+
+      if not relatedUsers[inviteeAddress] then
+        relatedUsers[inviteeAddress] = {}
       end
-      table.insert(resp, json.encode(temp))
     end
   end
-  print(resp)
-  local cJson = json.encode(resp)
-  Handlers.utils.reply(cJson)(msg)
+
+  for address, info_value in pairs(userinfo) do
+    if (relatedUsers[address]) then
+      local userInfo = json.decode(info_value)
+      relatedUsers[address] = userInfo
+    end
+  end
+
+  local data = {
+    invites = invites,
+    relatedUsers = relatedUsers
+  }
+
+Handlers.utils.reply(json.encode(data))(msg)
 end)
