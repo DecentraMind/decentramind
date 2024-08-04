@@ -77,8 +77,7 @@ export const aoStore = defineStore('aoStore', () => {
       const result = await message({
         process: processID,
         tags: [
-          { name: 'Action', value: 'registInfo' },
-          { name: 'userAddress', value: address }
+          { name: 'Action', value: 'registerUser' },
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       })
@@ -120,13 +119,11 @@ export const aoStore = defineStore('aoStore', () => {
       const result = await message({
         process: processID,
         tags: [
-          { name: 'Action', value: 'registInfo' },
-          { name: 'userAddress', value: address }
+          { name: 'Action', value: 'registerUser' },
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       })
-      const success = 'success'
-      return success
+      return result
 
       //await init()
     } catch (error) {

@@ -17,7 +17,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   const { address } = $(aoStore())
   let linkTwitter = $ref(true)
   let communityList = $ref<CommunityList>([])
-  let userInfo = $ref<UserInfo[]>([])
+  let userInfo = $ref<UserInfo>()
   let communityUser = $ref({})
   let joinedCommunities = $ref<CommunityList>([])
   let chatBanuser = $ref({})
@@ -150,22 +150,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     isLoading = false
   }
 
-  //User registration method
-  const registerInfo = async () => {
-    if (isLoading) return
-    isLoading = true
-
-    await message({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'registInfo' },
-        // TODO remove userAddress here
-        { name: 'userAddress', value: address }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-    isLoading = false
-  }
   //Creating a community approach
   const addCommunity = async (
     logo,
@@ -486,7 +470,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     const messageId = await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'personalInfo' },
+        { name: 'Action', value: 'updateUser' },
         { name: 'userAddress', value: address }
       ],
       data: jsonString,
@@ -494,14 +478,14 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     })
 
     if (messageId) {
-      userInfo = [userData]
+      userInfo = userData
     }
     return messageId
   }
 
   //Obtaining Personal Information
   const getUser = async () => {
-    userInfo = [await getUserByAddress(address)]
+    userInfo = await getUserByAddress(address) || []
 
     return userInfo
   }
@@ -510,7 +494,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     const user = await dryrun({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'getInfo' },
+        { name: 'Action', value: 'getUser' },
         { name: 'userAddress', value: address }
       ]
     })
@@ -609,7 +593,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     getBan,
     setCurrentUuid,
     makeCommunityChat,
-    registerInfo,
     getLocalCommunity,
     getCommunityList,
     updateCommunity,

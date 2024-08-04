@@ -1,4 +1,4 @@
-community = community or {}
+Communities = Communities or {}
 
 ---@class InviteInfo
 ---@field invite string The inviter's address, who invited this user.
@@ -7,24 +7,24 @@ community = community or {}
 
 --[[
 User's community related data
-@type UserCommunity = {
+@type Invites = {
   [address: string]: { -- the user
     [communityID: string]: InviteInfo
   }
 }
 ]]--
-usercommunity = usercommunity or {}
+Invites = Invites or {}
 --[[
-type UserInfo = {
+type Users = {
   [address: string]: {
     name: string
     avatar: string
   }
 }
 ]]--
-userinfo = userinfo or {}
-githubcode = githubcode or {}
-userchatban = userchatban or {}
+Users = Users or {}
+GithubCodes = GithubCodes or {}
+ChatBans = ChatBans or {}
 
 local json = require("json")
 
@@ -33,24 +33,24 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
   local testData = json.decode(msg.Data)
   local newColumn = msg.From
   -- Check if a column with the same name already exists
-  if not userinfo[newColumn] then
+  if not Users[newColumn] then
     -- Create a new column with the msg.Id value as its name and assign it to an empty table
-    userinfo[newColumn] = {}
+    Users[newColumn] = {}
   end
   for i, item in ipairs(testData) do
-    if not usercommunity[newColumn] then
+    if not Invites[newColumn] then
       -- Create a new column with the msg.Id value as its name and assign it to an empty table
-      usercommunity[newColumn] = {}
+      Invites[newColumn] = {}
     end
 
     -- Check if uuid exists in usercommunity[newColumn].
-    if not usercommunity[newColumn][item.uuid] then
+    if not Invites[newColumn][item.uuid] then
       -- If the uuid does not exist, add a new entry
-      usercommunity[newColumn][item.uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
+      Invites[newColumn][item.uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
     end
   end
   -- print(encodedData)
-  table.insert(community, msg.Data)
+  table.insert(Communities, msg.Data)
   Handlers.utils.reply("add")(msg)
 end)
 
@@ -72,13 +72,13 @@ Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "commun
   -- Find the uuid of testData
   local testDataUUID = testData[1].uuid
   -- Find the column in community that matches testDataUUID
-  local communityIndex = findCommunityIndexByUUID(community, testDataUUID)
+  local communityIndex = findCommunityIndexByUUID(Communities, testDataUUID)
   -- Ensure modifiers are community owners
   if testData[1].creater == msg.From then
     -- Find the column in community that matches testDataUUID
     if communityIndex then
       -- Replace the data in this column with the corresponding data in testData.
-      community[communityIndex] = msg.Data
+      Communities[communityIndex] = msg.Data
     else
       -- 如果未找到匹配的列，则将 testData 添加到 community 中
       -- table.insert(community, testData[1])
@@ -111,10 +111,10 @@ end)
 
 -- Modifying Community Information
 Handlers.add("chatban", Handlers.utils.hasMatchingTag("Action", "chatban"), function(msg)
-  userchatban[msg.Tags.community] = userchatban[msg.Tags.community] or {}
+  ChatBans[msg.Tags.community] = ChatBans[msg.Tags.community] or {}
 
   local userExists = false
-  for _, user in ipairs(userchatban[msg.Tags.community]) do
+  for _, user in ipairs(ChatBans[msg.Tags.community]) do
     if user == msg.Tags.user then
       userExists = true
       break
@@ -122,7 +122,7 @@ Handlers.add("chatban", Handlers.utils.hasMatchingTag("Action", "chatban"), func
   end
 
   if not userExists then
-    table.insert(userchatban[msg.Tags.community], msg.Tags.user)
+    table.insert(ChatBans[msg.Tags.community], msg.Tags.user)
     print("User " .. msg.Tags.user .. " has been added to the chat ban list for community " .. msg.Tags.community)
   else
     print("User " .. msg.Tags.user .. " is already in the chat ban list for community " .. msg.Tags.community)
@@ -133,10 +133,10 @@ end)
 
 -- Modifying Community Information
 Handlers.add("unchatban", Handlers.utils.hasMatchingTag("Action", "unchatban"), function(msg)
-  if userchatban[msg.Tags.community] then
-    for i, user in ipairs(userchatban[msg.Tags.community]) do
+  if ChatBans[msg.Tags.community] then
+    for i, user in ipairs(ChatBans[msg.Tags.community]) do
       if user == msg.Tags.user then
-        table.remove(userchatban[msg.Tags.community], i)
+        table.remove(ChatBans[msg.Tags.community], i)
         break
       end
     end
@@ -147,7 +147,7 @@ end)
 
 -- Modifying Community Information
 Handlers.add("getchatban", Handlers.utils.hasMatchingTag("Action", "getchatban"), function(msg)
-  Handlers.utils.reply(json.encode(userchatban))(msg)
+  Handlers.utils.reply(json.encode(ChatBans))(msg)
 end)
 
 -- join community
@@ -155,14 +155,14 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
   local newColumn = msg.From
   local uuid = msg.Data
   -- Check if a column with the same name already exists
-  if community then
-    for key, value in pairs(community) do
+  if Communities then
+    for key, value in pairs(Communities) do
       local data = json.decode(value)
       if data[1] and data[1].uuid == uuid then
         if data[1].buildnum then
           data[1].buildnum = data[1].buildnum + 1
         end
-        community[key] = json.encode(data)
+        Communities[key] = json.encode(data)
         break
       end
     end
@@ -171,15 +171,15 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
   end
 
 
-  if not usercommunity[newColumn] then
+  if not Invites[newColumn] then
     -- Create a new column with the msg.Id value as its name and assign it to an empty table
-    usercommunity[newColumn] = {}
+    Invites[newColumn] = {}
   end
 
   -- Check if uuid exists in usercommunity[newColumn].
-  if not usercommunity[newColumn][uuid] then
+  if not Invites[newColumn][uuid] then
     -- If the uuid does not exist, add a new entry
-    usercommunity[newColumn][uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
+    Invites[newColumn][uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
   end
 
   --[[
@@ -213,8 +213,8 @@ Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(m
   local newColumn = msg.From
   print(msg.Tags.userAddress)
   local result = 'success'
-  if community then
-    for key, value in pairs(community) do
+  if Communities then
+    for key, value in pairs(Communities) do
       local data = json.decode(value)
       if data[1] and data[1].uuid == msg.Data then
         if data[1].buildnum then
@@ -222,7 +222,7 @@ Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(m
           if data[1].buildnum <= 0 then
             data[1].buildnum = 0
           end
-          community[key] = json.encode(data)
+          Communities[key] = json.encode(data)
           break
         end
       end
@@ -232,11 +232,11 @@ Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(m
   end
 
   -- Check for the presence of usercommunity[newColumn]
-  if usercommunity[newColumn] then
+  if Invites[newColumn] then
     -- Check for the presence of usercommunity[newColumn].joined
-    if usercommunity[newColumn][msg.Data] then
+    if Invites[newColumn][msg.Data] then
       -- 遍历 usercommunity[newColumn].joined
-      usercommunity[newColumn][msg.Data] = nil
+      Invites[newColumn][msg.Data] = nil
     else
       print("No 'joined' field in usercommunity[" .. newColumn .. "]")
     end
@@ -249,7 +249,7 @@ end)
 Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "communitylist"), function(msg)
   -- Creating the communityCopy array
   local communityCopy = {}
-  for _, communityItem in ipairs(community) do
+  for _, communityItem in ipairs(Communities) do
     local dCom = json.decode(communityItem)
     -- local dCom = communityItem
     local itemCopy = {
@@ -276,10 +276,10 @@ Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "community
     }
     itemCopy.isJoined = false -- 默认 isJoined 为 false
     print(dCom[1].creater)
-    if usercommunity[msg.Tags.userAddress] then
-      if usercommunity[msg.Tags.userAddress][dCom[1].uuid] then
+    if Invites[msg.Tags.userAddress] then
+      if Invites[msg.Tags.userAddress][dCom[1].uuid] then
         itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
-        itemCopy.joinTime = usercommunity[msg.Tags.userAddress][dCom[1].uuid].time
+        itemCopy.joinTime = Invites[msg.Tags.userAddress][dCom[1].uuid].time
       end
     end
     table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
@@ -301,14 +301,14 @@ Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "community
   local matching_keys = {}
 
   -- 遍历 usercommunity 表
-  for key, value in pairs(usercommunity) do
+  for key, value in pairs(Invites) do
     -- 遍历 joined 列表，查看当前用户加入得社区列
     for subkey, subvalue in pairs(value) do
       -- 访问 invite 参数，如果他加入得社区中有指定得uuid
       if subkey == target_uuid then
         -- table.insert(matching_keys, key)
         -- 加入过这个社区得用户，获取他userinfo中的用户名和头像
-        for info_key, info_value in pairs(userinfo) do
+        for info_key, info_value in pairs(Users) do
           if info_key == key then
             matching_keys[info_key] = info_value
             print('goods')
@@ -326,7 +326,7 @@ end)
 -- 获取指定社区的信息
 Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "communityInfo"), function(msg)
   local communityCopy = {}
-  for _, communityItem in ipairs(community) do
+  for _, communityItem in ipairs(Communities) do
     local dCom = json.decode(communityItem)
     print(dCom[1].uuid)
 
@@ -346,10 +346,10 @@ end)
 Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "communitylistjoined"), function(msg)
   -- 创建 communityCopy 数组
   local communityCopy = {}
-  for _, communityItem in ipairs(community) do
+  for _, communityItem in ipairs(Communities) do
     local dCom = json.decode(communityItem)
-    if userinfo[msg.Tags.userAddress] and type(userinfo[msg.Tags.userAddress]) == "table" then
-      for _, userinfoItem in ipairs(userinfo[msg.Tags.userAddress].joined) do
+    if Users[msg.Tags.userAddress] and type(Users[msg.Tags.userAddress]) == "table" then
+      for _, userinfoItem in ipairs(Users[msg.Tags.userAddress].joined) do
         if dCom[1].uuid == userinfoItem then
           local itemCopy = {
             uuid = dCom[1].uuid,
@@ -391,9 +391,13 @@ Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "com
 end)
 
 -- 获取个人信息
-Handlers.add("getInfo", Handlers.utils.hasMatchingTag("Action", "getInfo"), function(msg)
+Handlers.add("getUser", Handlers.utils.hasMatchingTag("Action", "getUser"), function(msg)
   -- 检查 userinfo 中是否存在指定用户
-  local userInfo = userinfo[msg.Tags.userAddress]
+  local userInfo = Users[msg.Tags.userAddress]
+  if not userInfo then
+    print("Not found.")
+    return
+  end
 
   Handlers.utils.reply(userInfo)(msg)
 end)
@@ -402,8 +406,8 @@ end)
 Handlers.add("getGithubcode", Handlers.utils.hasMatchingTag("Action", "getGithubcode"), function(msg)
   local address = msg.Tags.userAddress
   print("-----")
-  if githubcode[address] then
-    local value = githubcode[address]
+  if GithubCodes[address] then
+    local value = GithubCodes[address]
     print("Value for key " .. value)
     Handlers.utils.reply(value)(msg)
   else
@@ -414,20 +418,20 @@ Handlers.add("getGithubcode", Handlers.utils.hasMatchingTag("Action", "getGithub
 end)
 
 -- 个人信息修改
-Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalInfo"), function(msg)
-  local newColumn = msg.From
+Handlers.add("updateUser", Handlers.utils.hasMatchingTag("Action", "updateUser"), function(msg)
+  local address = msg.From
   -- 检查是否已经存在相同名字的列
-  if not userinfo[newColumn] then
+  if not Users[address] then
     -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
-    userinfo[newColumn] = {}
+    Users[address] = {}
   end
 
-  userinfo[newColumn] = msg.Data
+  Users[address] = msg.Data
 
   -- 判断msg.Tags.github是否存在并且等于"yes"
   if msg.Tags.github and msg.Tags.github == "yes" then
     -- 检查githubcode中是否存在key值为msg.From的列
-    if not githubcode[newColumn] then
+    if not GithubCodes[address] then
       -- 生成一串10位数字的字符串
       local randomString = ""
       for i = 1, 10 do
@@ -437,82 +441,26 @@ Handlers.add("personalInfo", Handlers.utils.hasMatchingTag("Action", "personalIn
       -- 将生成的字符串赋值给githubcode的这一列
       print(randomString)
       print("------------")
-      githubcode[newColumn] = randomString
+      GithubCodes[address] = randomString
       Handlers.utils.reply(randomString)(msg)
     end
   end
 end)
 
 -- 注册个人信息
-Handlers.add("registInfo", Handlers.utils.hasMatchingTag("Action", "registInfo"), function(msg)
-  local newColum = msg.From
-  local jsonColum = {
-    avatar = "N/A",
-    name = "N/A",
-    -- twitter = "N/A",
-    -- showtwitter = true,
-    -- mail = "N/A",
-    -- showmail = true,
-    -- phone = "N/A",
-    -- showphone = true,
-    -- github = 'N/A'
+Handlers.add("registerUser", Handlers.utils.hasMatchingTag("Action", "registerUser"), function(msg)
+  local address = msg.From
+  local user = {
+    avatar = nil,
+    name = nil
   }
-  local enjson = json.encode(jsonColum)
-  if not userinfo[newColum] then
-    userinfo[newColum] = enjson
+  if not Users[address] then
+    Users[address] = user
   end
-  --[[
-  if not userinfo[newColum] then
-    userinfo[newColum] = {}
-    userinfo[newColum].avatar = "N/A"
-    userinfo[newColum].name = "N/A"
-    userinfo[newColum].showtwitter = "N/A"
-    userinfo[newColum].twitter = true
-    userinfo[newColum].mail = "N/A"
-    userinfo[newColum].showmail = true
-    userinfo[newColum].phone = "N/A"
-    userinfo[newColum].showphone = true
-    userinfo[newColum].joined = {}
-  end
-  ]]
 end)
 
--- handlers方法测试功能，用来测试这里得方法以及查看表内容等等。。
-Handlers.add("handlersTest", Handlers.utils.hasMatchingTag("Action", "handlersTest"), function(msg)
-  --local pretty = require(".pretty")
 
-  --local formatted = pretty.tprint(community, 2)
 
-  -- prints the formatted table structure
-  --for _, i in pairs(formatted) do
-  --  print(i)
-  --end
-
-  -- userinfo['-IYO-pLS_lBegYkJOq0ZkWpDwqZ5-d3jgY9rvyWKWCY'] = nil
-  for k, _ in pairs(userinfo) do
-    print("---")
-    userinfo[k] = nil
-  end
-
-  -- for k, _ in pairs(userinfo) do
-  --    userinfo[k] = nil
-  -- end
-end)
-
-------- fizi任务的方法
-Handlers.add("CreateTask", Handlers.utils.hasMatchingTag("Action", "CreateTask"), function(msg)
-  table.insert(TasksForTable, msg.Data)
-  Handlers.utils.reply("created task by new method.")(msg)
-end)
-
-Handlers.add("GetAllTasks", Handlers.utils.hasMatchingTag("Action", "GetAllTasks"), function(msg)
-  Handlers.utils.reply(table.concat(TasksForTable, ";"))(msg)
-end)
-
-Handlers.add("DeleteLastTask", Handlers.utils.hasMatchingTag("Action", "DeleteLastTask"), function(msg)
-  table.remove(TasksForTable)
-  Handlers.utils.reply("The last task has been deleted.")(msg)
-end)
 
 Handlers.add("JoinSpaceTask", Handlers.utils.hasMatchingTag("Action", "JoinSpaceTask"), function(msg)
   -- 解析传过来的参数，找到对应任务，修改任务已提交场次参数
@@ -553,7 +501,7 @@ Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAll
   local invites = {}
   local relatedUsers = {}
 
-  for inviteeAddress, value in pairs(usercommunity) do
+  for inviteeAddress, value in pairs(Invites) do
     for communityID, subvalue in pairs(value) do
       local temp = {
         inviterAddress = subvalue.invite,   -- inviter
@@ -569,7 +517,7 @@ Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAll
     end
   end
 
-  for address, info_value in pairs(userinfo) do
+  for address, info_value in pairs(Users) do
     if (relatedUsers[address]) then
       local userInfo = json.decode(info_value)
       relatedUsers[address] = userInfo
