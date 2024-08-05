@@ -76,7 +76,9 @@ async function upload2AR() {
     return
   }
 
-  userForm.avatar = uploadResponse.url!
+  // @caution 4everland's arweave gateway is at beta version,
+  // try uploadResponse.url if it not works
+  userForm.avatar = everlandGateway + uploadResponse.ARHash!
   userForm.avatarARHash = uploadResponse.ARHash!
 }
 

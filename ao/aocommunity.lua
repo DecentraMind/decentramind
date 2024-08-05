@@ -247,48 +247,19 @@ end)
 
 -- Get all the community information
 Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "communitylist"), function(msg)
-  -- Creating the communityCopy array
   local communityCopy = {}
-  for _, communityItem in ipairs(Communities) do
-    local dCom = json.decode(communityItem)
-    -- local dCom = communityItem
-    local itemCopy = {
-      uuid = dCom[1].uuid,
-      logo = dCom[1].logo,
-      banner = dCom[1].banner,
-      name = dCom[1].name,
-      desc = dCom[1].desc,
-      website = dCom[1].website,
-      twitter = dCom[1].twitter,
-      whitebook = dCom[1].whitebook,
-      github = dCom[1].github,
-      buildnum = dCom[1].buildnum,
-      bounty = dCom[1].bounty,
-      ispublished = dCom[1].ispublished,
-      communitytoken = dCom[1].communitytoken,
-      istradable = dCom[1].istradable,
-      support = dCom[1].support,
-      alltoken = dCom[1].alltoken,
-      tokensupply = dCom[1].tokensupply,
-      creater = dCom[1].creater,
-      communitychatid = dCom[1].communitychatid,
-      timestamp = dCom[1].timestamp
-    }
-    itemCopy.isJoined = false -- 默认 isJoined 为 false
-    print(dCom[1].creater)
+  for _, community in ipairs(Communities) do
+    community.isJoined = false -- 默认 isJoined 为 false
     if Invites[msg.Tags.userAddress] then
-      if Invites[msg.Tags.userAddress][dCom[1].uuid] then
-        itemCopy.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
-        itemCopy.joinTime = Invites[msg.Tags.userAddress][dCom[1].uuid].time
+      if Invites[msg.Tags.userAddress][community[1].uuid] then
+        community.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
+        community.joinTime = Invites[msg.Tags.userAddress][community[1].uuid].time
       end
     end
-    table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
+    table.insert(communityCopy, community)
   end
 
-  -- print(communityCopy)
-  -- 需要将table转成json字符串传回
-  local cJson = json.encode(communityCopy)
-  Handlers.utils.reply(cJson)(msg)
+  Handlers.utils.reply(json.encode(communityCopy))(msg)
 end)
 
 -- 获取指定社区中加入得用户
@@ -399,7 +370,7 @@ Handlers.add("getUser", Handlers.utils.hasMatchingTag("Action", "getUser"), func
     return
   end
 
-  Handlers.utils.reply(userInfo)(msg)
+  Handlers.utils.reply(json.encode(userInfo))(msg)
 end)
 
 --获取github code
@@ -450,9 +421,11 @@ end)
 -- 注册个人信息
 Handlers.add("registerUser", Handlers.utils.hasMatchingTag("Action", "registerUser"), function(msg)
   local address = msg.From
+  local avatar = msg.Tags.Avatar
+  local name = msg.Tags.UserName
   local user = {
-    avatar = nil,
-    name = nil
+    avatar = avatar,
+    name = name
   }
   if not Users[address] then
     Users[address] = user
@@ -517,10 +490,9 @@ Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAll
     end
   end
 
-  for address, info_value in pairs(Users) do
+  for address, user in pairs(Users) do
     if (relatedUsers[address]) then
-      local userInfo = json.decode(info_value)
-      relatedUsers[address] = userInfo
+      relatedUsers[address] = user
     end
   end
 

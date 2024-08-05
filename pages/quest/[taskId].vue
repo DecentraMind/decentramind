@@ -261,7 +261,7 @@ async function onClickJoin() {
   isJoinLoading = false
 }
 
-const submitUrl = $ref('')
+const spaceUrl = $ref('')
 let submitLoading = $ref(false)
 
 async function submitTask() {
@@ -278,7 +278,7 @@ async function submitTask() {
     //   }
     // }
     // TODO 调用提交space链接并解析方法
-    const matched = submitUrl.trim().match(/spaces\/([^/]+)\/?/)
+    const matched = spaceUrl.trim().match(/spaces\/([^/]+)\/?/)
 
     if(!matched || !matched[1]) {
       throw new Error('Invalid space URL.')
@@ -333,10 +333,10 @@ async function submitTask() {
     const audience = participantCount
     // 邀请人数
     const inviteCount = allInviteInfo.filter((inviteInfo) => {
-      return inviteInfo.userId === address
-        && inviteInfo.communityId === communityId
-        && parseInt(inviteInfo.inviteTime) < spaceEndedAt
-        && parseInt(inviteInfo.inviteTime) > validJoinStartAt
+      return inviteInfo.inviterAddress === address
+        && inviteInfo.communityID === communityId
+        && parseInt(inviteInfo.time) < spaceEndedAt
+        && parseInt(inviteInfo.time) > validJoinStartAt
     }).length
 
     console.log('spaceEnded_at = ' + spaceEndedAt)
@@ -347,7 +347,7 @@ async function submitTask() {
     // console.log('brand = ' + brandEffect)
     // console.log(communityInfo.logo)
     // console.log(userAvatarBase64)
-    await submitSpaceTask(taskId, address, submitUrl, brandEffect, inviteCount, audience)
+    await submitSpaceTask(taskId, address, spaceUrl, brandEffect, inviteCount, audience)
     spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
     isSubmitted = checkSubmit()
     submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
@@ -804,7 +804,7 @@ watch(() => selected, (newVal) => {
           <!--            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />-->
           <!--          </div>-->
           <div class="my-8">
-            <UInput v-model="submitUrl" :model-modifiers="{trim: true}" color="primary" variant="outline" :placeholder="$t('Space Url')" />
+            <UInput v-model="spaceUrl" :model-modifiers="{trim: true}" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>
           <div class="flex justify-center my-8">
             <UButton :loading="submitLoading" :disabled="submitLoading" @click="submitTask">

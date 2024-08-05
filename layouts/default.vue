@@ -98,13 +98,13 @@ onMounted(async () => {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
-              <template v-if="!userInfo.length">
+              <template v-if="!userInfo">
                 <UAvatar
                   size="2xl"
                 />
               </template>
               <template v-else>
-                <UAvatar :src="userInfo[0].avatar || arUrl(defaultUserAvatar)" alt="User Settings" size="2xl" />
+                <UAvatar :src="userInfo.avatar ? arUrl(userInfo.avatar) : arUrl(defaultUserAvatar)" alt="User Settings" size="2xl" />
               </template>
             </NuxtLink>
           </UPopover>

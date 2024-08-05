@@ -92,6 +92,7 @@ export type Community = {
   twitter: string
   uuid: string
   website: string
+  logoARHash?: string
 }
 
 export type CommunityListItem = Community & {
@@ -180,17 +181,14 @@ export type Task = {
 }
 
 export type InviteInfo = {
-  /** inviter address */
-  userId: string
-  communityId: string
-  /** invitee address */
-  invited: string
-  inviteTime: string
-  /** invitee's user info */
-  userInfo?: {
-    avatar: string
-    name: string
-  }[]
+  time: string
+  inviteeAddress: string
+  communityID: string
+  inviterAddress?: string
+}
+
+export type RelatedUserMap = {
+  [address: string] : UserInfo
 }
 
 export type Bounty = {
@@ -205,7 +203,7 @@ export type Bounty = {
 }
 
 /**
- * user info from aoCommunity Process getInfo
+ * user info from aoCommunity Process getUses
  */
 export type UserInfo = {
   name : string

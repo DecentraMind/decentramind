@@ -471,7 +471,7 @@ const shortedWebsite = $computed(() => {
 
         <div class="flex-1" />
         <div v-if="community.creater == address" class="text-right">
-          <UButton size="lg" variant="ghost" icon="quill:cog-alt" @click="isSettingModalOpen = true" />
+          <UButton size="lg" variant="ghost" icon="heroicons:cog-6-tooth" @click="isSettingModalOpen = true" />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60]">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->

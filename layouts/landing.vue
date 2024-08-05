@@ -58,7 +58,7 @@ const onClickOthent = async () => {
             </template>
             ArConnect
           </UButton>
-          <ClientOnly fallback-tag="span" fallback="Loading comments...">
+          <ClientOnly fallback-tag="span" fallback="Loading...">
             <UButton color="white" class="w-[120px]" @click="onClickOthent">
               <template #leading>
                 <UIcon

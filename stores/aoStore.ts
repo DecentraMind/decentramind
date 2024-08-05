@@ -1,4 +1,6 @@
 import { tokenProcessIDs } from '~/utils/constants'
+import { aoCommunityProcessID } from '~/utils/processID'
+import { defaultUserAvatar } from '~/utils/arAssets'
 import {
   createDataItemSigner,
   result,
@@ -10,12 +12,9 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
-import * as Othent from "@othent/kms";
-
-
+import type { PermissionType } from 'arconnect'
 
 declare const window: any
-import type { PermissionType } from 'arconnect'
 
 const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
@@ -25,6 +24,7 @@ const permissions: PermissionType[] = [
 ]
 
 import Arweave from 'arweave'
+import type { Tag } from 'arweave/node/lib/transaction'
 
 const arweave = Arweave.init({
   host: 'arweave.net', // 这是主网节点的 URL
@@ -35,7 +35,6 @@ const arweave = Arweave.init({
 export const aoStore = defineStore('aoStore', () => {
   let totalBalance = $ref(0)
   const tokenMap = $ref(tokenProcessIDs)
-  const processID = 'GGX1y0ISBh2UyzyjCbyJGMoujSLjosJ2ls0qcx25qVw'
 
   /** current connected address */
   let address = $(lsItemRef<string>('address', ''))
@@ -63,45 +62,43 @@ export const aoStore = defineStore('aoStore', () => {
   const doLogin = async () => {
     if (!window.arweaveWallet) {
       console.error('Arweave Wallet no install')
-      alert('Please install Arweave Wallet to continue')
+      alert('Please install Arweave Wallet or use Othent to continue')
       window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh'
       return false
     }
     try {
       await window.arweaveWallet.connect(permissions)
-    } catch (error) {
-      return false
-    }
-    try {
+
       address = await window.arweaveWallet.getActiveAddress()
-      const result = await message({
-        process: processID,
+      const messageID = await message({
+        process: aoCommunityProcessID,
         tags: [
           { name: 'Action', value: 'registerUser' },
+          { name: 'UserName', value: address.slice(-4) },
+          { name: 'Avatar', value: defaultUserAvatar },
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       })
-      return result
+      console.log('register user result', messageID, address)
 
-      //await init()
+      return messageID
     } catch (error) {
       console.error(error)
     }
   }
 
   const othentLogin = async () => {
-
     if (typeof window !== 'undefined') {
       try {
-        const OthentModule = await import("@othent/kms")
-        const res = await OthentModule.connect()
+        const OthentModule = await import('@othent/kms')
+        await OthentModule.connect()
         if (OthentModule) {
           window.arweaveWallet = {
             ...OthentModule,
             connect: OthentModule.connect,
             disconnect: OthentModule.disconnect,
             getActiveAddress: OthentModule.getActiveAddress
-          };
+          }
           // 使用 address 进行后续操作
         } else {
           console.error('Othent is not defined in the module')
@@ -117,9 +114,11 @@ export const aoStore = defineStore('aoStore', () => {
       address = await window.arweaveWallet.getActiveAddress()
 
       const result = await message({
-        process: processID,
+        process: aoCommunityProcessID,
         tags: [
           { name: 'Action', value: 'registerUser' },
+          { name: 'Name', value: address.slice(-4) },
+          { name: 'Avatar', value: defaultUserAvatar },
         ],
         signer: createDataItemSigner(window.arweaveWallet),
       })

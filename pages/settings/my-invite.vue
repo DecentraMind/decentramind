@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {taskStore} from '~/stores/taskStore'
-import type { InviteInfo } from '~/types'
+import type { InviteInfo, RelatedUserMap } from '~/types'
 import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils/util'
 
@@ -34,9 +34,12 @@ let inviteDetails = $ref<InviteInfo[]>([])
 const invitedByMe  = $ref<Record<string, InviteInfo[]>>({})
 
 let allInviteInfo = $ref<InviteInfo[]>([])
+let users = $ref<RelatedUserMap>()
 onMounted( async () => {
   try {
-    allInviteInfo = await getAllInviteInfo()
+    const {allInviteInfo: invites, relatedUsers} = await getAllInviteInfo()
+    allInviteInfo = invites
+    users = relatedUsers
   } catch (error) {
     const message = error instanceof Error ? error.message : error
     showError('Error fetching data:' + message)
@@ -48,15 +51,15 @@ onMounted( async () => {
 
   const communityIDs = []
   for (const inviteInfo of allInviteInfo) {
-    if(inviteInfo.userId !== address || inviteInfo.invited === address || inviteInfo.userId === 'none'){
+    if(inviteInfo.inviterAddress !== address || inviteInfo.inviteeAddress === address){
       continue
     }
-    const { communityId } = inviteInfo
-    if(!invitedByMe[communityId]){
-      invitedByMe[communityId] = []
+    const { communityID } = inviteInfo
+    if(!invitedByMe[communityID]){
+      invitedByMe[communityID] = []
     }
-    invitedByMe[communityId].push(inviteInfo)
-    communityIDs.push(communityId)
+    invitedByMe[communityID].push(inviteInfo)
+    communityIDs.push(communityID)
   }
   console.log({invitedByMe})
 
@@ -81,7 +84,7 @@ const findInvitedByCommunityID = (communityID: string) => {
   inviteDetails = []
   console.log('search for community ' + communityID)
   for (const inviteInfo of allInviteInfo) {
-    if(inviteInfo.userId === address && inviteInfo.communityId === communityID){
+    if(inviteInfo.inviterAddress === address && inviteInfo.communityID === communityID){
       console.log('found user invited by me:', inviteInfo)
       inviteDetails.push(inviteInfo)
     }
@@ -110,9 +113,9 @@ const findInvitedByCommunityID = (communityID: string) => {
             <div class="ml-20 text-xl w-[250px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
           </div>
           <div class="flex">
-            <UAvatarGroup size="sm" :max="2" class="ml-10">
+            <UAvatarGroup v-if="users" size="sm" :max="2" class="ml-10">
               <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
-                <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(defaultUserAvatar)" :alt="invite.userInfo?.[0].name || invite.userId" />
+                <UAvatar :src="users[invite.inviteeAddress].avatar || arUrl(defaultUserAvatar)" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
               </div>
             </UAvatarGroup>
             <UButton color="white" class="ml-4" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>
@@ -123,11 +126,11 @@ const findInvitedByCommunityID = (communityID: string) => {
 
     <UModal v-model="isDetailModalOpen" :ui="{ width: w-full }">
       <div class="flex justify-center min-h-[300px] pt-10 px-6">
-        <div class="border h-full px-2 py-2 mb-2">
+        <div v-if="users" class="border h-full px-2 py-2 mb-2">
           <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
-            <UAvatar :src="invite.userInfo?.[0].avatar || arUrl(defaultUserAvatar)" alt="user avatar" />
-            <div class="w-fit">{{ invite.userInfo?.[0].name || shortString(invite.invited) }}</div>
-            <div class="w-90">{{ invite.invited }}</div>
+            <UAvatar :src="users[invite.inviteeAddress].avatar || arUrl(defaultUserAvatar)" alt="user avatar" />
+            <div class="w-fit">{{ users[invite.inviteeAddress].name || shortString(invite.inviteeAddress) }}</div>
+            <div class="w-90">{{ invite.inviteeAddress }}</div>
           </div>
         </div>
       </div>

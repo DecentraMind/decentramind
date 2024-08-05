@@ -95,7 +95,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       console.error('An error occurred:', error)
       // You might want to show an error message to the user here
     }
-  };
+  }
 
   const banChat = async (communityId: string, userAddress: string) => {
     if (isLoading) return

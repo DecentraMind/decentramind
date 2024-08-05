@@ -9,7 +9,7 @@ import {
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
 import { notificationStore } from './notificationStore'
-import type { Bounty, InviteInfo, Task } from '~/types'
+import type { Bounty, InviteInfo, RelatedUserMap, RelatedUsers, Task } from '~/types'
 import { sleep, retry } from '~/utils/util'
 import { tokens } from '~/utils/constants'
 import { aoCommunityProcessID, tasksProcessID, moduleID, schedulerID } from '~/utils/processID'
@@ -55,7 +55,7 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
 
-  const { showError, showSuccess, alertMessage } = $(notificationStore())
+  const { showSuccess, alertMessage } = $(notificationStore())
 
   let respArray = $ref([])
   let allTaskSubmitInfo = $ref<TaskSubmitInfo[]>([])
@@ -135,23 +135,21 @@ export const taskStore = defineStore('taskStore', () => {
       })
       if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
         respArray = []
-        return []
+        return { allInviteInfo: [], relatedUsers: {} }
       }
 
-      const resp = JSON.parse(res.Messages[0].Data)
+      const resp = JSON.parse(res.Messages[0].Data) as {invites: InviteInfo[], relatedUsers: RelatedUserMap}
       allInviteInfo = []
 
-      for (let index = 0; index < resp.length; index++) {
-        // console.log('resp[index] = ' + JSON.parse(resp[index]).invited)
-        const element = JSON.parse(resp[index]) as InviteInfo
-        if (element.invited === 'none') {
+      for (const invite of resp.invites) {
+        if (!invite.inviterAddress) {
           continue
         }
 
-        allInviteInfo.push(element)
+        allInviteInfo.push(invite)
       }
 
-      return allInviteInfo
+      return { allInviteInfo, relatedUsers: resp.relatedUsers }
     } catch (error) {
       console.error(error)
       throw Error('getAllInviteInfo failed:' + error)
