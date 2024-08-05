@@ -1,7 +1,7 @@
 Communities = Communities or {}
 
 ---@class InviteInfo
----@field invite string The inviter's address, who invited this user.
+---@field invite? string The inviter's address, who invited this user.
 ---@field time string The timestamp when user join community.
 
 
@@ -55,41 +55,55 @@ Handlers.add("add", Handlers.utils.hasMatchingTag("Action", "add"), function(msg
 end)
 
 -- Find the community column for this uuid
-local function findCommunityIndexByUUID(community, uuid)
-  for index, entry in ipairs(community) do
-    local dCom = json.decode(entry)
-    if dCom[1].uuid == uuid then
+local function findCommunityIndexByUUID(uuid)
+  for index, entry in ipairs(Communities) do
+    if entry.uuid == uuid then
       return index
     end
   end
   return nil
 end
 
--- Modifying Community Information
-Handlers.add("communitysetting", Handlers.utils.hasMatchingTag("Action", "communitysetting"), function(msg)
-  local testData = json.decode(msg.Data)
-  local newColumn = msg.Tags.userAddress
-  -- Find the uuid of testData
-  local testDataUUID = testData[1].uuid
-  -- Find the column in community that matches testDataUUID
-  local communityIndex = findCommunityIndexByUUID(Communities, testDataUUID)
-  -- Ensure modifiers are community owners
-  if testData[1].creater == msg.From then
-    -- Find the column in community that matches testDataUUID
-    if communityIndex then
-      -- Replace the data in this column with the corresponding data in testData.
-      Communities[communityIndex] = msg.Data
+-- Get all communities
+Handlers.add("getCommunities", Handlers.utils.hasMatchingTag("Action", "getCommunities"), function(msg)
+  local communityCopy = {}
+  for _, community in pairs(Communities) do
+    community.isJoined = false
+    if Invites[msg.Tags.userAddress] then
+      if Invites[msg.Tags.userAddress][community.uuid] then
+        community.isJoined = true
+        community.joinTime = Invites[msg.Tags.userAddress][community.uuid].time
+      end
+    end
+    table.insert(communityCopy, community)
+  end
+
+  Handlers.utils.reply(json.encode(communityCopy))(msg)
+end)
+
+Handlers.add("getCommunity", Handlers.utils.hasMatchingTag("Action", "getCommunity"), function(msg)
+  local index = findCommunityIndexByUUID(msg.Tags.uuid)
+  if not index then
+    print("Not found.")
+    return
+  end
+  Handlers.utils.reply(json.encode(Communities[index]))(msg)
+end)
+
+Handlers.add("updateCommunity", Handlers.utils.hasMatchingTag("Action", "updateCommunity"), function(msg)
+  local setting = json.decode(msg.Data)
+  local index = findCommunityIndexByUUID(setting.uuid)
+  if index then
+    -- Ensure modifiers are community owners
+    if Communities[index].creater == msg.From then
+      Communities[index] = setting
+      Handlers.utils.reply(Communities[index])(msg)
     else
-      -- 如果未找到匹配的列，则将 testData 添加到 community 中
-      -- table.insert(community, testData[1])
-      print("is null")
+      print("You are not the creater of this community.")
     end
   else
-    print("you are not owner")
+    print("Not found.")
   end
-  -- table.insert(community, msg.Data)
-
-  Handlers.utils.reply("communitysetting")(msg)
 end)
 
 -- clear all logo and avatar
@@ -150,29 +164,23 @@ Handlers.add("getchatban", Handlers.utils.hasMatchingTag("Action", "getchatban")
   Handlers.utils.reply(json.encode(ChatBans))(msg)
 end)
 
+
 -- join community
 Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(msg)
   local newColumn = msg.From
   local uuid = msg.Data
   -- Check if a column with the same name already exists
-  if Communities then
-    for key, value in pairs(Communities) do
-      local data = json.decode(value)
-      if data[1] and data[1].uuid == uuid then
-        if data[1].buildnum then
-          data[1].buildnum = data[1].buildnum + 1
-        end
-        Communities[key] = json.encode(data)
-        break
+  for key, community in pairs(Communities) do
+    if community and community.uuid == uuid then
+      if community.buildnum then
+        community.buildnum = community.buildnum + 1
       end
+      Communities[key] = community
+      break
     end
-  else
-    print("community is nil or not a table")
   end
 
-
   if not Invites[newColumn] then
-    -- Create a new column with the msg.Id value as its name and assign it to an empty table
     Invites[newColumn] = {}
   end
 
@@ -182,47 +190,22 @@ Handlers.add("join", Handlers.utils.hasMatchingTag("Action", "join"), function(m
     Invites[newColumn][uuid] = { invite = msg.Tags.invite, time = msg.Tags.time }
   end
 
-  --[[
-  -- 检查是否已经存在 joined 字段
-  if usercommunity[newColumn].joined then
-    -- 如果 joined 字段已存在，则在其末尾追加 "xDao"
-    local isDuplicate = false -- 标志位，表示是否存在重复数据
-
-    -- 遍历 usercommunity[newColumn].joined
-    for _, data in ipairs(usercommunity[newColumn].joined) do
-      if data == msg.Data then
-        print("joined--")
-        isDuplicate = true
-        break -- 如果找到重复数据，则跳出循环
-      end
-    end
-
-    if not isDuplicate then
-      -- 如果 joined 字段已存在且没有重复数据，则在其末尾追加 "xDao"
-      table.insert(usercommunity[newColumn].joined, msg.Data)
-    end
-  else
-    -- 如果 joined 字段不存在，则新建一个 joined 字段，并赋值为包含 "xDao" 的数组
-    usercommunity[newColumn].joined = { msg.Data }
-  end
-  ]]
 end)
 
 -- exit community
 Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(msg)
   local newColumn = msg.From
   print(msg.Tags.userAddress)
-  local result = 'success'
+
   if Communities then
-    for key, value in pairs(Communities) do
-      local data = json.decode(value)
-      if data[1] and data[1].uuid == msg.Data then
-        if data[1].buildnum then
-          data[1].buildnum = data[1].buildnum - 1
-          if data[1].buildnum <= 0 then
-            data[1].buildnum = 0
+    for key, community in pairs(Communities) do
+      if community and community.uuid == msg.Data then
+        if community.buildnum then
+          community.buildnum = community.buildnum - 1
+          if community.buildnum <= 0 then
+            community.buildnum = 0
           end
-          Communities[key] = json.encode(data)
+          Communities[key] = community
           break
         end
       end
@@ -243,23 +226,6 @@ Handlers.add("exit", Handlers.utils.hasMatchingTag("Action", "exit"), function(m
   else
     print("No column named " .. newColumn .. " in usercommunity")
   end
-end)
-
--- Get all the community information
-Handlers.add("communitylist", Handlers.utils.hasMatchingTag("Action", "communitylist"), function(msg)
-  local communityCopy = {}
-  for _, community in ipairs(Communities) do
-    community.isJoined = false -- 默认 isJoined 为 false
-    if Invites[msg.Tags.userAddress] then
-      if Invites[msg.Tags.userAddress][community[1].uuid] then
-        community.isJoined = true -- 如果 community 数组中的某个项目在 usercommunity 中存在，则将 isJoined 设为 true
-        community.joinTime = Invites[msg.Tags.userAddress][community[1].uuid].time
-      end
-    end
-    table.insert(communityCopy, community)
-  end
-
-  Handlers.utils.reply(json.encode(communityCopy))(msg)
 end)
 
 -- 获取指定社区中加入得用户
@@ -294,74 +260,20 @@ Handlers.add("communityuser", Handlers.utils.hasMatchingTag("Action", "community
   Handlers.utils.reply(cJson)(msg)
 end)
 
--- 获取指定社区的信息
-Handlers.add("communityInfo", Handlers.utils.hasMatchingTag("Action", "communityInfo"), function(msg)
-  local communityCopy = {}
-  for _, communityItem in ipairs(Communities) do
-    local dCom = json.decode(communityItem)
-    print(dCom[1].uuid)
 
-    if msg.Tags.uuid == dCom[1].uuid then
-      for key, value in pairs(dCom[1]) do
-        communityCopy[key] = value
-      end
-      break
-    end
+Handlers.add("registerUser", Handlers.utils.hasMatchingTag("Action", "registerUser"), function(msg)
+  local address = msg.From
+  local avatar = msg.Tags.Avatar
+  local name = msg.Tags.UserName
+  local user = {
+    avatar = avatar,
+    name = name
+  }
+  if not Users[address] then
+    Users[address] = user
   end
-  -- 需要将table转成json字符串传回
-  local cJson = json.encode(communityCopy)
-  Handlers.utils.reply(cJson)(msg)
 end)
 
--- 获取已加入得社区列表信息
-Handlers.add("communitylistjoined", Handlers.utils.hasMatchingTag("Action", "communitylistjoined"), function(msg)
-  -- 创建 communityCopy 数组
-  local communityCopy = {}
-  for _, communityItem in ipairs(Communities) do
-    local dCom = json.decode(communityItem)
-    if Users[msg.Tags.userAddress] and type(Users[msg.Tags.userAddress]) == "table" then
-      for _, userinfoItem in ipairs(Users[msg.Tags.userAddress].joined) do
-        if dCom[1].uuid == userinfoItem then
-          local itemCopy = {
-            uuid = dCom[1].uuid,
-            logo = dCom[1].logo,
-            banner = dCom[1].banner,
-            name = dCom[1].name,
-            desc = dCom[1].desc,
-            website = dCom[1].website,
-            showwebsite = dCom[1].showwebsite,
-            twitter = dCom[1].twitter,
-            showtwitter = dCom[1].showtwitter,
-            whitebook = dCom[1].whitebook,
-            showwhitebook = dCom[1].showwhitebook,
-            github = dCom[1].github,
-            showgithub = dCom[1].showgithub,
-            buildnum = dCom[1].buildnum,
-            showbuildnum = dCom[1].showbuildnum,
-            showallreward = dCom[1].showallreward,
-            bounty = dCom[1].bounty,
-            showbounty = dCom[1].showbounty,
-            showdetail = dCom[1].showdetail,
-            ispublished = dCom[1].ispublished,
-            communitytoken = dCom[1].communitytoken,
-            istradable = dCom[1].istradable,
-            support = dCom[1].support,
-            showalltoken = dCom[1].showalltoken,
-            alltoken = dCom[1].alltoken,
-            tokensupply = dCom[1].tokensupply
-          }
-          table.insert(communityCopy, itemCopy) -- 将复制后的项目添加到 communityCopy 数组中
-          break
-        end
-      end
-    end
-  end
-  -- 需要将table转成json字符串传回
-  local cJson = json.encode(communityCopy)
-  Handlers.utils.reply(cJson)(msg)
-end)
-
--- 获取个人信息
 Handlers.add("getUser", Handlers.utils.hasMatchingTag("Action", "getUser"), function(msg)
   -- 检查 userinfo 中是否存在指定用户
   local userInfo = Users[msg.Tags.userAddress]
@@ -397,7 +309,7 @@ Handlers.add("updateUser", Handlers.utils.hasMatchingTag("Action", "updateUser")
     Users[address] = {}
   end
 
-  Users[address] = msg.Data
+  Users[address] = json.decode(msg.Data)
 
   -- 判断msg.Tags.github是否存在并且等于"yes"
   if msg.Tags.github and msg.Tags.github == "yes" then
@@ -416,57 +328,6 @@ Handlers.add("updateUser", Handlers.utils.hasMatchingTag("Action", "updateUser")
       Handlers.utils.reply(randomString)(msg)
     end
   end
-end)
-
--- 注册个人信息
-Handlers.add("registerUser", Handlers.utils.hasMatchingTag("Action", "registerUser"), function(msg)
-  local address = msg.From
-  local avatar = msg.Tags.Avatar
-  local name = msg.Tags.UserName
-  local user = {
-    avatar = avatar,
-    name = name
-  }
-  if not Users[address] then
-    Users[address] = user
-  end
-end)
-
-
-
-
-Handlers.add("JoinSpaceTask", Handlers.utils.hasMatchingTag("Action", "JoinSpaceTask"), function(msg)
-  -- 解析传过来的参数，找到对应任务，修改任务已提交场次参数
-  local req = json.decode(msg.Data)
-
-  local taskId = req.taskId
-  for key, value in pairs(TasksForTable) do
-    local v = json.decode(value)
-    if (v.taskId == taskId) then
-      local tmp = v.joined
-      tmp = tmp + 1
-      v.joined = tmp
-      print(tmp)
-      TasksForTable[key] = json.encode(v)
-      break
-    end
-  end
-  -- 将参与任务信息保存在表中
-  table.insert(SpaceTaskJoinedTable, msg.Data)
-  Handlers.utils.reply("Joined in space task.")(msg)
-end)
-
-Handlers.add("GetJoinInfoByTaskId", Handlers.utils.hasMatchingTag("Action", "GetJoinInfoByTaskId"), function(msg)
-  -- 通过id获取该任务对应参与信息
-  local resp = {}
-  local taskId = msg.Data
-  for key, value in pairs(SpaceTaskJoinedTable) do
-    local v = json.decode(value)
-    if (v.taskId == taskId) then
-      table.insert(resp, value)
-    end
-  end
-  Handlers.utils.reply(table.concat(resp, ";"))(msg)
 end)
 
 -- invite info and related user info
@@ -492,7 +353,7 @@ Handlers.add("getAllInviteInfo", Handlers.utils.hasMatchingTag("Action", "getAll
 
   for address, user in pairs(Users) do
     if (relatedUsers[address]) then
-      relatedUsers[address] = user
+      relatedUsers[address] = user and user or {}
     end
   end
 
