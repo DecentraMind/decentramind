@@ -143,7 +143,9 @@ Handlers.add(
     if community then
       -- Ensure modifiers are community owners
       if community.creater == msg.From then
-        community = setting
+        for field, value in pairs(setting) do
+          community[field] = value
+        end
         Handlers.utils.reply(community)(msg)
       else
         print("You are not the creater of this community.")

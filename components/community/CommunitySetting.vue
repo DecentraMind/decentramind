@@ -7,7 +7,7 @@ import { arUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
 let supportSelected: TradePlatform[] = $ref([])
 let tokenSelected = $ref<TokenName[]>([])
-let isCreated = $ref(false)
+
 
 const state = $ref<CommunitySetting>({
   owner: undefined,
@@ -47,12 +47,16 @@ async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
 const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
 const { showError, showSuccess } = $(notificationStore())
 
-let isLoading = $ref(false)
-let createSuccess = $ref(false)
+let showWaitingModal = $ref(false)
+/** control loading and disable status of save button */
+let disableSave = $ref(false)
+let showSpinner = $ref(false)
+
 const CreateCommunity = async () => {
-  if (isLoading) return
-  isLoading = true
-  isCreated = true
+  if (disableSave) return
+  disableSave = true
+  showWaitingModal = true
+  showSpinner = true
   try {
     await updateCommunity(
       currentUuid,
@@ -64,15 +68,12 @@ const CreateCommunity = async () => {
     )
     showSuccess('Successfully updated community.')
   } catch (error) {
-    showError('Set community Error:', error as Error)
-    isCreated = false
+    showError('Set community error:', error as Error)
+    disableSave = false
+    showWaitingModal = false
   } finally {
-    isLoading = false
-    createSuccess = true
+    showSpinner = false
   }
-
-  isCreated = true
-  isLoading = false
 }
 
 const handleUploadLogo = (event: Event) => {
@@ -103,12 +104,12 @@ const uploadLogo = () => {
   input.click()
 }
 
-const items = [
-  '/task/banner6.jpg',
-  '/task/banner7.jpg',
-  '/task/banner8.jpg',
-  '/task/banner9.jpg',
-  '/task/banner10.jpg',
+const bannerItems = [
+  'banner6',
+  'banner7',
+  'banner8',
+  'banner9',
+  'banner10',
 ]
 const currentIndex = $ref(0) // 用于存储当前选中的索引
 
@@ -263,7 +264,7 @@ onMounted(async () => {
           </template>
           <UCarousel
             v-model="currentIndex"
-            :items="items"
+            :items="bannerItems"
             :ui="{
               item: 'basis-full',
               container: 'rounded-lg',
@@ -443,13 +444,20 @@ onMounted(async () => {
           <UButton variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
         </div>
         <div class="flex justify-center">
-          <UButton color="white" type="submit" size="xl" @click="CreateCommunity">
+          <UButton
+            color="white"
+            type="submit"
+            size="xl"
+            :disabled="disableSave"
+            :loading="disableSave"
+            @click="CreateCommunity"
+          >
             {{ $t('add') }}
           </UButton>
         </div>
       </UForm>
 
-      <UModal v-model="isCreated" prevent-close>
+      <UModal v-model="showWaitingModal" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
             <div class="flex items-center justify-center">
@@ -458,7 +466,7 @@ onMounted(async () => {
               </h3>
             </div>
           </template>
-          <UContainer v-if="!createSuccess" class="w-full flex justify-around">
+          <UContainer v-if="showSpinner" class="w-full flex justify-around">
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">

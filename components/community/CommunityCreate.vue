@@ -5,7 +5,6 @@ import type { CommunitySetting } from '~/types'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { getCommunityBannerUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
-let isCommunityCreateModalOpen = $ref(false)
 let createdCommunityID = $ref('')
 
 const state = reactive<CommunitySetting & {tokenSupply: TokenSupply[]}>({
@@ -48,15 +47,19 @@ async function onFormSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
 
 const emit = defineEmits(['close-modal', 'created'])
 
-const { addCommunity, getCommunityList, makeCommunityChat} = $(aoCommunityStore())
+const { addCommunity, makeCommunityChat} = $(aoCommunityStore())
+const { showError } = $(notificationStore())
 
-let isCreating = $ref(false)
-let createSuccess = $ref(false)
+let showWaitingModal = $ref(false)
+/** control loading and disable status of save button */
+let disableSave = $ref(false)
+let showSpinner = $ref(false)
 
 const createCommunity = async () => {
-  if (isCreating) return
-  isCreating = true
-  isCommunityCreateModalOpen = true
+  if (disableSave) return
+  disableSave = true
+  showWaitingModal = true
+  showSpinner = true
   try {
     state.communityChatID = await makeCommunityChat()
 
@@ -82,20 +85,16 @@ const createCommunity = async () => {
       state.communityChatID
     )
 
-    createSuccess = true
-    isCommunityCreateModalOpen = true
   } catch (error) {
     console.error('Error creating community:', error)
 
-    isCommunityCreateModalOpen = false
-    createSuccess = false
-    alert('Failed to create community!')
-    throw new Error('create community Error' + error)
+    showWaitingModal = false
+    disableSave = false
+    showError('Failed to create community!', error as Error)
+    return
   } finally {
-    isCreating = false
-    //createSuccess = true
+    showSpinner = false
   }
-  createSuccess = true
 
 }
 
@@ -449,13 +448,13 @@ const removeSupplyGroup = (index: number) => {
         </div>
 
         <div class="flex justify-center">
-          <UButton color="white" type="submit" size="xl" :disabled="isCreating" :loading="isCreating">
+          <UButton color="white" type="submit" size="xl" :disabled="disableSave" :loading="disableSave">
             {{ $t('add') }}
           </UButton>
         </div>
       </UForm>
 
-      <UModal v-model="isCommunityCreateModalOpen" prevent-close>
+      <UModal v-model="showWaitingModal" prevent-close>
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
           <template #header>
             <div class="flex items-center justify-center">
@@ -465,11 +464,11 @@ const removeSupplyGroup = (index: number) => {
               <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
             </div>
           </template>
-          <UContainer v-if="!createSuccess" class="w-full flex justify-around">
+          <UContainer v-if="!showSpinner" class="w-full flex justify-around">
             <UIcon name="svg-spinners:6-dots-scale" />
           </UContainer>
           <UContainer v-else class="w-full flex justify-around">
-            <UButton @click="$router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); isCommunityCreateModalOpen = false">
+            <UButton @click="$router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); showWaitingModal = false">
               {{ $t('community.look') }}
             </UButton>
           </UContainer>

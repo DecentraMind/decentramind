@@ -227,9 +227,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     support: string[], // 交易的平台
     tokenSupply: TokenSupply[], /** 社区 token 分配比例详情 */
   ) => {
-    if (isLoading) return
-    isLoading = true
-
     const { logoBase64Data: logo, banner, name, desc, creator, owner, website, twitter, github, builderNum, isPublished, isTradable, allToken, communityChatID, time } = setting
     const communitySubmitList = {
       logo,
@@ -258,7 +255,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'updateCommunity' },
-        { name: 'userAddress', value: address }
+        { name: 'uuid', value: uuid }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
@@ -272,8 +269,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       res.Output.data && console.error(res.Output.data)
       throw new Error('Failed to update community.')
     }
-    // TODO update local community
-    isLoading = false
   }
 
   /**
