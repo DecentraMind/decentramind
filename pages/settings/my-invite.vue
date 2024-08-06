@@ -5,7 +5,7 @@ import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets
 import { shortString } from '~/utils/util'
 
 const { getLocalCommunity } = $(aoCommunityStore())
-const { getAllInviteInfo } = $(taskStore())
+const { getInvitesByInviter } = $(taskStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
@@ -33,12 +33,12 @@ let inviteDetails = $ref<InviteInfo[]>([])
 
 const invitedByMe  = $ref<Record<string, InviteInfo[]>>({})
 
-let allInviteInfo = $ref<InviteInfo[]>([])
+let invites = $ref<InviteInfo[]>([])
 let users = $ref<RelatedUserMap>()
 onMounted( async () => {
   try {
-    const {allInviteInfo: invites, relatedUsers} = await getAllInviteInfo()
-    allInviteInfo = invites
+    const {invites: allInviteInfo, relatedUsers} = await getInvitesByInviter(address)
+    invites = allInviteInfo
     users = relatedUsers
   } catch (error) {
     const message = error instanceof Error ? error.message : error
@@ -47,10 +47,8 @@ onMounted( async () => {
     return
   }
 
-  // console.log('allInviteInfo = ' + JSON.stringify(allInviteInfo))
-
   const communityIDs = []
-  for (const inviteInfo of allInviteInfo) {
+  for (const inviteInfo of invites) {
     if(inviteInfo.inviterAddress !== address || inviteInfo.inviteeAddress === address){
       continue
     }
@@ -83,7 +81,7 @@ const findInvitedByCommunityID = (communityID: string) => {
   isDetailModalOpen = true
   inviteDetails = []
   console.log('search for community ' + communityID)
-  for (const inviteInfo of allInviteInfo) {
+  for (const inviteInfo of invites) {
     if(inviteInfo.inviterAddress === address && inviteInfo.communityID === communityID){
       console.log('found user invited by me:', inviteInfo)
       inviteDetails.push(inviteInfo)
@@ -115,7 +113,7 @@ const findInvitedByCommunityID = (communityID: string) => {
           <div class="flex">
             <UAvatarGroup v-if="users" size="sm" :max="2" class="ml-10">
               <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
-                <UAvatar :src="users[invite.inviteeAddress].avatar || arUrl(defaultUserAvatar)" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
+                <UAvatar v-if="users[invite.inviteeAddress]" :src="arUrl(users[invite.inviteeAddress].avatar) || arUrl(defaultUserAvatar)" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
               </div>
             </UAvatarGroup>
             <UButton color="white" class="ml-4" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>
@@ -128,8 +126,8 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div class="flex justify-center min-h-[300px] pt-10 px-6">
         <div v-if="users" class="border h-full px-2 py-2 mb-2">
           <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
-            <UAvatar :src="users[invite.inviteeAddress].avatar || arUrl(defaultUserAvatar)" alt="user avatar" />
-            <div class="w-fit">{{ users[invite.inviteeAddress].name || shortString(invite.inviteeAddress) }}</div>
+            <UAvatar :src="arUrl(users[invite.inviteeAddress]?.avatar) || arUrl(defaultUserAvatar)" alt="user avatar" />
+            <div class="w-fit">{{ users[invite.inviteeAddress]?.name || shortString(invite.inviteeAddress) }}</div>
             <div class="w-90">{{ invite.inviteeAddress }}</div>
           </div>
         </div>

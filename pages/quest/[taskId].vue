@@ -4,12 +4,12 @@ import { taskStore } from '~/stores/taskStore'
 import { shortAddress } from '~/utils/web3'
 import { ssimStore } from '~/stores/ssimStore'
 import { formatToLocale } from '~/utils/util'
-import type { Task, TwitterSpaceInfo } from '~/types'
+import type { InviteInfo, Task, TwitterSpaceInfo } from '~/types'
 import { tokens } from '~/utils/constants'
 
 const { t } = useI18n()
 
-const { storeBounty, sendBounty, updateTaskAfterSettle, allInviteInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const { storeBounty, sendBounty, updateTaskAfterSettle, getInvitesByInviter, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 
 const { getLocalCommunity } = $(aoCommunityStore())
 
@@ -78,6 +78,8 @@ submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
 let submittedBuilderCount = $ref<number>(0)
 
 let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let invites: InviteInfo[]
 
 onMounted(async () => {
   try {
@@ -99,6 +101,8 @@ onMounted(async () => {
     console.log(isBegin)
     console.log(isSettle)
     console.log(isCal)
+
+    invites = await (await getInvitesByInviter(address)).invites
 
     // TODO don't use spaceTaskSubmitInfo array, use submitInfo of current task only
     if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
@@ -125,7 +129,6 @@ onMounted(async () => {
     spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
     console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
 
-    await getAllInviteInfo()
   } catch (e) {
     console.error(e)
     showError('Data loading failed.')
@@ -268,7 +271,7 @@ async function submitTask() {
   submitLoading = true
 
   try {
-    if(!spaceTaskSubmitInfo || !allInviteInfo || !communityInfo) {
+    if(!spaceTaskSubmitInfo || !invites || !communityInfo) {
       throw new Error('Data loading does not completed. Please wait or try refresh.')
     }
 
@@ -332,11 +335,11 @@ async function submitTask() {
     // 听众
     const audience = participantCount
     // 邀请人数
-    const inviteCount = allInviteInfo.filter((inviteInfo) => {
+    const inviteCount = invites.filter((inviteInfo) => {
       return inviteInfo.inviterAddress === address
         && inviteInfo.communityID === communityId
-        && parseInt(inviteInfo.time) < spaceEndedAt
-        && parseInt(inviteInfo.time) > validJoinStartAt
+        && inviteInfo.time < spaceEndedAt
+        && inviteInfo.time > validJoinStartAt
     }).length
 
     console.log('spaceEnded_at = ' + spaceEndedAt)

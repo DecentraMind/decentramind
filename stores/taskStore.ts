@@ -60,7 +60,7 @@ export const taskStore = defineStore('taskStore', () => {
   let respArray = $ref([])
   let allTaskSubmitInfo = $ref<TaskSubmitInfo[]>([])
   let allTasks = $ref([])
-  let allInviteInfo = $ref<InviteInfo[]>([])
+
   const createTask = async (data: any) => {
     // create a task process，then add process ID to task info
     await window.arweaveWallet.connect(permissions)
@@ -123,36 +123,37 @@ export const taskStore = defineStore('taskStore', () => {
     })
   }
 
-  const getAllInviteInfo = async() => {
+  const getInvitesByInviter = async(address: string) => {
     await window.arweaveWallet.connect(permissions)
     try{
       const res = await dryrun({
         process: aoCommunityProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [
-          { name: 'Action', value: 'getAllInviteInfo' }
+          { name: 'Action', value: 'getInvitesByInviter' },
+          { name: 'Inviter', value: address }
         ]
       })
       if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
         respArray = []
-        return { allInviteInfo: [], relatedUsers: {} }
+        return { invites: [], relatedUsers: {} }
       }
 
       const resp = JSON.parse(res.Messages[0].Data) as {invites: InviteInfo[], relatedUsers: RelatedUserMap}
-      allInviteInfo = []
+      const invites = []
 
       for (const invite of resp.invites) {
         if (!invite.inviterAddress) {
           continue
         }
 
-        allInviteInfo.push(invite)
+        invites.push(invite)
       }
 
-      return { allInviteInfo, relatedUsers: resp.relatedUsers }
+      return { invites, relatedUsers: resp.relatedUsers }
     } catch (error) {
       console.error(error)
-      throw Error('getAllInviteInfo failed:' + error)
+      throw Error('Get invite info failed:' + error)
     }
   }
 
@@ -642,7 +643,7 @@ export const taskStore = defineStore('taskStore', () => {
     return bounties.filter(bounty => bounty.communityId === communityID)
   }
 
-  return $$({ denomination, storeBounty, getAllBounty, getBountiesByCommunityID, updateTaskAfterSettle, allInviteInfo, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getAllInviteInfo, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
+  return $$({ denomination, storeBounty, getAllBounty, getBountiesByCommunityID, updateTaskAfterSettle, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getInvitesByInviter, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
 })
 
 async function transferBounty(receiver: string, tokenName: string, amount: number) {

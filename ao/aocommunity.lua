@@ -374,24 +374,26 @@ Handlers.add(
 
 -- invite info and related user info
 Handlers.add(
-  "getAllInviteInfo",
-  Handlers.utils.hasMatchingTag("Action", "getAllInviteInfo"),
+  "getInvitesByInviter",
+  Handlers.utils.hasMatchingTag("Action", "getInvitesByInviter"),
   function(msg)
     local invites = {}
     local relatedUsers = {}
 
     for inviteeAddress, value in pairs(Invites) do
       for communityID, inviteInfo in pairs(value) do
-        local temp = {
-          inviterAddress = inviteInfo.invite,
-          communityID = communityID,
-          inviteeAddress = inviteeAddress,
-          time = inviteInfo.time,
-        }
-        table.insert(invites, temp)
+        if inviteInfo.invite == msg.Tags.Inviter then
+          local temp = {
+            inviterAddress = inviteInfo.invite,
+            communityID = communityID,
+            inviteeAddress = inviteeAddress,
+            time = inviteInfo.time,
+          }
+          table.insert(invites, temp)
 
-        if not relatedUsers[inviteeAddress] and Users[inviteeAddress] then
-          relatedUsers[inviteeAddress] = Users[inviteeAddress]
+          if not relatedUsers[inviteeAddress] and Users[inviteeAddress] then
+            relatedUsers[inviteeAddress] = Users[inviteeAddress]
+          end
         end
       end
     end
