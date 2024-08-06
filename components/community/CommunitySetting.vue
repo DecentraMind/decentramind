@@ -17,7 +17,7 @@ const state = $ref<CommunitySetting>({
   input: undefined,
   inputMenu: undefined,
   name: undefined,
-  inbro: undefined,
+  desc: undefined,
   website: undefined,
   twitter: undefined,
   github: undefined,
@@ -34,9 +34,6 @@ const state = $ref<CommunitySetting>({
   communityChatID: undefined,
   time: undefined,
 })
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let communityID = $ref('')
 
 const emit = defineEmits(['close-setting'])
 
@@ -58,6 +55,7 @@ const CreateCommunity = async () => {
   isCreated = true
   try {
     await updateCommunity(
+      currentUuid,
       state,
       tokenSelected, // 选择的token类型
       token.communityToken, // 社区token分配比例额度
@@ -193,15 +191,13 @@ const setCommunityState = async () => {
 
   console.log({ communityInfo })
 
-  communityID = communityInfo.uuid
-
   //state.banner = a.banner;
   state.creator = communityInfo.creater
   state.owner = communityInfo.creater
   state.logoBase64Data = communityInfo.logo
   state.banner = communityInfo.banner
   state.name = communityInfo.name
-  state.inbro = communityInfo.desc
+  state.desc = communityInfo.desc
   state.website = communityInfo.website
   state.twitter = communityInfo.twitter
   state.github = communityInfo.github
@@ -298,7 +294,7 @@ onMounted(async () => {
           </UCarousel>
         </UFormGroup>
 
-        <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="name" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class=" w-[300px]">
               {{ $t('community.name') }}
@@ -307,13 +303,13 @@ onMounted(async () => {
           <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
-        <UFormGroup name="Inbro" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="desc" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class=" w-[300px]">
               {{ $t('community.intro') }}
             </div>
           </template>
-          <UTextarea v-model="state.inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">

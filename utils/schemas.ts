@@ -6,7 +6,7 @@ import type { CommunitySetting } from '~/types'
 export const communitySettingSchema = z.object({
   // banner: z.enum(['banner6', 'banner7', 'banner8', 'banner9', 'banner10']),
   name: z.string().min(2).max(28),
-  inbro: z.string().min(3).max(100), // introduction
+  desc: z.string().min(3).max(100), // introduction
 
   // TODO add message: url must start with http:// or https://
   website: z.string().url().optional(),

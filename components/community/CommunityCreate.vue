@@ -14,7 +14,7 @@ const state = reactive<CommunitySetting & {tokenSupply: TokenSupply[]}>({
   input: undefined,
   inputMenu: undefined,
   name: undefined,
-  inbro: undefined,
+  desc: undefined,
   website: undefined,
   twitter: undefined,
   github: undefined,
@@ -68,7 +68,7 @@ const createCommunity = async () => {
       state.logoBase64Data,
       state.banner,
       state.name,
-      state.inbro,          // introduction
+      state.desc,          // introduction
       state.website,
       state.twitter,
       state.github,
@@ -296,11 +296,11 @@ const removeSupplyGroup = (index: number) => {
           <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
-        <UFormGroup name="inbro" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="desc" class="flex flex-row items-center space-x-1">
           <template #label>
             <div class="w-[300px]">{{ $t('community.intro') }}</div>
           </template>
-          <UTextarea v-model="state.inbro" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="website" class="flex flex-row items-center space-x-1">

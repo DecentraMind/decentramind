@@ -155,7 +155,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     logo,
     Banner,
     Name,
-    Inbro,
+    desc,
     Website,
     Twitter,
     Github,
@@ -171,11 +171,11 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     const time = Date.now()
     const uuid = createUuid()
 
-    const communitySubmitList = [{
+    const communitySubmitList = {
       logo: logo,
       banner: Banner,
       name: Name,
-      desc: Inbro,
+      desc,
       creater: address,
       owner: address,
       website: Website,
@@ -192,7 +192,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       uuid: uuid,
       timestamp: time.toString(),
       communitychatid: CommunityChatid,
-    }]
+    }
     const jsonString = JSON.stringify(communitySubmitList)
     const invite = 'none'
 
@@ -219,7 +219,8 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
    * @param {string} support - The trading platform.
    * @param {any} tokenSupply - The details of the community token distribution ratio.
    */
-  const settingCommunity = async (
+  const updateCommunity = async (
+    uuid: string,
     setting: CommunitySetting,
     bounty: string[], // token 类型
     communityToken: CommunityToken[], // 社区 token 分配比例
@@ -229,12 +230,12 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     if (isLoading) return
     isLoading = true
 
-    const { logoBase64Data: logo, banner, name, inbro, creator, owner, website, twitter, github, builderNum, isPublished, isTradable, allToken, communityChatID, time } = setting
-    const communitySubmitList = [{
+    const { logoBase64Data: logo, banner, name, desc, creator, owner, website, twitter, github, builderNum, isPublished, isTradable, allToken, communityChatID, time } = setting
+    const communitySubmitList = {
       logo,
       banner,
       name,
-      desc: inbro,
+      desc,
       creater: creator,
       owner,
       website,
@@ -248,20 +249,30 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       support,
       alltoken: allToken,
       tokensupply: tokenSupply,
-      uuid: currentUuid,
+      uuid,
       timestamp: time,
       communitychatid: communityChatID
-    }]
+    }
     const jsonString = JSON.stringify(communitySubmitList)
-    await message({
+    const messageID = await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'communitysetting' },
+        { name: 'Action', value: 'updateCommunity' },
         { name: 'userAddress', value: address }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
     })
+    const res = await result({
+      message: messageID,
+      process: aoCommunityProcessID
+    })
+    console.log({communityUpdateRes: res})
+    if (!res.Messages.length) {
+      res.Output.data && console.error(res.Output.data)
+      throw new Error('Failed to update community.')
+    }
+    // TODO update local community
     isLoading = false
   }
 
@@ -269,13 +280,11 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
    * Get community list method (which generates a community table, and a joined community table)
    * */
   const getCommunityList = async () => {
-    //if (isLoading) return
-    //isLoading = true
     if (address !== '') {
       const result = await dryrun({
         process: aoCommunityProcessID,
         tags: [
-          { name: 'Action', value: 'communitylist' },
+          { name: 'Action', value: 'getCommunities' },
           { name: 'userAddress', value: address }
         ],
       })
@@ -304,7 +313,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       const result = await dryrun({
         process: aoCommunityProcessID,
         tags: [
-          { name: 'Action', value: 'communitylist' }
+          { name: 'Action', value: 'getCommunities' }
         ],
       })
       const jsonData = result.Messages[0].Data // 获取原始的 JSON 字符串
@@ -318,7 +327,10 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     }
   }
 
-  const updateCommunity = async (uuid: string, joinStatus: 'join' | 'exit') => {
+  /**
+   * Update local community.isJoined
+   * */
+  const updateLocalCommunityJoin = async (uuid: string, joinStatus: 'join' | 'exit') => {
     for (let i = 0; i < communityList.length; i++) {
       if (communityList[i].uuid === uuid) {
         if (joinStatus == 'join') {
@@ -367,22 +379,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     return result
   }
 
-  //Get a list of communities you've joined
-  const getJoinedCommunities = async () => {
-    if (isLoading) return
-    isLoading = true
-
-    const result = await dryrun({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'communitylistjoined' },
-        { name: 'userAddress', value: address }
-      ],
-    })
-    isLoading = false
-    return result
-  }
-
   //Getting information about a specific community from a cached community list
   const getLocalCommunity = async (uuid: string, reFetch = false) => {
     if (!communityList || !communityList.length || reFetch) {
@@ -402,7 +398,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     const result = await dryrun({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'communityInfo' },
+        { name: 'Action', value: 'getCommunity' },
         { name: 'uuid', value: uuid }
       ]
     })
@@ -410,13 +406,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     const json = extractResult<string>(result)
     if (!json) return
 
-    const res = JSON.parse(json)
-    if (res.length) {
-      // TODO remove this branch if contract returns Community instead of Community[]
-      return (res[0] as Community)
-    } else {
-      return res as Community
-    }
+    return JSON.parse(json) as Community
   }
 
   //How to join the community
@@ -449,8 +439,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
   //Methods of withdrawing from the community
   const exitCommunity = async (uuid: string) => {
-    if (isExiting) return
-    isExiting = true
+
     const exit = await message({
       process: aoCommunityProcessID,
       tags: [
@@ -460,7 +449,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
       data: uuid,
     })
-    isExiting = false
+    await updateLocalCommunityJoin(uuid, 'exit')
     return exit
   }
 
@@ -504,13 +493,8 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       throw new Error('Get user info failed.')
     }
 
-    const userInfo = JSON.parse(user.Messages[0].Data) as UserInfo[]|UserInfo
-    if (Array.isArray(userInfo)) {
-      console.log({ userInfo, address })
-      return userInfo[0]
-    } else {
-      return userInfo
-    }
+    const userInfo = JSON.parse(user.Messages[0].Data) as UserInfo
+    return userInfo
   }
 
   //Create a community chat room
@@ -595,16 +579,14 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     makeCommunityChat,
     getLocalCommunity,
     getCommunityList,
-    updateCommunity,
     addCommunity,
-    settingCommunity,
+    updateCommunity,
     joinCommunity,
     exitCommunity,
     updateUser,
     getUser,
     getUserByAddress,
     getCommunityUser,
-    getJoinedCommunities,
     getCommunity
   })
 })

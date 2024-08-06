@@ -114,8 +114,7 @@ export type CommunitySetting = {
   input: string | undefined;
   inputMenu: string | undefined;
   name: string | undefined;
-  /** TODO rename this to desc */
-  inbro: string | undefined;
+  desc: string | undefined;
   website: string | undefined;
   twitter: string | undefined;
   github: string | undefined;
