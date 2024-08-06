@@ -53,5 +53,26 @@
     "**/assets": true
   },
   "i18n-ally.keystyle": "nested",
+  "cSpell.words": [
+    "ario",
+    "Decentra",
+    "EVERLAND",
+    "heroicons",
+    "ofetch",
+    "othent",
+    "permagate",
+    "Permaswap",
+    "Slideover",
+    "ssim",
+    "vueuse",
+    "yxxx"
+  ],
+  "Lua.diagnostics.globals": [
+    "Handlers"
+  ],
+  "Lua.workspace.library": [
+    "/Users/apple/Library/Application Support/Code/User/globalStorage/sumneko.lua/addonManager/addons/ao/module/library"
+  ],
+  "Lua.workspace.checkThirdParty": false,
 
 }

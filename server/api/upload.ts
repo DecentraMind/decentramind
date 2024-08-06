@@ -1,6 +1,6 @@
 import type { EventHandlerRequest, H3Event } from 'h3'
 import { PutObjectCommandInput, S3 } from '@aws-sdk/client-s3'
-import { allowedImageType, uploadPath, type UploadPath, EverLandUrlPrefix } from '~/utils/constants'
+import { allowedImageType, uploadPath, type UploadPath } from '~/utils/constants'
 import { retry, sleep, toBase62 } from '~/utils/util'
 import type { UploadResponse } from '~/types'
 
@@ -35,6 +35,7 @@ export default defineEventHandler(async (event: H3Event<EventHandlerRequest>): P
       '4EVERLAND_API_REGION': region,
       '4EVERLAND_BUCKET_NAME': bucketName
     } = import.meta.env
+    const EverLandUrlPrefix = `https://${bucketName}.4everland.store`
 
     const s3 = new S3({
       endpoint: endpoint,
@@ -44,6 +45,8 @@ export default defineEventHandler(async (event: H3Event<EventHandlerRequest>): P
       },
       region: region,
     })
+
+    // TODO compress image before uploading if needed
 
     const key = path + '/' + fileName + '@' + toBase62(new Date().getTime())
     const params = {
