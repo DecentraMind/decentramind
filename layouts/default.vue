@@ -68,7 +68,7 @@ onMounted(async () => {
             <CuteRadius :width="64" :height="64">
               <div class="aspect-square rounded-lg bg-white z-10 overflow-hidden">
                 <img
-                  :src="community.logo || arUrl(defaultCommunityLogo)"
+                  :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
                   :title="community.name"
                   class="w-full h-full object-cover"
                 >

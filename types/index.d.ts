@@ -109,7 +109,6 @@ export type CommunityList = CommunityListItem[]
 export type CommunitySetting = {
   owner: string | undefined;
   creator: string | undefined;
-  logoBase64Data: string | undefined;
   banner: string;
   input: string | undefined;
   inputMenu: string | undefined;
@@ -134,6 +133,7 @@ export type CommunitySetting = {
   communityChatID: string | undefined;
   /** timestamp */
   time?: number;
+  logo: string
 }
 
 export type CreateToken = {

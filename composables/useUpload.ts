@@ -23,6 +23,9 @@ export function useUpload() {
 
     try {
       isUploading = true
+      uploadError = undefined
+      uploadResponse = undefined
+
       if (!file) {
         throw new Error('No file selected.')
       }

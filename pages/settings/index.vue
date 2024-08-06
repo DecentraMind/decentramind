@@ -2,6 +2,7 @@
 import type { UserInfo } from '~/types'
 import { arUrl, defaultUserAvatar } from '~/utils/arAssets'
 import { userSchema } from '~/utils/schemas'
+import { useUpload } from '~/composables/useUpload'
 
 const { address } = $(aoStore())
 const { userInfo, updateUser } = $(aoCommunityStore())

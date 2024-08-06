@@ -66,6 +66,7 @@ end
 -- Creating new communities
 -- TODO generate uuid in AO side
 -- TODO reset buildnum to initial value
+-- TODO use AO generated uuid
 Handlers.add(
   "add",
   Handlers.utils.hasMatchingTag("Action", "add"),
@@ -134,6 +135,7 @@ Handlers.add(
 )
 
 -- TODO only update specific field, don't replace the whole Communities[uuid]
+-- TODO only whitelisted field can be updated here. uuid/buildNum cannot updated by this Action.
 Handlers.add(
   "updateCommunity",
   Handlers.utils.hasMatchingTag("Action", "updateCommunity"),

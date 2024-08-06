@@ -714,7 +714,7 @@ const shortedWebsite = $computed(() => {
 
       <UModal v-model="isSettingModalOpen" :ui="{ width: w-full }">
         <UCard>
-          <CommunitySetting @close-setting="isSettingModalOpen=false" />
+          <CommunitySetting :uuid="communityId" @close-setting="isSettingModalOpen=false" />
         </UCard>
       </UModal>
 

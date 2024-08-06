@@ -3,16 +3,24 @@ import type { FormSubmitEvent } from '#ui/types'
 import type { CommunitySetting, TradePlatform } from '~/types'
 import { tradePlatforms, tokenNames, type TokenName, type CommunityToken, type TokenSupply } from '~/utils/constants'
 import { communitySettingSchema, type CommunitySettingSchema } from '~/utils/schemas'
-import { arUrl, defaultCommunityLogo } from '~/utils/arAssets'
+import { arUrl, getCommunityBannerUrl } from '~/utils/arAssets'
+import { useUpload } from '~/composables/useUpload'
+
+const props = defineProps<{
+  uuid: string
+}>()
+
+const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
+const { showError, showSuccess } = $(notificationStore())
+const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
+
 
 let supportSelected: TradePlatform[] = $ref([])
 let tokenSelected = $ref<TokenName[]>([])
 
-
 const state = $ref<CommunitySetting>({
   owner: undefined,
   creator: undefined,
-  logoBase64Data: undefined,
   banner: 'banner6',
   input: undefined,
   inputMenu: undefined,
@@ -33,7 +41,25 @@ const state = $ref<CommunitySetting>({
   communityToken: undefined,
   communityChatID: undefined,
   time: undefined,
+  logo: ''
 })
+
+const uploadInput = $ref<HTMLInputElement>()
+async function upload2AR() {
+  await upload({
+    fileName: props.uuid.slice(-4),
+    pathName: 'communityLogo',
+    file: uploadInput?.files?.[0]
+  })
+
+  if (uploadError || !uploadResponse) {
+    showError('Failed to upload image.', uploadError)
+    uploadInput!.value = ''
+    return
+  }
+
+  state.logo = uploadResponse.ARHash!
+}
 
 const emit = defineEmits(['close-setting'])
 
@@ -44,8 +70,6 @@ async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   console.log(event.data)
 }
 
-const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
-const { showError, showSuccess } = $(notificationStore())
 
 let showWaitingModal = $ref(false)
 /** control loading and disable status of save button */
@@ -74,34 +98,6 @@ const CreateCommunity = async () => {
   } finally {
     showSpinner = false
   }
-}
-
-const handleUploadLogo = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (!input.files?.length) {
-    throw new Error('No file selected.')
-  }
-  const file = input.files[0]
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    const img = new Image()
-    const b64 = e.target!.result?.toString()
-    img.onload = () => {
-      if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
-        state.logoBase64Data = b64
-      } else {
-        alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
-      }
-    }
-    img.src = b64 || arUrl(defaultCommunityLogo)
-  }
-  reader.readAsDataURL(file)
-}
-
-const uploadLogo = () => {
-  const input = document.querySelector('#uploadLogo') as any
-  input.click()
 }
 
 const bannerItems = [
@@ -195,7 +191,7 @@ const setCommunityState = async () => {
   //state.banner = a.banner;
   state.creator = communityInfo.creater
   state.owner = communityInfo.creater
-  state.logoBase64Data = communityInfo.logo
+  state.logo = communityInfo.logo
   state.banner = communityInfo.banner
   state.name = communityInfo.name
   state.desc = communityInfo.desc
@@ -230,30 +226,32 @@ onMounted(async () => {
         </template>
       </UAlert>
       <UForm ref="form" :schema="communitySettingSchema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
-        <UFormGroup name="Logo" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="logo" class="flex flex-row items-center space-x-1" @click="uploadInput && !isUploading && uploadInput.click()">
           <template #label>
             <div class=" w-[300px]">
               {{ $t('community.logo') }}
             </div>
           </template>
-          <img
-            v-if="state.logoBase64Data"
-            :src="state.logoBase64Data"
-            width="75"
-            height="75"
-            alt="logo"
-            @click="uploadLogo"
-          >
-          <UButton
-            v-if="!state.logoBase64Data"
-            label="LOGO"
-            size="xl"
-            square
-            variant="outline"
-            class="flex justify-center w-[150px] h-[120px]"
-            @click="uploadLogo"
-          />
-          <Input id="uploadLogo" type="file" size="sm" class="opacity-0" @change="handleUploadLogo" />
+          <div class="relative flex justify-center cursor-pointer w-fit">
+            <img
+              v-if="state.logo"
+              :src="arUrl(state.logo)"
+              width="64"
+              height="64"
+              alt="logo"
+            >
+            <UButton
+              v-if="!state.logo"
+              label="LOGO"
+              size="xl"
+              square
+              variant="outline"
+              class="flex justify-center w-[75px] h-[75px]"
+            />
+            <Input ref="uploadInput" type="file" size="sm" class="opacity-0 w-0 h-0" @change="upload2AR" />
+
+            <div v-if="isUploading" class="absolute left-0 top-0 flex justify-center items-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
+          </div>
         </UFormGroup>
         <!--<UButton @click="test">test</UButton>-->
         <UFormGroup name="Banner" class="flex flex-row items-center space-x-1">
@@ -276,7 +274,7 @@ onMounted(async () => {
             class="w-64 mx-auto"
           >
             <template #default="{ item }">
-              <img :src="item" class="w-full" draggable="false">
+              <img :src="getCommunityBannerUrl(item)" class="w-full" draggable="false">
             </template>
 
             <template #indicator="{ onClick, page, active }">

@@ -227,7 +227,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     support: string[], // 交易的平台
     tokenSupply: TokenSupply[], /** 社区 token 分配比例详情 */
   ) => {
-    const { logoBase64Data: logo, banner, name, desc, creator, owner, website, twitter, github, builderNum, isPublished, isTradable, allToken, communityChatID, time } = setting
+    const { logo, banner, name, desc, creator, owner, website, twitter, github, builderNum, isPublished, isTradable, allToken, communityChatID, time } = setting
     const communitySubmitList = {
       logo,
       banner,
