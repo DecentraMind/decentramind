@@ -104,6 +104,7 @@ Handlers.add(
     local communityCopy = {}
     for uuid, community in pairs(Communities) do
       local copy = deepCopy(community)
+      copy.uuid = uuid
       copy.isJoined = false
       if Invites[msg.Tags.userAddress] then
         if Invites[msg.Tags.userAddress][uuid] then
@@ -122,7 +123,8 @@ Handlers.add(
   "getCommunity",
   Handlers.utils.hasMatchingTag("Action", "getCommunity"),
   function(msg)
-    local community = Communities[msg.Tags.uuid]
+    local community = deepCopy(Communities[msg.Tags.uuid])
+    community.uuid = msg.Tags.uuid
     if not community then
       print("Not found.")
       return
