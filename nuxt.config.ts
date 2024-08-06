@@ -18,7 +18,7 @@ export default defineNuxtConfig({
   ],
 
   nitro: {
-    compressPublicAssets: { gzip: true, brotli: false },
+    compressPublicAssets: { gzip: true, brotli: true },
     experimental: {
       tasks: true
     },
