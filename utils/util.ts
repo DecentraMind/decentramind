@@ -32,7 +32,7 @@ export function formatToLocale(isoString: string, locale: string = 'en-US') {
 }
 
 export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
-  if(!result.Messages) {
+  if(!result?.Messages?.[0]?.Data) {
     throw new Error('Failed to extract data from undefined result.Messages.')
   }
 

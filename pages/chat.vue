@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Mail } from '~/types'
 
-const { currentUuid, communityUser, chatBanuser, exitCommunity, updateCommunity, getLocalCommunity, getCommunityUser, banChat, unbanChat, getBan } = $(aoCommunityStore())
+const { currentUuid, communityUser, chatBanuser, exitCommunity, getLocalCommunity, getCommunityUser, banChat, unbanChat, getBan } = $(aoCommunityStore())
 //let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 let communityInfo = $ref({})
 const { address } = $(aoStore())
@@ -118,7 +118,6 @@ const quitCommunity = async(communityuuid: any) => {
   Leaveout = true
   try {
     await exitCommunity(communityuuid)
-    await updateCommunity(communityuuid, "exit")
     console.log('exitCommunity 操作成功')
     Leaveout = false
     router.push('/discovery')
@@ -279,7 +278,7 @@ const test = async() => {
 
         <div class="flex-1" />
         <div v-if="communityInfo.creater == address" class="flex">
-          <UButton class="ml-auto" variant="ghost" icon="quill:cog-alt" @click="communitySetting = true" />
+          <UButton class="ml-auto" variant="ghost" icon="heroicons:cog-6-tooth" @click="communitySetting = true" />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
@@ -313,7 +312,7 @@ const test = async() => {
           </div>
           <UDivider orientation="vertical" />
         </div>
-        <div class="pt-2 pr-10 pl-2"> 
+        <div class="pt-2 pr-10 pl-2">
           <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="Object.keys(communityUser).length">
             <template #title>
               <Text class="text-3xl">
@@ -323,9 +322,9 @@ const test = async() => {
           </UDashboardNavbar>
           <div class="pt-2 pl-2">
             <div v-for="(user, index) in communityUser" :key="index" class="flex items-center justify-between pr-20">
-              <div 
+              <div
                 class="relative flex items-center justify-between overflow-hidden"
-                @mouseenter="showButton = true" 
+                @mouseenter="showButton = true"
                 @mouseleave="showButton = false"
               >
                 <div class="flex items-center">

@@ -19,6 +19,8 @@ export function useUpload() {
   }) {
     const { fileName, pathName, file, maxSizeKB=150 } = options
 
+    // TODO useResize before uploading
+
     try {
       isUploading = true
       if (!file) {

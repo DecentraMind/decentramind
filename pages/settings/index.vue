@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { unref } from 'vue'
 import type { UserInfo } from '~/types'
 import { arUrl, defaultUserAvatar } from '~/utils/arAssets'
 import { userSchema } from '~/utils/schemas'
@@ -16,7 +15,6 @@ const saveInfo = async () => {
     await updateUser({
       name: userForm.name,
       avatar: userForm.avatar,
-      avatarARHash: userForm.avatarARHash
     })
     // userInfo = [{...userForm}]
     showSuccess('Profile updated')
@@ -27,19 +25,18 @@ const saveInfo = async () => {
 }
 
 const router = useRouter()
-const isLoading = $computed(() => !userInfo?.length)
+const isLoading = $computed(() => !userInfo)
 
 let userForm = $ref<UserInfo & {address: string}>({
-  name: userInfo[0]?.name || '',
-  avatar: userInfo[0]?.avatar || '',
+  name: userInfo?.name || '',
+  avatar: userInfo?.avatar || '',
   address: address || '',
-  avatarARHash: userInfo[0]?.avatarARHash || '',
 })
 
 watch(() => userInfo, (userInfo) => {
   console.log('userInfo changed:', userInfo)
-  if (userInfo?.length && address) {
-    userForm = {...userInfo[0], address}
+  if (userInfo && address) {
+    userForm = {...userInfo, address}
   }
 })
 
@@ -49,10 +46,10 @@ onMounted(async () => {
     return
   }
 
-  if (userInfo?.length) {
+  if (userInfo) {
     console.log('use userInfo[0]')
     userForm = {
-      ...userInfo[0],
+      ...userInfo,
       address
     }
   }
@@ -73,13 +70,11 @@ async function upload2AR() {
 
   if (uploadError || !uploadResponse) {
     showError('Failed to upload image.', uploadError)
+    uploadInput!.value = ''
     return
   }
 
-  // @caution 4everland's arweave gateway is at beta version,
-  // try uploadResponse.url if it not works
-  userForm.avatar = everlandGateway + uploadResponse.ARHash!
-  userForm.avatarARHash = uploadResponse.ARHash!
+  userForm.avatar = uploadResponse.ARHash!
 }
 
 </script>
@@ -97,13 +92,13 @@ async function upload2AR() {
         <UFormGroup name="avatar" @click="uploadInput && !isUploading && uploadInput.click()">
           <div class="relative flex justify-center cursor-pointer">
             <UAvatar
-              v-if="userForm.avatar === 'N/A' || isLoading"
+              v-if="!userForm.avatar || isLoading"
               alt=""
               size="2xl"
             />
             <UAvatar
               v-else
-              :src="userForm.avatar || arUrl(defaultUserAvatar)"
+              :src="userForm.avatar ? arUrl(userForm.avatar) : arUrl(defaultUserAvatar)"
               alt="Avatar"
               size="2xl"
             />

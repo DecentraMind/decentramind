@@ -9,7 +9,7 @@ import {
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
 import { notificationStore } from './notificationStore'
-import type { Bounty, InviteInfo, RelatedUserMap, RelatedUsers, Task } from '~/types'
+import type { Bounty, InviteInfo, RelatedUserMap, Task } from '~/types'
 import { sleep, retry } from '~/utils/util'
 import { tokens } from '~/utils/constants'
 import { aoCommunityProcessID, tasksProcessID, moduleID, schedulerID } from '~/utils/processID'

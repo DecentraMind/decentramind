@@ -87,7 +87,7 @@ export type Community = {
   /** trade platforms */
   support: TradePlatform[]
   /** created time */
-  timestamp: string
+  timestamp: number
   tokensupply: TokenSupply[]
   twitter: string
   uuid: string
@@ -98,7 +98,7 @@ export type Community = {
 export type CommunityListItem = Community & {
   whitebook: string
   isJoined?: boolean
-  joinTime?: string
+  joinTime?: number
 }
 
 export type CommunityList = CommunityListItem[]
@@ -133,8 +133,8 @@ export type CommunitySetting = {
   allToken: string | undefined;
   communityToken: string | undefined;
   communityChatID: string | undefined;
-  /** string of timestamp */
-  time: string | undefined;
+  /** timestamp */
+  time?: number;
 }
 
 export type CreateToken = {
@@ -181,7 +181,7 @@ export type Task = {
 }
 
 export type InviteInfo = {
-  time: string
+  time: number
   inviteeAddress: string
   communityID: string
   inviterAddress?: string
@@ -208,7 +208,6 @@ export type Bounty = {
 export type UserInfo = {
   name : string
   avatar : string
-  avatarARHash?: string
 }
 
 export type UploadResponse = {

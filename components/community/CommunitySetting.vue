@@ -35,6 +35,7 @@ const state = $ref<CommunitySetting>({
   time: undefined,
 })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let communityID = $ref('')
 
 const emit = defineEmits(['close-setting'])
@@ -46,8 +47,9 @@ async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   console.log(event.data)
 }
 
+const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
+const { showError, showSuccess } = $(notificationStore())
 
-const { settingCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
 let isLoading = $ref(false)
 let createSuccess = $ref(false)
 const CreateCommunity = async () => {
@@ -55,18 +57,17 @@ const CreateCommunity = async () => {
   isLoading = true
   isCreated = true
   try {
-    await settingCommunity(
+    await updateCommunity(
       state,
       tokenSelected, // 选择的token类型
       token.communityToken, // 社区token分配比例额度
       supportSelected, // 交易平台
       token.tokenSupply, // 社区token分配比例详情
     )
+    showSuccess('Successfully updated community.')
   } catch (error) {
-    console.error('Error setting community:', error)
+    showError('Set community Error:', error as Error)
     isCreated = false
-    alert('Failed to setting community!')
-    // 这里可以添加更多的错误处理逻辑，例如显示错误消息给用户
   } finally {
     isLoading = false
     createSuccess = true
