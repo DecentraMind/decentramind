@@ -6,6 +6,7 @@ module.exports = {
   rules: {
     // Global
     semi: ['error', 'never'],
+    '@typescript-eslint/semi': ['error', 'never'],
     quotes: ['error', 'single'],
     'quote-props': ['error', 'as-needed'],
     // Vue

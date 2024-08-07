@@ -5,8 +5,9 @@
   "hide": "Hide",
   "yes": "yes",
   "no": "no",
-  "add": "save",
+  "Submit": "Submit",
   "community.create": "Add a Community",
+  "community.create.description": "Launch your community on DecentraMind. Easily deploy quest contracts and send bounty to builders.",
   "community.setting": "Community Settings",
   "community.continue": "Continue Add",
   "community.look": "View Community",
@@ -130,5 +131,18 @@
   "Quit": "Leave",
   "Not Join": "Not Join",
   "taskRule": "1 You will help the community to do a Twitter space by using your Twitter account.\n2 Please use the community’s logo as your avatar of linked account before you start your space and keep it until 15 mins after you return back your space’s URL.\n3 Please pin your invitation of this community in your space when you doing it.",
-  "Space Url": "Space URL"
+  "Space Url": "Space URL",
+  "view.token": "View Token",
+  "token": {
+    "name": "Token Name",
+    "ticker": "Ticker",
+    "totalSupply": "Total Supply",
+    "logo": "Token Logo",
+    "create": {
+      "description": "Create a community token process in AO. The token process is totally controlled by its creator, and the initial supply is entirely allocated to the process."
+    }
+  },
+  "community": {
+    "create": "Create a Community"
+  }
 }

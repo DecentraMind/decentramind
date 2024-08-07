@@ -108,8 +108,7 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   async function evalTaskProcess(processID: string, ownerId: string) {
-    const x = 'TaskOwnerWallet = "' + ownerId + '"'
-    const luaCode = x + '      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "testloadlua",      Handlers.utils.hasMatchingTag("Action", "testloadlua"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )'
+    const luaCode = `TaskOwnerWallet = "${ownerId}"      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "getOwner",      Handlers.utils.hasMatchingTag("Action", "getOwner"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )`
     console.log('luacode = ' + luaCode)
     await message({
       // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',

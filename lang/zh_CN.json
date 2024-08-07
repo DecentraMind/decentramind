@@ -36,7 +36,7 @@
   "hide": "隐藏",
   "yes": "是",
   "no": "否",
-  "add": "添加",
+  "Submit": "提交",
   "community.create": "创建社区",
   "community.setting": "社区设置",
   "community.continue": "继续添加",
@@ -131,5 +131,8 @@
   "Quit": "退出",
   "Not Join": "未参与",
   "taskRule": "1.你将会使用你本人的twitter账号为该社区发起一场space.\n2.请在space开始之前将你的twitter头像更换成社区logo并保持至将space链接提交回来的15分钟之后.\n3.当你发起space时，请将你的社区邀请链接置顶在space中.",
-  "Space Url": "Space链接"
+  "Space Url": "Space链接",
+  "view": {
+    "token": "查看 Token"
+  }
 }

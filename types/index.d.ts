@@ -1,65 +1,65 @@
 import type { Avatar } from '#ui/types'
 
-export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced';
+export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 
 export interface User {
-  id: number;
-  name: string;
-  email: string;
-  avatar?: Avatar;
-  status: UserStatus;
-  location: string;
+  id: number
+  name: string
+  email: string
+  avatar?: Avatar
+  status: UserStatus
+  location: string
 }
 
 export interface Mail {
-  id: number;
-  unread?: boolean;
-  from: User;
-  subject: string;
-  body: string;
-  date: string;
+  id: number
+  unread?: boolean
+  from: User
+  subject: string
+  body: string
+  date: string
 }
 
 export interface Member {
-  name: string;
-  username: string;
-  role: 'member' | 'owner';
-  avatar: Avatar;
+  name: string
+  username: string
+  role: 'member' | 'owner'
+  avatar: Avatar
 }
 
 export interface Notification {
-  id: number;
-  unread?: boolean;
-  sender: User;
-  body: string;
-  date: string;
+  id: number
+  unread?: boolean
+  sender: User
+  body: string
+  date: string
 }
 
 export interface Wallettoken {
-  id: number;
-  token: string;
-  chain: string;
-  balance: string;
-  balance_u: string;
-  avatar?: Avatar;
-  status: UserStatus;
-  location: string;
+  id: number
+  token: string
+  chain: string
+  balance: string
+  balance_u: string
+  avatar?: Avatar
+  status: UserStatus
+  location: string
 }
 
 export interface Tasks {
-  id: number;
-  name: string;
-  from: string;
-  balance: string;
-  status: UserStatus;
-  location: string;
+  id: number
+  name: string
+  from: string
+  balance: string
+  status: UserStatus
+  location: string
 }
 
-export type Period = 'daily' | 'weekly' | 'monthly';
+export type Period = 'daily' | 'weekly' | 'monthly'
 
 export interface Range {
-  start: Date;
-  end: Date;
+  start: Date
+  end: Date
 }
 
 export type Community = {
@@ -107,76 +107,77 @@ export type CommunityList = CommunityListItem[]
  * type of community setting form
  * */
 export type CommunitySetting = {
-  owner: string | undefined;
-  creator: string | undefined;
-  banner: string;
-  input: string | undefined;
-  inputMenu: string | undefined;
-  name: string | undefined;
-  desc: string | undefined;
-  website: string | undefined;
-  twitter: string | undefined;
-  github: string | undefined;
-  builderNum: string | undefined;
-  allReward: string | undefined;
+  owner: string | undefined
+  creator: string | undefined
+  banner: string
+  input: string | undefined
+  inputMenu: string | undefined
+  name: string | undefined
+  desc: string | undefined
+  website: string | undefined
+  twitter: string | undefined
+  github: string | undefined
+  builderNum: string | undefined
+  allReward: string | undefined
   /** TODO rename this to bountyTokenNames */
-  typeReward: TokenName[];
+  typeReward: TokenName[]
   /** 是否有发行 token */
-  isPublished: boolean;
-  tokenName: string | undefined;
-  showTokenName: boolean;
-  isTradable: boolean | undefined;
-  tradePlatform: TradePlatform[];
+  isPublished: boolean
+  tokenName: string | undefined
+  showTokenName: boolean
+  isTradable: boolean | undefined
+  tradePlatform: TradePlatform[]
   /** 分配的 token 总量  */
-  allToken: string | undefined;
-  communityToken: string | undefined;
-  communityChatID: string | undefined;
+  allToken: string | undefined
+  communityToken: string | undefined
+  communityChatID: string | undefined
   /** timestamp */
-  time?: number;
+  time?: number
   logo: string
 }
 
 export type CreateToken = {
-  ticker: string;
-  name: string;
-  balance: number;
+  logo: string
+  ticker: string
+  name: string
+  totalSupply: number
 }
 
 export type Tokens = {
   [key: string]: {
-    ticker: string;
-    label: string;
-    processID: string;
+    ticker: string
+    label: string
+    processID: string
   }
 }
 
 export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
 
 export type Task = {
-  buildNumber: number;
-  communityId: string;
-  endTime: string;
-  isBegin: 'Y' | 'N';
-  isCal: 'Y' | 'N';
-  isSettle: 'Y' | 'N';
-  joined: number;
-  ownerId: string;
-  processId: string;
-  rewardTotal: number;
-  startTime: string;
-  taskId: string;
-  taskInfo: string;
-  taskLogo: string;
-  taskName: string;
-  taskRule: string;
-  tokenChain: string;
-  tokenChain1: string;
-  tokenNumber: number;
-  tokenNumber1: number;
-  tokenType: string;
-  tokenType1: string;
-  zone: string;
-  createTime: number;
+  buildNumber: number
+  communityId: string
+  endTime: string
+  isBegin: 'Y' | 'N'
+  isCal: 'Y' | 'N'
+  isSettle: 'Y' | 'N'
+  joined: number
+  ownerId: string
+  processId: string
+  rewardTotal: number
+  startTime: string
+  taskId: string
+  taskInfo: string
+  taskLogo: string
+  taskName: string
+  taskRule: string
+  tokenChain: string
+  tokenChain1: string
+  tokenNumber: number
+  tokenNumber1: number
+  tokenType: string
+  tokenType1: string
+  zone: string
+  createTime: number
 }
 
 export type InviteInfo = {
@@ -187,7 +188,7 @@ export type InviteInfo = {
 }
 
 export type RelatedUserMap = {
-  [address: string] : UserInfo
+  [address: string]: UserInfo
 }
 
 export type Bounty = {
@@ -205,8 +206,8 @@ export type Bounty = {
  * user info from aoCommunity Process getUses
  */
 export type UserInfo = {
-  name : string
-  avatar : string
+  name: string
+  avatar: string
 }
 
 export type UploadResponse = {

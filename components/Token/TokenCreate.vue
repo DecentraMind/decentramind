@@ -1,76 +1,157 @@
 
 <script setup lang="ts">
-import type { FormSubmitEvent } from '#ui/types'
 import type { CreateToken } from '~/types'
-import { createTokenSchema, type CreateTokenSchema } from '~/utils/schemas'
+import { createTokenSchema } from '~/utils/schemas'
+import { arUrl, defaultTokenLogo } from '~/utils/arAssets'
+import { useUpload } from '~/composables/useUpload'
 
+const { address } = $(aoStore())
 const { createToken } = $(aoCommunityStore())
+const { showError } = $(notificationStore())
+
 const state = $ref<CreateToken>({
+  logo: defaultTokenLogo,
   name: '',
   ticker: '',
-  balance: 0,
+  totalSupply: 0
 })
 
+const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
 
-async function onSubmit(event: FormSubmitEvent<CreateTokenSchema>) {
-  // Do something with event.data
-  console.log(event.data)
+const uploadInput = $ref<HTMLInputElement>()
+async function upload2AR() {
+  await upload({
+    fileName: address.slice(-4),
+    pathName: 'tokenLogo',
+    file: uploadInput?.files?.[0]
+  })
+
+  if (uploadError || !uploadResponse) {
+    showError('Failed to upload image.', uploadError)
+    uploadInput!.value = ''
+    return
+  }
+
+  state.logo = uploadResponse.ARHash!
 }
 
 let creating = $ref(false)
-let creatEnd = $ref(false)
-let createResult = $ref('')
-const create = async() => {
+let showSuccessModal = $ref(false)
+let tokenProcessID = $ref('')
+const onSubmit = async() => {
   creating = true
   try {
-    const result = await createToken(state.name, state.ticker, state.balance)
-    creating = false
-    creatEnd = true
-    createResult = result
+    tokenProcessID = await createToken(state)
+    showSuccessModal = true
   } catch (error) {
+    showError('Failed to create token.', error as Error)
+  } finally {
     creating = false
-    creatEnd = true
-    createResult = 'error'
   }
 }
+
+const emit = defineEmits(['close-modal'])
 </script>
 
 <template>
-  <UDashboardPage>
-    <DashboardPanelContent class="w-full overflow-y-auto px-10 pt-10">
-      <UAlert>
-        <template #title>
-          <div class="text-3xl text-center p-2">Create Token</div>
-        </template>
-      </UAlert>
-      <UForm v-if="!creatEnd" ref="form" :schema="createTokenSchema" :state="state" class="space-y-4 p-5 pl-20 pt-10" @submit="onSubmit">
-        <UFormGroup name="Name" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class=" w-[100px]">Name</div>
-          </template>
-          <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
-        </UFormGroup>
-        <UFormGroup name="Ticker" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class=" w-[100px]">Ticker</div>
-          </template>
-          <UInput v-model="state.ticker" placeholder="Ticker" class="min-w-[100px] w-[430px]" />
-        </UFormGroup>
-        <UFormGroup name="Balance" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class=" w-[100px]">Total Supply</div>
-          </template>
-          <UInput v-model="state.balance" placeholder="Ticker" class="min-w-[100px] w-[430px]" />
-        </UFormGroup>
-        <div class="flex justify-center">
-          <UButton color="white" type="submit" size="xl" :loading="creating" @click="create">
-            {{ $t('add') }}
-          </UButton>
+  <div class="w-full max-w-[800px] overflow-y-auto px-2 py-4 sm:px-3 sm:py-6">
+    <UAlert
+      icon="heroicons:currency-dollar"
+      title="Create Token"
+      :description="$t('token.create.description')"
+      class="max-w-[75vw] w-[500px]"
+    />
+    <UForm
+      v-if="!showSuccessModal"
+      :schema="createTokenSchema"
+      :state="state"
+      class="space-y-8 pt-10"
+      @submit="onSubmit"
+    >
+      <UFormGroup
+        name="logo"
+        :label="$t('token.logo')"
+      >
+        <div
+          class="relative self-start flex-center object-cover cursor-pointer w-fit ring-1 ring-gray-300 dark:ring-gray-700 rounded-full overflow-hidden"
+          title="Click to upload new logo."
+          @click="uploadInput && !isUploading && uploadInput.click()"
+        >
+          <img
+            v-if="state.logo"
+            :src="arUrl(state.logo)"
+            width="64"
+            height="64"
+            alt="logo"
+          >
+          <img
+            v-if="!state.logo"
+            :src="arUrl(defaultTokenLogo)"
+            width="64"
+            height="64"
+            alt="logo"
+          >
+          <Input ref="uploadInput" type="file" size="sm" class="opacity-0 w-0 h-0" @change="upload2AR" />
+
+          <div v-if="isUploading" class="absolute left-0 top-0 flex justify-center items-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
         </div>
-      </UForm>
-      <div v-if="creatEnd" class="w-[550px] mt-6">
-        {{ createResult }}
+      </UFormGroup>
+
+      <UFormGroup
+        name="name"
+        :label="$t('token.name')"
+      >
+        <UInput v-model="state.name" :model-modifiers="{trim: true}" @change="state.ticker = state.name.toUpperCase()" />
+      </UFormGroup>
+
+      <UFormGroup
+        name="ticker"
+        :label="$t('token.ticker')"
+      >
+        <UInput v-model="state.ticker" :model-modifiers="{trim: true}" />
+      </UFormGroup>
+
+      <UFormGroup
+        name="totalSupply"
+        :label="$t('token.totalSupply')"
+      >
+        <UInput
+          v-model="state.totalSupply"
+          type="number"
+          :model-modifiers="{number: true}"
+          placeholder="Ticker"
+          class="font-mono"
+        />
+      </UFormGroup>
+
+      <div class="flex justify-center">
+        <UButton color="white" type="submit" size="md" :loading="creating" class="mt-4">
+          {{ $t('Submit') }}
+        </UButton>
       </div>
-    </DashboardPanelContent>
-  </UDashboardPage>
+    </UForm>
+
+    <UModal v-model="showSuccessModal" prevent-close>
+      <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+        <template #header>
+          <div class="flex items-center justify-center">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+              Successfully created token {{ state.name }}
+            </h3>
+          </div>
+        </template>
+        <UContainer class="w-full flex justify-around">
+          <UButton
+            :to="`https://www.ao.link/#/entity/${tokenProcessID}?tab=source-code`"
+            active-class="text-primary"
+            target="_blank"
+            inactive-class="text-primary"
+            @click="showSuccessModal = false; emit('close-modal')"
+          >
+            {{ $t('view.token') }}
+          </UButton>
+        </UContainer>
+      </UCard>
+    </UModal>
+  </div>
 </template>

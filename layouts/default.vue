@@ -118,10 +118,15 @@ onMounted(async () => {
       <UCard>
         <div v-if="selectModal === 0" class="flex justify-between w-[300px]">
           <UButton color="white" @click="selectModal=1">Create Community</UButton>
-          <UButton color="white" @click="selectModal=2">Create Tokens</UButton>
+          <UButton color="white" @click="selectModal=2">Create Token</UButton>
         </div>
-        <CommunityCreate v-if="selectModal === 1" @created="getCommunityList()" @close-modal="isCreateModalOpen = false" />
-        <TokenCreate v-if="selectModal === 2" />
+        <CommunityCreate
+          v-if="selectModal === 1"
+          class="w-full zzzzzzz"
+          @created="getCommunityList()"
+          @close-modal="isCreateModalOpen = false"
+        />
+        <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />
       </UCard>
     </UModal>
     <!-- ~/components/HelpSlideover.vue -->

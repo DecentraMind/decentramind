@@ -89,8 +89,11 @@ async function upload2AR() {
     </div>
 
     <UForm v-if="!isLoading" :schema="userSchema" :state="userForm">
-      <div class="flex flex-col items-center gap-4 w-fit mb-4 mt-3">
-        <UFormGroup name="avatar" @click="uploadInput && !isUploading && uploadInput.click()">
+      <div class="flex-col-center gap-4 w-fit mb-4 mt-3">
+        <UFormGroup
+          name="avatar"
+          @click="uploadInput && !isUploading && uploadInput.click()"
+        >
           <div class="relative flex justify-center cursor-pointer">
             <UAvatar
               v-if="!userForm.avatar || isLoading"
@@ -103,45 +106,33 @@ async function upload2AR() {
               alt="Avatar"
               size="2xl"
             />
-            <div v-if="!isUploading" class="absolute bg-primary-500 bg-opacity-70 border-1 flex justify-center items-center w-6 h-6 right-0 bottom-0 rounded-full"><UIcon name="uil:image-upload" class="block w-4 h-4 text-white" /></div>
+            <div v-if="!isUploading" class="absolute bg-primary-500 bg-opacity-70 border-1 flex-center w-6 h-6 right-0 bottom-0 rounded-full"><UIcon name="uil:image-upload" class="block w-4 h-4 text-white" /></div>
 
-            <div v-if="isUploading" class="absolute left-0 top-0 flex justify-center items-center bg-primary-200 bg-opacity-50 rounded-full w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
+            <div v-if="isUploading" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 rounded-full w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
           </div>
         </UFormGroup>
 
         <UFormGroup
           name="name"
+          :label="$t('setting.person.name')"
           :ui="{
-            wrapper: 'ring-1 ring-gray-200 rounded-md p-2 hover:ring-primary-400',
-            label: {
-              base: 'font-normal w-full text-gray-500'
-            }
+            wrapper: 'ring-1 ring-gray-200 rounded-md p-2 hover:ring-primary-400'
           }"
         >
-          <template #label>
-            {{ $t('setting.person.name') }}
-          </template>
           <UInput
             v-model="userForm.name"
+            type="text"
             class="w-72"
             variant="none"
+            placeholder="Type your name"
             :ui="{
-              base: 'shadow-none px-0 font-medium',
-              size: {
-                '2xs': 'text-sm',
-                xs: 'text-base',
-                sm: 'text-base',
-                md: 'text-base',
-                lg: 'text-base',
-                xl: 'text-base',
-              },
               padding: {
-                '2xs': 'px-0 py-1',
-                xs: 'px-0 py-1.5',
-                sm: 'px-0 py-1.5',
-                md: 'px-0 py-2',
-                lg: 'px-0 py-2.5',
-                xl: 'px-0 py-2.5',
+                '2xs': 'px-0',
+                xs: 'px-0',
+                sm: 'px-0',
+                md: 'px-0',
+                lg: 'px-0',
+                xl: 'px-0',
               }
             }"
           />

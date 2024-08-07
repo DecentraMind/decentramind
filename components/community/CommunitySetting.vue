@@ -450,7 +450,7 @@ onMounted(async () => {
             :loading="disableSave"
             @click="CreateCommunity"
           >
-            {{ $t('add') }}
+            {{ $t('Submit') }}
           </UButton>
         </div>
       </UForm>
