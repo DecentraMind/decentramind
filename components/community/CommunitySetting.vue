@@ -68,6 +68,7 @@ const form = ref()
 async function onSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   // Do something with event.data
   console.log(event.data)
+  await setCommunity()
 }
 
 
@@ -76,7 +77,7 @@ let showWaitingModal = $ref(false)
 let disableSave = $ref(false)
 let showSpinner = $ref(false)
 
-const CreateCommunity = async () => {
+const setCommunity = async () => {
   if (disableSave) return
   disableSave = true
   showWaitingModal = true
@@ -248,9 +249,15 @@ onMounted(async () => {
               variant="outline"
               class="flex justify-center w-[75px] h-[75px]"
             />
-            <Input ref="uploadInput" type="file" size="sm" class="opacity-0 w-0 h-0" @change="upload2AR" />
+            <Input
+              ref="uploadInput"
+              type="file"
+              class="opacity-0 w-0 h-0"
+              accept="image/x-png,image/jpeg"
+              @change="upload2AR"
+            />
 
-            <div v-if="isUploading" class="absolute left-0 top-0 flex justify-center items-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
+            <div v-if="isUploading" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
           </div>
         </UFormGroup>
         <!--<UButton @click="test">test</UButton>-->
@@ -448,7 +455,6 @@ onMounted(async () => {
             size="xl"
             :disabled="disableSave"
             :loading="disableSave"
-            @click="CreateCommunity"
           >
             {{ $t('Submit') }}
           </UButton>

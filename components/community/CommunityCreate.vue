@@ -3,12 +3,41 @@ import type { FormSubmitEvent } from '#ui/types'
 import { tradePlatforms, tokenNames, type TokenSupply } from '~/utils/constants'
 import type { CommunitySetting } from '~/types'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
-import { getCommunityBannerUrl, defaultCommunityLogo } from '~/utils/arAssets'
+import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
+import { useUpload } from '~/composables/useUpload'
+
+const props = defineProps<{
+  uuid: string
+  initState: CommunitySetting & {tokenSupply: TokenSupply[]}
+}>()
+
+const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
+
+const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
+
+const uploadInput = $ref<HTMLInputElement>()
+async function upload2AR() {
+  await upload({
+    fileName: props.uuid.slice(-4),
+    pathName: 'communityLogo',
+    file: uploadInput?.files?.[0]
+  })
+
+  if (uploadError || !uploadResponse) {
+    showError('Failed to upload image.', uploadError)
+    uploadInput!.value = ''
+    return
+  }
+
+  state.logo = uploadResponse.ARHash!
+}
+
+
 
 let createdCommunityID = $ref('')
 
 const state = reactive<CommunitySetting & {tokenSupply: TokenSupply[]}>({
-  logoBase64Data: undefined,
+  logo: defaultCommunityLogo,
   banner: 'banner6',
   input: undefined,
   inputMenu: undefined,
@@ -34,7 +63,7 @@ const state = reactive<CommunitySetting & {tokenSupply: TokenSupply[]}>({
   communityChatID: undefined,
   owner: '',
   creator: '',
-  time: ''
+  time: new Date().getTime()
 })
 
 const form = ref()
@@ -68,7 +97,7 @@ const createCommunity = async () => {
     }
 
     createdCommunityID = await addCommunity(
-      state.logoBase64Data,
+      state.logo,
       state.banner,
       state.name,
       state.desc,          // introduction
@@ -98,34 +127,6 @@ const createCommunity = async () => {
 
 }
 
-const handleUploadLogo = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (!input.files?.length) {
-    throw new Error('No file selected.')
-  }
-  const file = input.files[0]
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    const img = new Image()
-    const b64 = e.target!.result?.toString()
-    img.onload = () => {
-      if (img.width <= 400 && img.height <= 400 && img.width === img.height) {
-        state.logoBase64Data = b64
-      } else {
-        alert('Image dimensions should be square and both dimensions should be less than or equal to 400px.')
-      }
-    }
-    img.src = b64 || arUrl(defaultCommunityLogo)
-  }
-  reader.readAsDataURL(file)
-}
-
-const uploadLogo = () => {
-  const input = document.querySelector('#logoUpload') as HTMLInputElement
-  input.click()
-}
-
 const bannerItems = [
   'banner6',
   'banner7',
@@ -151,16 +152,14 @@ const updateBanner = (index: number) => {
 
 // 初始化表单组状态数组
 const token = $ref({
-  communityToken: [
-    {
-      tokenName: '',
-      showTokenName: true
-    }
-  ]
+  communityToken: [{
+    tokenName: '',
+    showTokenName: true
+  }]
 })
 
 // 添加表单组函数
-const addFormGroup = () => {
+const addCommunityTokenForm = () => {
   if (token.communityToken.length < 2) {
     token.communityToken.push({
       tokenName: '',
@@ -180,7 +179,7 @@ const removeFormGroup = (index: any) => {
 watch(() => state.isPublished, (newVal) => {
   if (newVal) {
     if (token.communityToken.length === 0) {
-      addFormGroup()
+      addCommunityTokenForm()
     }
   } else {
     token.communityToken = []
@@ -201,60 +200,56 @@ const removeSupplyGroup = (index: number) => {
   // 此处需要手动调用 validate，防止出现在删除有 error 的 tokenSupply 后，error 仍出现在页面上
   form.value.validate()
 }
+
+
 </script>
 
 <template>
   <UDashboardPage>
     <DashboardPanelContent class="w-full overflow-y-auto px-10 pt-10">
-      <UAlert>
-        <template #title>
-          <div class="text-3xl text-center p-2">{{ $t('community.create') }}</div>
-        </template>
-      </UAlert>
+      <UAlert
+        icon="heroicons:user-group"
+        :title="$t('community.create')"
+        :description="$t('community.create.description')"
+      />
       <UForm
         ref="form"
         :validate="validateCommunitySetting"
         :schema="communitySettingSchema"
         :state="state"
-        class="space-y-4 p-5 pl-20 pt-10"
+        class="space-y-6 p-5 px-10 pt-10"
         @submit="onFormSubmit"
       >
-        <UFormGroup name="logoBase64Data" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class=" w-[300px]">{{ $t('community.logo') }}</div>
-          </template>
+        <UFormGroup name="logo" :label="$t('community.logo')">
+          <div class="relative flex-center w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadInput && !isUploading && uploadInput.click()">
+            <img
+              v-if="state.logo"
+              :src="arUrl(state.logo)"
+              width="64"
+              height="64"
+              alt="logo"
+            >
+            <UButton
+              v-if="!state.logo"
+              label="LOGO"
+              size="xl"
+              square
+              variant="outline"
+              class="flex justify-center w-16 h-16"
+            />
+            <Input
+              ref="uploadInput"
+              type="file"
+              class="opacity-0 w-0 h-0"
+              accept="image/x-png,image/jpeg"
+              @change="upload2AR"
+            />
 
-          <img
-            v-if="state.logoBase64Data"
-            :src="state.logoBase64Data"
-            width="75"
-            height="75"
-            alt="logo"
-            @click="uploadLogo"
-          >
-          <UButton
-            v-if="!state.logoBase64Data"
-            label="LOGO"
-            size="xl"
-            square
-            variant="outline"
-            class="flex justify-center w-[150px] h-[120px]"
-            @click="uploadLogo"
-          />
-          <Input
-            id="logoUpload"
-            type="file"
-            size="sm"
-            class="opacity-0"
-            accept="image/x-png,image/jpeg"
-            @change="handleUploadLogo"
-          />
+            <div v-if="isUploading" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
+          </div>
         </UFormGroup>
 
-        <UFormGroup name="banner" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class=" w-[300px]">{{ $t('community.banner') }}</div>
-          </template>
+        <UFormGroup name="banner" :label="$t('community.banner')">
           <UCarousel
             v-model="currentIndex"
             :items="bannerItems"
@@ -288,74 +283,54 @@ const removeSupplyGroup = (index: number) => {
           </UCarousel>
         </UFormGroup>
 
-        <UFormGroup name="name" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class="w-[300px]">{{ $t('community.name') }}</div>
-          </template>
+        <UFormGroup name="name" :label="$t('community.name')">
           <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
-        <UFormGroup name="desc" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class="w-[300px]">{{ $t('community.intro') }}</div>
-          </template>
+        <UFormGroup name="desc" :label="$t('community.intro')">
           <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
-        <UFormGroup name="website" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="website">
           <template #label>
-            <div class="w-[300px]">{{ $t('community.website') }}</div>
+            <div>{{ $t('community.website') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.website" placeholder="URL" />
           </div>
         </UFormGroup>
 
-        <UFormGroup name="twitter" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="twitter">
           <template #label>
-            <div class=" w-[300px]">{{ $t('community.twitter') }}</div>
+            <div>{{ $t('community.twitter') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.twitter" placeholder="URL" />
           </div>
         </UFormGroup>
 
-        <UFormGroup name="github" class="flex flex-row items-center space-x-1">
+        <UFormGroup name="github">
           <template #label>
-            <div class=" w-[300px]">Github</div>
+            <div>Github</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
             <UInput v-model="state.github" placeholder="URL" />
           </div>
         </UFormGroup>
 
-        <UFormGroup name="typeReward" class="flex flex-row items-center space-x-1">
-          <template #label>
-            <div class=" w-[300px]">{{ $t('community.typereward') }}</div>
-          </template>
-          <div class="flex flex-row items-center space-x-3">
-            <USelectMenu v-model="state.typeReward" class="w-[130px] mr-10" :options="tokenNames" multiple placeholder="Select Token" />
-          </div>
+        <UFormGroup name="typeReward" :label="$t('community.typereward')">
+          <USelectMenu v-model="state.typeReward" class="w-[130px] mr-10" :options="tokenNames" multiple placeholder="Select Token" />
         </UFormGroup>
 
-        <div class="py-8 text-2xl">{{ $t('community.project') }}</div>
+        <div class="!mt-20 !mb-12 font-bold text-xl text-center">{{ $t('community.project') }}</div>
 
-        <UFormGroup class="flex flex-row items-center space-x-10">
-          <template #label>
-            <div class=" min-w-[450px]">{{ $t('community.token.release') }}</div>
-          </template>
-          <div class="flex flex-row items-center space-x-3">
-            <UToggle v-model="state.isPublished" />
-            <Text>{{ state.isPublished ? $t('yes') : $t('no') }}</Text>
-          </div>
+        <UFormGroup :label="$t('community.token.release')" class="flex flex-row items-center space-x-10">
+          <UToggle v-model="state.isPublished" />
         </UFormGroup>
 
-        <div v-for="(formGroup, index) in token.communityToken" :key="index">
-          <UFormGroup name="range" label="Range">
-            <template #label>
-              <div class=" min-w-[100px]">{{ index+1 }}st Token</div>
-            </template>
-            <div class="flex flex-row items-center space-x-3">
+        <div v-for="(formGroup, index) in token.communityToken" :key="index" class="!mb-3 !mt-3 pl-8">
+          <UFormGroup name="range" :label="`${index+1}st Token`">
+            <div class="flex flex-row items-center">
               <div class="flex min-w-[477px]">
                 <USelect v-model="formGroup.tokenName" :options="tokenNames" />
 
@@ -379,16 +354,10 @@ const removeSupplyGroup = (index: number) => {
             </div>
           </UFormGroup>
         </div>
-        <UButton v-if="state.isPublished" variant="outline" icon="material-symbols:add" @click="addFormGroup" />
+        <UButton v-if="state.isPublished" variant="outline" icon="material-symbols:add" class="!mt-2" @click="addCommunityTokenForm" />
 
-        <UFormGroup name="range" class="flex flex-row items-center space-x-10">
-          <template #label>
-            <div class=" min-w-[452px]">{{ $t('community.token.trade') }}</div>
-          </template>
-          <div class="flex flex-row items-center space-x-3">
-            <UToggle v-model="state.isTradable" />
-            <Text>{{ state.isTradable ? $t('yes') : $t('no') }}</Text>
-          </div>
+        <UFormGroup name="range" :label="$t('community.token.trade')" class="flex flex-row items-center space-x-10">
+          <UToggle v-model="state.isTradable" />
         </UFormGroup>
         <div v-if="state.isTradable">
           <UFormGroup name="tradePlatform" class="flex flex-row items-center space-x-10">
@@ -449,7 +418,7 @@ const removeSupplyGroup = (index: number) => {
 
         <div class="flex justify-center">
           <UButton color="white" type="submit" size="xl" :disabled="disableSave" :loading="disableSave">
-            {{ $t('add') }}
+            {{ $t('Submit') }}
           </UButton>
         </div>
       </UForm>
