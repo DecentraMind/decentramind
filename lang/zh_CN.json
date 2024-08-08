@@ -46,7 +46,7 @@
   "community.banner.submit": "点击上传 banner(建议尺寸xxx)",
   "community.name": "社区名称",
   "community.intro": "简介",
-  "community.intro.label": "多行输入",
+  "community.intro.placeholder": "这个社区的愿景是什么？",
   "community.website": "官网",
   "community.twitter": "推特",
   "community.whitebook": "白皮书",

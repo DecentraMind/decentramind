@@ -16,7 +16,7 @@
   "community.banner.submit": "Click to upload banner (recommended size xxx)",
   "community.name": "Name",
   "community.intro": "Introduction",
-  "community.intro.label": "multi-line input",
+  "community.intro.placeholder": "What is the mission and vision of this community? You will be able to change it later.",
   "community.website": "Website",
   "community.twitter": "Twitter",
   "community.whitebook": "Whitepaper Link",

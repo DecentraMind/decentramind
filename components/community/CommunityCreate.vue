@@ -288,11 +288,11 @@ const removeSupplyGroup = (index: number) => {
       </UFormGroup>
 
       <UFormGroup required name="name" :label="$t('community.name')">
-        <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
+        <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-full" />
       </UFormGroup>
 
       <UFormGroup required name="desc" :label="$t('community.intro')">
-        <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+        <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-[430px]" />
       </UFormGroup>
 
       <UFormGroup name="website">

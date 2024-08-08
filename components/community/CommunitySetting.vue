@@ -315,7 +315,7 @@ onMounted(async () => {
               {{ $t('community.intro') }}
             </div>
           </template>
-          <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+          <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-[430px]" />
         </UFormGroup>
 
         <UFormGroup name="Website" class="flex flex-row items-center space-x-1">
