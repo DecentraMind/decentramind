@@ -114,7 +114,7 @@ onMounted(async () => {
 
     <slot />
 
-    <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-full' }">
+    <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
       <div v-if="selectModal === 0" class="flex justify-between gap-8 p-4">
         <UButton color="white" @click="selectModal=1">Create Community</UButton>
         <UButton color="white" @click="selectModal=2">Create Token</UButton>

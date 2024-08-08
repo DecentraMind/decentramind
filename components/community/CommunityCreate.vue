@@ -209,12 +209,12 @@ const removeSupplyGroup = (index: number) => {
 </script>
 
 <template>
-  <div class="overflow-y-auto pt-10 pb-6 px-16 w-fit">
+  <div class="overflow-y-auto pt-10 pb-6 px-6 md:px-16 w-fit">
     <UAlert
       icon="heroicons:user-group"
       :title="$t('community.create')"
       :description="$t('community.create.description')"
-      class="max-w-[75vw] w-[500px]"
+      class="max-w-[75vw] w-full md:w-[580px]"
     />
     <UForm
       ref="form"
@@ -292,39 +292,41 @@ const removeSupplyGroup = (index: number) => {
       </UFormGroup>
 
       <UFormGroup required name="desc" :label="$t('community.intro')">
-        <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-[430px]" />
+        <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-full" />
       </UFormGroup>
 
-      <UFormGroup name="website">
-        <template #label>
-          <div>{{ $t('community.website') }}</div>
-        </template>
-        <div class="flex flex-row items-center space-x-3">
-          <UInput v-model="state.website" placeholder="URL" class="w-52" />
-        </div>
-      </UFormGroup>
+      <div class="grid md:grid-cols-2 grid-cols-1 gap-7">
+        <UFormGroup required name="typeReward" :label="$t('community.typereward')">
+          <USelectMenu v-model="state.typeReward" class="w-52 max-w-full mr-10" :options="tokenNames" multiple placeholder="Select Token" />
+        </UFormGroup>
 
-      <UFormGroup name="twitter">
-        <template #label>
-          <div>{{ $t('community.twitter') }}</div>
-        </template>
-        <div class="flex flex-row items-center space-x-3">
-          <UInput v-model="state.twitter" placeholder="URL" class="w-52" />
-        </div>
-      </UFormGroup>
+        <UFormGroup name="website">
+          <template #label>
+            <div>{{ $t('community.website') }}</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.website" placeholder="URL" class="w-52" />
+          </div>
+        </UFormGroup>
 
-      <UFormGroup name="github">
-        <template #label>
-          <div>Github</div>
-        </template>
-        <div class="flex flex-row items-center space-x-3">
-          <UInput v-model="state.github" placeholder="URL" class="w-52" />
-        </div>
-      </UFormGroup>
+        <UFormGroup name="twitter">
+          <template #label>
+            <div>{{ $t('community.twitter') }}</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.twitter" placeholder="URL" class="w-52" />
+          </div>
+        </UFormGroup>
 
-      <UFormGroup required name="typeReward" :label="$t('community.typereward')">
-        <USelectMenu v-model="state.typeReward" class="w-52 mr-10" :options="tokenNames" multiple placeholder="Select Token" />
-      </UFormGroup>
+        <UFormGroup name="github">
+          <template #label>
+            <div>Github</div>
+          </template>
+          <div class="flex flex-row items-center space-x-3">
+            <UInput v-model="state.github" placeholder="URL" class="w-52" />
+          </div>
+        </UFormGroup>
+      </div>
 
       <div class="!mt-12 !mb-8 font-bold text-xl text-left">{{ $t('community.project') }}</div>
 
