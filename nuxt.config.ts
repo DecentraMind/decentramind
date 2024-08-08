@@ -33,8 +33,6 @@ export default defineNuxtConfig({
   },
 
   i18n: {
-    legacy: false,
-    globalInjection: true,
     locales: [
       {
         code: 'en',

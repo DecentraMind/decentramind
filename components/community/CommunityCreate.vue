@@ -213,9 +213,12 @@ const removeSupplyGroup = (index: number) => {
     <UAlert
       icon="heroicons:user-group"
       :title="$t('community.create')"
-      :description="$t('community.create.description')"
       class="max-w-[75vw] w-full md:w-[580px]"
-    />
+    >
+      <template #description>
+        <p v-html="$t('community.createModalDescription', { lineBreak: '<br>' })" />
+      </template>
+    </UAlert>
     <UForm
       ref="form"
       :validate="validateCommunitySetting"

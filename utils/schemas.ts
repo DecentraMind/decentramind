@@ -137,7 +137,7 @@ export const userSchema = z.object({
 export const createTokenSchema = z.object({
   name: z.string().min(1).max(30),
   ticker: z.string().max(8).toUpperCase(),
-  totalSupply: z.number().min(1).max(1e12),
+  totalSupply: z.number().min(1).max(1e50),
 })
 
 export type CreateTokenSchema = z.infer<typeof createTokenSchema>

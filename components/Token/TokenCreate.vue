@@ -58,9 +58,12 @@ const emit = defineEmits(['close-modal'])
     <UAlert
       icon="heroicons:currency-dollar"
       title="Create Token"
-      :description="$t('token.create.description')"
       class="max-w-[75vw] w-[500px]"
-    />
+    >
+      <template #description>
+        <p v-html="$t('token.create.description', { lineBreak: '<br>' })" />
+      </template>
+    </UAlert>
     <UForm
       v-if="!showSuccessModal"
       :schema="createTokenSchema"
