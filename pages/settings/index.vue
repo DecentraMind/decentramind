@@ -116,7 +116,7 @@ async function upload2AR() {
           name="name"
           :label="$t('setting.person.name')"
           :ui="{
-            wrapper: 'ring-1 ring-gray-200 rounded-md p-2 hover:ring-primary-400'
+            wrapper: 'ring-1 ring-gray-200 rounded-md px-2 pt-2 pb-0 hover:ring-primary-400'
           }"
         >
           <UInput

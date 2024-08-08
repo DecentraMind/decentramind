@@ -11,8 +11,8 @@
   "community.setting": "Community Settings",
   "community.continue": "Continue Add",
   "community.look": "View Community",
-  "community.logo": "logo",
-  "community.banner": "banner",
+  "community.logo": "Logo",
+  "community.banner": "Banner",
   "community.banner.submit": "Click to upload banner (recommended size xxx)",
   "community.name": "Name",
   "community.intro": "Introduction",
@@ -143,6 +143,7 @@
     }
   },
   "community": {
-    "create": "Create a Community"
+    "create": "Create a Community",
+    "logo": "Llogo"
   }
 }

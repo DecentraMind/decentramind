@@ -41,9 +41,9 @@
   "community.setting": "社区设置",
   "community.continue": "继续添加",
   "community.look": "查看社区",
-  "community.logo": "logo",
-  "community.banner": "banner",
-  "community.banner.submit": "点击上传banner(建议尺寸xxx)",
+  "community.logo": "Logo",
+  "community.banner": "Banner",
+  "community.banner.submit": "点击上传 banner(建议尺寸xxx)",
   "community.name": "社区名称",
   "community.intro": "简介",
   "community.intro.label": "多行输入",
@@ -134,5 +134,8 @@
   "Space Url": "Space链接",
   "view": {
     "token": "查看 Token"
+  },
+  "community": {
+    "logo": "LoGO"
   }
 }

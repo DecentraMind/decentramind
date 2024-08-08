@@ -150,7 +150,7 @@ const test = async() => {
           >
             <template #title>
               <div class="flex items-center">
-                <UAvatar :src="community.logo || arUrl(defaultCommunityLogo)" :alt="community.name" class="ring-1 ring-gray-100" />
+                <UAvatar :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)" :alt="community.name" class="ring-1 ring-gray-100" />
                 <div class="mx-3 text-xl">
                   {{ community.name }}
                 </div>

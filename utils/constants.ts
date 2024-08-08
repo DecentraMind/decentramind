@@ -104,7 +104,7 @@ export const tokens: Record<string, Token> = {
   },
 }
 
-export type TokenName = keyof typeof tokens;
+export type TokenName = keyof typeof tokens
 
 export const tokenNames: TokenName[] = Object.keys(tokens) as TokenName[]
 
@@ -133,12 +133,12 @@ export const denominations = tokenNames.reduce((carry, name) => {
 export type CommunityToken = {
   tokenName: TokenName;
   showTokenName: boolean;
-};
+}
 
 export type TokenSupply = {
   name: string;
   supply: number;
-};
+}
 
 export const timeZoneOptions = [
   { label: 'GMT-11:00', value: 'GMT-11:00' },

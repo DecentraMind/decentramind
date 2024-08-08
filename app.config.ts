@@ -15,7 +15,7 @@ export default defineAppConfig({
       icon: {
         base: 'w-6 h-7',
       },
-      title: 'text-xl font-bold mb-2',
+      title: 'text-xl font-semibold mb-2',
       description: 'mt-1 text-sm leading-6 text-gray-600 text-justify',
     },
     avatar: {
@@ -23,13 +23,13 @@ export default defineAppConfig({
     },
     formGroup: {
       label: {
-        base: 'font-medium w-full text-gray-500'
+        base: 'font-semibold w-full text-gray-500'
       },
       // label: {
       //   wrapper: 'content-end text-right text-nowrap mr-4',
       //   base: 'w-24 font-bold',
       // },
-      error: 'absolute mt-2'
+      error: 'absolute mt-1'
     },
     input: {
       base: 'font-medium placeholder:font-normal placeholder:text-sm',

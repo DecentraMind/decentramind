@@ -4,11 +4,12 @@ import { tradePlatforms, tokenNames, type TokenSupply } from '~/utils/constants'
 import type { CommunitySetting } from '~/types'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
+import { createUuid } from '~/utils/util'
 import { useUpload } from '~/composables/useUpload'
 
 const props = defineProps<{
-  uuid: string
-  initState: CommunitySetting & {tokenSupply: TokenSupply[]}
+  uuid?: string
+  initState?: CommunitySetting & {tokenSupply: TokenSupply[]}
 }>()
 
 const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
@@ -18,7 +19,7 @@ const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
 const uploadInput = $ref<HTMLInputElement>()
 async function upload2AR() {
   await upload({
-    fileName: props.uuid.slice(-4),
+    fileName: (props.uuid || createUuid()).slice(-4),
     pathName: 'communityLogo',
     file: uploadInput?.files?.[0]
   })
@@ -57,7 +58,7 @@ const state = reactive<CommunitySetting & {tokenSupply: TokenSupply[]}>({
   allToken: undefined,
   tokenSupply: [{
     name: '',
-    supply: 0,
+    supply: '' as unknown as number,
   }],
   communityToken: undefined,
   communityChatID: undefined,
@@ -173,6 +174,9 @@ const addCommunityTokenForm = () => {
 // 移除表单组函数
 const removeFormGroup = (index: any) => {
   token.communityToken.splice(index, 1)
+  if (!token.communityToken.length) {
+    state.isPublished = false
+  }
 }
 
 // 监听 state.isPublished 的变化
@@ -190,7 +194,7 @@ watch(() => state.isPublished, (newVal) => {
 const addSupplyGroup = () => {
   state.tokenSupply.push({
     name: '',
-    supply: 0,
+    supply: '' as unknown as number,
   })
 }
 
@@ -205,244 +209,240 @@ const removeSupplyGroup = (index: number) => {
 </script>
 
 <template>
-  <UDashboardPage>
-    <DashboardPanelContent class="w-full overflow-y-auto px-10 pt-10">
-      <UAlert
-        icon="heroicons:user-group"
-        :title="$t('community.create')"
-        :description="$t('community.create.description')"
-      />
-      <UForm
-        ref="form"
-        :validate="validateCommunitySetting"
-        :schema="communitySettingSchema"
-        :state="state"
-        class="space-y-6 p-5 px-10 pt-10"
-        @submit="onFormSubmit"
-      >
-        <UFormGroup name="logo" :label="$t('community.logo')">
-          <div class="relative flex-center w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadInput && !isUploading && uploadInput.click()">
-            <img
-              v-if="state.logo"
-              :src="arUrl(state.logo)"
-              width="64"
-              height="64"
-              alt="logo"
-            >
-            <UButton
-              v-if="!state.logo"
-              label="LOGO"
-              size="xl"
-              square
-              variant="outline"
-              class="flex justify-center w-16 h-16"
-            />
-            <Input
-              ref="uploadInput"
-              type="file"
-              class="opacity-0 w-0 h-0"
-              accept="image/x-png,image/jpeg"
-              @change="upload2AR"
-            />
-
-            <div v-if="isUploading" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
-          </div>
-        </UFormGroup>
-
-        <UFormGroup name="banner" :label="$t('community.banner')">
-          <UCarousel
-            v-model="currentIndex"
-            :items="bannerItems"
-            :ui="{
-              item: 'basis-full',
-              container: 'rounded-lg',
-              indicators: {
-                wrapper: 'relative bottom-0 mt-4'
-              }
-            }"
-            indicators
-            class="w-64 mx-auto"
+  <div class="overflow-y-auto pt-10 pb-6 px-16 w-fit">
+    <UAlert
+      icon="heroicons:user-group"
+      :title="$t('community.create')"
+      :description="$t('community.create.description')"
+      class="max-w-[75vw] w-[500px]"
+    />
+    <UForm
+      ref="form"
+      :validate="validateCommunitySetting"
+      :schema="communitySettingSchema"
+      :state="state"
+      class="space-y-7 pt-10"
+      @submit="onFormSubmit"
+    >
+      <UFormGroup required name="logo" :label="$t('community.logo')">
+        <div class="relative flex-center w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadInput && !isUploading && uploadInput.click()">
+          <img
+            v-if="state.logo"
+            :src="arUrl(state.logo)"
+            width="64"
+            height="64"
+            alt="logo"
           >
-            <template #default="{ item }">
-              <img :src="getCommunityBannerUrl(item)" class="w-full" draggable="false">
-            </template>
+          <UButton
+            v-if="!state.logo"
+            label="LOGO"
+            size="xl"
+            square
+            variant="outline"
+            class="flex justify-center w-16 h-16"
+          />
+          <Input
+            ref="uploadInput"
+            type="file"
+            class="opacity-0 w-0 h-0"
+            accept="image/x-png,image/jpeg"
+            @change="upload2AR"
+          />
 
-            <template #indicator="{ onClick, page, active }">
-              <UButton
-                :label="String(page)"
-                :variant="active ? 'solid' : 'outline'"
-                size="2xs"
-                class="rounded-full min-w-6 justify-center"
-                @click="() => {
-                  currentIndex = page; // 更新当前索引
-                  updateBanner(page)
-                  onClick(page); // 触发页面点击事件
-                }"
-              />
-            </template>
-          </UCarousel>
-        </UFormGroup>
+          <div v-if="isUploading" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
+        </div>
+      </UFormGroup>
 
-        <UFormGroup name="name" :label="$t('community.name')">
-          <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
-        </UFormGroup>
-
-        <UFormGroup name="desc" :label="$t('community.intro')">
-          <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
-        </UFormGroup>
-
-        <UFormGroup name="website">
-          <template #label>
-            <div>{{ $t('community.website') }}</div>
+      <UFormGroup required name="banner" :label="$t('community.banner')">
+        <UCarousel
+          v-model="currentIndex"
+          :items="bannerItems"
+          :ui="{
+            item: 'basis-full',
+            container: 'rounded-lg',
+            indicators: {
+              wrapper: 'relative bottom-0 mt-4'
+            }
+          }"
+          indicators
+          class="w-64"
+        >
+          <template #default="{ item }">
+            <img :src="getCommunityBannerUrl(item)" class="w-full" draggable="false">
           </template>
-          <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.website" placeholder="URL" />
-          </div>
-        </UFormGroup>
 
-        <UFormGroup name="twitter">
-          <template #label>
-            <div>{{ $t('community.twitter') }}</div>
+          <template #indicator="{ onClick, page, active }">
+            <UButton
+              :label="String(page)"
+              :variant="active ? 'solid' : 'outline'"
+              size="2xs"
+              class="rounded-full min-w-6 justify-center"
+              @click="() => {
+                currentIndex = page
+                updateBanner(page)
+                onClick(page)
+              }"
+            />
           </template>
-          <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.twitter" placeholder="URL" />
-          </div>
-        </UFormGroup>
+        </UCarousel>
+      </UFormGroup>
 
-        <UFormGroup name="github">
-          <template #label>
-            <div>Github</div>
-          </template>
-          <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.github" placeholder="URL" />
-          </div>
-        </UFormGroup>
+      <UFormGroup required name="name" :label="$t('community.name')">
+        <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-[430px]" />
+      </UFormGroup>
 
-        <UFormGroup name="typeReward" :label="$t('community.typereward')">
-          <USelectMenu v-model="state.typeReward" class="w-[130px] mr-10" :options="tokenNames" multiple placeholder="Select Token" />
-        </UFormGroup>
+      <UFormGroup required name="desc" :label="$t('community.intro')">
+        <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.label')}`" class="min-w-[100px] w-[430px]" />
+      </UFormGroup>
 
-        <div class="!mt-20 !mb-12 font-bold text-xl text-center">{{ $t('community.project') }}</div>
+      <UFormGroup name="website">
+        <template #label>
+          <div>{{ $t('community.website') }}</div>
+        </template>
+        <div class="flex flex-row items-center space-x-3">
+          <UInput v-model="state.website" placeholder="URL" class="w-52" />
+        </div>
+      </UFormGroup>
 
-        <UFormGroup :label="$t('community.token.release')" class="flex flex-row items-center space-x-10">
+      <UFormGroup name="twitter">
+        <template #label>
+          <div>{{ $t('community.twitter') }}</div>
+        </template>
+        <div class="flex flex-row items-center space-x-3">
+          <UInput v-model="state.twitter" placeholder="URL" class="w-52" />
+        </div>
+      </UFormGroup>
+
+      <UFormGroup name="github">
+        <template #label>
+          <div>Github</div>
+        </template>
+        <div class="flex flex-row items-center space-x-3">
+          <UInput v-model="state.github" placeholder="URL" class="w-52" />
+        </div>
+      </UFormGroup>
+
+      <UFormGroup required name="typeReward" :label="$t('community.typereward')">
+        <USelectMenu v-model="state.typeReward" class="w-52 mr-10" :options="tokenNames" multiple placeholder="Select Token" />
+      </UFormGroup>
+
+      <div class="!mt-12 !mb-8 font-bold text-xl text-left">{{ $t('community.project') }}</div>
+
+      <UFormGroup :label="$t('community.token.release')" class="w-52 flex items-center justify-between relative" :ui="{container: 'mt-0'}">
+        <div class="flex-center">
           <UToggle v-model="state.isPublished" />
-        </UFormGroup>
-
-        <div v-for="(formGroup, index) in token.communityToken" :key="index" class="!mb-3 !mt-3 pl-8">
-          <UFormGroup name="range" :label="`${index+1}st Token`">
-            <div class="flex flex-row items-center">
-              <div class="flex min-w-[477px]">
-                <USelect v-model="formGroup.tokenName" :options="tokenNames" />
-
-                <UButton icon="material-symbols:close-rounded" variant="outline" class="ml-3" @click="removeFormGroup(index)" />
+          <UPopover mode="hover" :popper="{ placement: 'right-end' }" class="flex-center ml-2 absolute left-9">
+            <template #panel>
+              <div class="px-3 py-2 flex justify-center">
+                <ULink
+                  to="https://forms.gle/RwWbeFphvyi8ZEU9A"
+                  active-class="text-primary"
+                  target="_blank"
+                  inactive-class="text-primary-500 dark:text-gray-400 hover:text-primary-700 dark:hover:text-gray-200"
+                >
+                  Add new tokens
+                </ULink>
               </div>
-              <UPopover mode="hover" :popper="{ placement: 'right-end' }">
-                <template #panel>
-                  <div class="w-[160px] h-[25px] flex justify-center">
-                    <ULink
-                      to="https://forms.gle/RwWbeFphvyi8ZEU9A"
-                      active-class="text-primary"
-                      target="_blank"
-                      inactive-class="text-primary-500 dark:text-gray-400 hover:text-primary-700 dark:hover:text-gray-200"
-                    >
-                      Add new tokens
-                    </ULink>
-                  </div>
-                </template>
-                <UIcon name="gravity-ui:circle-question" />
-              </UPopover>
-            </div>
-          </UFormGroup>
-        </div>
-        <UButton v-if="state.isPublished" variant="outline" icon="material-symbols:add" class="!mt-2" @click="addCommunityTokenForm" />
-
-        <UFormGroup name="range" :label="$t('community.token.trade')" class="flex flex-row items-center space-x-10">
-          <UToggle v-model="state.isTradable" />
-        </UFormGroup>
-        <div v-if="state.isTradable">
-          <UFormGroup name="tradePlatform" class="flex flex-row items-center space-x-10">
-            <template #label>
-              <div class=" min-w-[270px]">{{ $t('community.token.platforms') }}</div>
             </template>
-            <USelectMenu v-model="state.tradePlatform" :options="tradePlatforms" multiple placeholder="Select" />
-          </UFormGroup>
+            <UIcon name="gravity-ui:circle-question" />
+          </UPopover>
         </div>
+      </UFormGroup>
 
-        <div class="py-8 text-2xl">{{ $t('community.economics') }}</div>
+      <div v-for="(formGroup, index) in token.communityToken" :key="index" class="!mb-2 !mt-3">
+        <UFormGroup :label="`Token ${index+1}`" :ui="{label: {base: 'font-medium'}, error: 'hidden'}">
+          <div class="flex flex-row items-center gap-x-3">
+            <USelect v-model="formGroup.tokenName" :options="tokenNames" />
+            <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
+            <UButton v-if="state.isPublished && token.communityToken.length<=1" variant="outline" icon="material-symbols:add" @click="addCommunityTokenForm" />
+          </div>
+        </UFormGroup>
+      </div>
+
+      <UFormGroup :label="$t('community.token.trade')" class="w-52 flex items-center justify-between space-x-10 !mt-8">
+        <UToggle v-model="state.isTradable" />
+      </UFormGroup>
+
+      <UFormGroup v-if="state.isTradable" name="tradePlatform" :label="$t('community.token.platforms')" class="!mt-2" :ui="{label: {base: 'font-medium'}}">
+        <USelectMenu v-model="state.tradePlatform" :options="tradePlatforms" multiple placeholder="Select trade platform" class="w-52" />
+      </UFormGroup>
+
+      <div class="!mt-12 !mb-8 font-bold text-xl text-left">{{ $t('community.economics') }}</div>
 
 
-        <div class="space-y-3">
+      <div class="space-y-3">
+        <UFormGroup
+          name="allToken"
+          :label="$t('community.token.all')"
+          class="mb-2"
+        >
+          <div class="flex flex-row items-center space-x-3">
+            <UInput
+              v-model="state.allToken"
+              type="number"
+              :model-modifiers="{number: true}"
+              placeholder=""
+              class="w-52"
+            />
+          </div>
+        </UFormGroup>
+
+        <UFormGroup v-model="state.tokenSupply" name="tokenSupply">
           <UFormGroup
-            name="allToken"
-            :label="$t('community.token.all')"
+            v-for="(formGroup, index) in state.tokenSupply"
+            :key="index"
+            v-model="state.tokenSupply[index]"
+            :name="`tokenSupply[${index}]`"
             class="mb-2"
+            :ui="{error: 'hidden'}"
           >
             <div class="flex flex-row items-center space-x-3">
               <UInput
-                v-model="state.allToken"
+                v-model="formGroup.name"
+                placeholder="community"
+                class="w-52"
+              />
+              <UInput
+                v-model="formGroup.supply"
                 type="number"
                 :model-modifiers="{number: true}"
-                placeholder=""
-                class="w-[120px]"
+                placeholder="%"
+                class="w-20"
               />
+              <UButton v-if="state.tokenSupply.length > 1" icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
+
+              <UButton v-if="index === state.tokenSupply.length - 1" variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
             </div>
           </UFormGroup>
+        </UFormGroup>
+      </div>
 
-          <UFormGroup v-model="state.tokenSupply" name="tokenSupply">
-            <UFormGroup
-              v-for="(formGroup, index) in state.tokenSupply"
-              :key="index"
-              v-model="state.tokenSupply[index]"
-              :name="`tokenSupply[${index}]`"
-              class="mb-2"
-            >
-              <div class="flex flex-row items-center space-x-3">
-                <UInput
-                  v-model="formGroup.name"
-                  placeholder="community"
-                />
-                <UInput
-                  v-model="formGroup.supply"
-                  type="number"
-                  :model-modifiers="{number: true}"
-                  placeholder="%"
-                  class="w-[70px]"
-                />
-                <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
-              </div>
-            </UFormGroup>
-          </UFormGroup>
+      <div class="flex-center !mt-12">
+        <UButton color="white" type="submit" size="xl" :disabled="disableSave" :loading="showSpinner">
+          {{ $t('Submit') }}
+        </UButton>
+      </div>
+    </UForm>
 
-          <UButton variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
-        </div>
-
-        <div class="flex justify-center">
-          <UButton color="white" type="submit" size="xl" :disabled="disableSave" :loading="disableSave">
-            {{ $t('Submit') }}
+    <UModal v-model="showWaitingModal" prevent-close>
+      <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+        <template #header>
+          <div class="flex items-center justify-center">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+              Create Community
+            </h3>
+            <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
+          </div>
+        </template>
+        <UContainer v-if="showSpinner" class="w-full flex justify-around">
+          <UIcon name="svg-spinners:6-dots-scale" />
+        </UContainer>
+        <UContainer v-else class="w-full flex justify-around">
+          <UButton @click="$router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); showWaitingModal = false">
+            {{ $t('community.look') }}
           </UButton>
-        </div>
-      </UForm>
-
-      <UModal v-model="showWaitingModal" prevent-close>
-        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-          <template #header>
-            <div class="flex items-center justify-center">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                Create Community
-              </h3>
-              <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
-            </div>
-          </template>
-          <UContainer v-if="!showSpinner" class="w-full flex justify-around">
-            <UIcon name="svg-spinners:6-dots-scale" />
-          </UContainer>
-          <UContainer v-else class="w-full flex justify-around">
-            <UButton @click="$router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); showWaitingModal = false">
-              {{ $t('community.look') }}
-            </UButton>
-          </UContainer>
-        </UCard>
-      </UModal>
-    </DashboardPanelContent>
-  </UDashboardPage>
+        </UContainer>
+      </UCard>
+    </UModal>
+  </div>
 </template>
