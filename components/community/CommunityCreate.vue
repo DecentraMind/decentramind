@@ -224,7 +224,7 @@ const removeSupplyGroup = (index: number) => {
       class="space-y-7 pt-10"
       @submit="onFormSubmit"
     >
-      <UFormGroup required name="logo" :label="$t('community.logo')">
+      <UFormGroup required name="logo" :label="$t('Logo')">
         <div class="relative flex-center w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadInput && !isUploading && uploadInput.click()">
           <img
             v-if="state.logo"

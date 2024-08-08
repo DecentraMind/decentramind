@@ -28,7 +28,7 @@ const props = defineProps({
   >
     <template #title>
       <div class="flex items-center">
-        <UAvatar :src="community.logo || arUrl(communityLogo)" :alt="community.name" class="ring-1 ring-gray-100" />
+        <UAvatar :src="Logo || arUrl(communityLogo)" :alt="community.name" class="ring-1 ring-gray-100" />
         <div class="mx-3 text-xl">
           {{ community.name }}
         </div>

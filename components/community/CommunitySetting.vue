@@ -230,7 +230,7 @@ onMounted(async () => {
         <UFormGroup name="logo" class="flex flex-row items-center space-x-1" @click="uploadInput && !isUploading && uploadInput.click()">
           <template #label>
             <div class=" w-[300px]">
-              {{ $t('community.logo') }}
+              {{ $t('Logo') }}
             </div>
           </template>
           <div class="relative flex justify-center cursor-pointer w-fit">
