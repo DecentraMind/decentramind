@@ -532,7 +532,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     console.log('creating token:', {name, ticker, totalSupply, logo})
 
     const denomination = 12
-    const totalSupplyStr = (BigInt(totalSupply) * BigInt(Math.pow(10, denomination))).toString()
+    const totalSupplyStr = (BigInt(Number(totalSupply)) * BigInt(Math.pow(10, denomination))).toString()
 
     const processID = await spawn({
       module: moduleID,

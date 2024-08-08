@@ -104,7 +104,7 @@ const emit = defineEmits(['close-modal'])
         name="name"
         :label="$t('token.name')"
       >
-        <UInput v-model="state.name" :model-modifiers="{trim: true}" @change="state.ticker = state.name.toUpperCase()" />
+        <UInput v-model="state.name" :model-modifiers="{trim: true}" @change="state.ticker = state.name.toUpperCase().replaceAll(' ', '-')" />
       </UFormGroup>
 
       <UFormGroup
@@ -120,8 +120,6 @@ const emit = defineEmits(['close-modal'])
       >
         <UInput
           v-model="state.totalSupply"
-          type="number"
-          :model-modifiers="{number: true}"
           placeholder="Ticker"
           class="font-mono"
         />

@@ -134,10 +134,32 @@ export const userSchema = z.object({
   ),
 })
 
+const maxTotalSupply = 1e20
 export const createTokenSchema = z.object({
   name: z.string().min(1).max(30),
-  ticker: z.string().max(8).toUpperCase(),
-  totalSupply: z.number().min(1).max(1e50),
+  ticker: z.string().max(30).toUpperCase(),
+  totalSupply: z.string().refine((value) => {
+    if (/\./.test(value)) {
+      return false
+    }
+    // Check if the string can be converted to a valid number
+    const num = Number(value)
+    if (isNaN(num)) {
+      return false
+    }
+
+    // Check if the number can be converted to BigInt and falls within the range
+    try {
+      const bigIntValue = BigInt(num)
+      const min = BigInt(0)
+      const max = BigInt(maxTotalSupply)
+      return bigIntValue > min && bigIntValue <= max
+    } catch {
+      return false
+    }
+  }, {
+    message: `Total supply must be a valid integer between 1 and ${maxTotalSupply}.`
+  })
 })
 
 export type CreateTokenSchema = z.infer<typeof createTokenSchema>
