@@ -106,7 +106,7 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div v-for="community in communities" :key="community.uuid">
         <div v-if="invitedByMe[community.uuid] && community.name" class="flex items-center justify-start mt-5">
           <div class="flex items-center">
-            <UColorModeImage :src="community.logo || arUrl(defaultCommunityLogo)" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
+            <UColorModeImage :src="arUrl(community.logo) || arUrl(defaultCommunityLogo)" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
             <div class="ml-10 text-xl w-[160px] overflow-hidden">{{ community.name }}</div>
             <div class="ml-20 text-xl w-[250px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
           </div>
@@ -122,7 +122,7 @@ const findInvitedByCommunityID = (communityID: string) => {
       </div>
     </UCard>
 
-    <UModal v-model="isDetailModalOpen" :ui="{ width: w-full }">
+    <UModal v-model="isDetailModalOpen">
       <div class="flex justify-center min-h-[300px] pt-10 px-6">
         <div v-if="users" class="border h-full px-2 py-2 mb-2">
           <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">

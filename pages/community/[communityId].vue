@@ -60,7 +60,7 @@ function handleDateChange(value: string[]) {
   // value 是选择的日期 moment 对象
   console.log('Selected Date:', value)
 }
-const state = $ref({
+const taskForm = $ref({
   taskLogo: 'banner1',
   taskName: undefined,
   taskInfo: undefined,
@@ -75,7 +75,7 @@ const state = $ref({
   zone: undefined,
 })
 
-const transData = {
+const taskData = {
   taskId: '',
   taskLogo: undefined,
   taskName: undefined,
@@ -108,48 +108,48 @@ const { showError } = $(notificationStore())
 let isPostingTask = $ref(false)
 async function onSubmitTaskForm() {
   isPostingTask = true
-  if (!state.taskLogo || !state.taskName || !state.taskInfo || !state.tokenNumber || !state.tokenType || !state.tokenChain || !state.rewardTotal || !state.zone || !selectStartTime || !selectEndTime) {
+  if (!taskForm.taskLogo || !taskForm.taskName || !taskForm.taskInfo || !taskForm.tokenNumber || !taskForm.tokenType || !taskForm.tokenChain || !taskForm.rewardTotal || !taskForm.zone || !selectStartTime || !selectEndTime) {
     isPostingTask = false
     // isOpen = false
     alert('Please complete the quest information.')
     return
   }
 
-  const token = tokens[state.tokenType.value as TokenName]
+  const token = tokens[taskForm.tokenType.value as TokenName]
   if (!token) {
     showError('Bounty 1 token is not valid.')
     return
   }
 
   let token1
-  if (state.tokenType1.value) {
-    token1 = tokens[state.tokenType1.value as TokenName]
+  if (taskForm.tokenType1.value) {
+    token1 = tokens[taskForm.tokenType1.value as TokenName]
     if(!token1) {
       showError('Bounty 2 token is not valid.')
       return
     }
   }
 
-  console.log({transData, state})
+  console.log({transData: taskData, state: taskForm})
 
   // Do something with state
-  transData.taskId = createUuid()
-  transData.taskLogo = state.taskLogo
-  transData.taskName = state.taskName
-  transData.taskInfo = state.taskInfo
-  transData.taskRule = t('taskRule')
-  transData.tokenNumber = (state.tokenNumber && state.tokenType.value) ? Number(state.tokenNumber) * Math.pow(10, token.denomination) : 0
-  transData.tokenType = state.tokenType.value ? state.tokenType.value : 'none'
-  transData.tokenChain = state.tokenChain ? state.tokenChain : 'none'
-  transData.tokenNumber1 = (state.tokenNumber1 && state.tokenType1.value) ? Number(state.tokenNumber1) * Math.pow(10, token1.denomination) : 0
-  transData.tokenType1 = state.tokenType1.value ? state.tokenType1.value : 'none'
-  transData.tokenChain1 = state.tokenChain1 ? state.tokenChain1 : 'none'
-  transData.rewardTotal = state.rewardTotal
-  transData.zone = state.zone
-  transData.startTime = selectStartTime
-  transData.endTime = selectEndTime
-  transData.createTime = Date.now()
-  transData.ownerId = address
+  taskData.taskId = createUuid()
+  taskData.taskLogo = taskForm.taskLogo
+  taskData.taskName = taskForm.taskName
+  taskData.taskInfo = taskForm.taskInfo
+  taskData.taskRule = t('taskRule')
+  taskData.tokenNumber = (taskForm.tokenNumber && taskForm.tokenType.value) ? Number(taskForm.tokenNumber) * Math.pow(10, token.denomination) : 0
+  taskData.tokenType = taskForm.tokenType.value ? taskForm.tokenType.value : 'none'
+  taskData.tokenChain = taskForm.tokenChain ? taskForm.tokenChain : 'none'
+  taskData.tokenNumber1 = (taskForm.tokenNumber1 && taskForm.tokenType1.value) ? Number(taskForm.tokenNumber1) * Math.pow(10, token1.denomination) : 0
+  taskData.tokenType1 = taskForm.tokenType1.value ? taskForm.tokenType1.value : 'none'
+  taskData.tokenChain1 = taskForm.tokenChain1 ? taskForm.tokenChain1 : 'none'
+  taskData.rewardTotal = taskForm.rewardTotal
+  taskData.zone = taskForm.zone
+  taskData.startTime = selectStartTime
+  taskData.endTime = selectEndTime
+  taskData.createTime = Date.now()
+  taskData.ownerId = address
   // 根据时间判断 进行中/未开始/已结束
   const currentDate = new Date()
   if (selectEndTime <= currentDate) {
@@ -173,11 +173,11 @@ async function onSubmitTaskForm() {
   } else if (currentDate > selectEndTime) {
     isBegin = 'N'
   }
-  transData.isBegin = isBegin
-  transData.communityId = communityId
+  taskData.isBegin = isBegin
+  taskData.communityId = communityId
 
   try{
-    await createTask(transData)
+    await createTask(taskData)
     isCreateTaskModalOpen = false
   } catch (e) {
     const message = e instanceof Error ? e.message : e
@@ -271,7 +271,7 @@ const taskBannersUrl = taskBanners.map(banner => arUrl(banner))
 const currentIndex = $ref(0) // 用于存储当前选中的索引
 const updateBanner = (index: number) => {
   if (taskBanners[index - 1]) {
-    state.taskLogo = taskBanners[index - 1]
+    taskForm.taskLogo = taskBanners[index - 1]
   }
 }
 
@@ -628,7 +628,7 @@ const shortedWebsite = $computed(() => {
               <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreateTaskModalOpen = false" />
             </div>
           </template>
-          <UForm ref="form" :schema="taskSchema" :state="state" class="space-y-4 ml-10" @submit="onSubmitTaskForm">
+          <UForm ref="form" :schema="taskSchema" :state="taskForm" class="space-y-4 ml-10" @submit="onSubmitTaskForm">
             <UFormGroup name="taskLogo" :label="$t('Banner')">
               <template #label>
                 <div class="w-[300px]">
@@ -669,39 +669,39 @@ const shortedWebsite = $computed(() => {
             </UFormGroup>
 
             <UFormGroup name="taskName" :label="$t('Name of Quest')">
-              <UInput v-model="state.taskName" placeholder="name" />
+              <UInput v-model="taskForm.taskName" placeholder="name" />
             </UFormGroup>
 
             <UFormGroup name="taskInfo" :label="$t('Task Introduction')">
-              <UTextarea v-model="state.taskInfo" />
+              <UTextarea v-model="taskForm.taskInfo" />
             </UFormGroup>
 
             <UFormGroup name="taskRule" :label="$t('Rules of the Quest')">
-              <UTextarea v-model="state.taskRule" disabled :placeholder="$t('taskRule')" />
+              <UTextarea v-model="taskForm.taskRule" disabled :placeholder="$t('taskRule')" />
             </UFormGroup>
 
             <UFormGroup name="textarea" :label="$t('Bounty')">
               <div class="flex justify-between items-center gap-x-1 mb-1">
-                <UInput v-model="state.tokenNumber" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
+                <UInput v-model="taskForm.tokenNumber" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
 
-                <UInputMenu v-model="state.tokenType" placeholder="Token" :options="tokenOptions" />
+                <UInputMenu v-model="taskForm.tokenType" placeholder="Token" :options="tokenOptions" />
 
-                <UInputMenu v-model="state.tokenChain" placeholder="Chain" :options="chainOptions" />
+                <UInputMenu v-model="taskForm.tokenChain" placeholder="Chain" :options="chainOptions" />
               </div>
               <div class="flex justify-between items-center gap-x-1">
-                <UInput v-model="state.tokenNumber1" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
+                <UInput v-model="taskForm.tokenNumber1" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
 
-                <UInputMenu v-model="state.tokenType1" placeholder="Token" :options="tokenOptions" />
+                <UInputMenu v-model="taskForm.tokenType1" placeholder="Token" :options="tokenOptions" />
 
-                <UInputMenu v-model="state.tokenChain1" placeholder="Chain" :options="chainOptions" />
+                <UInputMenu v-model="taskForm.tokenChain1" placeholder="Chain" :options="chainOptions" />
               </div>
             </UFormGroup>
             <UFormGroup name="rewardTotal" :label="$t('Total Chances')">
-              <UInput v-model="state.rewardTotal" type="number" :placeholder="$t('Total Chances')" />
+              <UInput v-model="taskForm.rewardTotal" type="number" :placeholder="$t('Total Chances')" />
             </UFormGroup>
             <UFormGroup name="textarea" :label="$t('Time')">
               <div class="flex justify-between items-center gap-x-1">
-                <USelect v-model="state.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
+                <USelect v-model="taskForm.zone" :placeholder="$t('Time Zone')" :options="timeZoneOptions" />
                 <a-range-picker v-model:value="value2" show-time @change="handleDateChange" />
               </div>
             </UFormGroup>
@@ -712,13 +712,13 @@ const shortedWebsite = $computed(() => {
         </UCard>
       </UModal>
 
-      <UModal v-model="isSettingModalOpen" :ui="{ width: w-full }">
+      <UModal v-model="isSettingModalOpen">
         <UCard>
-          <CommunitySetting :uuid="communityId" @close-setting="isSettingModalOpen=false" />
+          <CommunityCreate :uuid="communityId" :init-state="community" @close-setting="isSettingModalOpen=false" />
         </UCard>
       </UModal>
 
-      <UModal v-model="exitButton" :ui="{ width: w-full }">
+      <UModal v-model="exitButton">
         <UCard class="min-w-[300px] flex justify-center">
           <div class="w-full flex justify-center text-2xl">
             Sure to exit

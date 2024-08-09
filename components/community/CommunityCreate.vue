@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
 import { tradePlatforms, tokenNames, type TokenSupply } from '~/utils/constants'
-import type { CommunitySetting } from '~/types'
+import type { Community, CommunitySetting } from '~/types'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
 import { createUuid } from '~/utils/util'
@@ -9,7 +9,7 @@ import { useUpload } from '~/composables/useUpload'
 
 const props = defineProps<{
   uuid?: string
-  initState?: CommunitySetting & {tokenSupply: TokenSupply[]}
+  initState?: Community
 }>()
 
 const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
@@ -291,11 +291,11 @@ const removeSupplyGroup = (index: number) => {
       </UFormGroup>
 
       <UFormGroup required name="name" :label="$t('community.name')">
-        <UInput v-model="state.name" placeholder="Name" class="min-w-[100px] w-full" />
+        <UInput v-model.trim="state.name" placeholder="Name" class="min-w-[100px] w-full" />
       </UFormGroup>
 
       <UFormGroup required name="desc" :label="$t('community.intro')">
-        <UTextarea v-model="state.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-full" />
+        <UTextarea v-model.trim="state.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-full" />
       </UFormGroup>
 
       <div class="grid md:grid-cols-2 grid-cols-1 gap-7">
@@ -308,7 +308,7 @@ const removeSupplyGroup = (index: number) => {
             <div>{{ $t('community.website') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.website" placeholder="URL" class="w-52" />
+            <UInput v-model.trim="state.website" placeholder="URL" class="w-52" />
           </div>
         </UFormGroup>
 
@@ -317,7 +317,7 @@ const removeSupplyGroup = (index: number) => {
             <div>{{ $t('community.twitter') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.twitter" placeholder="URL" class="w-52" />
+            <UInput v-model.trim="state.twitter" placeholder="URL" class="w-52" />
           </div>
         </UFormGroup>
 
@@ -326,7 +326,7 @@ const removeSupplyGroup = (index: number) => {
             <div>Github</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model="state.github" placeholder="URL" class="w-52" />
+            <UInput v-model.trim="state.github" placeholder="URL" class="w-52" />
           </div>
         </UFormGroup>
       </div>
@@ -383,9 +383,8 @@ const removeSupplyGroup = (index: number) => {
         >
           <div class="flex flex-row items-center space-x-3">
             <UInput
-              v-model="state.allToken"
+              v-model.number="state.allToken"
               type="number"
-              :model-modifiers="{number: true}"
               placeholder=""
               class="w-52"
             />
@@ -403,14 +402,13 @@ const removeSupplyGroup = (index: number) => {
           >
             <div class="flex flex-row items-center space-x-3">
               <UInput
-                v-model="formGroup.name"
+                v-model.trim="formGroup.name"
                 placeholder="community"
                 class="w-52"
               />
               <UInput
-                v-model="formGroup.supply"
+                v-model.number="formGroup.supply"
                 type="number"
-                :model-modifiers="{number: true}"
                 placeholder="%"
                 class="w-20"
               />

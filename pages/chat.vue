@@ -364,7 +364,7 @@ const test = async() => {
       <!--</UContainer>-->
     </UPage>
 
-    <UModal v-model="exitButton" :ui="{ width: w-full }">
+    <UModal v-model="exitButton">
       <UCard class="min-w-[300px] flex justify-center">
         <div class="w-full flex justify-center text-2xl">
           Sure to Exit
@@ -379,7 +379,7 @@ const test = async() => {
         </div>
       </UCard>
     </UModal>
-    <UModal v-model="banButton" :ui="{ width: w-full }">
+    <UModal v-model="banButton">
       <UCard class="min-w-[300px] flex justify-center">
         <div class="w-full flex justify-center text-2xl">
           Sure to Mute?
@@ -403,7 +403,7 @@ const test = async() => {
         </div>
       </UCard>
     </UModal>
-    <UModal v-model="unbanButton" :ui="{ width: w-full }">
+    <UModal v-model="unbanButton">
       <UCard class="min-w-[300px] flex justify-center">
         <div class="w-full flex justify-center text-2xl">
           Sure to unMute?
