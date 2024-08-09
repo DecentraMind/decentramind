@@ -68,15 +68,17 @@
     "token.platforms": "交易平台",
     "economics": "经济模型",
     "token.all": "Token总量",
-    "list": "社区列表",
-    "list.isjoin": "已加入",
-    "list.join": "点击加入",
-    "detail": "社区详情",
-    "detail.social": "社交媒体",
-    "detail.token": "社区代币",
-    "detail.contribute": "贡献社区",
-    "detail.contribute.rank": "社区贡献排行榜",
-    "detail.reward.issued": "项目已发放激励"
+    "list": {
+      "isjoin": "已加入",
+      "join": "点击加入"
+    },
+    "detail": {
+      "social": "社交媒体",
+      "token": "社区代币",
+      "contribute": "贡献社区",
+      "contribute.rank": "社区贡献排行榜",
+      "reward.issued": "项目已发放激励"
+    }
   },
   "setting.save": "保存修改",
   "setting.title": "个人面板",

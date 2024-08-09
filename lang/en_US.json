@@ -37,15 +37,17 @@
       "all": "Total Supply"
     },
     "economics": "Token Allocation",
-    "list": "Community List",
-    "list.isjoin": "Joined",
-    "list.join": "Join",
-    "detail": "Community Details",
-    "detail.social": "Social Media",
-    "detail.token": "Community Token",
-    "detail.contribute": "Contributing Community",
-    "detail.contribute.rank": "Contribution Ranking",
-    "detail.reward.issued": "Incentives granted"
+    "list": {
+      "isjoin": "Joined",
+      "join": "Join"
+    },
+    "detail": {
+      "social": "Social Media",
+      "token": "Community Token",
+      "contribute": "Contributing Community",
+      "contribute.rank": "Contribution Ranking",
+      "reward.issued": "Incentives granted"
+    }
   },
   "setting.save": "Save",
   "setting.title": "User Settings",
