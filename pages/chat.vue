@@ -212,7 +212,7 @@ const test = async() => {
                 inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
                 <UButton variant="link">
-                  <UIcon name="ri:twitter-fill" class="h-full w-full " />
+                  <UIcon name="ri:twitter-line" class="h-full w-full " />
                   Twitter
                 </UButton>
               </ULink>

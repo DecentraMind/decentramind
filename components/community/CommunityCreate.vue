@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
-import { tradePlatforms, tokenNames, type TokenSupply } from '~/utils/constants'
+import { tradePlatforms, tokenNames } from '~/utils/constants'
 import type { Community, CommunitySetting } from '~/types'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
@@ -8,63 +8,58 @@ import { createUuid } from '~/utils/util'
 import { useUpload } from '~/composables/useUpload'
 
 const props = defineProps<{
-  uuid?: string
+  isSettingMode?: boolean
   initState?: Community
 }>()
 
-const { updateCommunity, currentUuid, getLocalCommunity } = $(aoCommunityStore())
+const { address } = $(aoStore())
+
+const { updateCommunity, currentUuid, addCommunity, makeCommunityChat } = $(aoCommunityStore())
 
 const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
+
+const { showSuccess, showError } = $(notificationStore())
 
 const uploadInput = $ref<HTMLInputElement>()
 async function upload2AR() {
   await upload({
-    fileName: (props.uuid || createUuid()).slice(-4),
+    fileName: (props.initState?.uuid || createUuid()).slice(-4),
     pathName: 'communityLogo',
     file: uploadInput?.files?.[0]
   })
 
   if (uploadError || !uploadResponse) {
     showError('Failed to upload image.', uploadError)
-    uploadInput!.value = ''
+    // clear file input
+    if (uploadInput) {
+      uploadInput.value = ''
+    }
     return
   }
 
-  state.logo = uploadResponse.ARHash!
+  formState.logo = uploadResponse.ARHash!
 }
-
-
 
 let createdCommunityID = $ref('')
 
-const state = reactive<CommunitySetting & {tokenSupply: TokenSupply[]}>({
+const formState = reactive<CommunitySetting>({
   logo: defaultCommunityLogo,
   banner: 'banner6',
-  input: undefined,
-  inputMenu: undefined,
-  name: undefined,
-  desc: undefined,
+  name: '',
+  desc: '',
   website: undefined,
   twitter: undefined,
   github: undefined,
-  builderNum: undefined,
-  allReward: undefined,
-  typeReward: [],
+  bountyTokenNames: [],
   isPublished: true,
-  tokenName: undefined,
-  showTokenName: false,
-  isTradable: undefined,
-  tradePlatform: [],
-  allToken: undefined,
-  tokenSupply: [{
+  isTradable: false,
+  tradePlatforms: [],
+  allTokenSupply: undefined,
+  /** community token allocation */
+  tokenAllocations: [{
     name: '',
     supply: '' as unknown as number,
   }],
-  communityToken: undefined,
-  communityChatID: undefined,
-  owner: '',
-  creator: '',
-  time: new Date().getTime()
 })
 
 const form = ref()
@@ -72,18 +67,43 @@ const form = ref()
 async function onFormSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   // Do something with event.data
   console.log('onCreateCommunitySubmit: ', event.data)
-  createCommunity()
+  if (props.isSettingMode) {
+    await setCommunity()
+  } else {
+    await createCommunity()
+  }
 }
 
 const emit = defineEmits(['close-modal', 'created'])
 
-const { addCommunity, makeCommunityChat} = $(aoCommunityStore())
-const { showError } = $(notificationStore())
-
 let showWaitingModal = $ref(false)
-/** control loading and disable status of save button */
 let disableSave = $ref(false)
 let showSpinner = $ref(false)
+
+const setCommunity = async () => {
+  if (disableSave) return
+  disableSave = true
+  showWaitingModal = true
+  showSpinner = true
+  try {
+    if (!address) {
+      throw new Error('Please connect wallet first.')
+    }
+    await updateCommunity(
+      currentUuid,
+      formState,
+      communityTokens,
+      address
+    )
+    showSuccess('Successfully updated community.')
+  } catch (error) {
+    showError('Set community error:', error as Error)
+    disableSave = false
+    showWaitingModal = false
+  } finally {
+    showSpinner = false
+  }
+}
 
 const createCommunity = async () => {
   if (disableSave) return
@@ -91,28 +111,28 @@ const createCommunity = async () => {
   showWaitingModal = true
   showSpinner = true
   try {
-    state.communityChatID = await makeCommunityChat()
+    const communityChatID = await makeCommunityChat()
 
-    if (!state.communityChatID) {
-      throw new Error('Failed to create community chat')
+    if (!communityChatID) {
+      throw new Error('Failed to create community chatroom')
     }
 
     createdCommunityID = await addCommunity(
-      state.logo,
-      state.banner,
-      state.name,
-      state.desc,          // introduction
-      state.website,
-      state.twitter,
-      state.github,
-      state.typeReward,     // 选择的 bounty token 类型
-      state.isPublished,    // 是否有发行token
-      token.communityToken, // 社区token分配比例额度
-      state.isTradable,     // 是否可以交易
-      state.tradePlatform,  // 交易的平台
-      state.allToken,       // 分配的社区 token 总量
-      state.tokenSupply.filter(tokenSupply => tokenSupply.name), // 社区 token 分配比例详情
-      state.communityChatID
+      formState.logo,
+      formState.banner,
+      formState.name,
+      formState.desc,          // introduction
+      formState.website,
+      formState.twitter,
+      formState.github,
+      formState.bountyTokenNames,     // 选择的 bounty token 类型
+      formState.isPublished,    // 是否有发行token
+      communityTokens, // 社区token分配比例额度
+      formState.isTradable,     // 是否可以交易
+      formState.tradePlatforms,  // 交易的平台
+      formState.allTokenSupply,       // 分配的社区 token 总量
+      formState.tokenAllocations.filter(tokenSupply => tokenSupply.name), // 社区 token 分配比例详情
+      communityChatID
     )
 
   } catch (error) {
@@ -139,30 +159,27 @@ const currentIndex = $ref(0) // 用于存储当前选中的索引
 
 const updateBanner = (index: number) => {
   if (index === 1) {
-    state.banner = 'banner6'
+    formState.banner = 'banner6'
   } else if (index === 2) {
-    state.banner = 'banner7'
+    formState.banner = 'banner7'
   } else if (index === 3) {
-    state.banner = 'banner8'
+    formState.banner = 'banner8'
   } else if (index === 4) {
-    state.banner = 'banner9'
+    formState.banner = 'banner9'
   } else if (index === 5) {
-    state.banner = 'banner10'
+    formState.banner = 'banner10'
   }
 }
 
-// 初始化表单组状态数组
-const token = $ref({
-  communityToken: [{
-    tokenName: '',
-    showTokenName: true
-  }]
-})
+let communityTokens = $ref([{
+  tokenName: '',
+  showTokenName: true
+}])
 
 // 添加表单组函数
 const addCommunityTokenForm = () => {
-  if (token.communityToken.length < 2) {
-    token.communityToken.push({
+  if (communityTokens.length < 2) {
+    communityTokens.push({
       tokenName: '',
       showTokenName: true
     })
@@ -173,26 +190,26 @@ const addCommunityTokenForm = () => {
 
 // 移除表单组函数
 const removeFormGroup = (index: any) => {
-  token.communityToken.splice(index, 1)
-  if (!token.communityToken.length) {
-    state.isPublished = false
+  communityTokens.splice(index, 1)
+  if (!communityTokens.length) {
+    formState.isPublished = false
   }
 }
 
 // 监听 state.isPublished 的变化
-watch(() => state.isPublished, (newVal) => {
+watch(() => formState.isPublished, (newVal) => {
   if (newVal) {
-    if (token.communityToken.length === 0) {
+    if (communityTokens.length === 0) {
       addCommunityTokenForm()
     }
   } else {
-    token.communityToken = []
+    communityTokens = []
   }
 })
 
 // 添加表单组函数
 const addSupplyGroup = () => {
-  state.tokenSupply.push({
+  formState.tokenAllocations.push({
     name: '',
     supply: '' as unknown as number,
   })
@@ -200,44 +217,69 @@ const addSupplyGroup = () => {
 
 // 移除表单组函数
 const removeSupplyGroup = (index: number) => {
-  state.tokenSupply.splice(index, 1)
+  formState.tokenAllocations.splice(index, 1)
   // 此处需要手动调用 validate，防止出现在删除有 error 的 tokenSupply 后，error 仍出现在页面上
   form.value.validate()
 }
 
+const setInitState = async (initState: Community) => {
+  if (!initState) return
 
+  console.log({ initState })
+
+  formState.logo = initState.logo
+  formState.banner = initState.banner
+  formState.name = initState.name
+  formState.desc = initState.desc
+  formState.website = initState.website
+  formState.twitter = initState.twitter
+  formState.github = initState.github
+  formState.bountyTokenNames = initState.bounty
+  formState.isPublished = initState.ispublished
+  communityTokens = initState.communitytoken
+  formState.isTradable = initState.istradable
+  formState.tradePlatforms = initState.support
+  formState.allTokenSupply = initState.alltoken
+  formState.tokenAllocations = initState.tokensupply
+}
+
+onMounted(async () => {
+  if (props.initState) {
+    await setInitState(props.initState)
+  }
+})
 </script>
 
 <template>
   <div class="overflow-y-auto pt-10 pb-6 px-6 md:px-16 w-fit">
     <UAlert
       icon="heroicons:user-group"
-      :title="$t('community.create')"
+      :title="!props.isSettingMode ? $t('community.create') : $t('community.setting')"
       class="max-w-[75vw] w-full md:w-[580px]"
     >
       <template #description>
-        <p v-html="$t('community.createModalDescription', { lineBreak: '<br>' })" />
+        <p v-if="!props.isSettingMode" v-html="$t('community.modalDescription', { lineBreak: '<br>' })" />
       </template>
     </UAlert>
     <UForm
       ref="form"
       :validate="validateCommunitySetting"
       :schema="communitySettingSchema"
-      :state="state"
+      :state="formState"
       class="space-y-7 pt-10"
       @submit="onFormSubmit"
     >
       <UFormGroup required name="logo" :label="$t('Logo')">
         <div class="relative flex-center w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadInput && !isUploading && uploadInput.click()">
           <img
-            v-if="state.logo"
-            :src="arUrl(state.logo)"
+            v-if="formState.logo"
+            :src="arUrl(formState.logo)"
             width="64"
             height="64"
             alt="logo"
           >
           <UButton
-            v-if="!state.logo"
+            v-if="!formState.logo"
             label="LOGO"
             size="xl"
             square
@@ -291,16 +333,16 @@ const removeSupplyGroup = (index: number) => {
       </UFormGroup>
 
       <UFormGroup required name="name" :label="$t('community.name')">
-        <UInput v-model.trim="state.name" placeholder="Name" class="min-w-[100px] w-full" />
+        <UInput v-model.trim="formState.name" placeholder="Name" class="min-w-[100px] w-full" />
       </UFormGroup>
 
-      <UFormGroup required name="desc" :label="$t('community.intro')">
-        <UTextarea v-model.trim="state.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-full" />
+      <UFormGroup required name="desc" :label="$t('community.intro.label')">
+        <UTextarea v-model.trim="formState.desc" :placeholder="`${$t('community.intro.placeholder')}`" class="min-w-[100px] w-full" />
       </UFormGroup>
 
       <div class="grid md:grid-cols-2 grid-cols-1 gap-7">
         <UFormGroup required name="typeReward" :label="$t('community.typereward')">
-          <USelectMenu v-model="state.typeReward" class="w-52 max-w-full mr-10" :options="tokenNames" multiple placeholder="Select Token" />
+          <USelectMenu v-model="formState.bountyTokenNames" class="w-52 max-w-full mr-10" :options="tokenNames" multiple placeholder="Select Token" />
         </UFormGroup>
 
         <UFormGroup name="website">
@@ -308,7 +350,7 @@ const removeSupplyGroup = (index: number) => {
             <div>{{ $t('community.website') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model.trim="state.website" placeholder="URL" class="w-52" />
+            <UInput v-model.trim="formState.website" placeholder="URL" class="w-52" />
           </div>
         </UFormGroup>
 
@@ -317,7 +359,7 @@ const removeSupplyGroup = (index: number) => {
             <div>{{ $t('community.twitter') }}</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model.trim="state.twitter" placeholder="URL" class="w-52" />
+            <UInput v-model.trim="formState.twitter" placeholder="URL" class="w-52" />
           </div>
         </UFormGroup>
 
@@ -326,7 +368,7 @@ const removeSupplyGroup = (index: number) => {
             <div>Github</div>
           </template>
           <div class="flex flex-row items-center space-x-3">
-            <UInput v-model.trim="state.github" placeholder="URL" class="w-52" />
+            <UInput v-model.trim="formState.github" placeholder="URL" class="w-52" />
           </div>
         </UFormGroup>
       </div>
@@ -335,7 +377,7 @@ const removeSupplyGroup = (index: number) => {
 
       <UFormGroup :label="$t('community.token.release')" class="w-52 flex items-center justify-between relative" :ui="{container: 'mt-0'}">
         <div class="flex-center">
-          <UToggle v-model="state.isPublished" />
+          <UToggle v-model="formState.isPublished" />
           <UPopover mode="hover" :popper="{ placement: 'right-end' }" class="flex-center ml-2 absolute left-9">
             <template #panel>
               <div class="px-3 py-2 flex justify-center">
@@ -354,22 +396,22 @@ const removeSupplyGroup = (index: number) => {
         </div>
       </UFormGroup>
 
-      <div v-for="(formGroup, index) in token.communityToken" :key="index" class="!mb-2 !mt-3">
+      <div v-for="(formGroup, index) in communityTokens" :key="index" class="!mb-2 !mt-3">
         <UFormGroup :label="`Token ${index+1}`" :ui="{label: {base: 'font-medium'}, error: 'hidden'}">
           <div class="flex flex-row items-center gap-x-3">
             <USelect v-model="formGroup.tokenName" :options="tokenNames" />
             <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
-            <UButton v-if="state.isPublished && token.communityToken.length<=1" variant="outline" icon="material-symbols:add" @click="addCommunityTokenForm" />
+            <UButton v-if="formState.isPublished && communityTokens.length<=1" variant="outline" icon="material-symbols:add" @click="addCommunityTokenForm" />
           </div>
         </UFormGroup>
       </div>
 
       <UFormGroup :label="$t('community.token.trade')" class="w-52 flex items-center justify-between space-x-10 !mt-8">
-        <UToggle v-model="state.isTradable" />
+        <UToggle v-model="formState.isTradable" />
       </UFormGroup>
 
-      <UFormGroup v-if="state.isTradable" name="tradePlatform" :label="$t('community.token.platforms')" class="!mt-2" :ui="{label: {base: 'font-medium'}}">
-        <USelectMenu v-model="state.tradePlatform" :options="tradePlatforms" multiple placeholder="Select trade platform" class="w-52" />
+      <UFormGroup v-if="formState.isTradable" name="tradePlatform" :label="$t('community.token.platforms')" class="!mt-2" :ui="{label: {base: 'font-medium'}}">
+        <USelectMenu v-model="formState.tradePlatforms" :options="tradePlatforms" multiple placeholder="Select trade platform" class="w-52" />
       </UFormGroup>
 
       <div class="!mt-12 !mb-8 font-bold text-xl text-left">{{ $t('community.economics') }}</div>
@@ -383,7 +425,7 @@ const removeSupplyGroup = (index: number) => {
         >
           <div class="flex flex-row items-center space-x-3">
             <UInput
-              v-model.number="state.allToken"
+              v-model.number="formState.allTokenSupply"
               type="number"
               placeholder=""
               class="w-52"
@@ -391,11 +433,11 @@ const removeSupplyGroup = (index: number) => {
           </div>
         </UFormGroup>
 
-        <UFormGroup v-model="state.tokenSupply" name="tokenSupply">
+        <UFormGroup v-model="formState.tokenAllocations" name="tokenSupply">
           <UFormGroup
-            v-for="(formGroup, index) in state.tokenSupply"
+            v-for="(formGroup, index) in formState.tokenAllocations"
             :key="index"
-            v-model="state.tokenSupply[index]"
+            v-model="formState.tokenAllocations[index]"
             :name="`tokenSupply[${index}]`"
             class="mb-2"
             :ui="{error: 'hidden'}"
@@ -412,9 +454,9 @@ const removeSupplyGroup = (index: number) => {
                 placeholder="%"
                 class="w-20"
               />
-              <UButton v-if="state.tokenSupply.length > 1" icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
+              <UButton v-if="formState.tokenAllocations.length > 1" icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
 
-              <UButton v-if="index === state.tokenSupply.length - 1" variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
+              <UButton v-if="index === formState.tokenAllocations.length - 1" variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
             </div>
           </UFormGroup>
         </UFormGroup>
@@ -432,7 +474,7 @@ const removeSupplyGroup = (index: number) => {
         <template #header>
           <div class="flex items-center justify-center">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              Create Community
+              {{ props.isSettingMode ? $t("community.setting") : $t("community.create") }}
             </h3>
             <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
           </div>
@@ -441,7 +483,7 @@ const removeSupplyGroup = (index: number) => {
           <UIcon name="svg-spinners:6-dots-scale" />
         </UContainer>
         <UContainer v-else class="w-full flex justify-around">
-          <UButton @click="$router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); showWaitingModal = false">
+          <UButton @click="!props.isSettingMode && $router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); showWaitingModal = false">
             {{ $t('community.look') }}
           </UButton>
         </UContainer>

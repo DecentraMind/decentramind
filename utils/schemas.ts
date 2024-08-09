@@ -13,13 +13,13 @@ export const communitySettingSchema = z.object({
   twitter: z.string().url().optional(),
   github: z.string().url().optional(),
 
-  typeReward: z
+  bountyTokenNames: z
     .enum(tokenNames as [string, ...string[]])
     .array()
     .min(1)
     .max(4),
 
-  tradePlatform: z
+  tradePlatforms: z
     .enum(tradePlatforms as [string, ...string[]])
     .array()
     .min(0)
@@ -42,12 +42,6 @@ export const communitySettingSchema = z.object({
   //   supply: z.number().gt(0).lte(100)
   // })).min(0).optional(),
 
-  /*
-  allReward: z.string().max(100, { message: 'Must be less than 20' }).refine((value: string) => {
-    const num = parseInt(value)
-    return !isNaN(num) && num <= 100
-  }, { message: 'Must be a valid number less than or equal to 20' }),
-  */
 })
 
 export type CommunitySettingSchema = z.infer<typeof communitySettingSchema>
@@ -57,7 +51,7 @@ export const validateCommunitySetting = (
 ): FormError[] => {
   const errors = []
 
-  for (const rewardToken of state.typeReward) {
+  for (const rewardToken of state.bountyTokenNames) {
     if (!tokenNames.includes(rewardToken)) {
       errors.push({
         path: 'typeReward',
@@ -66,7 +60,7 @@ export const validateCommunitySetting = (
     }
   }
 
-  state.tokenSupply.forEach((tokenSupply, index) => {
+  state.tokenAllocations.forEach((tokenSupply, index) => {
     const { name, supply } = tokenSupply
     console.log({ name, supply })
     if (!name && supply) {

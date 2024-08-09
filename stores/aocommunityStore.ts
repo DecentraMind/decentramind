@@ -31,7 +31,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     currentUuid = uuid
   }
 
-  //
   const vouch = async () => {
     try {
       console.log(address)
@@ -153,56 +152,49 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   //Creating a community approach
   const addCommunity = async (
     logo,
-    Banner,
-    Name,
+    banner,
+    name,
     desc,
-    Website,
-    Twitter,
-    Github,
-    Bounty,
-    Ispublished,
-    CommunityToken,
-    IsTradable,
-    Support,
-    AllToken,
-    TokenSupply,
-    CommunityChatid
+    website,
+    twitter,
+    github,
+    bounty,
+    isPublished,
+    communityToken,
+    isTradable,
+    support,
+    allToken,
+    tokenSupply,
+    chatroomID
   ) => {
-    const time = Date.now()
     const uuid = createUuid()
 
-    const communitySubmitList = {
-      logo: logo,
-      banner: Banner,
-      name: Name,
+    const community: Omit<Community, 'timestamp' | 'buildnum'> = {
+      logo,
+      banner,
+      name,
       desc,
       creater: address,
       owner: address,
-      website: Website,
-      twitter: Twitter,
-      github: Github,
-      buildnum: 1,
-      bounty: Bounty,
-      ispublished: Ispublished,
-      communitytoken: CommunityToken,
-      istradable: IsTradable,
-      support: Support,
-      alltoken: AllToken,
-      tokensupply: TokenSupply,
-      uuid: uuid,
-      timestamp: time.toString(),
-      communitychatid: CommunityChatid,
+      website,
+      twitter,
+      github,
+      bounty,
+      ispublished: isPublished,
+      communitytoken: communityToken,
+      istradable: isTradable,
+      support: support,
+      alltoken: allToken,
+      tokensupply: tokenSupply,
+      uuid,
+      communitychatid: chatroomID,
     }
-    const jsonString = JSON.stringify(communitySubmitList)
-    const invite = 'none'
+    const jsonString = JSON.stringify(community)
 
     await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'add' },
-        { name: 'userAddress', value: address },
-        { name: 'time', value: time.toString() },
-        { name: 'invite', value: invite }
+        { name: 'Action', value: 'createCommunity' }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
@@ -222,40 +214,33 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   const updateCommunity = async (
     uuid: string,
     setting: CommunitySetting,
-    bounty: string[], // token 类型
     communityToken: CommunityToken[], // 社区 token 分配比例
-    support: string[], // 交易的平台
-    tokenSupply: TokenSupply[], /** 社区 token 分配比例详情 */
+    owner: string
   ) => {
-    const { logo, banner, name, desc, creator, owner, website, twitter, github, builderNum, isPublished, isTradable, allToken, communityChatID, time } = setting
+    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
     const communitySubmitList = {
       logo,
       banner,
       name,
       desc,
-      creater: creator,
       owner,
       website,
       twitter,
       github,
-      buildnum: builderNum,
-      bounty,
+      bounty: bountyTokenNames,
       ispublished: isPublished,
       communitytoken: communityToken,
       istradable: isTradable,
-      support,
-      alltoken: allToken,
-      tokensupply: tokenSupply,
-      uuid,
-      timestamp: time,
-      communitychatid: communityChatID
+      support: tradePlatforms,
+      alltoken: allTokenSupply,
+      tokensupply: tokenAllocations,
+      uuid
     }
     const jsonString = JSON.stringify(communitySubmitList)
     const messageID = await message({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'updateCommunity' },
-        { name: 'uuid', value: uuid }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,

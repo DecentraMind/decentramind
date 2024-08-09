@@ -32,7 +32,7 @@ export default defineAppConfig({
       error: 'absolute mt-1'
     },
     input: {
-      base: 'font-medium placeholder:font-normal placeholder:text-sm',
+      base: 'placeholder:font-normal placeholder:text-sm',
       size: {
         '2xs': 'text-sm',
         xs: 'text-base',

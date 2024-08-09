@@ -63,13 +63,24 @@ local function deepCopy(orig)
   return copy
 end
 
+local function replyError(request, errmsg)
+  local action = request.Action .. "-Error"
+  local errstring = errmsg
+  if request.Tags.UserData ~= nil then
+    local errorMap = { userData = request.Tags.UserData, errorMsg = errmsg}
+    errstring = json.encode(errorMap)
+  elseif type(errmsg) ~= "string" then
+    errstring = json.encode(errmsg)
+  end
+
+  ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errstring})
+end
+
 -- Creating new communities
 -- TODO generate uuid in AO side
--- TODO reset buildnum to initial value
--- TODO use AO generated uuid
 Handlers.add(
-  "add",
-  Handlers.utils.hasMatchingTag("Action", "add"),
+  "create",
+  Handlers.utils.hasMatchingTag("Action", "createCommunity"),
   function(msg)
     local community = json.decode(msg.Data)
     local address = msg.From
@@ -79,18 +90,20 @@ Handlers.add(
       Users[address] = {}
     end
 
-    if not Communities[community.uuid] then
-      Communities[community.uuid] = community
-    else
-      print('uuid existed.')
+    if Communities[community.uuid] then
+      replyError(msg, 'uuid existed.')
       return
     end
+
+    Communities[community.uuid] = community
+    Communities[community.uuid]['timestamp'] = msg.Timestamp
+    Communities[community.uuid]['buildnum'] = 1
 
     if not Invites[address] then
       Invites[address] = {}
     end
     if not Invites[address][community.uuid] then
-      Invites[address][community.uuid] = { invite = msg.Tags.invite, time = msg.Timestamp }
+      Invites[address][community.uuid] = { time = msg.Timestamp }
     end
 
     Handlers.utils.reply(Communities[community.uuid])(msg)
@@ -141,20 +154,25 @@ Handlers.add(
   Handlers.utils.hasMatchingTag("Action", "updateCommunity"),
   function(msg)
     local setting = json.decode(msg.Data)
-    local community = Communities[msg.Tags.uuid]
-    if community then
-      -- Ensure modifiers are community owners
-      if community.creater == msg.From then
-        for field, value in pairs(setting) do
-          community[field] = value
-        end
-        Handlers.utils.reply(community)(msg)
-      else
-        print("You are not the creater of this community.")
-      end
-    else
-      print("Not found.")
+
+    if not setting.uuid then
+      replyError(msg, 'uuid is required.')
     end
+
+    local community = Communities[setting.uuid]
+    if not community then
+      replyError(msg, 'community not found.')
+      return
+    end
+    if msg.From ~= community.owner then
+      replyError(msg, 'You are not the owner.')
+      return
+    end
+
+    for field, value in pairs(setting) do
+      community[field] = value
+    end
+    Handlers.utils.reply(community)(msg)
   end
 )
 

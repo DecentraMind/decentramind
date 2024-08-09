@@ -251,7 +251,7 @@ onMounted(async () => {
     console.error('allTasks undefined', communityId)
   }
 
-  if (community.creater === address) {
+  if (community.owner === address) {
     isCommunityOwner = true
   }
 
@@ -266,6 +266,11 @@ onMounted(async () => {
 
   isLoading = false
 })
+async function reload() {
+  isLoading = true
+  community = await getCommunity(communityId)
+  isLoading = false
+}
 
 const taskBannersUrl = taskBanners.map(banner => arUrl(banner))
 const currentIndex = $ref(0) // 用于存储当前选中的索引
@@ -396,7 +401,7 @@ const shortedWebsite = $computed(() => {
                 inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
                 <UButton variant="link">
-                  <UIcon name="ri:twitter-fill" class="h-full w-full " />
+                  <UIcon name="ri:twitter-line" class="h-5 w-5" />
                   Twitter
                 </UButton>
               </ULink>
@@ -413,7 +418,7 @@ const shortedWebsite = $computed(() => {
                 inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
                 <UButton variant="link">
-                  <UIcon name="ri:github-line" class="h-full w-full " />
+                  <UIcon name="ri:github-line" class="h-5 w-5" />
                   Github
                 </UButton>
               </ULink>
@@ -712,10 +717,8 @@ const shortedWebsite = $computed(() => {
         </UCard>
       </UModal>
 
-      <UModal v-model="isSettingModalOpen">
-        <UCard>
-          <CommunityCreate :uuid="communityId" :init-state="community" @close-setting="isSettingModalOpen=false" />
-        </UCard>
+      <UModal v-model="isSettingModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
+        <CommunityCreate :is-setting-mode="true" :init-state="community" @created="reload()" @close-modal="isSettingModalOpen=false" />
       </UModal>
 
       <UModal v-model="exitButton">

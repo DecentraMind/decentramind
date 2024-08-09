@@ -68,7 +68,7 @@ export type Community = {
   banner: `banner${6 | 7 | 8 | 9 | 10}`
   bounty: TokenName[]
   /** how many user joined in this community */
-  buildnum: string
+  buildnum: number
   /** ID of community's chatroom */
   communitychatid: string
   communitytoken: CommunityToken[]
@@ -107,33 +107,22 @@ export type CommunityList = CommunityListItem[]
  * type of community setting form
  * */
 export type CommunitySetting = {
-  owner: string | undefined
-  creator: string | undefined
+  logo: string
+  name: string
+  desc: string
   banner: string
-  input: string | undefined
-  inputMenu: string | undefined
-  name: string | undefined
-  desc: string | undefined
-  website: string | undefined
-  twitter: string | undefined
-  github: string | undefined
-  builderNum: string | undefined
-  allReward: string | undefined
-  /** TODO rename this to bountyTokenNames */
-  typeReward: TokenName[]
+  website?: string
+  twitter?: string
+  github?: string
+  bountyTokenNames: TokenName[]
   /** 是否有发行 token */
   isPublished: boolean
-  tokenName: string | undefined
-  showTokenName: boolean
-  isTradable: boolean | undefined
-  tradePlatform: TradePlatform[]
-  /** 分配的 token 总量  */
-  allToken: string | undefined
-  communityToken: string | undefined
-  communityChatID: string | undefined
-  /** timestamp */
-  time?: number
-  logo: string
+  isTradable: boolean
+  tradePlatforms: TradePlatform[]
+  /** 分配的 community token 总量  */
+  allTokenSupply?: string
+  /** community token allocations */
+  tokenAllocations: TokenSupply[]
 }
 
 export type CreateToken = {
