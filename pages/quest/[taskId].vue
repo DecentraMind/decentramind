@@ -803,9 +803,6 @@ watch(() => selected, (newVal) => {
           </div>
         </template>
         <div>
-          <!--          <div class="my-8">-->
-          <!--            <UInput v-model="addr" color="primary" variant="outline" :placeholder="$t('Wallet Address')" />-->
-          <!--          </div>-->
           <div class="my-8">
             <UInput v-model="spaceUrl" :model-modifiers="{trim: true}" color="primary" variant="outline" :placeholder="$t('Space Url')" />
           </div>
