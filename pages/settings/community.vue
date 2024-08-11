@@ -29,17 +29,13 @@ onMounted(async () => {
       </div>
       <div class="flex flex-wrap">
         <div v-for="(community, index) in joinedCommunities" :key="index" class="w-1/2 pl-5">
-          <div class="flex items-center mb-5">
-            <UColorModeImage :src="community.logo || arUrl(defaultCommunityLogo)" class="h-[64px] w-[64px] rounded-lg border" />
-            <UFormGroup :label="community.label" :name="community.name" class="ml-5 w-[300px]">
-              <template #label>
-                <div class="text-xl max-w-40 max-h-14 break-all overflow-hidden" :title="community.name">
-                  {{ community.name }}
-                </div>
-              </template>
-              <!--<UInput v-model="item.value" />-->
-            </UFormGroup>
-          </div>
+          <NuxtLink :to="`/community/${community.uuid}`" class="flex items-center mb-5 gap-2">
+            <UColorModeImage :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)" class="h-[64px] w-[64px] rounded-lg border" />
+
+            <div class="text-xl max-w-40 max-h-14 break-all overflow-hidden" :title="community.name">
+              {{ community.name }}
+            </div>
+          </NuxtLink>
         </div>
       </div>
     </UCard>

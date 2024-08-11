@@ -724,7 +724,7 @@ const shortedWebsite = $computed(() => {
       <UModal v-model="exitButton">
         <UCard class="min-w-[300px] flex justify-center">
           <div class="w-full flex justify-center text-2xl">
-            Sure to exit
+            Sure to Exit?
           </div>
           <div v-if="!leaveOut" class="w-full flex space-x-10 mt-6">
             <UButton @click="exitButton = false">

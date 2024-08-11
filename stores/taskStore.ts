@@ -108,15 +108,43 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   async function evalTaskProcess(processID: string, ownerId: string) {
-    const luaCode = `TaskOwnerWallet = "${ownerId}"      local json = require("json")      Handlers.add(    "sendBounty",    Handlers.utils.hasMatchingTag("Action", "sendBounty"),    function (msg)      local success = "0      "if(msg.From == TaskOwnerWallet) then      local req = json.decode(msg.Data)      for _, value in pairs(req) do      ao.send({      Target = value.tokenType,      Action = "Transfer",      Recipient = value.walletAddress,      Quantity = tostring(value.tokenNumber)      })      end      success = "1"      end      Handlers.utils.reply(success)(msg)    end  )      Handlers.add(    "getOwner",      Handlers.utils.hasMatchingTag("Action", "getOwner"),      function (msg)      Handlers.utils.reply(TaskOwnerWallet)(msg)    end  )`
-    console.log('luacode = ' + luaCode)
+    const luaCode = `TaskOwnerWallet = "${ownerId}"
+local json = require("json")
+Handlers.add(
+  "sendBounty",
+  Handlers.utils.hasMatchingTag("Action", "sendBounty"),
+  function (msg)
+    local success = "0"
+    if(msg.From == TaskOwnerWallet) then
+      local req = json.decode(msg.Data)
+      for _, value in pairs(req) do
+        ao.send({
+          Target = value.tokenType,
+          Action = "Transfer",
+          Recipient = value.walletAddress,
+          Quantity = tostring(value.tokenNumber)
+        })
+      end
+      success = "1"
+    end
+    Handlers.utils.reply(success)(msg)
+  end
+)
+
+Handlers.add(
+  "getOwner",
+  Handlers.utils.hasMatchingTag("Action", "getOwner"),
+  function (msg)
+    Handlers.utils.reply(TaskOwnerWallet)(msg)
+  end
+)`
+
     await message({
       // process: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
       process: processID,
       tags: [
         { name: 'Action', value: 'Eval' }
       ],
-      // TODO data: luaCode.replace('\n', '      '),
       data: luaCode,
       signer: createDataItemSigner(window.arweaveWallet),
     })
@@ -134,7 +162,6 @@ export const taskStore = defineStore('taskStore', () => {
         ]
       })
       if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
-        respArray = []
         return { invites: [], relatedUsers: {} }
       }
 
@@ -157,8 +184,6 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   const getAllTasks = async (communityId: string) => {
-    // TODO don't use outer variable respArray
-    respArray = []
     const communityTasks = []
     let res
     try {
@@ -167,11 +192,10 @@ export const taskStore = defineStore('taskStore', () => {
         tags: [{ name: 'Action', value: 'GetAllTasks' }],
       })
     } catch (error) {
-      alertMessage(error)
+      console.error(error)
       return []
     }
     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
-      respArray = []
       return []
     }
     const resp = res.Messages[0].Data.split(';')
@@ -197,18 +221,9 @@ export const taskStore = defineStore('taskStore', () => {
         ...element,
         reward: reward
       }
-      respArray.push(respData)
 
       communityTasks.push(respData)
     }
-    // console.log("respArray = " + respArray)
-    // for (let index = 0; index < respArray.length; index++) {
-    //     const e = respArray[index];
-    //     console.log(e.id)
-    // }
-    // console.log({communityTasks: communityTasks.sort((a, b) => {
-    //   return (a.createTime || a.startTime) > (b.createTime || b.startTime) ? 1 : -1
-    // }), respArray})
 
     const sortedTasks = communityTasks.sort((a, b) => {
       if(a.createTime && !b.createTime) return -1
@@ -232,14 +247,13 @@ export const taskStore = defineStore('taskStore', () => {
     })
 
     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
-      respArray = []
       return ''
     }
-    let resp = res.Messages[0].Data.split(';')
+    const resp = res.Messages[0].Data.split(';')
 
     allTasks = []
     for (let index = 0; index < resp.length; index++) {
-      let element = JSON.parse(resp[index])
+      const element = JSON.parse(resp[index])
       // console.log('communityId = ' + element.communityId)
       // console.log('trans communityId = ' + communityId)
       let reward = ''
@@ -324,21 +338,6 @@ export const taskStore = defineStore('taskStore', () => {
     }
 
     throw new Error('Not found task ' + taskID)
-  }
-
-  // TODO replace this with getTask
-  const getTaskById = async (taskId: string) => {
-    console.log('getTaskById', taskId)
-
-    // 根据taskId获取单个任务信息
-    for (let index = 0; index < respArray.length; index++) {
-      const taskItem = respArray[index]
-      if (taskItem.id === taskId) {
-        showSuccess('get task by id success')
-        return taskItem
-      }
-    }
-    return ''
   }
 
   const joinTask = async (taskId: string, joinedAddress: string) => {
@@ -642,7 +641,7 @@ export const taskStore = defineStore('taskStore', () => {
     return bounties.filter(bounty => bounty.communityId === communityID)
   }
 
-  return $$({ denomination, storeBounty, getAllBounty, getBountiesByCommunityID, updateTaskAfterSettle, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getInvitesByInviter, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testCallJava, createTask, getAllTasks, submitSpaceTask, getTaskById, getTask, respArray, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
+  return $$({ denomination, storeBounty, getAllBounty, getBountiesByCommunityID, updateTaskAfterSettle, allTasks, getAllTasksNoCommunity, submitInfo: allTaskSubmitInfo, getAllTaskSubmitInfo, getInvitesByInviter, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, testCallJava, createTask, getAllTasks, submitSpaceTask, getTask, sendBounty, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo })
 })
 
 async function transferBounty(receiver: string, tokenName: string, amount: number) {

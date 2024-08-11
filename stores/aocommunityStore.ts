@@ -5,8 +5,8 @@ import {
   dryrun,
   result
 } from '@permaweb/aoconnect'
-import type { Community, CommunityList, CommunityListItem, CommunitySetting, CreateToken, UserInfo } from '~/types'
-import type { CommunityToken, TokenSupply } from '~/utils/constants'
+import type { Community, CommunityList, CommunityListItem, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
+import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo } from '~/utils/arAssets'
 import { createUuid, sleep, retry } from '~/utils/util'
 import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
@@ -16,7 +16,7 @@ import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
 
 export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   const { address } = $(aoStore())
-  let linkTwitter = $ref(true)
+  let twitterVouched = $ref(true)
   let communityList = $ref<CommunityList>([])
   let userInfo = $ref<UserInfo>()
   let communityUser = $ref({})
@@ -49,22 +49,22 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
         process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
       })
       if (!res.Messages || res.Messages.length === 0) {
-        linkTwitter = false
+        twitterVouched = false
         console.log('No Messages found in the response.')
         return false
       }
       if (!res.Messages[0].Data) {
-        linkTwitter = false
+        twitterVouched = false
         console.log('No Data found in the first Message.')
         return false
       }
-      console.log(res)
+      console.log('vouch data:', res.Messages[0].Data)
       // Parse the JSON string
-      const data = JSON.parse(res.Messages[0].Data)
+      const data = JSON.parse(res.Messages[0].Data) as VouchData
 
       // Check if Vouchers exist in the data
       if (!data.Vouchers || Object.keys(data.Vouchers).length === 0) {
-        linkTwitter = false
+        twitterVouched = false
         console.log('No Vouchers found in the data.')
         return false
       }
@@ -79,7 +79,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
       if (identifiers.length === 0) {
         console.log('No valid Identifiers found in Vouchers.')
-        linkTwitter = false
+        twitterVouched = false
         return false
       }
 
@@ -88,7 +88,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       // If you only want the first (or only) Identifier:
       const firstIdentifier = identifiers[0]
       console.log('First Identifier:', firstIdentifier)
-      linkTwitter = true
+      twitterVouched = true
       return true
     } catch (error) {
       console.error('An error occurred:', error)
@@ -668,7 +668,7 @@ Handlers.add(
     joinedCommunities,
     currentUuid,
     chatBanuser,
-    linkTwitter,
+    twitterVouched,
     vouch,
     banChat: banChat,
     unbanChat,

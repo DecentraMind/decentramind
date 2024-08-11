@@ -227,3 +227,22 @@ export type TwitterSpaceInfo = {
     }>
   }
 }
+
+/**
+ * eg:
+ * {"X-Value":"0-USD","Vouches-For":"xb...3B4","Vouchers":{"Ax_uXyLQBPZSQ15movzv9-O1mDo30khslqN64qD27Z8":{"Country":"","Identifier":"vico","Value":"0-USD"}},"Sub-IDs":[],"Total-Value":"0-USD","Values":["0-USD"]}
+ * */
+type VouchData = {
+  X_Value: string
+  Vouches_For: string
+  Vouchers: {
+    [key: string]: {
+      Country: string
+      Identifier: string
+      Value: string
+    }
+  }
+  Sub_IDs: string[]
+  Total_Value: string
+  Values: string[]
+}

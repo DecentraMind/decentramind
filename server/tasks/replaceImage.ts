@@ -54,7 +54,7 @@ const getCommunity = async (uuid: any) => {
   const result = await dryrun({
     process: aoCommunityProcessID,
     tags: [
-      { name: 'Action', value: 'communityInfo' },
+      { name: 'Action', value: 'getCommunity' },
       { name: 'uuid', value: uuid }
     ]
   })
@@ -62,13 +62,7 @@ const getCommunity = async (uuid: any) => {
   const json = extractResult<string>(result)
   if (!json) return
 
-  const res = JSON.parse(json)
-  if (res.length) {
-    // TODO remove this branch if contract returns Community instead of Community[]
-    return (res[0] as Community)
-  } else {
-    return res as Community
-  }
+  return JSON.parse(json) as Community
 }
 
 

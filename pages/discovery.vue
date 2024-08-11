@@ -3,14 +3,14 @@ import { getCommunityBannerUrl, arUrl, defaultCommunityLogo } from '~/utils/arAs
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, linkTwitter, getCommunityList, joinCommunity } = $(aoCommunityStore())
+const { communityList, vouch, twitterVouched, getCommunityList, joinCommunity } = $(aoCommunityStore())
 
 const { showError } = $(notificationStore())
 
 const toast = useToast()
 const router = useRouter()
 
-let linkToTwitter = $ref(false)
+let vouchModalOpen = $ref(false)
 
 let communityLoading = $ref(true)
 watch(communityList, async () => {
@@ -59,8 +59,8 @@ const Logout = async() => {
 let joinLoading = $ref(false)
 
 const joinToCommunity = async(uuid: any) => {
-  if (!linkTwitter) {
-    linkToTwitter = true
+  if (!twitterVouched) {
+    vouchModalOpen = true
     return
   }
   joinLoading = true
@@ -84,7 +84,7 @@ const joinToCommunity = async(uuid: any) => {
 const getVouchInfo = async () => {
   const res = await vouch()
   if (!res) {
-    linkToTwitter = true
+    vouchModalOpen = true
   }
 }
 const test = async() => {
@@ -196,14 +196,14 @@ const test = async() => {
         </div>
       </div>
     </div>
-    <UModal v-model="linkToTwitter">
+    <UModal v-model="vouchModalOpen">
       <div class="h-[200px] flex flex-col items-center justify-center">
         <Text class="text-2xl">Not Vouched</Text>
         <div>
-        <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank">
-          <UButton color="white" class="mt-10">Get Vouched</UButton>
-        </NuxtLink>
-      </div>
+          <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank">
+            <UButton color="white" class="mt-10">Get Vouched</UButton>
+          </NuxtLink>
+        </div>
       </div>
     </UModal>
     <UModal v-model="joinLoading">
