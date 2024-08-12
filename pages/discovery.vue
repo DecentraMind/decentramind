@@ -33,7 +33,7 @@ onMounted(async () => {
   }
 
   try {
-    await getVouchInfo()
+    await checkVouch()
   } catch (error) {
     const message = error instanceof Error ? error.message : error
     showError('Error fetching data:' + message)
@@ -81,16 +81,11 @@ const joinToCommunity = async(uuid: any) => {
   }
 
 }
-const getVouchInfo = async () => {
-  const res = await vouch()
-  if (!res) {
+const checkVouch = async () => {
+  const twitterIDs = await vouch()
+  if (!twitterIDs.length) {
     vouchModalOpen = true
   }
-}
-const test = async() => {
-  const res = await vouch()
-  console.log('-test')
-  console
 }
 </script>
 

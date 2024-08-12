@@ -39,11 +39,10 @@ function onChange(index: number) {
   }
 }
 
-const chainOptions = [
-  { label: 'AO', value: 'AO' }
-]
+type ChainNames = 'AO'
+const chainOptions = ['AO'] as ChainNames[]
 
-type RangeValue = [Dayjs, Dayjs];
+type RangeValue = [Dayjs, Dayjs]
 let selectStartTime = $ref<string>()
 let selectEndTime = $ref<string>()
 const value2 = $ref<RangeValue>()
@@ -67,10 +66,10 @@ const taskForm = $ref({
   taskRule: undefined,
   tokenNumber: undefined,
   tokenType: {label: '', value: ''},
-  tokenChain: undefined,
+  tokenChain: undefined as unknown as ChainNames,
   tokenNumber1: undefined,
   tokenType1: {label: '', value: ''},
-  tokenChain1: undefined,
+  tokenChain1: undefined as unknown as ChainNames,
   rewardTotal: undefined,
   zone: undefined,
 })
@@ -689,14 +688,14 @@ const shortedWebsite = $computed(() => {
               <div class="flex justify-between items-center gap-x-1 mb-1">
                 <UInput v-model="taskForm.tokenNumber" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
 
-                <UInputMenu v-model="taskForm.tokenType" placeholder="Token" :options="tokenOptions" />
+                <UInputMenu v-model="taskForm.tokenType" placeholder="Token" :options="tokenOptions" @change="taskForm.tokenChain=chainOptions[0]" />
 
                 <UInputMenu v-model="taskForm.tokenChain" placeholder="Chain" :options="chainOptions" />
               </div>
               <div class="flex justify-between items-center gap-x-1">
                 <UInput v-model="taskForm.tokenNumber1" type="number" placeholder="Amount" :model-modifiers="{number: true}" />
 
-                <UInputMenu v-model="taskForm.tokenType1" placeholder="Token" :options="tokenOptions" />
+                <UInputMenu v-model="taskForm.tokenType1" placeholder="Token" :options="tokenOptions" @change="taskForm.tokenChain1=chainOptions[0]" />
 
                 <UInputMenu v-model="taskForm.tokenChain1" placeholder="Chain" :options="chainOptions" />
               </div>

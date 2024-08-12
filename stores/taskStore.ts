@@ -409,7 +409,7 @@ Handlers.add(
     console.log(userCreatedAt)
   }
 
-  const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: number, friend: string, audience: string) => {
+  const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: number, friend: number, audience: number) => {
     console.log('audi = ' + audience)
     const data = {
       taskId: taskId,

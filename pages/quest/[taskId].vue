@@ -11,7 +11,7 @@ const { t } = useI18n()
 
 const { storeBounty, sendBounty, updateTaskAfterSettle, getInvitesByInviter, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
 
-const { getLocalCommunity } = $(aoCommunityStore())
+const { getLocalCommunity, twitterVouchedIDs } = $(aoCommunityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
@@ -27,11 +27,9 @@ let task = $ref<Task & {
   reward: string
 }>()
 
-console.log('blogPost of task id ' + taskId + JSON.stringify(task))
+const communityId = $computed(() => task?.communityId)
 
-const communityId = $computed(() => task.communityId)
-
-const isOwner = $computed(() => task.ownerId === address)
+const isOwner = $computed(() => task?.ownerId === address)
 
 let taskJoinRecord = $ref<Awaited<ReturnType<typeof getTaskJoinRecord>>>()
 
@@ -63,9 +61,6 @@ const checkJoin = () => {
 }
 let isSubmitted = $ref<boolean>(false)
 let isJoined = $ref<boolean>(false)
-isJoined = checkJoin()
-isSubmitted = checkSubmit()
-console.log({isSubmitted})
 
 let isIng = $ref(false)
 let submitStatus = $ref('')
@@ -81,7 +76,9 @@ let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let invites: InviteInfo[]
 
+let isLoading = $ref(false)
 onMounted(async () => {
+  isLoading = true
   try {
     task = await getTask(taskId)
     console.log('getTask ' + JSON.stringify(task))
@@ -129,9 +126,14 @@ onMounted(async () => {
     spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
     console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
 
+    isJoined = checkJoin()
+    isSubmitted = checkSubmit()
+    console.log({isSubmitted})
   } catch (e) {
     console.error(e)
     showError('Data loading failed.')
+  } finally {
+    isLoading = false
   }
 })
 
@@ -227,12 +229,9 @@ const columns = [
   },
 ]
 
-const modal = useModal()
 let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
-function checkVouch() {
-  // TODO check current address is vouched
-}
+
 function openSubmitModal() {
   // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
   //   modal.open(CommonAlert, { message: error_msg })
@@ -256,7 +255,7 @@ async function onClickJoin() {
   isJoinLoading = true
   //  调用参与任务方法，只计数不提交
   await joinTask(taskId, address)
-  // blogPost = await getTaskById(taskId)
+  // task = await getTask(taskId)
   taskJoinRecord = await getTaskJoinRecord(taskId)
   spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
   isJoined = checkJoin()
@@ -271,8 +270,11 @@ async function submitTask() {
   submitLoading = true
 
   try {
-    if(!spaceTaskSubmitInfo || !invites || !communityInfo) {
+    if (!spaceTaskSubmitInfo || !invites || !communityInfo) {
       throw new Error('Data loading does not completed. Please wait or try refresh.')
+    }
+    if (!twitterVouchedIDs.length) {
+      throw new Error('You are not vouched.')
     }
 
     // for (let i = 0;i < spaceTaskSubmitInfo.length;i++) {
@@ -311,6 +313,9 @@ async function submitTask() {
     // space创办人的ID 用于判断是否是本人提交任务
     const userID = spaceInfo.includes.users[0].id
     // TODO compare userID and user id from vouch info
+    if (!twitterVouchedIDs.find(id => id===userID)) {
+      throw new Error('You are not the space host.')
+    }
 
     // space参与人数
     // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
@@ -670,7 +675,7 @@ watch(() => selected, (newVal) => {
                   </div>
                 </div>
               </div>
-              <div v-if=" isIng && !isJoined" class="flex justify-center ">
+              <div v-if="!isLoading && isIng && !isJoined" class="flex justify-center ">
                 <UButton color="white" :label="$t('Join Quest')" @click="openJoinModal" />
               </div>
             </div>
@@ -707,7 +712,7 @@ watch(() => selected, (newVal) => {
               </div>
             </div>
 
-            <div v-if="isJoined || isOwner" class="flex justify-center my-8">
+            <div v-if="!isLoading && (isJoined || isOwner)" class="flex justify-center my-8">
               <!--              <div class="mx-4">-->
               <!--                <UButton color="white" label="testuser" @click="test" />-->
               <!--              </div>-->
