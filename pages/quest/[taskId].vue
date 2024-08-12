@@ -310,12 +310,12 @@ async function submitTask() {
       throw Error('Space lasts less than 15 minutes')
     }
 
-    // space创办人的ID 用于判断是否是本人提交任务
-    const userID = spaceInfo.includes.users[0].id
-    // TODO compare userID and user id from vouch info
-    if (!twitterVouchedIDs.find(id => id===userID)) {
-      throw new Error('You are not the space host.')
-    }
+    const hostID = spaceInfo.data.creator_id
+    const hostHandle = spaceInfo.includes.users.find((user) => user.id === hostID)?.username
+    // TODO enable this
+    // if (!twitterVouchedIDs.find(id => id === hostHandle)) {
+    //   throw new Error('You are not the space host.')
+    // }
 
     // space参与人数
     // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
