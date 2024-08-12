@@ -5,7 +5,7 @@ import { shortAddress } from '~/utils/web3'
 import { ssimStore } from '~/stores/ssimStore'
 import { formatToLocale } from '~/utils/util'
 import type { InviteInfo, Task, TwitterSpaceInfo } from '~/types'
-import { tokens } from '~/utils/constants'
+import { maxTotalChances, tokens } from '~/utils/constants'
 
 const { t } = useI18n()
 
@@ -93,38 +93,35 @@ onMounted(async () => {
     } else {
       isIng = false
     }
-    const isSettle = task!.isSettle
-    const isCal = task!.isCal
-    console.log(isBegin)
-    console.log(isSettle)
-    console.log(isCal)
+    const isSettle = task.isSettle
+    const isCal = task.isCal
+    console.log({isBegin, isSettle, isCal})
 
     invites = await (await getInvitesByInviter(address)).invites
 
-    // TODO don't use spaceTaskSubmitInfo array, use submitInfo of current task only
-    if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
-      // TODO update task.submittedCount after every task submit in cronjob
-      submittedBuilderCount = spaceTaskSubmitInfo.reduce((count, info) => {
-        return count + (info.taskId === taskId ? 1 : 0)
-      }, 0)
-
-      if (isBegin && isSettle && isCal && isCal === 'N' && isBegin === 'N' && isSettle === 'N') {
-      // 计算分数
-        calculateScore()
-        console.log(taskId)
-        // 更新任务状态和已提交信息
-        await updateTaskAfterCal(taskId)
-        await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
-      }
-    }
-    // calculateScore()
-    // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
-    // await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
 
     taskJoinRecord = await getTaskJoinRecord(taskId)
     communityInfo = await getLocalCommunity(task.communityId)
     spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
     console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
+
+    if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
+      // TODO update task.submittedCount after every task submit in cronjob
+      submittedBuilderCount = spaceTaskSubmitInfo.reduce((set, current) => {
+        set.add(current.address)
+        return set
+      }, new Set()).size
+
+      // TODO enable isCal === 'N' condition
+      if (// isCal === 'N' &&
+        isBegin === 'N' && isSettle === 'N') {
+        calculateScore()
+        // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
+
+        await updateTaskAfterCal(taskId)
+        await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+      }
+    }
 
     isJoined = checkJoin()
     isSubmitted = checkSubmit()
@@ -139,7 +136,7 @@ onMounted(async () => {
 
 // spaceTaskSubmitInfo = people
 function calculateScore() {
-  if (!spaceTaskSubmitInfo) return
+  if (!spaceTaskSubmitInfo || !task) return
   // 找到friends和audience的最大值
   spaceTaskSubmitInfo.sort((a, b) => b.getPerson - a.getPerson)
   const getPersonMax = spaceTaskSubmitInfo[0].getPerson
@@ -151,47 +148,46 @@ function calculateScore() {
   let friendScore = 0
   let audienceScore = 0
 
-  for (let i = 0;i < spaceTaskSubmitInfo.length;++i) {
+  for (const submitInfo of spaceTaskSubmitInfo) {
     if (getPersonMax != 0) {
-      friendScore = spaceTaskSubmitInfo[i].getPerson / getPersonMax * 40
+      friendScore = submitInfo.getPerson / getPersonMax * 40
     }
     if (audienceMax != 0) {
-      audienceScore = spaceTaskSubmitInfo[i].audience / audienceMax * 50
+      audienceScore = submitInfo.audience / audienceMax * 50
     }
     let brandScore = 0
-    if (spaceTaskSubmitInfo[i].brandEffect === 10) {
+    if (submitInfo.brandEffect === 10) {
       brandScore = 10
     }
     console.log('friendScore = ' + friendScore)
     console.log('audienceScore = ' + audienceScore)
     console.log('brandScore = ' + brandScore)
-    spaceTaskSubmitInfo[i].score = friendScore + audienceScore + brandScore
-    console.log('spaceTaskSubmitInfo[i].score = ' + spaceTaskSubmitInfo[i].score)
-    totalScore += spaceTaskSubmitInfo[i].score
+
+    submitInfo.score = friendScore + audienceScore + brandScore
+
+    totalScore += submitInfo.score;
+
+    [task.tokenType, task.tokenType1].forEach((tokenName, index) => {
+      if (!tokenName) return
+      const bountyTypeKey = 'bountyType' + (index+1) as 'bountyType1'|'bountyType2'
+      submitInfo[bountyTypeKey] = tokenName
+
+      const token = tokens[tokenName as TokenName]
+      if (!token) {
+        throw new Error(`Bounty token ${tokenName} not supported.`)
+      }
+      // TODO 5% 手续费
+      const bounty = submitInfo.score / totalScore * Number(task!.tokenNumber)
+      const bountyKey = 'bounty' + (index+1) as 'bounty1'|'bounty2'
+      submitInfo[bountyKey] = bounty.toFixed(4)
+
+      submitInfo.bounty = (bounty / Math.pow(10, token.denomination)).toString() + tokenName
+    })
+
+    console.log('calculated submitInfo ' + submitInfo)
   }
   console.log('totalScore = ' + totalScore)
-  for (let i = 0;i < spaceTaskSubmitInfo.length;++i) {
-    if (task!.tokenNumber) {
-      const token = tokens[spaceTaskSubmitInfo[i].bountyType1 as TokenName]
-      // TODO 5% 手续费
-      spaceTaskSubmitInfo[i].bounty1 = (spaceTaskSubmitInfo[i].score / totalScore * Number(task!.tokenNumber)).toFixed(4)
-      spaceTaskSubmitInfo[i].bountyType1 = task!.tokenType
 
-      spaceTaskSubmitInfo[i].bounty = (spaceTaskSubmitInfo[i].bounty1 / Math.pow(10, token.denomination)).toString() + spaceTaskSubmitInfo[i].bountyType1
-    }
-    if (task!.tokenNumber1) {
-      const token = tokens[spaceTaskSubmitInfo[i].bountyType2 as TokenName]
-      // TODO 5% 手续费
-      spaceTaskSubmitInfo[i].bounty2 = (spaceTaskSubmitInfo[i].score / totalScore * Number(task!.tokenNumber1)).toFixed(4)
-      spaceTaskSubmitInfo[i].bountyType2 = task!.tokenType1
-
-      spaceTaskSubmitInfo[i].bounty = spaceTaskSubmitInfo[i].bounty + '+' + (spaceTaskSubmitInfo[i].bounty2 / Math.pow(10, token.denomination)).toString() + spaceTaskSubmitInfo[i].bountyType2
-    }
-
-    // console.log('bounty = ' + spaceTaskSubmitInfo[i].score / totalScore * 100)
-  }
-  // 计算完成后更新AO侧数据和前端表单数据
-  console.log('spaceTaskSubmitInfo', JSON.stringify(spaceTaskSubmitInfo))
 }
 
 const columns = [
@@ -311,30 +307,32 @@ async function submitTask() {
     }
 
     const hostID = spaceInfo.data.creator_id
-    const hostHandle = spaceInfo.includes.users.find((user) => user.id === hostID)?.username
+    const host = spaceInfo.includes.users.find((user) => user.id === hostID)
+    const hostHandle = host?.username
     // TODO enable this
-    // if (!twitterVouchedIDs.find(id => id === hostHandle)) {
+    // if (!host || !twitterVouchedIDs.find(id => id === hostHandle)) {
     //   throw new Error('You are not the space host.')
     // }
 
     // space参与人数
     // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
-    const la = spaceInfo.includes.users[0].profile_image_url
-    const resp = la.split('_')
-    let url = ''
-    for (let i = 0;i < resp.length - 1;++i) {
-      url = url + resp[i]
-      if (i != resp.length - 2) {
-        url += '_'
-      }
-    }
-    url = url + '.png'
-    const userAvatar = url
+    // const la = host.profile_image_url
+    // const resp = la.split('_')
+    // let url = ''
+    // for (let i = 0;i < resp.length - 1;++i) {
+    //   url = url + resp[i]
+    //   if (i != resp.length - 2) {
+    //     url += '_'
+    //   }
+    // }
+    // url = url + '.png'
+    const userAvatar = host?.profile_image_url
     // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
     // const userCreatedAt = data._rawValue.includes.users[0].created_at
 
     // const userAvatarBase64 = await url2Base64(userAvatar)
     const ssim = await compareImages(communityInfo.logo, userAvatar)
+    console.log({ssim})
     // 品牌效应
     const brandEffect = ssim && ssim >= 0.8 ? 10 : 0
     // 听众
@@ -350,11 +348,7 @@ async function submitTask() {
     console.log('spaceEnded_at = ' + spaceEndedAt)
     console.log('participated = ' + participantCount)
     console.log('userAvatar = ' + userAvatar)
-    //console.log('userCreatedAt = ' + userCreatedAt)
-    console.log('userId = ' + userID)
-    // console.log('brand = ' + brandEffect)
-    // console.log(communityInfo.logo)
-    // console.log(userAvatarBase64)
+
     await submitSpaceTask(taskId, address, spaceUrl, brandEffect, inviteCount, audience)
     spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
     isSubmitted = checkSubmit()
@@ -527,10 +521,13 @@ const searchKeyword = $ref('')
 
 let filteredRows = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
 const page = $ref(1)
-const pageCount = 5
+let pageSize = $ref<number>(maxTotalChances)
 let pageRows = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
-watch(() => [spaceTaskSubmitInfo, searchKeyword], () => {
-  console.log('changed')
+
+// TODO load more rows if last row is visible
+
+watch(() => [spaceTaskSubmitInfo, searchKeyword, page], () => {
+  console.log('page rows should change')
   if (!searchKeyword) {
     console.info('spaceTaskSubmitInfo as filteredRows', spaceTaskSubmitInfo)
     filteredRows = spaceTaskSubmitInfo
@@ -544,8 +541,10 @@ watch(() => [spaceTaskSubmitInfo, searchKeyword], () => {
     })
   })
 
-  console.log('new pageRows', filteredRows.slice((page - 1) * pageCount, page * pageCount))
-  pageRows = filteredRows.slice((page - 1) * pageCount, page * pageCount)
+  pageSize = task ? Math.min(task.rewardTotal, spaceTaskSubmitInfo.length) : maxTotalChances
+
+  console.log('new pageRows', filteredRows.slice((page - 1) * pageSize, page * pageSize))
+  pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize)
 })
 
 
@@ -659,7 +658,7 @@ watch(() => selected, (newVal) => {
                 </div>
                 <div>
                   <div>
-                    {{ submittedBuilderCount }}
+                    {{ isLoading ? '' : submittedBuilderCount }}
                   </div>
                 </div>
               </div>
@@ -707,7 +706,7 @@ watch(() => selected, (newVal) => {
                   </template>
                 </UTable>
                 <div class="flex justify-end mt-2">
-                  <UPagination v-model="page" :page-count="pageCount" :total="filteredRows?.length || 0" />
+                  <UPagination v-model="page" :page-count="pageSize" :total="filteredRows?.length || 0" />
                 </div>
               </div>
             </div>
@@ -716,7 +715,8 @@ watch(() => selected, (newVal) => {
               <!--              <div class="mx-4">-->
               <!--                <UButton color="white" label="testuser" @click="test" />-->
               <!--              </div>-->
-              <div v-if="isIng && !isSubmitted" class="mx-4">
+              <!-- TODO v-if="isIng && !isSubmit" -->
+              <div v-if="isIng" class="mx-4">
                 <UButton color="white" :label="$t('Submit Quest')" @click="openSubmitModal" />
               </div>
               <div v-if="isOwner && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-4">

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { tokenNames, type TokenSupply } from '~/utils/constants'
+import { maxTotalChances, tokenNames, type TokenSupply } from '~/utils/constants'
 import type { FormError } from '#ui/types'
 import type { CommunitySetting } from '~/types'
 
@@ -100,6 +100,7 @@ export const taskSchema = z.object({
   tokenNumber1: z.number().min(0).optional(),
   rewardTotal: z
     .number()
+    .max(maxTotalChances)
     .min(1, { message: 'Must be more than 0' })
     .refine(
       (value: number) => {

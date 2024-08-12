@@ -86,7 +86,7 @@ const taskData = {
   tokenNumber1: 0,
   tokenType1: undefined,
   tokenChain1: undefined,
-  rewardTotal: undefined,
+  rewardTotal: undefined, // total chances
   zone: undefined,
   startTime: '',
   endTime: '',
@@ -138,11 +138,11 @@ async function onSubmitTaskForm() {
   taskData.taskInfo = taskForm.taskInfo
   taskData.taskRule = t('taskRule')
   taskData.tokenNumber = (taskForm.tokenNumber && taskForm.tokenType.value) ? Number(taskForm.tokenNumber) * Math.pow(10, token.denomination) : 0
-  taskData.tokenType = taskForm.tokenType.value ? taskForm.tokenType.value : 'none'
-  taskData.tokenChain = taskForm.tokenChain ? taskForm.tokenChain : 'none'
+  taskData.tokenType = taskForm.tokenType.value
+  taskData.tokenChain = taskForm.tokenChain
   taskData.tokenNumber1 = (taskForm.tokenNumber1 && taskForm.tokenType1.value) ? Number(taskForm.tokenNumber1) * Math.pow(10, token1.denomination) : 0
-  taskData.tokenType1 = taskForm.tokenType1.value ? taskForm.tokenType1.value : 'none'
-  taskData.tokenChain1 = taskForm.tokenChain1 ? taskForm.tokenChain1 : 'none'
+  taskData.tokenType1 = taskForm.tokenType1.value
+  taskData.tokenChain1 = taskForm.tokenChain1
   taskData.rewardTotal = taskForm.rewardTotal
   taskData.zone = taskForm.zone
   taskData.startTime = selectStartTime

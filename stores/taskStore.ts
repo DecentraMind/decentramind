@@ -409,9 +409,21 @@ Handlers.add(
     console.log(userCreatedAt)
   }
 
+  type SpaceSubmitInfo = {
+    taskId: string
+    address: string
+    brandEffect: number
+    getPerson: number
+    audience: number
+    url: string
+    score: number
+    bounty: string
+  }
+
+  // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
   const submitSpaceTask = async (taskId: string, walletAddress: string, spaceUrl: string, brand: number, friend: number, audience: number) => {
     console.log('audi = ' + audience)
-    const data = {
+    const data: SpaceSubmitInfo = {
       taskId: taskId,
       address: walletAddress,
       brandEffect: brand,
@@ -419,7 +431,7 @@ Handlers.add(
       audience: audience,
       url: spaceUrl,
       score: 0,
-      bounty: 0
+      bounty: '0'
     }
     // 将解析好的数据保存进 AO，与任务 ID 相关联
     await window.arweaveWallet.connect(permissions)
@@ -438,19 +450,15 @@ Handlers.add(
   }
 
   const updateTaskAfterCal = async (taskId: string) => {
-    // 计算之后将任务信息中的是否已计算修改为Y
-    console.log('in updataTask')
-    try {
-      await message({
-        process: tasksProcessID,
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: 'updateTaskAfterCal' }],
-        data: taskId
-      })
-    } catch (error) {
-      alertMessage(error)
-      return ''
-    }
+    // update task.isCal to 'Y'
+    console.log('updateTask')
+
+    return await message({
+      process: tasksProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: 'Action', value: 'updateTaskAfterCal' }],
+      data: taskId
+    })
   }
 
   /**
@@ -469,7 +477,7 @@ Handlers.add(
 
   const updateTaskSubmitInfoAfterCal = async (taskId: string, data: any) => {
     // 计算之后将分数信息更新到提交信息中
-    console.log(JSON.stringify(data))
+    console.log('update task submit info after calculation', JSON.stringify(data))
     let requestBody = ''
     for(let i = 0; i < data.length; ++i){
       requestBody += JSON.stringify(data[i])
@@ -478,17 +486,12 @@ Handlers.add(
       }
     }
     console.log(requestBody)
-    try {
-      const messageId = await message({
-        process: tasksProcessID,
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [{ name: 'Action', value: 'updateTaskSubmitInfoAfterCal' }, { name: 'taskId', value: taskId }],
-        data: requestBody
-      })
-    } catch (error) {
-      // alertError('messageToAo -> error:' + error)
-      // return '';
-    }
+    const messageId = await message({
+      process: tasksProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: 'Action', value: 'updateTaskSubmitInfoAfterCal' }, { name: 'taskId', value: taskId }],
+      data: requestBody
+    })
   }
 
   const getSpaceTaskSubmitInfo = async (taskId: string) => {
@@ -514,8 +517,8 @@ Handlers.add(
     const resp = res.Messages[0].Data.split(';')
 
     for (let index = 0; index < resp.length; index++) {
-      const element = JSON.parse(resp[index])
-      console.log('resp = ' + element.address)
+      const element = JSON.parse(resp[index]) as SpaceSubmitInfo
+      // console.log('resp = ' + element.address)
 
       const respData = {
         taskId: element.taskId,
@@ -527,10 +530,10 @@ Handlers.add(
         url: element.url,
         score: element.score,
         bounty: element.bounty,
-        bounty1: element.bounty1,
-        bountyType1: element.bountyType1,
-        bounty2: element.bounty2,
-        bountyType2: element.bountyType2
+        bounty1: '0',
+        bountyType1: '',
+        bounty2: '0',
+        bountyType2: ''
       }
       spaceTaskSubmitInfo.push(respData)
     }

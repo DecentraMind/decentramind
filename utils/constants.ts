@@ -180,3 +180,5 @@ export const uploadPath = {
   userAvatar: '/u'
 }
 export type UploadPath = typeof uploadPath
+
+export const maxTotalChances = 200
