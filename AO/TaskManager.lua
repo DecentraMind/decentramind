@@ -236,7 +236,6 @@ Handlers.add(
     "updateTaskSubmitInfoAfterCal",
     Handlers.utils.hasMatchingTag("Action", "updateTaskSubmitInfoAfterCal"),
     function (msg)
-        -- 通过id获取该任务对应参与信息
         local temp = {}
         local req = split(msg.Data, ';')
         for i = 1, #req do
@@ -244,7 +243,8 @@ Handlers.add(
         end
         local taskId = msg.Tags.taskId
         for  key, value in pairs(SpaceTaskSubmittedTable) do
-            if(key == taskId) then
+            -- TODO check msg.Tag.from == task.owner
+            if (key == taskId) then
             	SpaceTaskSubmittedTable[key] = temp
             end
         end

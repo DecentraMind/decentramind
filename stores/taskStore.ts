@@ -12,7 +12,7 @@ import { notificationStore } from './notificationStore'
 import type { Bounty, InviteInfo, RelatedUserMap, Task } from '~/types'
 import { sleep, retry } from '~/utils/util'
 import { tokens } from '~/utils/constants'
-import { aoCommunityProcessID, tasksProcessID, moduleID, schedulerID } from '~/utils/processID'
+import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID } from '~/utils/processID'
 
 const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
@@ -95,7 +95,7 @@ export const taskStore = defineStore('taskStore', () => {
     return await retry({
       fn: async () => {
         return await message({
-          process: tasksProcessID,
+          process: taskManagerProcessID,
           signer: createDataItemSigner(window.arweaveWallet),
           tags: [{ name: 'Action', value: 'CreateTask' }],
           data: JSON.stringify(data)
@@ -188,7 +188,7 @@ Handlers.add(
     let res
     try {
       res = await dryrun({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         tags: [{ name: 'Action', value: 'GetAllTasks' }],
       })
     } catch (error) {
@@ -242,7 +242,7 @@ Handlers.add(
 
   const getAllTasksNoCommunity = async () => {
     const res = await dryrun({
-      process: tasksProcessID,
+      process: taskManagerProcessID,
       tags: [{ name: 'Action', value: 'GetAllTasks' }],
     })
 
@@ -301,7 +301,7 @@ Handlers.add(
     }
 
     const res = await dryrun({
-      process: tasksProcessID,
+      process: taskManagerProcessID,
       tags: [{ name: 'Action', value: 'GetAllTasks' }],
     })
 
@@ -348,7 +348,7 @@ Handlers.add(
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'JoinTask' }],
         data: JSON.stringify(data)
@@ -365,7 +365,7 @@ Handlers.add(
     let TaskJoinRecords = []
     try {
       res = await dryrun({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         tags: [{ name: 'Action', value: 'getTaskJoinRecord' }, { name: 'taskId', value: taskId }],
       })
     } catch (error) {
@@ -437,7 +437,7 @@ Handlers.add(
     await window.arweaveWallet.connect(permissions)
     try {
       const messageId = await message({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [{ name: 'Action', value: 'SubmitSpaceTask' }],
         data: JSON.stringify(data)
@@ -454,7 +454,7 @@ Handlers.add(
     console.log('updateTask')
 
     return await message({
-      process: tasksProcessID,
+      process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'updateTaskAfterCal' }],
       data: taskId
@@ -468,7 +468,7 @@ Handlers.add(
    */
   const updateTaskAfterSettle = async (taskId: string) => {
     return await message({
-      process: tasksProcessID,
+      process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'updateTaskAfterSettle' }],
       data: taskId
@@ -487,7 +487,7 @@ Handlers.add(
     }
     console.log(requestBody)
     const messageId = await message({
-      process: tasksProcessID,
+      process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'updateTaskSubmitInfoAfterCal' }, { name: 'taskId', value: taskId }],
       data: requestBody
@@ -499,7 +499,7 @@ Handlers.add(
     let spaceTaskSubmitInfo = []
     try {
       res = await dryrun({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         tags: [{ name: 'Action', value: 'getSpaceTaskSubmitInfo' }, { name: 'taskId', value: taskId }],
       })
       console.log('getSpaceTaskSubmitInfo:', {res})
@@ -544,7 +544,7 @@ Handlers.add(
     let res
     try {
       res = await dryrun({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         tags: [{ name: 'Action', value: 'getAllTaskSubmitInfo' }],
       })
     } catch (error) {
@@ -615,7 +615,7 @@ Handlers.add(
   }[]) => {
     await window.arweaveWallet.connect(permissions)
     const messageId = await message({
-      process: tasksProcessID,
+      process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'storeBounty' }],
       data: JSON.stringify(bounties)
@@ -628,7 +628,7 @@ Handlers.add(
     let res
     try {
       res = await dryrun({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         tags: [{ name: 'Action', value: 'getAllBounties' }]
       })
       // console.log('all bounties = ' + res.Messages[0].Data)

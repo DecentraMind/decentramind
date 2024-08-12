@@ -4,7 +4,7 @@ import {
   message,
   dryrun,
 } from '@permaweb/aoconnect'
-import { tasksProcessID } from '~/utils/processID'
+import { taskManagerProcessID } from '~/utils/processID'
 
 const {
   WALLET: walletJson
@@ -20,7 +20,7 @@ export default defineTask({
     let res
     try {
       res = await dryrun({
-        process: tasksProcessID,
+        process: taskManagerProcessID,
         tags: [{ name: 'Action', value: 'GetAllTasks' }],
       })
     } catch (error) {
@@ -56,7 +56,7 @@ export default defineTask({
       console.log('taskId to Y: ' + taskID)
       try {
         await message({
-          process: tasksProcessID,
+          process: taskManagerProcessID,
           signer: createDataItemSigner(wallet),
           tags: [{ name: 'Action', value: 'updateTaskToIng' }],
           data: taskID
@@ -70,7 +70,7 @@ export default defineTask({
       console.log('taskId to N: ' + taskID)
       try {
         await message({
-          process: tasksProcessID,
+          process: taskManagerProcessID,
           signer: createDataItemSigner(wallet),
           tags: [{ name: 'Action', value: 'updateTaskToEnd' }],
           data: taskID

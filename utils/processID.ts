@@ -1,6 +1,6 @@
 export const aoCommunityProcessID = 'LvWdIb5y-cHZzaR8ZOiPidtm3t5NdJwGxFXN48ZH75g'
 
-export const tasksProcessID = 'mNbAy9OY-R0tdrNnQBQatVKo37SxlY7bt-ouS_hZ33w'
+export const taskManagerProcessID = 'w7gz6dssjY5wSyIg4z9b5iHd2_TSR8y3CB4xSM9LqMw'
 
 // TODO Array of moduleID. Try different moduleID when current module not work.
 // export const moduleID = 'SBNb1qPQ1TDwpD_mboxm2YllmMLXpWw4U8P9Ff8W9vk'
