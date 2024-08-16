@@ -15,7 +15,8 @@ export const gateways = {
   everland: everlandGateway
 }
 
-export const defaultUserAvatar = '-UaLJIpKx-2rECSBaagaJpyjpcyi3_iojodOQ-sNHwA'
+export const defaultUserAvatar = 'UUyXJRLZHxJKxRERx-ZpdV-lRHqg-HzVuDRnN3J0N9c'
+// export const defaultUserAvatar = '-UaLJIpKx-2rECSBaagaJpyjpcyi3_iojodOQ-sNHwA'
 
 export const defaultCommunityLogo = 'OrzPJKbouDnEk_7sVEvRY28Cqf0o6R-dz_ARn0p9v3s'
 

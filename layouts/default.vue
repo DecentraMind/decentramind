@@ -11,7 +11,7 @@ const communityID = $computed(() => {
 const selectModal = $ref(0)
 
 const { address } = $(aoStore())
-const { joinedCommunities, getBan, userInfo, getUser, getCommunityList } = $(aoCommunityStore())
+const { joinedCommunities, userInfo, getUser, getCommunityList } = $(aoCommunityStore())
 
 const isCreateModalOpen = $ref(false)
 
@@ -23,7 +23,7 @@ onMounted(async () => {
       return
     }
 
-    Promise.all([getCommunityList(), getUser(), getBan()])
+    Promise.all([getCommunityList(), getUser()])
   } catch (error) {
     console.error('Error fetching data:', error)
   }

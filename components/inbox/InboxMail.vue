@@ -5,9 +5,8 @@ import { nextTick } from 'vue'
 import { useElementVisibility, watchDebounced } from '@vueuse/core'
 
 const { mail } = $defineProps<{
-  mail: string,
+  mail: string
 }>()
-
 
 const msgTop = ref(null)
 const msgTopIsVisible = useElementVisibility(msgTop)
@@ -17,7 +16,7 @@ const msgTopIsVisible = useElementVisibility(msgTop)
 // auto load new message for this process and other process, so we can show last unread message on the left sidebar msg list
 const { sendMessage, loadInboxList, itemsCache } = $(inboxStore())
 const { showSuccess } = $(notificationStore())
-const { chatBanuser, currentUuid, getBan } = $(aoCommunityStore())
+const { mutedUsers, currentUuid } = $(aoCommunityStore())
 const { address } = $(aoStore())
 
 const msgBottom = $ref(null)
@@ -67,54 +66,33 @@ watchDebounced(msgTopIsVisible, async () => {
 defineShortcuts({
   meta_enter: {
     usingInput: 'msg',
-    handler: doSubmit
-  }
+    handler: doSubmit,
+  },
 })
 
 const route = useRoute()
 let chatID = $ref<string | string[] | null>(null)
-const test = () => {
-  console.log(chatBanuser)
 
-  const specificKey = 'cf919548-9292-4263-858e-b3fa1965a823';
-  console.log(currentUuid)
-  const dataForKey = chatBanuser[currentUuid];
-
-  // 检查是否找到该键并打印其值
-  if (dataForKey) {
-    console.log('Data for specific key:', dataForKey);
-    // 检查数组中是否存在与 address 相同的值
-    if (dataForKey.includes(address)) {
-      console.log('Address found in dataForKey');
-    } else {
-      console.log('Address not found in dataForKey');
-    }
-  } else {
-    console.log('Address not found');
-  }
-}
-onMounted( async() => {
-
+onMounted(async () => {
   if (!route.params.pid) return
   chatID = route.params.pid
 })
 
 const isTextareaDisabled = computed(() => {
-  return isLoading || (chatBanuser[currentUuid] && chatBanuser[currentUuid].includes(address));
-});
-
+  return (
+    isLoading ||
+    (mutedUsers[currentUuid] && mutedUsers[currentUuid].includes(address))
+  )
+})
 </script>
 
 <template>
   <div class="h-full">
     <div class="-m-4 -top-4 z-99 sticky">
-      <div class="bg-background flex  p-4  justify-between  ">
+      <div class="bg-background flex p-4 justify-between">
         <div class="flex gap-4 items-center">
-          <!--<DicebearAvatar :seed="chatID" alt="test" size="lg" />-->
-
           <div class="min-w-0">
-            <p class="font-semibold text-gray-900 dark:text-white">
-            </p>
+            <p class="font-semibold text-gray-900 dark:text-white" />
           </div>
         </div>
       </div>
@@ -134,13 +112,28 @@ const isTextareaDisabled = computed(() => {
         <!--<InboxListMessage :id="chatID" @loaded="scrollToBottom" />-->
         <InboxListMessage :id="chatID" />
       </div>
-      <div class="" ref="msgBottom"> </div>
+      <div ref="msgBottom" class="" />
       <div class="-bottom-4 sticky mt-2">
         <form @submit.prevent="doSubmit">
-          <UTextarea :disabled="isTextareaDisabled" v-model="msg" name="msg" color="gray" required size="xl" :rows="5" placeholder="Reply to test">
+          <UTextarea
+            v-model="msg"
+            :disabled="isTextareaDisabled"
+            name="msg"
+            color="gray"
+            required
+            size="xl"
+            :rows="5"
+            placeholder="Reply to test"
+          >
             <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->
-            <UButton :disabled="isTextareaDisabled" type="submit" color="black" label="Send" icon="i-heroicons-paper-airplane" class="right-3.5 bottom-2.5 absolute">
-            </UButton>
+            <UButton
+              :disabled="isTextareaDisabled"
+              type="submit"
+              color="black"
+              label="Send"
+              icon="i-heroicons-paper-airplane"
+              class="right-3.5 bottom-2.5 absolute"
+            />
           </UTextarea>
         </form>
       </div>

@@ -20,11 +20,9 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   let twitterVouchedIDs = $ref<string[]>([])
   let communityList = $ref<CommunityList>([])
   let userInfo = $ref<UserInfo>()
-  let communityUser = $ref({})
   let joinedCommunities = $ref<CommunityList>([])
-  let chatBanuser = $ref({})
-  let isLoading = $ref(false)
-  let isJoining = $ref(false)
+  let mutedUsers = $ref<string[]>([])
+
   let currentUuid = $ref('')
 
   //Set the uuid of the currently selected community
@@ -94,47 +92,45 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     return twitterVouchedIDs
   }
 
-  const banChat = async (communityId: string, userAddress: string) => {
+  const mute = async (communityUuid: string, userAddress: string) => {
     await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'chatban' },
-        { name: 'community', value: communityId },
-        { name: 'user', value: userAddress }
+        { name: 'Action', value: 'Mute' },
+        { name: 'CommunityUuid', value: communityUuid },
+        { name: 'User', value: userAddress }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
   }
 
-  const unbanChat = async (communityId: string, userAddress: string) => {
+  const unmute = async (communityUuid: string, userAddress: string) => {
     await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'unchatban' },
-        { name: 'community', value: communityId },
-        { name: 'user', value: userAddress }
+        { name: 'Action', value: 'Unmute' },
+        { name: 'CommunityUuid', value: communityUuid },
+        { name: 'User', value: userAddress }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
   }
 
-  const getBan = async () => {
-    if (isLoading) return
-    isLoading = true
+  const getMutedUsers = async (communityUuid: string) => {
+    if (!communityUuid) {
+      throw new Error('No communityUuid specified.')
+    }
     const result = await dryrun({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'getchatban' }
+        { name: 'Action', value: 'GetMutedUsers' },
+        { name: 'CommunityUuid', value: communityUuid }
       ]
     })
 
-    const data = extractResult(result)
-    // Assuming chatBanUser is set to result.Messages[0].Data
-
-    // Parse the JSON string
-    chatBanuser = JSON.parse(data)
-
-    isLoading = false
+    const data = extractResult<string>(result)
+    mutedUsers = JSON.parse(data) as string[]
+    return mutedUsers
   }
 
   //Creating a community approach
@@ -237,7 +233,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       message: messageID,
       process: aoCommunityProcessID
     })
-    console.log({communityUpdateRes: res})
+    console.log({ communityUpdateRes: res })
     if (!res.Messages.length) {
       res.Output.data && console.error(res.Output.data)
       throw new Error('Failed to update community.')
@@ -275,7 +271,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       joinedCommunities.sort((a: CommunityListItem, b: CommunityListItem) => {
         return b.joinTime! - a.joinTime!
       })
-      isLoading = false
+
       return result
     } else {
       const result = await dryrun({
@@ -287,7 +283,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       const jsonData = result.Messages[0].Data // 获取原始的 JSON 字符串
       communityList = JSON.parse(jsonData) as CommunityList
       joinedCommunities = []
-      isLoading = false
+
       return result
     }
   }
@@ -296,7 +292,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
    * Update local community.isJoined
    * */
   const updateLocalCommunityJoin = async (uuid: string, joinStatus: 'join' | 'exit') => {
-    for (let i = 0; i < communityList.length; i++) {
+    for (let i = 0;i < communityList.length;i++) {
       if (communityList[i].uuid === uuid) {
         if (joinStatus == 'join') {
           console.log('join')
@@ -313,8 +309,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
   //Get joined users in a given community
   const getCommunityUser = async (uuid: any) => {
-    if (isLoading) return
-    isLoading = true
+
     const result = await dryrun({
       process: aoCommunityProcessID,
       tags: [
@@ -322,26 +317,19 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
         { name: 'uuid', value: uuid }
       ],
     })
-    if (result && result.Messages && result.Messages.length > 0) {
-      const dataStr = result.Messages[0].Data
 
-      communityUser = JSON.parse(dataStr)
-      const parsedCommunityUser = {}
+    const dataStr = extractResult<string>(result)
 
-      for (const key in communityUser) {
-        if (communityUser.hasOwnProperty(key)) {
-          try {
-            parsedCommunityUser[key] = JSON.parse(communityUser[key])
-          } catch (e) {
-            console.error(`Error parsing JSON for key ${key}:`, e)
-            parsedCommunityUser[key] = communityUser[key]
-          }
-        }
+    const communityUser = JSON.parse(dataStr) as Record<string, UserInfo>
+
+    return Object.entries(communityUser).map((
+      [key, user]
+    ) => {
+      return {
+        address: key,
+        ...user
       }
-      communityUser = reactive(parsedCommunityUser)
-    }
-    isLoading = false
-    return result
+    })
   }
 
   //Getting information about a specific community from a cached community list
@@ -374,32 +362,17 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     return JSON.parse(json) as Community
   }
 
-  //How to join the community
   const joinCommunity = async (communityID: string, inviterAddress: string) => {
-    if (isJoining) return
-    isJoining = true
-    try {
-      console.log('-----------')
-      const time = Date.now()
-      const join = await message({
-        process: aoCommunityProcessID,
-        tags: [
-          { name: 'Action', value: 'join' },
-          { name: 'userAddress', value: address },
-          { name: 'invite', value: inviterAddress },
-          { name: 'time', value: time.toString() }
-        ],
-        signer: createDataItemSigner(window.arweaveWallet),
-        data: communityID,
-      })
-      console.log(join)
-      isJoining = false
-      return join
-    } catch (error) {
-      alert('join failed: ' + error)
-    } finally {
-      isJoining = false
-    }
+    const join = await message({
+      process: aoCommunityProcessID,
+      tags: [
+        { name: 'Action', value: 'join' },
+        { name: 'invite', value: inviterAddress },
+      ],
+      signer: createDataItemSigner(window.arweaveWallet),
+      data: communityID,
+    })
+    return join
   }
 
   //Methods of withdrawing from the community
@@ -501,9 +474,9 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   const createToken = async (token: CreateToken) => {
-    const {name, ticker, totalSupply} = token
+    const { name, ticker, totalSupply } = token
     const logo = token.logo || defaultTokenLogo
-    console.log('creating token:', {name, ticker, totalSupply, logo})
+    console.log('creating token:', { name, ticker, totalSupply, logo })
 
     const denomination = 12
     const totalSupplyStr = (BigInt(Number(totalSupply)) * BigInt(Math.pow(10, denomination))).toString()
@@ -652,18 +625,17 @@ Handlers.add(
 
   return $$({
     userInfo,
-    communityUser,
     communityList,
     joinedCommunities,
     currentUuid,
-    chatBanuser,
+    mutedUsers,
     twitterVouched,
     twitterVouchedIDs,
     vouch,
-    banChat: banChat,
-    unbanChat,
+    mute,
+    unmute,
     createToken,
-    getBan,
+    getMutedUsers,
     setCurrentUuid,
     makeCommunityChat,
     getLocalCommunity,

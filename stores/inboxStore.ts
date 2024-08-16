@@ -77,7 +77,7 @@ export const inboxStore = defineStore('inboxStore', () => {
     let { Messages, Spawns, Output, Error } = await result({
       message,
       process,
-    });
+    })
 
     return { Messages, Spawns, Output, Error }
   }
@@ -115,7 +115,7 @@ export const inboxStore = defineStore('inboxStore', () => {
         { name: 'Action', value: '#Inbox' },
       ],
       data: '#Inbox',
-    });
+    })
     rz = getDryrunData(rz, 'InboxCount.value')
     state[process].inboxCount = rz
     return rz

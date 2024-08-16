@@ -40,7 +40,9 @@ type Users = {
 ]] --
 Users = Users or {}
 GithubCodes = GithubCodes or {}
-ChatBans = ChatBans or {}
+
+--- @type table<string, string[]> table of community's muted user addresses
+MutedUsers = MutedUsers or {}
 
 local json = require("json")
 
@@ -181,38 +183,55 @@ Handlers.add(
 
 
 Handlers.add(
-  "chatban",
-  Handlers.utils.hasMatchingTag("Action", "chatban"),
+  "Mute",
+  Handlers.utils.hasMatchingTag("Action", "Mute"),
   function(msg)
-    ChatBans[msg.Tags.community] = ChatBans[msg.Tags.community] or {}
+    local cid = msg.Tags.CommunityUuid
+    local community = Communities[cid]
+    if not community then
+      return replyError(msg, 'Community not found.')
+    end
+
+    if msg.From ~= community.owner then
+      return replyError(msg, 'You are not the owner.')
+    end
+
+    local userAddress = msg.Tags.User
+    MutedUsers[cid] = MutedUsers[cid] or {}
 
     local userExists = false
-    for _, user in ipairs(ChatBans[msg.Tags.community]) do
-      if user == msg.Tags.user then
+    for _, user in ipairs(MutedUsers[cid]) do
+      if user == userAddress then
         userExists = true
         break
       end
     end
 
     if not userExists then
-      table.insert(ChatBans[msg.Tags.community], msg.Tags.user)
-      print("User " .. msg.Tags.user .. " has been added to the chat ban list for community " .. msg.Tags.community)
-    else
-      print("User " .. msg.Tags.user .. " is already in the chat ban list for community " .. msg.Tags.community)
+      table.insert(MutedUsers[cid], userAddress)
     end
-
-    Handlers.utils.reply("chatban")(msg)
   end
 )
 
 Handlers.add(
-  "unchatban",
-  Handlers.utils.hasMatchingTag("Action", "unchatban"),
+  "Unmute",
+  Handlers.utils.hasMatchingTag("Action", "Unmute"),
   function(msg)
-    if ChatBans[msg.Tags.community] then
-      for i, user in ipairs(ChatBans[msg.Tags.community]) do
-        if user == msg.Tags.user then
-          table.remove(ChatBans[msg.Tags.community], i)
+    local cid = msg.Tags.CommunityUuid
+    local community = Communities[cid]
+    if not community then
+      return replyError(msg, 'Community not found.')
+    end
+
+    if msg.From ~= community.owner then
+      return replyError(msg, 'You are not the owner.')
+    end
+    local userAddress = msg.Tags.User
+
+    if MutedUsers[cid] then
+      for i, user in ipairs(MutedUsers[cid]) do
+        if user == userAddress then
+          table.remove(MutedUsers[cid], i)
           break
         end
       end
@@ -223,10 +242,10 @@ Handlers.add(
 )
 
 Handlers.add(
-  "getchatban",
-  Handlers.utils.hasMatchingTag("Action", "getchatban"),
+  "GetMutedUsers",
+  Handlers.utils.hasMatchingTag("Action", "GetMutedUsers"),
   function(msg)
-    Handlers.utils.reply(json.encode(ChatBans))(msg)
+    Handlers.utils.reply(json.encode(MutedUsers[msg.Tags.CommunityUuid]))(msg)
   end
 )
 
