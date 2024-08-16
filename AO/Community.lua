@@ -163,17 +163,15 @@ Handlers.add(
     local setting = json.decode(msg.Data)
 
     if not setting.uuid then
-      replyError(msg, 'uuid is required.')
+      return replyError(msg, 'uuid is required.')
     end
 
     local community = Communities[setting.uuid]
     if not community then
-      replyError(msg, 'community not found.')
-      return
+      return replyError(msg, 'community not found.')
     end
     if msg.From ~= community.owner then
-      replyError(msg, 'You are not the owner.')
-      return
+      return replyError(msg, 'You are not the owner')
     end
 
     for field, value in pairs(setting) do

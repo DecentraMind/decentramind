@@ -10,7 +10,7 @@ const communityID = $computed(() => {
 
 const selectModal = $ref(0)
 
-const { address } = $(aoStore())
+const { address, checkIsActiveWallet } = $(aoStore())
 const { joinedCommunities, userInfo, getUser, getCommunityList } = $(aoCommunityStore())
 
 const isCreateModalOpen = $ref(false)
@@ -18,7 +18,7 @@ const isCreateModalOpen = $ref(false)
 onMounted(async () => {
   console.log({router})
   try {
-    if (!address) {
+    if (!address || !await checkIsActiveWallet()) {
       router.push('/')
       return
     }

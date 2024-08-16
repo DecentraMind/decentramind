@@ -1,5 +1,10 @@
 import type { Avatar } from '#ui/types'
 
+export type AoTag = {
+  name: string
+  value: string
+}
+
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 
 export interface User {

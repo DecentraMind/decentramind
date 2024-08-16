@@ -25,6 +25,7 @@ const permissions: PermissionType[] = [
 
 import Arweave from 'arweave'
 import type { Tag } from 'arweave/node/lib/transaction'
+import type { AoTag } from '~/types'
 
 const arweave = Arweave.init({
   host: 'arweave.net', // 这是主网节点的 URL
@@ -38,8 +39,6 @@ export const aoStore = defineStore('aoStore', () => {
 
   /** current connected address */
   let address = $(lsItemRef<string>('address', ''))
-
-  let isLoginModalOpen = $ref(false)
 
   const tokenBalances = $ref({
     //CRED: 0,
@@ -66,25 +65,39 @@ export const aoStore = defineStore('aoStore', () => {
       window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh'
       return false
     }
-    try {
-      await window.arweaveWallet.connect(permissions)
+    await window.arweaveWallet.connect(permissions)
+    return await _login(window.arweaveWallet)
+  }
 
-      address = await window.arweaveWallet.getActiveAddress()
-      const messageID = await message({
-        process: aoCommunityProcessID,
-        tags: [
-          { name: 'Action', value: 'registerUserOrLogin' },
-          { name: 'UserName', value: address.slice(-4) },
-          { name: 'Avatar', value: defaultUserAvatar },
-        ],
-        signer: createDataItemSigner(window.arweaveWallet),
-      })
-      console.log('register user result', messageID, address)
+  async function _login(wallet: typeof window.arweaveWallet) {
+    address = await wallet.getActiveAddress()
+    const messageID = await message({
+      process: aoCommunityProcessID,
+      tags: [
+        { name: 'Action', value: 'registerUserOrLogin' },
+        { name: 'UserName', value: address.slice(-4) },
+        { name: 'Avatar', value: defaultUserAvatar },
+      ],
+      signer: createDataItemSigner(wallet),
+    })
+    console.log('register/login result', messageID, address)
 
-      return messageID
-    } catch (error) {
-      console.error(error)
+    window.addEventListener('walletSwitch', async (e) => {
+      if(e.detail.address !== address) {
+        await doLogout()
+      }
+    })
+
+    return messageID
+  }
+
+  async function checkIsActiveWallet() {
+    if (!window.arweaveWallet) {
+      return false
     }
+    const activeAddress = await window.arweaveWallet.getActiveAddress()
+    console.log('check active address:', {activeAddress, address, return: activeAddress === address})
+    return address === activeAddress
   }
 
   const othentLogin = async () => {
@@ -104,30 +117,14 @@ export const aoStore = defineStore('aoStore', () => {
           console.error('Othent is not defined in the module')
         }
       } catch (error) {
-        console.error('An error occurred:', error)
+        console.error(error)
+        throw new Error('Failed to login through Othent.')
       }
     } else {
       console.log('Running on server side, connect() is not available')
     }
 
-    try {
-      address = await window.arweaveWallet.getActiveAddress()
-
-      const result = await message({
-        process: aoCommunityProcessID,
-        tags: [
-          { name: 'Action', value: 'registerUser' },
-          { name: 'Name', value: address.slice(-4) },
-          { name: 'Avatar', value: defaultUserAvatar },
-        ],
-        signer: createDataItemSigner(window.arweaveWallet),
-      })
-      return result
-
-      //await init()
-    } catch (error) {
-      console.error(error)
-    }
+    return await _login(window.arweaveWallet)
   }
 
   const doLogout = async () => {
@@ -141,7 +138,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (tokenMap[process]) {
       process = tokenMap[process]
     }
-    let rz = await message({
+    const messageId = await message({
       process,
       tags: [
         { name: 'Action', value: 'Balance' },
@@ -150,34 +147,33 @@ export const aoStore = defineStore('aoStore', () => {
     })
 
     try {
-      rz = await result({
-        message: rz,
+      const res = await result({
+        message: messageId,
         process,
       })
-      rz = useGet(useGet(rz, 'Messages[0].Tags').find(tag => tag.name === 'Balance'), 'value', '0')
+      const balance = useGet(useGet(res, 'Messages[0].Tags').find((tag: AoTag) => tag.name === 'Balance'), 'value', '0')
       totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0)
 
-      return parseFloat(rz)
+      return parseFloat(balance)
     } catch (err) {
-      console.log(`====> err :`, err)
+      console.error(err)
+      throw new Error('Failed to get balance.')
     }
-
-    return 0
   }
 
-  const getData = async ({ process, Action }, tagFilters) => {
+  const getData = async ({ process, Action } : {process: string, Action: string}, tagFilters: Record<string, string>) => {
     if (tokenMap[process]) {
       process = tokenMap[process]
     }
-    let rz = await dryrun({
+    const res = await dryrun({
       process,
       tags: [
         { name: 'Action', value: Action },
       ],
     })
     try {
-      rz = rz.Messages.filter(msg => {
-        const hasMatchTag = msg.Tags.filter(tag => {
+      const filteredMessages = res.Messages.filter(msg => {
+        const hasMatchTag = msg.Tags.filter((tag: AoTag) => {
           if (tagFilters[tag.name]) {
             return tag.value == tagFilters[tag.name]
           }
@@ -185,15 +181,14 @@ export const aoStore = defineStore('aoStore', () => {
         })
         return hasMatchTag.length === Object.keys(tagFilters).length
       })
-      rz = JSON.parse(useGet(rz, '[0].Data'))
+      return JSON.parse(useGet(filteredMessages, '[0].Data'))
     } catch (err) {
-      console.log(`====> err :`, err, rz)
+      console.error(err)
+      throw new Error('Failed to get data from process.')
     }
-
-    return rz
   }
 
-  const sendToken = async (process, recipient, amount, tags = []) => {
+  const sendToken = async (process: string, recipient: string, amount: string, tags = []) => {
     if (!address) {
       await doLogin()
     }
@@ -202,14 +197,14 @@ export const aoStore = defineStore('aoStore', () => {
       process = tokenMap[process]
     }
 
-    if (amount <= 0) {
-      showError(`amount can not be zero`)
+    if (parseFloat(amount) <= 0) {
+      showError('amount can not be zero')
       return false
     }
 
     amount = (parseFloat(amount) * 1000).toString()
 
-    let rz = await message({
+    const messageId = await message({
       process,
       tags: [
         ...tags,
@@ -221,22 +216,22 @@ export const aoStore = defineStore('aoStore', () => {
     })
 
     try {
-      rz = await result({
-        message: rz,
+      const res = await result({
+        message: messageId,
         process,
       })
-      const error = useGet(rz, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Error')
+      const error = useGet(res, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Error')
       if (error) {
         showError(error.value)
         return false
       }
-      rz = useGet(rz, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Action').value
-      if (rz === "Debit-Notice") {
+      const action = useGet(res, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Action').value
+      if (action === 'Debit-Notice') {
         return true
       }
     } catch (err) {
-      console.log(`====> err :`, err)
-      showError(err.toString())
+      console.error(err)
+      throw new Error('Failed to send token.')
     }
     return false
   }
@@ -275,7 +270,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance, isLoginModalOpen })
+  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance, checkIsActiveWallet })
 })
 
 if (import.meta.hot)

@@ -499,8 +499,6 @@ const page = $ref(1)
 let pageSize = $ref<number>(maxTotalChances)
 let pageRows = $ref<Awaited<ReturnType<typeof getSubmissionsByTaskPid>>>([])
 
-// TODO load more rows if last row is visible
-
 watch(
   () => [submissions, searchKeyword, page],
   () => {
