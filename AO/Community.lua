@@ -1,3 +1,6 @@
+Name = 'DecentraMind Community Manager'
+Variant = '0.1.0'
+
 ---@class Community
 ---@field uuid string
 ---@field logo string arweave hash of logo

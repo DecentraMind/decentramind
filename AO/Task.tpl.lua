@@ -1,8 +1,10 @@
+Name = 'DecentraMind Task'
+Variant = '0.1.0'
+
 --- This is a task process deployed from DecentraMind
 local json = require("json")
 
 TaskOwnerWallet = ao.env.Process.Owner
-Version = '0.1.0'
 
 local function replyError(request, errorMsg)
   local action = request.Action .. "-Error"
@@ -50,6 +52,6 @@ Handlers.add(
   "GetVersion",
   Handlers.utils.hasMatchingTag("Action", "GetVersion"),
   function (msg)
-    Handlers.utils.reply(Version)(msg)
+    Handlers.utils.reply(Variant)(msg)
   end
 )

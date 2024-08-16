@@ -1,3 +1,6 @@
+Name = 'DecentraMind Task Manager'
+Variant = '0.1.0'
+
 local json = require("json")
 local ao = require('ao')
 
