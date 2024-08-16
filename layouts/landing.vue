@@ -1,7 +1,9 @@
 <script setup lang="ts">
 const { doLogin, othentLogin, isLoginModalOpen } = $(aoStore())
+const { showError } = $(notificationStore())
 
 const router = useRouter()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let isLoading = $ref(false)
 let loginLoading = $ref(false)
 
@@ -16,8 +18,8 @@ const onClickArConnect = async () => {
       console.log('User did not connect the wallet, not navigating to /signup')
     }
   } catch (error) {
-    console.error('Error during async operation', error)
-    alert('Please connect your Arweave Wallet to continue')
+    console.error('Error during login operation', error)
+    showError('Failed to login.', error as Error)
   } finally {
     loginLoading = false
     isLoading = false
