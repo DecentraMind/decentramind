@@ -6,6 +6,7 @@ import { arUrl, taskBanners, gateways } from '~/utils/arAssets'
 import { getLocalTimezone } from '~/utils/util'
 import { taskSchema } from '~/utils/schemas'
 import { provide } from 'vue'
+import Chatroom from '~/components/community/Chatroom.vue'
 
 const { t } = useI18n()
 const { createTask, getTasksByCommunityUuid } = $(taskStore())

@@ -72,7 +72,7 @@ const joinToCommunity = async(uuid: any) => {
     await getCommunityList()
     router.push('/community/' + uuid)
   } catch (error) {
-    showError('操作失败', error)
+    showError('Failed to join.', error as Error)
   } finally {
     joinLoading = false
   }
