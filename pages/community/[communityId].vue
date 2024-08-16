@@ -5,7 +5,6 @@ import type { Community, Task, TaskForm } from '~/types'
 import { arUrl, taskBanners, gateways } from '~/utils/arAssets'
 import { getLocalTimezone } from '~/utils/util'
 import { taskSchema } from '~/utils/schemas'
-import { useI18n } from '#imports'
 
 const { t } = useI18n()
 const { createTask, getTasksByCommunityUuid } = $(taskStore())
