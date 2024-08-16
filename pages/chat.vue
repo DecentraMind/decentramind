@@ -406,7 +406,7 @@ const test = async() => {
     <UModal v-model="unbanButton">
       <UCard class="min-w-[300px] flex justify-center">
         <div class="w-full flex justify-center text-2xl">
-          Sure to unMute?
+          Sure to unmute?
         </div>
         <div v-if="!unForbid" class="w-full flex space-x-10 mt-6 justify-between">
           <UButton
@@ -422,7 +422,7 @@ const test = async() => {
           </UButton>
         </div>
         <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <Text>unMute...</Text>
+          <Text>unmute...</Text>
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>

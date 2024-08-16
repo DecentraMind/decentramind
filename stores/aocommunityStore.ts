@@ -95,11 +95,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   }
 
   const banChat = async (communityId: string, userAddress: string) => {
-    if (isLoading) return
-    isLoading = true
-    console.log('test---')
-    console.log(communityId)
-    console.log(userAddress)
     await message({
       process: aoCommunityProcessID,
       tags: [
@@ -109,12 +104,9 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    isLoading = false
   }
 
   const unbanChat = async (communityId: string, userAddress: string) => {
-    if (isLoading) return
-    isLoading = tryUseNuxtApp
     await message({
       process: aoCommunityProcessID,
       tags: [
@@ -124,7 +116,6 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    isLoading = false
   }
 
   const getBan = async () => {
@@ -136,13 +127,12 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
         { name: 'Action', value: 'getchatban' }
       ]
     })
-    console.log('testaaa')
-    console.log(result.Messages[0].Data)
-    // Assuming chatBanuser is set to result.Messages[0].Data
-    const chatBanuserString = result.Messages[0].Data
+
+    const data = extractResult(result)
+    // Assuming chatBanUser is set to result.Messages[0].Data
 
     // Parse the JSON string
-    chatBanuser = JSON.parse(chatBanuserString)
+    chatBanuser = JSON.parse(data)
 
     isLoading = false
   }
