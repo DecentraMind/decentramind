@@ -199,3 +199,9 @@ export type UploadPath = typeof uploadPath
 export const maxTotalChances = 200
 
 export const tokenChains = ['AO'] as ChainNames[]
+
+export const communityRightPages = {
+  tasks: Symbol(),
+  chatroom: Symbol()
+}
+export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRightPages]

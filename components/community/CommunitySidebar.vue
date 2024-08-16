@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { toRefs } from 'vue'
+import { toRefs, defineEmits } from 'vue'
 import type { Community } from '~/types/index'
+import { communityRightPages } from '~/utils/constants'
 
 const props = defineProps<{
   community?: Community
@@ -10,7 +11,7 @@ const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
 const { exitCommunity, getCommunityList } = $(aoCommunityStore())
-const { showError } = $(notificationStore())
+const { showError, showSuccess } = $(notificationStore())
 
 const router = useRouter()
 
@@ -40,9 +41,8 @@ const textToCopy = $ref<HTMLParagraphElement>()
 const copyText = async () => {
   try {
     if (!textToCopy) return
-    // 使用 navigator.clipboard.writeText 复制文本
     await navigator.clipboard.writeText(textToCopy.innerText)
-    // 复制成功后设置一段时间后隐藏提示信息
+    showSuccess('Copied!')
   } catch (err) {
     showError('Copy failed.')
   }
@@ -59,10 +59,12 @@ const formattedTwitterLink = (twitter: string) => {
 const shortedWebsite = $computed(() => {
   return community?.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
 })
+
+const emit = defineEmits(['switch-right-page'])
 </script>
 <template>
   <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
-    <UDashboardSidebar v-if="community">
+    <UDashboardSidebar v-if="community" class="pb-3">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
       <div class="pt-6">
         <div class="flex justify-between my-3 items-center">
@@ -220,23 +222,23 @@ const shortedWebsite = $computed(() => {
           </div>
         </template>
       </UPopover>
-      <NuxtLink :to="`/community/${community.uuid}`">
-        <Button class="center-text border rounded-lg bg-black text-white w-full h-8">Quests Home</Button>
-      </NuxtLink>
-      <NuxtLink :to="`/chat/${community.communitychatid}`">
-        <Button class="center-text border rounded-lg w-full h-8">Chatroom</Button>
-      </NuxtLink>
-      <!--<UDashboardSidebarLinks :links="footerLinks" />-->
 
-      <UDivider class="bottom-0 sticky" />
-      <!--
-        <template #footer>
-          <UserDropdown />
-        </template>
-        -->
+      <Button
+        class="center-text border rounded-lg bg-black text-white w-full h-8"
+        @click="emit('switch-right-page', communityRightPages.tasks)"
+      >
+        Quests Home
+      </Button>
+
+      <Button
+        class="center-text border rounded-lg w-full h-8"
+        @click="emit('switch-right-page', communityRightPages.chatroom)"
+      >
+        Chatroom
+      </Button>
     </UDashboardSidebar>
 
-    <UModal v-model="showExitModal">
+    <UModal v-if="community" v-model="showExitModal">
       <UCard class="min-w-[300px] flex justify-center">
         <div class="w-full flex justify-center text-2xl">Sure to Exit?</div>
         <div v-if="!isExiting" class="w-full flex space-x-10 mt-6">

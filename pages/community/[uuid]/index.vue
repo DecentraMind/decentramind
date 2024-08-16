@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Dayjs } from 'dayjs'
-import { timezones, tokens, tokenChains } from '~/utils/constants'
+import { timezones, tokens, tokenChains, communityRightPages, type PageSymbol } from '~/utils/constants'
 import type { Community, Task, TaskForm } from '~/types'
 import { arUrl, taskBanners, gateways } from '~/utils/arAssets'
 import { getLocalTimezone } from '~/utils/util'
@@ -197,12 +197,21 @@ const reloadCommunity = async () => {
   community = await getCommunity(uuid)
 }
 provide('reloadCommunity', reloadCommunity)
+
+let currentRightPage = $ref<PageSymbol>(communityRightPages.tasks)
+function switchRightPage(page: PageSymbol) {
+  currentRightPage = page
+}
 </script>
 <template>
   <UDashboardLayout :ui="{ wrapper: 'w-full static' }">
-    <CommunitySidebar :community="community" :address="address" />
+    <CommunitySidebar
+      :community="community"
+      :address="address"
+      @switch-right-page="switchRightPage"
+    />
     <UDashboardPage>
-      <UPage class="bg-grid overflow-y-auto h-full w-full">
+      <UPage v-if="currentRightPage === communityRightPages.tasks" class="bg-grid overflow-y-auto h-full w-full">
         <div class="relative flex flex-col mx-10 pt-10 items-center h-screen">
           <div class="flex w-full justify-between items-center mb-6">
             <UTabs
@@ -339,189 +348,195 @@ provide('reloadCommunity', reloadCommunity)
             </div>
           </div>
         </div>
-      </UPage>
 
-      <UModal v-model="isCreateTaskModalOpen">
-        <UCard>
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h3
-                class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-              >
-                {{ $t('Start a Public Quest') }}
-              </h3>
-              <UButton
-                color="gray"
-                variant="ghost"
-                icon="i-heroicons-x-mark-20-solid"
-                class="-my-1"
-                @click="isCreateTaskModalOpen = false"
-              />
-            </div>
-          </template>
-          <UForm
-            :state="taskForm"
-            :schema="taskSchema"
-            class="space-y-6 flex flex-col justify-center"
-            :validate="validateTaskForm"
-            @submit="onSubmitTaskForm"
-          >
-            <UFormGroup name="banner" :label="$t('Banner')">
-              <template #label>
-                <div class="w-[300px]">
-                  {{ $t('Banner') }}
-                </div>
-              </template>
-              <UCarousel
-                v-model="currentBannerIndex"
-                :items="taskBannersUrl"
-                :ui="{
-                  item: 'basis-full min-h-36',
-                  container: 'rounded-lg',
-                  indicators: {
-                    wrapper: 'relative bottom-0 mt-4',
-                  },
-                }"
-                indicators
-                class="w-64 mx-auto"
-              >
-                <template #default="{ item }">
-                  <img :src="item" class="w-full" draggable="false">
+        <UModal v-model="isCreateTaskModalOpen">
+          <UCard>
+            <template #header>
+              <div class="flex items-center justify-between">
+                <h3
+                  class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
+                >
+                  {{ $t('Start a Public Quest') }}
+                </h3>
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  icon="i-heroicons-x-mark-20-solid"
+                  class="-my-1"
+                  @click="isCreateTaskModalOpen = false"
+                />
+              </div>
+            </template>
+            <UForm
+              :state="taskForm"
+              :schema="taskSchema"
+              class="space-y-6 flex flex-col justify-center"
+              :validate="validateTaskForm"
+              @submit="onSubmitTaskForm"
+            >
+              <UFormGroup name="banner" :label="$t('Banner')">
+                <template #label>
+                  <div class="w-[300px]">
+                    {{ $t('Banner') }}
+                  </div>
                 </template>
+                <UCarousel
+                  v-model="currentBannerIndex"
+                  :items="taskBannersUrl"
+                  :ui="{
+                    item: 'basis-full min-h-36',
+                    container: 'rounded-lg',
+                    indicators: {
+                      wrapper: 'relative bottom-0 mt-4',
+                    },
+                  }"
+                  indicators
+                  class="w-64 mx-auto"
+                >
+                  <template #default="{ item }">
+                    <img :src="item" class="w-full" draggable="false">
+                  </template>
 
-                <template #indicator="{ onClick, page, active }">
-                  <UButton
-                    :label="String(page)"
-                    :variant="active ? 'solid' : 'outline'"
-                    size="2xs"
-                    class="rounded-full min-w-6 justify-center"
-                    @click="
-                      () => {
-                        currentBannerIndex = page // 更新当前索引
-                        updateBanner(page)
-                        onClick(page) // 触发页面点击事件
-                      }
-                    "
+                  <template #indicator="{ onClick, page, active }">
+                    <UButton
+                      :label="String(page)"
+                      :variant="active ? 'solid' : 'outline'"
+                      size="2xs"
+                      class="rounded-full min-w-6 justify-center"
+                      @click="
+                        () => {
+                          currentBannerIndex = page // 更新当前索引
+                          updateBanner(page)
+                          onClick(page) // 触发页面点击事件
+                        }
+                      "
+                    />
+                  </template>
+                </UCarousel>
+              </UFormGroup>
+
+              <UFormGroup name="name" :label="$t('Name of Quest')">
+                <UInput v-model.trim="taskForm.name" placeholder="name" />
+              </UFormGroup>
+
+              <UFormGroup name="intro" :label="$t('Task Introduction')">
+                <UTextarea v-model.trim="taskForm.intro" />
+              </UFormGroup>
+
+              <UFormGroup name="rule" :label="$t('Rules of the Quest')">
+                <UTextarea
+                  v-model.trim="taskForm.rule"
+                  disabled
+                  :placeholder="$t('taskRule')"
+                />
+              </UFormGroup>
+
+              <div>
+                <UFormGroup
+                  v-for="(formGroup, index) in taskForm.bounties"
+                  :key="index"
+                  v-model="taskForm.bounties[index]"
+                  :name="`bounties[${index}]`"
+                  :label="index === 0 ? $t('Bounty') : ''"
+                  :ui="{ error: 'hidden' }"
+                >
+                  <div class="flex justify-between items-center gap-x-1 mb-1">
+                    <UInput
+                      v-model.number="formGroup.amount"
+                      :name="`bounties[${index}].amount`"
+                      type="number"
+                      placeholder="Amount"
+                      :model-modifiers="{ number: true }"
+                      :ui="{ base: 'w-24' }"
+                    />
+
+                    <USelectMenu
+                      v-model="formGroup.tokenName"
+                      :name="`bounties[${index}].tokenProcessID`"
+                      placeholder="Token"
+                      :options="tokenNames"
+                      :ui="{ wrapper: 'w-full' }"
+                      @change="
+                        (name:string) => {
+                          formGroup.tokenProcessID = tokens[name].processID
+                          formGroup.chain = tokenChains[0]
+                        }
+                      "
+                    >
+                      <template #option="{ option: name }">
+                        <img
+                          :src="
+                            arUrl(
+                              tokens[name].logo || defaultTokenLogo,
+                              gateways.ario,
+                            )
+                          "
+                          :alt="`logo of ${tokens[name].label}`"
+                          class="w-8 h-8 rounded-full border border-gray-200"
+                        >
+                        <span class="truncate">{{ tokens[name].label }}</span>
+                      </template>
+                    </USelectMenu>
+
+                    <USelectMenu
+                      v-model="formGroup.chain"
+                      :name="`bounties[${index}].chain`"
+                      placeholder="Chain"
+                      :options="tokenChains"
+                      :ui="{ wrapper: 'w-full' }"
+                    />
+                  </div>
+                </UFormGroup>
+              </div>
+
+              <UFormGroup name="totalChances" :label="$t('Total Chances')">
+                <UInput
+                  v-model.number="taskForm.totalChances"
+                  type="number"
+                  :placeholder="$t('Total Chances')"
+                />
+              </UFormGroup>
+
+              <UFormGroup name="time" :label="$t('Time')">
+                <div class="flex justify-between items-center gap-x-1">
+                  <USelect
+                    v-model="taskForm.timezone"
+                    :placeholder="$t('Time Zone')"
+                    :options="timezones"
+                    :ui="{
+                      variant: {
+                        outline:
+                          'ring-gray-300 dark:ring-primary-400 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400',
+                      },
+                    }"
                   />
-                </template>
-              </UCarousel>
-            </UFormGroup>
-
-            <UFormGroup name="name" :label="$t('Name of Quest')">
-              <UInput v-model.trim="taskForm.name" placeholder="name" />
-            </UFormGroup>
-
-            <UFormGroup name="intro" :label="$t('Task Introduction')">
-              <UTextarea v-model.trim="taskForm.intro" />
-            </UFormGroup>
-
-            <UFormGroup name="rule" :label="$t('Rules of the Quest')">
-              <UTextarea
-                v-model.trim="taskForm.rule"
-                disabled
-                :placeholder="$t('taskRule')"
-              />
-            </UFormGroup>
-
-            <div>
-              <UFormGroup
-                v-for="(formGroup, index) in taskForm.bounties"
-                :key="index"
-                v-model="taskForm.bounties[index]"
-                :name="`bounties[${index}]`"
-                :label="index === 0 ? $t('Bounty') : ''"
-                :ui="{ error: 'hidden' }"
-              >
-                <div class="flex justify-between items-center gap-x-1 mb-1">
-                  <UInput
-                    v-model.number="formGroup.amount"
-                    :name="`bounties[${index}].amount`"
-                    type="number"
-                    placeholder="Amount"
-                    :model-modifiers="{ number: true }"
-                    :ui="{ base: 'w-24' }"
-                  />
-
-                  <USelectMenu
-                    v-model="formGroup.tokenName"
-                    :name="`bounties[${index}].tokenProcessID`"
-                    placeholder="Token"
-                    :options="tokenNames"
-                    :ui="{ wrapper: 'w-full' }"
-                    @change="
-                      (name:string) => {
-                        formGroup.tokenProcessID = tokens[name].processID
-                        formGroup.chain = tokenChains[0]
-                      }
-                    "
-                  >
-                    <template #option="{ option: name }">
-                      <img
-                        :src="
-                          arUrl(
-                            tokens[name].logo || defaultTokenLogo,
-                            gateways.ario,
-                          )
-                        "
-                        :alt="`logo of ${tokens[name].label}`"
-                        class="w-8 h-8 rounded-full border border-gray-200"
-                      >
-                      <span class="truncate">{{ tokens[name].label }}</span>
-                    </template>
-                  </USelectMenu>
-
-                  <USelectMenu
-                    v-model="formGroup.chain"
-                    :name="`bounties[${index}].chain`"
-                    placeholder="Chain"
-                    :options="tokenChains"
-                    :ui="{ wrapper: 'w-full' }"
+                  <a-range-picker
+                    v-model:value="taskDateRange"
+                    show-time
+                    @change="handleDateChange"
                   />
                 </div>
               </UFormGroup>
-            </div>
 
-            <UFormGroup name="totalChances" :label="$t('Total Chances')">
-              <UInput
-                v-model.number="taskForm.totalChances"
-                type="number"
-                :placeholder="$t('Total Chances')"
-              />
-            </UFormGroup>
+              <UButton
+                color="primary"
+                type="submit"
+                :loading="isPostingTask"
+                :disabled="isPostingTask"
+                class="self-center !mt-8"
+              >
+                {{ $t('Post the Quest') }}
+              </UButton>
+            </UForm>
+          </UCard>
+        </UModal>
+      </UPage>
 
-            <UFormGroup name="time" :label="$t('Time')">
-              <div class="flex justify-between items-center gap-x-1">
-                <USelect
-                  v-model="taskForm.timezone"
-                  :placeholder="$t('Time Zone')"
-                  :options="timezones"
-                  :ui="{
-                    variant: {
-                      outline:
-                        'ring-gray-300 dark:ring-primary-400 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400',
-                    },
-                  }"
-                />
-                <a-range-picker
-                  v-model:value="taskDateRange"
-                  show-time
-                  @change="handleDateChange"
-                />
-              </div>
-            </UFormGroup>
-
-            <UButton
-              color="primary"
-              type="submit"
-              :loading="isPostingTask"
-              :disabled="isPostingTask"
-              class="self-center !mt-8"
-            >
-              {{ $t('Post the Quest') }}
-            </UButton>
-          </UForm>
-        </UCard>
-      </UModal>
+      <Chatroom
+        v-if="currentRightPage === communityRightPages.chatroom"
+        :community="community"
+        :address="address"
+      />
     </UDashboardPage>
   </UDashboardLayout>
 </template>
