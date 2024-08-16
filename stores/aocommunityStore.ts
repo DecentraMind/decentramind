@@ -202,7 +202,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     owner: string
   ) => {
     const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
-    const communitySubmitList = {
+    const communitySetting = {
       logo,
       banner,
       name,
@@ -220,7 +220,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       tokensupply: tokenAllocations,
       uuid
     }
-    const jsonString = JSON.stringify(communitySubmitList)
+    const jsonString = JSON.stringify(communitySetting)
     const messageID = await message({
       process: aoCommunityProcessID,
       tags: [

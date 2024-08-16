@@ -192,16 +192,15 @@ onMounted(async () => {
   }
 })
 
-async function reload() {
-  isLoading = true
+const reloadCommunity = async () => {
+  console.log('reloading community', uuid)
   community = await getCommunity(uuid)
-  isLoading = false
 }
-provide('reloadCommunity', reload)
+provide('reloadCommunity', reloadCommunity)
 </script>
 <template>
   <UDashboardLayout :ui="{ wrapper: 'w-full static' }">
-    <CommunitySidebar v-if="community" :community="community" :address="address" />
+    <CommunitySidebar :community="community" :address="address" />
     <UDashboardPage>
       <UPage class="bg-grid overflow-y-auto h-full w-full">
         <div class="relative flex flex-col mx-10 pt-10 items-center h-screen">

@@ -34,41 +34,13 @@ const arweave = Arweave.init({
 })
 
 export const aoStore = defineStore('aoStore', () => {
-  let totalBalance = $ref(0)
   const tokenMap = $ref(tokenProcessIDs)
   const isLoginModalOpen = $ref(false)
 
   /** current connected address */
   let address = $(lsItemRef<string>('address', ''))
 
-  const tokenBalances = $ref({
-    //CRED: 0,
-    AOCOIN: 0,
-    AR: 0,
-    FIZI: 0,
-    BRKTST: 0,
-    TRUNK: 0,
-    EXP: 0,
-    ORBT: 0,
-    EARTH: 0,
-    FIRE: 0,
-    AIR: 0,
-    FIREEARTH: 0
-  })
-  let credBalance = $(lsItemRef('credBalance', 0))
-  let aoCoinBalance = $(lsItemRef('aoCoinBalance', 0))
   const { showError } = $(notificationStore())
-
-  const doLogin = async () => {
-    if (!window.arweaveWallet) {
-      console.error('Arweave Wallet no install')
-      alert('Please install Arweave Wallet or use Othent to continue')
-      window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh'
-      return false
-    }
-    await window.arweaveWallet.connect(permissions)
-    return await _login(window.arweaveWallet)
-  }
 
   async function _login(wallet: typeof window.arweaveWallet) {
     address = await wallet.getActiveAddress()
@@ -92,17 +64,16 @@ export const aoStore = defineStore('aoStore', () => {
     return messageID
   }
 
-  async function checkIsActiveWallet() {
+  /** ArConnect browser extension login */
+  const doLogin = async () => {
     if (!window.arweaveWallet) {
+      console.error('window.arweaveWallet not found.')
+      alert('Please install Arweave Wallet or use Othent to continue')
+      window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap?hl=zh'
       return false
     }
-    try {
-      const activeAddress = await window.arweaveWallet.getActiveAddress()
-      console.log('check active address:', {activeAddress, address, return: activeAddress === address})
-      return address === activeAddress
-    } catch {
-      return false
-    }
+    await window.arweaveWallet.connect(permissions)
+    return await _login(window.arweaveWallet)
   }
 
   const othentLogin = async () => {
@@ -135,8 +106,18 @@ export const aoStore = defineStore('aoStore', () => {
   const doLogout = async () => {
     await window.arweaveWallet.disconnect()
     address = ''
-    credBalance = 0
-    aoCoinBalance = 0
+  }
+
+  async function checkIsActiveWallet() {
+    if (!window.arweaveWallet) {
+      return false
+    }
+    try {
+      const activeAddress = await window.arweaveWallet.getActiveAddress()
+      return address === activeAddress
+    } catch {
+      return false
+    }
   }
 
   const getBalance = async (process: string) => {
@@ -157,7 +138,6 @@ export const aoStore = defineStore('aoStore', () => {
         process,
       })
       const balance = useGet(useGet(res, 'Messages[0].Tags').find((tag: AoTag) => tag.name === 'Balance'), 'value', '0')
-      totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0)
 
       return parseFloat(balance)
     } catch (err) {
@@ -241,26 +221,7 @@ export const aoStore = defineStore('aoStore', () => {
     return false
   }
 
-  const init = async () => {
-    if (!address) return
-    //tokenBalances.CRED = (await getBalance('CRED')) / 1e12
-    tokenBalances.AOCOIN = (await getBalance('AOCoin')) / 1e12
-    tokenBalances.AR = (await getBalance('AR'))
-    tokenBalances.FIZI = (await getBalance('FIZI')) / 1e12
-    tokenBalances.BRKTST = (await getBalance('BRKTST')) / 1e12
-    tokenBalances.TRUNK = (await getBalance('TRUNK')) / 1e12
-    tokenBalances.EXP = (await getBalance('EXP')) / 1e12
-    tokenBalances.ORBT = (await getBalance('ORBT')) / 1e12
-    tokenBalances.EARTH = (await getBalance('EARTH')) / 1e12
-    tokenBalances.FIRE = (await getBalance('FIRE')) / 1e12
-    tokenBalances.AIR = (await getBalance('AIR')) / 1e12
-    tokenBalances.FIREEARTH = (await getBalance('FIREEARTH')) / 1e12
-    totalBalance = Object.values(tokenBalances).reduce((acc, curr) => acc + curr, 0)
-
-
-  }
-
-  const getarbalance = async () => {
+  const getArBalance = async () => {
     try {
       // 查询地址余额
       const balance = await arweave.wallets.getBalance(address)
@@ -275,7 +236,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, tokenBalances, totalBalance, getData, address, credBalance, aoCoinBalance, sendToken, init, doLogout, othentLogin, doLogin, getarbalance, checkIsActiveWallet, isLoginModalOpen })
+  return $$({ tokenMap, getData, address, sendToken, doLogout, othentLogin, doLogin, getArBalance, checkIsActiveWallet, isLoginModalOpen })
 })
 
 if (import.meta.hot)

@@ -6,6 +6,9 @@ import { communitySettingSchema, validateCommunitySetting, type CommunitySetting
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
 import { createUuid } from '~/utils/util'
 import { useUpload } from '~/composables/useUpload'
+import { inject } from 'vue'
+
+const reloadCommunity = inject<Function>('reloadCommunity')
 
 const props = defineProps<{
   isSettingMode?: boolean
@@ -14,7 +17,7 @@ const props = defineProps<{
 
 const { address } = $(aoStore())
 
-const { updateCommunity, currentUuid, addCommunity, makeCommunityChat } = $(aoCommunityStore())
+const { updateCommunity, addCommunity, makeCommunityChat } = $(aoCommunityStore())
 
 const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
 
@@ -81,7 +84,7 @@ let disableSave = $ref(false)
 let showSpinner = $ref(false)
 
 const setCommunity = async () => {
-  if (disableSave) return
+  if (disableSave || !props.initState?.uuid) return
   disableSave = true
   showWaitingModal = true
   showSpinner = true
@@ -90,11 +93,14 @@ const setCommunity = async () => {
       throw new Error('Please connect wallet first.')
     }
     await updateCommunity(
-      currentUuid,
+      props.initState?.uuid,
       formState,
       communityTokens,
       address
     )
+    emit('saved')
+    reloadCommunity && await reloadCommunity()
+
     showSuccess('Successfully updated community.')
   } catch (error) {
     showError('Set community error:', error as Error)
@@ -134,7 +140,7 @@ const createCommunity = async () => {
       formState.tokenAllocations.filter(tokenSupply => tokenSupply.name), // 社区 token 分配比例详情
       communityChatID
     )
-
+    emit('saved')
   } catch (error) {
     console.error('Error creating community:', error)
 
@@ -483,7 +489,7 @@ onMounted(async () => {
           <UIcon name="svg-spinners:6-dots-scale" />
         </UContainer>
         <UContainer v-else class="w-full flex justify-around">
-          <UButton @click="!props.isSettingMode && $router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('saved'); showWaitingModal = false">
+          <UButton @click="!props.isSettingMode && $router.push(`/community/${createdCommunityID}`); emit('close-modal'); showWaitingModal = false">
             {{ $t('community.look') }}
           </UButton>
         </UContainer>

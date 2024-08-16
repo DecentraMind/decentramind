@@ -1,13 +1,12 @@
 <script setup lang="ts">
+import { toRefs } from 'vue'
 import type { Community } from '~/types/index'
-import { inject } from 'vue'
 
-const reloadCommunity = inject<Function>('reloadCommunity')
 const props = defineProps<{
-  community: Community
+  community?: Community
   address: string
 }>()
-const { community, address } = props
+const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
 const { exitCommunity, getCommunityList } = $(aoCommunityStore())
@@ -258,7 +257,6 @@ const shortedWebsite = $computed(() => {
       <CommunityForm
         :is-setting-mode="true"
         :init-state="community"
-        @saved="reloadCommunity && reloadCommunity()"
         @close-modal="isSettingModalOpen = false"
       />
     </UModal>
