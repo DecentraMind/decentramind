@@ -95,9 +95,13 @@ export const aoStore = defineStore('aoStore', () => {
     if (!window.arweaveWallet) {
       return false
     }
-    const activeAddress = await window.arweaveWallet.getActiveAddress()
-    console.log('check active address:', {activeAddress, address, return: activeAddress === address})
-    return address === activeAddress
+    try {
+      const activeAddress = await window.arweaveWallet.getActiveAddress()
+      console.log('check active address:', {activeAddress, address, return: activeAddress === address})
+      return address === activeAddress
+    } catch {
+      return false
+    }
   }
 
   const othentLogin = async () => {
