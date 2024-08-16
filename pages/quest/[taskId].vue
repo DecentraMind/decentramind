@@ -1,15 +1,38 @@
 <script setup lang="ts">
 import { useFetch } from '@vueuse/core'
 import { taskStore } from '~/stores/taskStore'
-import { shortAddress } from '~/utils/web3'
-import { ssimStore } from '~/stores/ssimStore'
-import { formatToLocale } from '~/utils/util'
-import type { InviteInfo, Task, TwitterSpaceInfo } from '~/types'
-import { maxTotalChances, tokens } from '~/utils/constants'
+import { compareImages } from '~/utils/image'
+import { formatToLocale, shortString } from '~/utils/util'
+import type {
+  SpaceSubmission,
+  InviteInfo,
+  Task,
+  TwitterSpaceInfo,
+  Bounty,
+  SpaceSubmissionWithCalculatedBounties,
+} from '~/types'
+import { DM_BOUNTY_CHARGE_RATE, maxTotalChances, tokens } from '~/utils/constants'
+import TaskStatus from '~/components/task/TaskStatus.vue'
+import { unref, watch } from 'vue'
+import { useClock } from '~/composables/useClock'
+import { gateways, arUrl } from '~/utils/arAssets'
+
+let now: Ref<number>
 
 const { t } = useI18n()
 
-const { storeBounty, sendBounty, updateTaskAfterSettle, getInvitesByInviter, updateTaskSubmitInfoAfterCal, updateTaskAfterCal, getTask, submitSpaceTask, joinTask, getTaskJoinRecord, getSpaceTaskSubmitInfo } = $(taskStore())
+const {
+  storeBounty,
+  sendBounty,
+  setTaskIsSettled,
+  getInvitesByInviter,
+  updateTaskSubmissions,
+  setTaskIsCalculated,
+  getTask,
+  submitSpaceTask,
+  joinTask,
+  getSubmissionsByTaskPid,
+} = $(taskStore())
 
 const { getLocalCommunity, twitterVouchedIDs } = $(aoCommunityStore())
 
@@ -17,58 +40,28 @@ const { showError, showSuccess, showMessage } = $(notificationStore())
 
 // 用户钱包地址
 const { address } = $(aoStore())
-const { compareImages } = $(ssimStore())
 const route = useRoute()
-const taskId = $computed(() => route.params.taskId) as string
+const taskPid = $computed(() => route.params.taskId) as string
 
-console.log('route params', route.params)
-
-let task = $ref<Task & {
-  reward: string
-}>()
-
-const communityId = $computed(() => task?.communityId)
-
-const isOwner = $computed(() => task?.ownerId === address)
-
-let taskJoinRecord = $ref<Awaited<ReturnType<typeof getTaskJoinRecord>>>()
-
-let spaceTaskSubmitInfo = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
-
-const checkSubmit = () => {
-  if (!spaceTaskSubmitInfo) return false
-
-  for (let index = 0;index < spaceTaskSubmitInfo.length;index++) {
-    const element = spaceTaskSubmitInfo[index]
-    if (element.address === address) {
-      console.log('found address submitted to task', element.id)
-      return true
-    }
+let task = $ref<
+  Task & {
+    reward: string
   }
-  return false
-}
+>()
 
-const checkJoin = () => {
-  if (!taskJoinRecord) return false
+const isOwner = $computed(() => task?.ownerAddress === address)
 
-  for (let index = 0;index < taskJoinRecord.length;index++) {
-    const element = taskJoinRecord[index]
-    if (element.joinedAddress === address) {
-      return true
-    }
-  }
-  return false
-}
-let isSubmitted = $ref<boolean>(false)
-let isJoined = $ref<boolean>(false)
+let submissions = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
-let isIng = $ref(false)
-let submitStatus = $ref('')
+const isSubmitted = $computed(() => submissions.findIndex(submission => submission.address === address) > -1)
+const isJoined = $computed(() => {
+  console.log('task', task)
+  return task && task.builders ? Object.keys(task.builders).findIndex(builder => builder === address) > -1 : false
+})
 
-submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
-// console.log('taskJoinRecord = ' + JSON.stringify(taskJoinRecord))
-// console.log('isJoined = ' + isJoined)
-// console.log('chatProcessId = ' + chatProcessId)
+const isIng = $computed(() => {
+  return task ? now.value > task.startTime && now.value < task.endTime : false
+})
 
 let submittedBuilderCount = $ref<number>(0)
 
@@ -78,54 +71,50 @@ let invites: InviteInfo[]
 
 let isLoading = $ref(false)
 onMounted(async () => {
+  now = useClock(3000)
   isLoading = true
   try {
-    task = await getTask(taskId)
+    task = await getTask(taskPid)
     console.log('getTask ' + JSON.stringify(task))
 
     if (!task) {
-      throw new Error('Failed to get task ' + taskId)
+      throw new Error('Failed to get task ' + taskPid)
     }
 
-    const isBegin = task.isBegin
-    if (isBegin === 'Y') {
-      isIng = true
-    } else {
-      isIng = false
-    }
-    const isSettle = task.isSettle
-    const isCal = task.isCal
-    console.log({isBegin, isSettle, isCal})
+    console.log({ isIng, isSettle: task.isSettled, isCal: task.isScoreCalculated })
 
-    invites = await (await getInvitesByInviter(address)).invites
+    invites = (await getInvitesByInviter(address)).invites
 
+    communityInfo = await getLocalCommunity(task.communityUuid)
+    submissions = await getSubmissionsByTaskPid(taskPid)
+    console.log('spaceTaskSubmitInfo = ' + JSON.stringify(submissions), taskPid)
 
-    taskJoinRecord = await getTaskJoinRecord(taskId)
-    communityInfo = await getLocalCommunity(task.communityId)
-    spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-    console.log('spaceTaskSubmitInfo = ' + JSON.stringify(spaceTaskSubmitInfo), taskId)
-
-    if (spaceTaskSubmitInfo && spaceTaskSubmitInfo.length !== 0) {
+    if (submissions && submissions.length !== 0) {
       // TODO update task.submittedCount after every task submit in cronjob
-      submittedBuilderCount = spaceTaskSubmitInfo.reduce((set, current) => {
+      submittedBuilderCount = submissions.reduce((set, current) => {
         set.add(current.address)
         return set
       }, new Set()).size
 
-      // TODO enable isCal === 'N' condition
-      if (// isCal === 'N' &&
-        isBegin === 'N' && isSettle === 'N') {
+      // TODO enable !task.isCalculated condition
+      if (
+        // !task.isCalculated &&
+        now.value >= task.endTime &&
+        !task.isSettled
+      ) {
         calculateScore()
         // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
 
-        await updateTaskAfterCal(taskId)
-        await updateTaskSubmitInfoAfterCal(taskId, spaceTaskSubmitInfo)
+        if (isOwner) {
+          await setTaskIsCalculated(taskPid)
+          await updateTaskSubmissions(taskPid, submissions)
+          // refetch task info
+          task = await getTask(taskPid)
+        }
       }
     }
 
-    isJoined = checkJoin()
-    isSubmitted = checkSubmit()
-    console.log({isSubmitted})
+    console.log({ isSubmitted })
   } catch (e) {
     console.error(e)
     showError('Data loading failed.')
@@ -134,65 +123,69 @@ onMounted(async () => {
   }
 })
 
-// spaceTaskSubmitInfo = people
 function calculateScore() {
-  if (!spaceTaskSubmitInfo || !task) return
+  if (!submissions || !task) return
   // 找到friends和audience的最大值
-  spaceTaskSubmitInfo.sort((a, b) => b.getPerson - a.getPerson)
-  const getPersonMax = spaceTaskSubmitInfo[0].getPerson
-  spaceTaskSubmitInfo.sort((a, b) => b.audience - a.audience)
-  const audienceMax = spaceTaskSubmitInfo[0].audience
+  submissions.sort((a, b) => b.inviteCount - a.inviteCount)
+  const getPersonMax = submissions[0].inviteCount
+  submissions.sort((a, b) => b.audience - a.audience)
+  const audienceMax = submissions[0].audience
   console.log('getPersonMax = ' + getPersonMax)
   console.log('audienceMax = ' + audienceMax)
   let totalScore = 0
   let friendScore = 0
   let audienceScore = 0
 
-  for (const submitInfo of spaceTaskSubmitInfo) {
+  for (const submission of submissions) {
     if (getPersonMax != 0) {
-      friendScore = submitInfo.getPerson / getPersonMax * 40
+      friendScore = (submission.inviteCount / getPersonMax) * 40
     }
     if (audienceMax != 0) {
-      audienceScore = submitInfo.audience / audienceMax * 50
+      audienceScore = (submission.audience / audienceMax) * 50
     }
     let brandScore = 0
-    if (submitInfo.brandEffect === 10) {
+    if (submission.brandEffect === 10) {
       brandScore = 10
     }
     console.log('friendScore = ' + friendScore)
     console.log('audienceScore = ' + audienceScore)
     console.log('brandScore = ' + brandScore)
 
-    submitInfo.score = friendScore + audienceScore + brandScore
+    submission.score = friendScore + audienceScore + brandScore
 
-    totalScore += submitInfo.score;
+    totalScore += submission.score
 
-    [task.tokenType, task.tokenType1].forEach((tokenName, index) => {
-      if (!tokenName) return
-      const bountyTypeKey = 'bountyType' + (index+1) as 'bountyType1'|'bountyType2'
-      submitInfo[bountyTypeKey] = tokenName
-
-      const token = tokens[tokenName as TokenName]
-      if (!token) {
-        throw new Error(`Bounty token ${tokenName} not supported.`)
-      }
-      // TODO 5% 手续费
-      const bounty = submitInfo.score / totalScore * Number(task!.tokenNumber)
-      const bountyKey = 'bounty' + (index+1) as 'bounty1'|'bounty2'
-      submitInfo[bountyKey] = bounty.toFixed(4)
-
-      submitInfo.bounty = (bounty / Math.pow(10, token.denomination)).toString() + tokenName
-    })
-
-    console.log('calculated submitInfo ' + submitInfo)
   }
   console.log('totalScore = ' + totalScore)
 
+  for (const submission of submissions) {
+
+    submission.calculatedBounties.forEach(bounty => {
+      if (!bounty.tokenName) return
+
+      const token = tokens[bounty.tokenName as TokenName]
+      if (!token) {
+        throw new Error(`Bounty token ${bounty.tokenName} not supported.`)
+      }
+      // TODO 5% 手续费
+      const bountyToSend =
+        (submission.score / totalScore) * Number(bounty.amount)
+      bounty.amount = Number(bountyToSend.toFixed(4))
+
+      submission.bounty +=
+        (submission.bounty ? ' ' : '') +
+        (bountyToSend / Math.pow(10, token.denomination)).toString() +
+        bounty.tokenName
+    })
+
+    console.log('calculated submitInfo ' + submission)
+  }
 }
+
 
 const columns = [
   {
-    key: 'id',
+    key: 'uuid',
     label: 'ID',
   },
   {
@@ -204,7 +197,7 @@ const columns = [
     label: t('Brand'),
   },
   {
-    key: 'getPerson',
+    key: 'inviteCount',
     label: t('Friends'),
   },
   {
@@ -229,32 +222,20 @@ let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
 
 function openSubmitModal() {
-  // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
-  //   modal.open(CommonAlert, { message: error_msg })
-  // } else {
-  //   isOpen = true
-  // }
+  // TODO check if vouched, if not, show a modal with a link to vouch page, and a 'I'm vouched' button to verify and update vouched state
   isSubmitModalOpen = true
 }
 
 function openJoinModal() {
-  // if (isNullOrEmpty(userInfo.twitter) || userInfo.twitter === 'Success') {
-  //   modal.open(CommonAlert, { message: error_msg })
-  // } else {
-  //   isOpenJoin = true
-  // }
+  // TODO check if vouched, if not, show a modal with a link to vouch page, and a 'I'm vouched' button to verify and update vouched state
   isJoinModalOpen = true
 }
 
 let isJoinLoading = $ref(false)
 async function onClickJoin() {
   isJoinLoading = true
-  //  调用参与任务方法，只计数不提交
-  await joinTask(taskId, address)
-  // task = await getTask(taskId)
-  taskJoinRecord = await getTaskJoinRecord(taskId)
-  spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-  isJoined = checkJoin()
+  await joinTask(taskPid, address)
+  task = await getTask(taskPid)
   isJoinModalOpen = false
   isJoinLoading = false
 }
@@ -262,16 +243,19 @@ async function onClickJoin() {
 const spaceUrl = $ref('')
 let submitLoading = $ref(false)
 
-async function submitTask() {
+async function onClickSubmit() {
   submitLoading = true
 
   try {
-    if (!spaceTaskSubmitInfo || !invites || !communityInfo) {
-      throw new Error('Data loading does not completed. Please wait or try refresh.')
+    if (!submissions || !invites || !communityInfo || !task) {
+      throw new Error(
+        'Data loading does not completed. Please wait or try refresh.',
+      )
     }
-    if (!twitterVouchedIDs.length) {
-      throw new Error('You are not vouched.')
-    }
+    // TODO enable this
+    // if (!twitterVouchedIDs.length) {
+    //   throw new Error('You are not vouched.')
+    // }
 
     // for (let i = 0;i < spaceTaskSubmitInfo.length;i++) {
     //   if (spaceTaskSubmitInfo[i].address === address) {
@@ -279,14 +263,16 @@ async function submitTask() {
     //   }
     // }
     // TODO 调用提交space链接并解析方法
-    const matched = spaceUrl.trim().match(/spaces\/([^/]+)\/?/)
+    const matched = spaceUrl.trim().match(/x\.com\/i\/spaces\/([^/]+)\/?/)
 
-    if(!matched || !matched[1]) {
+    if (!matched || !matched[1]) {
       throw new Error('Invalid space URL.')
     }
     const spaceId = matched[1]
 
-    const { data, error } = await useFetch('/api/twitter?' + new URLSearchParams({ spaceId })).json<TwitterSpaceInfo>()
+    const { data, error } = await useFetch(
+      '/api/twitter?' + new URLSearchParams({ spaceId }),
+    ).json<TwitterSpaceInfo>()
     const spaceInfo = unref(data)
 
     if (error.value || !spaceInfo) {
@@ -296,10 +282,16 @@ async function submitTask() {
 
     console.log('data from twitter = ', spaceInfo)
 
-    const { started_at, ended_at, participant_count: participantCount } = spaceInfo.data
+    const {
+      started_at,
+      ended_at,
+      participant_count: participantCount,
+    } = spaceInfo.data
     const spaceStartAt = new Date(started_at).getTime()
     const spaceEndedAt = new Date(ended_at).getTime()
-    const validJoinStartAt = new Date(spaceEndedAt - 24*60*60*1000).getTime()
+    const validJoinStartAt = new Date(
+      spaceEndedAt - 24 * 60 * 60 * 1000,
+    ).getTime()
 
     const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
     if (minuteDifference < 15) {
@@ -307,7 +299,7 @@ async function submitTask() {
     }
 
     const hostID = spaceInfo.data.creator_id
-    const host = spaceInfo.includes.users.find((user) => user.id === hostID)
+    const host = spaceInfo.includes.users.find(user => user.id === hostID)
     const hostHandle = host?.username
     // TODO enable this
     // if (!host || !twitterVouchedIDs.find(id => id === hostHandle)) {
@@ -331,186 +323,169 @@ async function submitTask() {
     // const userCreatedAt = data._rawValue.includes.users[0].created_at
 
     // const userAvatarBase64 = await url2Base64(userAvatar)
-    const ssim = await compareImages(communityInfo.logo, userAvatar)
-    console.log({ssim})
+    const ssim = userAvatar
+      ? await compareImages(arUrl(communityInfo.logo, gateways.ario), userAvatar)
+      : 0
+    console.log({ ssim })
+    // TODO brandEffect, inviteCount, audience should be calculated again under task owner's login session
     // 品牌效应
     const brandEffect = ssim && ssim >= 0.8 ? 10 : 0
     // 听众
     const audience = participantCount
     // 邀请人数
-    const inviteCount = invites.filter((inviteInfo) => {
-      return inviteInfo.inviterAddress === address
-        && inviteInfo.communityID === communityId
-        && inviteInfo.time < spaceEndedAt
-        && inviteInfo.time > validJoinStartAt
+    const inviteCount = invites.filter(inviteInfo => {
+      return (
+        inviteInfo.inviterAddress === address &&
+        inviteInfo.communityID === task!.communityUuid &&
+        inviteInfo.time < spaceEndedAt &&
+        inviteInfo.time > validJoinStartAt
+      )
     }).length
 
     console.log('spaceEnded_at = ' + spaceEndedAt)
     console.log('participated = ' + participantCount)
     console.log('userAvatar = ' + userAvatar)
+    const spaceSubmission:SpaceSubmission = {
+      uuid: createUuid(), // will be override by task manager process
+      taskPid,
+      address,
+      brandEffect,
+      inviteCount,
+      audience,
+      url: spaceUrl,
+      score: 0,
+      bounty: '0'
+    }
 
-    await submitSpaceTask(taskId, address, spaceUrl, brandEffect, inviteCount, audience)
-    spaceTaskSubmitInfo = await getSpaceTaskSubmitInfo(taskId)
-    isSubmitted = checkSubmit()
-    submitStatus = isSubmitted ? t('task.isjoin') : t('Not Join')
+    await submitSpaceTask(spaceSubmission)
+    submissions = await getSubmissionsByTaskPid(taskPid)
 
     isSubmitModalOpen = false
   } catch (e) {
+    console.error(e)
     showError('Submit failed.', e as Error)
   } finally {
     submitLoading = false
   }
 }
 
-let selected = $ref([])
+let selectedSubmission = $ref<SpaceSubmission[]>([])
 
 let sendBountyLoading = $ref(false)
-async function sendBountyByAo() {
-  if(!task || !spaceTaskSubmitInfo || !communityInfo) {
+async function onClickSendBounty() {
+  if (!task || !submissions || !communityInfo) {
     showError('Data loading does not completed. Please wait or try refresh.')
     return
   }
 
-  if (selected.length > 0 && task.isCal !== 'Y'){
+  // if no submitted info, don't need isScoreCalculated
+  if (selectedSubmission.length > 0 && !task.isScoreCalculated) {
     showMessage('Being Cooked.')
     return
   }
 
-  // if(blogPost.isCal === 'Y' && blogPost.isSettle === 'N'){
   sendBountyLoading = true
 
-  const bounties:{
-    walletAddress: string;
-    tokenNumber: number;
-    tokenType: TokenName;
-  }[] = []
-  const bounty1 = task.tokenNumber
-  const bounty2 = task.tokenNumber1
-  console.log({selected, bounty1, bounty2})
-  // if no submitted info, don't need isCal==='Y'
+  try {
+    /** bounties to send */
+    const bounties: Bounty[] = []
 
-  for (const selectedItem of selected) {
-    const address = selectedItem.address
-    for (let j = 0;j < spaceTaskSubmitInfo.length;++j) {
-      if (address === spaceTaskSubmitInfo[j].address) {
-        console.log(spaceTaskSubmitInfo[j].bounty1)
-        console.log(spaceTaskSubmitInfo[j].bounty2)
-        if (spaceTaskSubmitInfo[j].bounty1 && spaceTaskSubmitInfo[j].bounty1 != 0) {
-          const bountyData = {
-            walletAddress: address,
-            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty1)),
-            tokenType: spaceTaskSubmitInfo[j].bountyType1
-          }
-          bounties.push(bountyData)
+    console.log({ selected: selectedSubmission })
+
+    /** bounties that should send back to the task owner */
+    const refoundMap = task.bounties.reduce((returnBounties, taskBounty) => {
+      const { tokenProcessID: pid } = taskBounty
+      if(!returnBounties[pid]) {
+        returnBounties[pid] = {
+          taskPid,
+          sender: task!.ownerAddress,
+          recipient: task!.ownerAddress,
+          tokenProcessID: pid,
+          amount: taskBounty.amount,
+          quantity: BigInt(taskBounty.quantity)
         }
-        if (spaceTaskSubmitInfo[j].bounty2 && spaceTaskSubmitInfo[j].bounty2 != 0) {
-          const bountyData = {
-            walletAddress: address,
-            tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
-            tokenType: spaceTaskSubmitInfo[j].bountyType2,
-          }
-          bounties.push(bountyData)
+      }
+      returnBounties[pid].amount += taskBounty.amount
+      returnBounties[pid].quantity += BigInt(taskBounty.quantity)
+      return returnBounties
+    }, {} as Record<string, Bounty>)
+
+    const selectedSubmitters = selectedSubmission.map(submission => submission.address)
+    submissions.filter(submission => selectedSubmitters.includes(submission.address)).forEach(submission => {
+      submission.calculatedBounties.forEach(bounty => {
+        const pid = bounty.tokenProcessID
+        const bountyData = {
+          taskPid,
+          sender: task!.ownerAddress,
+          recipient: submission.address,
+          tokenProcessID: pid,
+          amount: bounty.amount,
+          quantity: bounty.quantity,
         }
-        break
+
+        refoundMap[pid].amount -= bounty.amount
+        refoundMap[pid].quantity -= BigInt(bounty.quantity)
+
+        bounties.push(bountyData)
+      })
+
+      // TODO add bountyData of 5%
+
+      // const bountyData = {
+      //         recipient: ,
+      //         quantity: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
+      //         tokenProcessID: spaceTaskSubmitInfo[j].bountyType2,
+      //       }
+    })
+
+    for (const [tokenPid, returnBounty] of Object.entries(refoundMap)) {
+      if (bounties.length) {
+        // add DecentraMind bounty service charges if any bounty send to winner
+        bounties.push({
+          taskPid,
+          sender: task!.ownerAddress,
+          recipient: decentraMindReceiver,
+          tokenProcessID: tokenPid,
+          amount: returnBounty.amount * DM_BOUNTY_CHARGE_RATE,
+          quantity: returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_RATE),
+        })
       }
     }
 
-    // TODO add bountyData of 5%
+    // TODO try catch
+    await sendBounty(task.processID, bounties)
+    await setTaskIsSettled(task.processID)
 
-    // const bountyData = {
-    //         walletAddress: ,
-    //         tokenNumber: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
-    //         tokenType: spaceTaskSubmitInfo[j].bountyType2,
-    //       }
-  }
-
-  // 计算应返还给任务创建人的 token
-  const returnBounties = {bounty1, bounty2}
-  for (const bounty of bounties) {
-    if (bounty.tokenType === task.tokenType) {
-      returnBounties.bounty1 -= bounty.tokenNumber
+    // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
+    // 将发送出去的bounty信息保存
+    const sentBounties = []
+    for (const bounty of bounties) {
+      const sent = {
+        ...bounty,
+        communityUuid: communityInfo.uuid,
+        communityName: communityInfo.name,
+      }
+      sentBounties.push(sent)
     }
-    if (bounty.tokenType === task.tokenType1) {
-      returnBounties.bounty2 -= bounty.tokenNumber
+    await storeBounty(task.processID, sentBounties)
+
+    task = await getTask(taskPid)
+    console.log({ blogPostSettled: task })
+
+    if (!selectedSubmission.length) {
+      showSuccess('The Bounty Has Been Returned!')
+    } else {
+      showSuccess('Congrats! This quest has been successfully settled.')
     }
+  } catch (e) {
+    showError('Send bounty failed.', e as Error)
+  } finally {
+    sendBountyLoading = false
   }
-
-  // TODO use reduce to calculate return bounties
-  // const returnBounties = bounties.reduce(bounty => {
-  //   return bounty.tokenNumber
-  // })
-
-  // TODO 如果bounties.length>0 收取5%手续费
-
-  if (bounty1 && bounty1 > 0 && bounty1 != 'undefined') {
-    const bountyData = {
-      walletAddress: task.ownerId,
-      tokenNumber: returnBounties.bounty1,
-      tokenType: task.tokenType as TokenName
-    }
-    bounties.push(bountyData)
-  }
-  if (bounty2 && bounty2 > 0 && bounty2 != 'undefined') {
-    const bountyData = {
-      walletAddress: task.ownerId,
-      tokenNumber: returnBounties.bounty2,
-      tokenType: task.tokenType1 as TokenName
-    }
-    bounties.push(bountyData)
-  }
-
-  // TODO try catch
-  console.log('selected = ' + JSON.stringify(bounties))
-  await sendBounty(task.processId, bounties)
-  await updateTaskAfterSettle(task.taskId)
-
-  // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
-  // 将发送出去的bounty信息保存
-  const sentBounties = []
-  for (let k = 0;k < bounties.length;++k) {
-    const tt = bounties[k]
-    const sent = {
-      send: address,
-      receive: tt.walletAddress,
-      tokenNumber: tt.tokenNumber,
-      tokenType: tt.tokenType,
-      taskId: task?.taskId,
-      taskName: task?.taskName,
-      communityId: communityInfo.uuid,
-      communityName: communityInfo.name
-    }
-    sentBounties.push(sent)
-  }
-  await storeBounty(sentBounties)
-
-  task = await getTask(taskId)
-  console.log({ blogPostSettled: task })
-
-  if(!selected.length) {
-    showSuccess('The Bounty Has Been Returned!')
-  } else {
-    showSuccess('Congrats! This quest has been successfully settled.')
-  }
-
-  sendBountyLoading = false
 }
 
-const finalStatus = (isBegin: string) => {
-  console.log('isB = ' + isBegin)
-  let res = ''
-  if (isBegin === 'NS')
-    res = t('Not Start')
-  else if (isBegin === 'Y') {
-    res = t('Ing')
-  } else {
-    res = t('End')
-  }
-  console.log('res = ' + res)
-  return res
-}
-
-function labelName() {
-  if (!spaceTaskSubmitInfo || spaceTaskSubmitInfo.length === 0 || !spaceTaskSubmitInfo) {
+function sendBountyBtnLabel() {
+  if (!submissions || submissions.length === 0 || !submissions) {
     return 'Return Bounty'
   } else {
     return t('Send Bounty')
@@ -519,53 +494,68 @@ function labelName() {
 
 const searchKeyword = $ref('')
 
-let filteredRows = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
+let filteredRows = $ref<Awaited<ReturnType<typeof getSubmissionsByTaskPid>>>([])
 const page = $ref(1)
 let pageSize = $ref<number>(maxTotalChances)
-let pageRows = $ref<Awaited<ReturnType<typeof getSpaceTaskSubmitInfo>>>([])
+let pageRows = $ref<Awaited<ReturnType<typeof getSubmissionsByTaskPid>>>([])
 
 // TODO load more rows if last row is visible
 
-watch(() => [spaceTaskSubmitInfo, searchKeyword, page], () => {
-  console.log('page rows should change')
-  if (!searchKeyword) {
-    console.info('spaceTaskSubmitInfo as filteredRows', spaceTaskSubmitInfo)
-    filteredRows = spaceTaskSubmitInfo
-  }
+watch(
+  () => [submissions, searchKeyword, page],
+  () => {
+    console.log('page rows should change')
+    if (!searchKeyword) {
+      console.info('spaceTaskSubmitInfo as filteredRows', submissions)
+      filteredRows = submissions
+    }
 
-  if (!spaceTaskSubmitInfo) filteredRows = []
+    if (!submissions) filteredRows = []
 
-  filteredRows = spaceTaskSubmitInfo.filter(info => {
-    return Object.values(info).some(value => {
-      return String(value).toLowerCase().includes(searchKeyword.toLowerCase())
+    filteredRows = submissions.filter(info => {
+      return Object.values(info).some(value => {
+        return String(value).toLowerCase().includes(searchKeyword.toLowerCase())
+      })
     })
-  })
 
-  pageSize = task ? Math.min(task.rewardTotal, spaceTaskSubmitInfo.length) : maxTotalChances
+    pageSize = task
+      ? task.totalChances >= submissions.length ? submissions.length : Math.max(task.totalChances, 10)
+      : maxTotalChances
 
-  console.log('new pageRows', filteredRows.slice((page - 1) * pageSize, page * pageSize))
-  pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize)
-})
+    console.log(
+      'new pageRows',
+      filteredRows.slice((page - 1) * pageSize, page * pageSize),
+    )
+    pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize)
+  },
+)
 
-
-watch(() => selected, (newVal) => {
-  const maxSelection = task ? task.rewardTotal : 1
-  if (newVal.length > maxSelection) {
-    alert(`Selected items exceed ${maxSelection}!`)
-    // 如果选择的数量超过最大值，取消超出的选择项
-    selected = newVal.slice(0, maxSelection)
-  }
-})
+watch(
+  () => selectedSubmission,
+  newVal => {
+    const maxSelection = task ? task.totalChances : 1
+    if (newVal.length > maxSelection) {
+      alert(`Selected items exceed ${maxSelection}!`)
+      // 如果选择的数量超过最大值，取消超出的选择项
+      selectedSubmission = newVal.slice(0, maxSelection)
+    }
+  },
+)
 </script>
 
 <template>
   <UDashboardPage>
     <UPage v-if="task" class="overflow-y-auto h-full w-full">
-      <div class="w-full overflow-y-auto h-full ">
+      <div class="w-full overflow-y-auto h-full">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
-            <NuxtLink :to="`/community/${communityId}`">
-              <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
+            <NuxtLink :to="`/community/${task.communityUuid}`">
+              <UButton
+                icon="i-heroicons-x-mark-20-solid"
+                color="white"
+                variant="solid"
+                size="lg"
+              />
             </NuxtLink>
           </div>
         </div>
@@ -574,121 +564,91 @@ watch(() => selected, (newVal) => {
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
         -->
-        <UBlogPost :key="task.taskId" :description="task.taskInfo" class="p-10">
+        <UBlogPost :key="task.processID" :description="task.intro" class="p-10">
           <template #title>
             <div class="flex justify-start">
-              <div class="flex-none w-60"><div>{{ task?.taskName }}</div></div>
-              <div class="flex justify-start">
-                <div>
-                  <UBadge color="black" variant="solid">
-                    {{ finalStatus(task.isBegin) }}
-                  </UBadge>
-                </div>
-                <div v-if="isSubmitted" class="mx-2">
-                  <UBadge color="black" variant="solid">
-                    {{ submitStatus }}
-                  </UBadge>
-                </div>
-                <div v-if="isOwner && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-2">
-                  <UBadge color="black" variant="solid">
-                    {{ $t('Unsettled') }}
-                  </UBadge>
-                </div>
+              <div class="flex-none w-44">
+                <div>{{ task.name }}</div>
               </div>
+              <TaskStatus :task="task" :address="address" />
             </div>
           </template>
           <template #description>
-            <div class="flex flex-col space-y-2">
+            <div class="flex flex-col space-y-4">
               <div class="h-6 overflow-hidden">
-                {{ task.taskInfo }}
+                {{ task.intro }}
               </div>
-              <div class="flex ...">
-                <div class="flex-none w-60">
-                  <div>
-                    {{ $t("Time Zone") }}:
-                  </div>
+              <div class="flex">
+                <div class="font-medium w-44 shrink-0">
+                  <div>{{ $t('Time Zone') }}</div>
                 </div>
                 <div>
-                  <div>
-                    {{ task.zone }}
-                  </div>
+                  {{ task.timezone }}
                 </div>
               </div>
-              <div class="flex ...">
-                <div class="flex-none w-60">
-                  <div>
-                    {{ $t("Time") }}:
-                  </div>
+              <div class="flex">
+                <div class="font-medium w-44 shrink-0">
+                  <div>{{ $t('Time') }}</div>
                 </div>
                 <div>
-                  <div>
-                    {{ formatToLocale(task.startTime) }} - {{ formatToLocale(task.endTime) }}
-                  </div>
-                </div>
-              </div>
-              <div class="flex justify-start ...">
-                <div class="flex-none w-60">
-                  <div>
-                    {{ $t("Bounty") }}:
-                  </div>
-                </div>
-                <div>
-                  <div>
-                    {{ task.reward }}
-                  </div>
-                </div>
-              </div>
-              <div class="flex justify-start ...">
-                <div class="flex-none w-60">
-                  <div>
-                    {{ $t("Total Chances") }}:
-                  </div>
-                </div>
-                <div>
-                  <div>
-                    {{ task.rewardTotal }}
-                  </div>
-                </div>
-              </div>
-              <div class="flex justify-start ...">
-                <div class="flex-none w-60">
-                  <div>
-                    {{ $t("builders now") }}:
-                  </div>
-                </div>
-                <div>
-                  <div>
-                    {{ isLoading ? '' : submittedBuilderCount }}
-                  </div>
+                  {{ formatToLocale(task.startTime) }} -
+                  {{ formatToLocale(task.endTime) }}
                 </div>
               </div>
               <div class="flex justify-start">
-                <div class="flex-none w-60 ">
-                  <div>
-                    {{ $t("Rules of the Quest") }}:
-                  </div>
+                <div class="font-medium w-44 shrink-0">
+                  <div>{{ $t('Bounty') }}</div>
                 </div>
                 <div>
-                  <div style="white-space: pre-line">
-                    {{ task.taskRule }}
-                  </div>
+                  {{ task.reward }}
                 </div>
               </div>
-              <div v-if="!isLoading && isIng && !isJoined" class="flex justify-center ">
-                <UButton color="white" :label="$t('Join Quest')" @click="openJoinModal" />
+              <div class="flex justify-start">
+                <div class="font-medium w-44 shrink-0">
+                  <div>{{ $t('Total Chances') }}</div>
+                </div>
+                <div>
+                  {{ task.totalChances }}
+                </div>
+              </div>
+              <div class="flex justify-start">
+                <div class="font-medium w-44 shrink-0">
+                  <div>{{ $t('builders now') }}</div>
+                </div>
+                <div>
+                  {{ isLoading ? '' : submittedBuilderCount }}
+                </div>
+              </div>
+              <div class="flex justify-start">
+                <div class="font-medium w-44 shrink-0">
+                  <div>{{ $t('Rules of the Quest') }}</div>
+                </div>
+                <div style="white-space: pre-line">
+                  {{ task.rule }}
+                </div>
+              </div>
+              <div
+                v-if="!isLoading && isIng && !isJoined"
+                class="flex justify-center"
+              >
+                <UButton
+                  color="white"
+                  :label="$t('Join Quest')"
+                  @click="openJoinModal"
+                />
               </div>
             </div>
             <!--            <UDivider class="mt-4" />-->
             <div class="mt-8">
-              <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
+              <div
+                class="flex-center !justify-between py-3.5 border-b border-gray-300 dark:border-gray-700"
+              >
                 <div class="flex items-center">
-                  <div class="mr-8">
-                    {{ $t("Quests Form") }}:
-                  </div>
+                  <div class="font-medium w-44">{{ $t('Quests Form') }}</div>
                   <UInput v-model="searchKeyword" placeholder="Filter..." />
                 </div>
                 <ULink
-                  :to="`https://www.ao.link/#/entity/${task.processId}?tab=incoming`"
+                  :to="`https://www.ao.link/#/entity/${task.processID}?tab=incoming`"
                   active-class="text-primary"
                   target="_blank"
                   inactive-class="text-primary"
@@ -697,58 +657,101 @@ watch(() => selected, (newVal) => {
                 </ULink>
               </div>
               <div v-if="isJoined || isOwner">
-                <UTable v-model="selected" :rows="pageRows" :columns="columns">
+                <UTable
+                  v-model="selectedSubmission"
+                  :rows="pageRows"
+                  :columns="columns"
+                  :loading="isLoading"
+                >
+                  <template #uuid-data="{ row }">
+                    {{ isOwner ? row.uuid : shortString(row.uuid, 4) }}
+                  </template>
                   <template #address-data="{ row }">
-                    {{ isOwner ? row.address : shortAddress(row.address) }}
+                    {{ isOwner ? row.address : shortString(row.address, 4) }}
                   </template>
                   <template #url-data="{ row }">
-                    {{ isOwner ? row.url : shortAddress(row.url) }}
+                    {{ row.url.replace(/^https?:\/\//, '').replace(/\/peek$/, '') }}
                   </template>
                 </UTable>
                 <div class="flex justify-end mt-2">
-                  <UPagination v-model="page" :page-count="pageSize" :total="filteredRows?.length || 0" />
+                  <UPagination
+                    v-model="page"
+                    :page-count="pageSize"
+                    :total="filteredRows?.length || 0"
+                  />
                 </div>
               </div>
             </div>
 
-            <div v-if="!isLoading && (isJoined || isOwner)" class="flex justify-center my-8">
-              <!--              <div class="mx-4">-->
-              <!--                <UButton color="white" label="testuser" @click="test" />-->
-              <!--              </div>-->
-              <!-- TODO v-if="isIng && !isSubmit" -->
+            <div
+              v-if="!isLoading && isJoined"
+              class="flex justify-center my-8"
+            >
+              <!-- TODO v-if="isIng && !isSubmitted" -->
               <div v-if="isIng" class="mx-4">
-                <UButton color="white" :label="$t('Submit Quest')" @click="openSubmitModal" />
+                <UButton
+                  color="white"
+                  :label="$t('Submit Quest')"
+                  @click="openSubmitModal"
+                />
               </div>
-              <div v-if="isOwner && task.isSettle === 'N' && task.isBegin === 'N'" class="mx-4">
-                <UButton color="white" :label="labelName()" :loading="sendBountyLoading" :disabled="sendBountyLoading" @click="sendBountyByAo" />
-              </div>
+            </div>
+
+            <div v-if="!isLoading && isOwner && !task.isSettled && now >= task.endTime">
+              <UButton
+                color="white"
+                :label="sendBountyBtnLabel()"
+                :loading="sendBountyLoading"
+                :disabled="sendBountyLoading"
+                @click="onClickSendBounty"
+              />
             </div>
 
             <div class="flex mt-4">
-              <div class="flex-none w-60">
-                <div>
-                  {{ $t("Rules of Judgment") }}:
-                </div>
+              <div class="font-medium w-44 shrink-0">
+                <div>{{ $t('Rules of Judgment') }}</div>
               </div>
               <div>
-                <div>
-                  <p> 1 Total score is 100 including Brand 10%, Friends 40%, Popularity 50% </p>
+                <p>
+                  1 Total score is 100 including Brand 10%, Friends 40%,
+                  Popularity 50%
+                </p>
 
-                  <p> 2 Brand is decided by your avatar,  change it you’ll get 10, not change get 0 </p>
+                <p>
+                  2 Brand is decided by your avatar, change it you’ll get 10,
+                  not change get 0
+                </p>
 
-                  <p> 3 Friends is decided by the amount of new friends you invited </p>
+                <p>
+                  3 Friends is decided by the amount of new friends you
+                  invited
+                </p>
 
-                  <p> 4 Popularity is decided by the amount of audience in your Twitter Space </p>
+                <p>
+                  4 Popularity is decided by the amount of audience in your
+                  Twitter Space
+                </p>
 
-                  <p> 5 The person with the highest data gets the maximum scores including Brand, Friends and Popularity </p>
+                <p>
+                  5 The person with the highest data gets the maximum scores
+                  including Brand, Friends and Popularity
+                </p>
 
-                  <p> 6 Everyone will have a total score, it decide the amount of your bounty </p>
+                <p>
+                  6 Everyone will have a total score, it decide the amount of
+                  your bounty
+                </p>
 
-                  <p> 7 If the total chances are 20 but you are in 21st, sorry you can get nothing </p>
+                <p>
+                  7 If the total chances are 20 but you are in 21st, sorry you
+                  can get nothing
+                </p>
 
-                  <p> 8 You only have 1 chance for this quest </p>
-                  <p> 9 If no one meets the bounty, the bounty will be returned to the bounty owner's wallet </p>
-                </div>
+                <p>8 You only have 1 chance for this quest</p>
+                <p>
+                  9 If no one meets the bounty, the bounty will be returned to
+                  the bounty owner's wallet
+                </p>
               </div>
             </div>
           </template>
@@ -757,34 +760,20 @@ watch(() => selected, (newVal) => {
     </UPage>
     <UModal v-model="isJoinModalOpen">
       <UCard>
-        <!--        <template #header>-->
-        <!--          <div class="flex items-center justify-center">-->
-        <!--            <div class="flex justify-center">-->
-        <!--              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">-->
-        <!--                {{ $t("Join Quest") }}-->
-        <!--              </h3>-->
-        <!--            </div>-->
-        <!--            &lt;!&ndash;-->
-        <!--              <UButton-->
-        <!--                color="gray"-->
-        <!--                variant="ghost"-->
-        <!--                icon="i-heroicons-x-mark-20-solid"-->
-        <!--                class="-my-1"-->
-        <!--                @click="isOpenJoin = false"-->
-        <!--              />-->
-        <!--              &ndash;&gt;-->
-        <!--          </div>-->
-        <!--        </template>-->
         <div class="space-y-2">
           <div class="flex flex-col justify-center">
-            <div class="flex justify-center items-center">Thank u for your support.</div>
-            <div class="flex justify-center items-center" style="text-align: center;">
-              {{ $t("We appreciate your support,Please follow the rules of the quest and submit the URL back to this page") }}
+            <div class="text-center">
+              <p v-html="$t('task.spaceJoinModal', { lineBreak: '<br>' })" />
             </div>
           </div>
 
           <div class="flex justify-center">
-            <UButton color="white" :loading="isJoinLoading" :disabled="isJoinLoading" @click="onClickJoin">
+            <UButton
+              color="white"
+              :loading="isJoinLoading"
+              :disabled="isJoinLoading"
+              @click="onClickJoin"
+            >
               {{ $t('I have read all rules') }}
             </UButton>
           </div>
@@ -795,8 +784,10 @@ watch(() => selected, (newVal) => {
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              {{ $t("Submit Quest") }}
+            <h3
+              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
+            >
+              {{ $t('Submit Quest') }}
             </h3>
             <UButton
               color="gray"
@@ -809,11 +800,21 @@ watch(() => selected, (newVal) => {
         </template>
         <div>
           <div class="my-8">
-            <UInput v-model="spaceUrl" :model-modifiers="{trim: true}" color="primary" variant="outline" :placeholder="$t('Space Url')" />
+            <UInput
+              v-model="spaceUrl"
+              :model-modifiers="{ trim: true }"
+              color="primary"
+              variant="outline"
+              :placeholder="$t('Space Url')"
+            />
           </div>
           <div class="flex justify-center my-8">
-            <UButton :loading="submitLoading" :disabled="submitLoading" @click="submitTask">
-              {{ $t("Submit Quest") }}
+            <UButton
+              :loading="submitLoading"
+              :disabled="submitLoading"
+              @click="onClickSubmit"
+            >
+              {{ $t('Submit Quest') }}
             </UButton>
           </div>
         </div>

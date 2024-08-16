@@ -9,16 +9,6 @@ const { getInvitesByInviter } = $(taskStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
-
-const taskForm = $ref({
-  showTasknum: true,
-})
-function onSubmit() {
-  console.log('Submitted form:', taskForm)
-}
-const light = 'https://source.unsplash.com/random/200x200?sky'
-const dark = 'https://source.unsplash.com/random/200x200?stars'
-
 let loading = $ref(true)
 
 const communities = $ref<{
@@ -94,7 +84,7 @@ const findInvitedByCommunityID = (communityID: string) => {
 
 <template>
   <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
-    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none'}" @submit.prevent="onSubmit">
+    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none'}">
       <div v-if="loading" class="w-full flex justify-center">
         <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
       </div>
@@ -106,7 +96,7 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div v-for="community in communities" :key="community.uuid">
         <div v-if="invitedByMe[community.uuid] && community.name" class="flex items-center justify-start mt-5">
           <div class="flex items-center">
-            <UColorModeImage :src="arUrl(community.logo) || arUrl(defaultCommunityLogo)" :light="light" :dark="dark" class="h-[70px] w-[70px] rounded-lg border" />
+            <img :src="arUrl(community.logo) || arUrl(defaultCommunityLogo)" class="h-[70px] w-[70px] rounded-lg border">
             <div class="ml-10 text-xl w-[160px] overflow-hidden">{{ community.name }}</div>
             <div class="ml-20 text-xl w-[250px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
           </div>

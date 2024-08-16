@@ -3,7 +3,7 @@ const {t} = useI18n()
 
 const links = [[
   {
-    label: t('task'),
+    label: t('myQuest'),
     icon: 'heroicons:trophy',
     to: '/dashboard/quests'
   }]]

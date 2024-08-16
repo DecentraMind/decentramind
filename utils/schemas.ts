@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { maxTotalChances, tokenNames, type TokenSupply } from '~/utils/constants'
+import { maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply } from '~/utils/constants'
 import type { FormError } from '#ui/types'
-import type { CommunitySetting } from '~/types'
+import type { CommunitySetting, Task } from '~/types'
 
 export const communitySettingSchema = z.object({
   // banner: z.enum(['banner6', 'banner7', 'banner8', 'banner9', 'banner10']),
@@ -94,11 +94,14 @@ export const validateCommunitySetting = (
 }
 
 export const taskSchema = z.object({
-  taskName: z.string().min(2).max(30),
-  taskInfo: z.string().min(3).max(100),
-  tokenNumber: z.number().min(0),
-  tokenNumber1: z.number().min(0).optional(),
-  rewardTotal: z
+  name: z.string().min(2).max(30),
+  intro: z.string().min(3).max(100),
+  // bounties: z.array(z.object({
+  //   amount: z.number().gt(0),
+  //   tokenProcessID: z.enum(Object.keys(tokensByProcessID) as [string, ...string[]]),
+  //   chain: z.enum(tokenChains as [string, ...string[]]),
+  // })).min(1).max(2),
+  totalChances: z
     .number()
     .max(maxTotalChances)
     .min(1, { message: 'Must be more than 0' })
@@ -115,9 +118,85 @@ export const taskSchema = z.object({
       },
       { message: 'Must be a valid integer' },
     ),
+  startTime: z.number().gt(0),
+  endTime: z.number().gt(0)
 })
 
 export type TaskSchema = z.infer<typeof taskSchema>
+
+export function validateTaskForm(state: Task): FormError[] {
+  const errors = []
+  const { bounties, startTime, endTime } = state
+
+  for (const [index, bounty] of bounties.entries()) {
+    if (index === 0 && !bounty.tokenProcessID) {
+      errors.push({
+        path: `bounties[${index}]`,
+        message: 'Bounty not be empty.',
+      })
+    }
+
+    // TODO add error if token process id is duplicated
+
+    if (bounty.tokenProcessID) {
+      try {
+        !z.number().gt(0).parse(bounty.amount)
+      } catch (_) {
+        errors.push({
+          path: `bounties[${index}]`,
+          message: `Amount ${bounty.amount} is not valid`,
+        })
+      }
+      if (!bounty.chain) {
+        errors.push({
+          path: `bounties[${index}]`,
+          message: 'Please select a chain.',
+        })
+      }
+      if (!tokenChains.includes(bounty.chain)) {
+        errors.push({
+          path: `bounties[${index}]`,
+          message: `Chain ${bounty.chain} is not supported`,
+        })
+      }
+      if (!Object.keys(tokensByProcessID).includes(bounty.tokenProcessID)) {
+        errors.push({
+          path: `bounties[${index}]`,
+          message: `Token ${bounty.tokenProcessID} is not supported`,
+        })
+      }
+    }
+  }
+
+  const currentDate = new Date().getTime()
+  if (!startTime || !endTime) {
+    errors.push({
+      path: 'time',
+      message: 'Quest start/end time cannot be empty.'
+    })
+  }
+  if (startTime <= currentDate) {
+    errors.push({
+      path: 'time',
+      message: 'Quest start time cannot be earlier than current time.'
+    })
+  }
+  if (endTime <= currentDate) {
+    errors.push({
+      path: 'time',
+      message: 'Quest end time cannot be earlier than current time.'
+    })
+  }
+  if (startTime >= endTime) {
+    errors.push({
+      path: 'time',
+      message: 'Quest end time cannot be earlier than start time.'
+    })
+  }
+
+  console.log('validate task form:', errors, state)
+  return errors
+}
 
 export const userSchema = z.object({
   name: z.string().min(2).max(28),

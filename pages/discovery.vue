@@ -3,7 +3,7 @@ import { getCommunityBannerUrl, arUrl, defaultCommunityLogo } from '~/utils/arAs
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, twitterVouched, getCommunityList, joinCommunity } = $(aoCommunityStore())
+const { communityList, vouch, twitterVouched, getCommunityList, joinCommunity, clearJoinedCommunities } = $(aoCommunityStore())
 
 const { showError } = $(notificationStore())
 
@@ -53,6 +53,7 @@ const translate = [
 
 const Logout = async() => {
   await doLogout()
+  clearJoinedCommunities()
   router.push('/')
 }
 
@@ -68,14 +69,10 @@ const joinToCommunity = async(uuid: any) => {
     const invite = 'none'
     await joinCommunity(uuid, invite)
     toast.add({ title: 'joined success' })
-    // 查找uuid匹配的元素并更新isJoined属性
     await getCommunityList()
-    joinLoading = false
-
-    // joinLoading = true
-    console.log('communityJoin 操作成功')
+    router.push('/community/' + uuid)
   } catch (error) {
-    alert('communityJoin 操作失败')
+    showError('操作失败', error)
   } finally {
     joinLoading = false
   }

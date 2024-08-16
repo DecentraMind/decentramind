@@ -20,7 +20,7 @@ const bountyColumns = [
 
 const sort = $ref({ column: 'id', direction: 'asc' as const })
 
-const { getAllBounty} = $(taskStore())
+const { getAllBounty } = $(taskStore())
 const { address } = $(aoStore())
 
 const page = $ref(1)
@@ -29,7 +29,7 @@ const pageCount = 5
 
 
 type Categorized = {
-  bounties: Record<string, Bounty & {amount: string}>,
+  bounties: Record<string, Bounty & {totalBountyStr: string}>,
   sum: Record<string, {label: string; sum: number}> // bounty sum of each token
 }
 
@@ -62,7 +62,7 @@ const awardedSums = $computed(() => Object.values(awarded.sum))
  **/
 function getToken(processID: string | TokenName) {
   // console.log({tokenType: processID})
-  const token = tokensByProcessID[processID] || tokens[processID]
+  const token = tokensByProcessID[processID]
 
   // console.log({foundToken: token})
   return {
@@ -77,32 +77,32 @@ onMounted(async () => {
   const allBounties = (await getAllBounty()).reverse()
 
   function categorize(bounty: Bounty, categorized: Categorized) {
-    const token = getToken(bounty.tokenType)
+    const token = getToken(bounty.tokenProcessID)
 
     const bounties = categorized.bounties
-    if (!bounties[bounty.taskId]) {
-      bounties[bounty.taskId] = {...bounty, amount: ''}
+    if (!bounties[bounty.taskPid]) {
+      bounties[bounty.taskPid] = {...bounty, totalBountyStr: ''}
     }
-    bounties[bounty.taskId].amount +=
-      (bounties[bounty.taskId].amount === '' ? '' : ' + ')
-      + (bounty.tokenNumber / token.denomination) + ' ' + token.label
+    bounties[bounty.taskPid].totalBountyStr +=
+      (bounties[bounty.taskPid].totalBountyStr === '' ? '' : ' + ')
+      + (bounty.quantity / token.denomination) + ' ' + token.label
 
     if (!categorized.sum[token.processID]) {
       categorized.sum[token.processID] = {
         label: token.label,
-        sum: bounty.tokenNumber / token.denomination
+        sum: bounty.quantity / token.denomination
       }
     }
-    categorized.sum[token.processID].sum += bounty.tokenNumber / token.denomination
+    categorized.sum[token.processID].sum += bounty.quantity / token.denomination
 
     return categorized
   }
 
-  for (const bounty of allBounties){
-    if (bounty.send === address) {
+  for (const bounty of allBounties) {
+    if (bounty.sender === address) {
       categorize(bounty, published)
     }
-    if (bounty.receive === address) {
+    if (bounty.recipient === address) {
       categorize(bounty, awarded)
     }
   }

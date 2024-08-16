@@ -5,20 +5,16 @@
 ---@field banner string banner name or arwaeve hash of banner
 ---@field support
 ---@field creater string
+---@field owner string
 ---@field timestamp number
 ---@field communitytoken
 ---@field tokensupply
----@field buildnum string
+---@field buildnum number
 ---@field ispublished boolean
 ---@field name string
 ---@field desc string introduction
 
---[[
-All Communities
-@type Communities = {
-  [uuid: string]: Community
-}
-]] --
+--- @type table<string, Community>
 Communities = Communities or {}
 
 ---@class InviteInfo
@@ -63,21 +59,25 @@ local function deepCopy(orig)
   return copy
 end
 
-local function replyError(request, errmsg)
+local function createUuid()
+    local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+    return string.gsub(template, '[xy]', function (c)
+        local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+        return string.format('%x', v)
+    end)
+end
+
+local function replyError(request, errorMsg)
   local action = request.Action .. "-Error"
-  local errstring = errmsg
-  if request.Tags.UserData ~= nil then
-    local errorMap = { userData = request.Tags.UserData, errorMsg = errmsg}
-    errstring = json.encode(errorMap)
-  elseif type(errmsg) ~= "string" then
-    errstring = json.encode(errmsg)
+  local errString = errorMsg
+  if type(errorMsg) ~= "string" then
+    errString = json.encode(errorMsg)
   end
 
-  ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errstring})
+  ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString})
 end
 
 -- Creating new communities
--- TODO generate uuid in AO side
 Handlers.add(
   "create",
   Handlers.utils.hasMatchingTag("Action", "createCommunity"),
@@ -90,23 +90,26 @@ Handlers.add(
       Users[address] = {}
     end
 
-    if Communities[community.uuid] then
+    local uuid = createUuid()
+
+    if Communities[uuid] then
       replyError(msg, 'uuid existed.')
       return
     end
 
-    Communities[community.uuid] = community
-    Communities[community.uuid]['timestamp'] = msg.Timestamp
-    Communities[community.uuid]['buildnum'] = 1
+    Communities[uuid] = community
+    Communities[uuid].uuid = uuid
+    Communities[uuid]['timestamp'] = msg.Timestamp
+    Communities[uuid]['buildnum'] = 1
 
     if not Invites[address] then
       Invites[address] = {}
     end
-    if not Invites[address][community.uuid] then
-      Invites[address][community.uuid] = { time = msg.Timestamp }
+    if not Invites[address][uuid] then
+      Invites[address][uuid] = { time = msg.Timestamp }
     end
 
-    Handlers.utils.reply(Communities[community.uuid])(msg)
+    Handlers.utils.reply(Communities[uuid])(msg)
   end
 )
 
@@ -256,33 +259,35 @@ Handlers.add(
   end
 )
 
--- exit community
 Handlers.add(
-  "exit",
-  Handlers.utils.hasMatchingTag("Action", "exit"),
+  "Exit",
+  Handlers.utils.hasMatchingTag("Action", "Exit"),
   function(msg)
     local address = msg.From
-    local communityID = msg.Data
+    local uuid = msg.Tags.Uuid
 
-    local community = Communities[communityID]
-    if community then
-      if community.buildnum then
-        community.buildnum = math.max(0, community.buildnum - 1)
-      end
-    else
-      print('Community not found.')
-      return
+    local community = Communities[uuid]
+    if not community then
+      return replyError(msg, 'Community not found.')
     end
 
-    if Invites[address] then
-      if Invites[address][communityID] then
-        Invites[address][communityID] = nil
-      else
-        print("Not found related invite info in Invites[" .. address .. "]")
-      end
-    else
-      print("No column named " .. address .. " in Invites")
+    if community.owner == address then
+      return replyError(msg, 'You can not exit since you are the owner.')
     end
+
+    if community.buildnum then
+      community.buildnum = math.max(0, community.buildnum - 1)
+    end
+
+    if not Invites[address] then
+      return replyError(msg, "No column named " .. address .. " in Invites")
+    end
+
+    if not Invites[address][uuid] then
+      return replyError(msg, "Not found related invite info in Invites[" .. address .. "]")
+    end
+
+    Invites[address][uuid] = nil
   end
 )
 
@@ -304,24 +309,32 @@ Handlers.add(
   end
 )
 
+local function registerOrLogin(msg)
+  local address = msg.From
+  local avatar = msg.Tags.Avatar
+  local name = msg.Tags.UserName
+  local user = {
+    avatar = avatar,
+    name = name
+  }
+  if not Users[address] then
+    Users[address] = user
+  end
 
+  Handlers.utils.reply(json.encode(Users[address]))(msg)
+end
+
+Handlers.add(
+  "registerUserOrLogin",
+  Handlers.utils.hasMatchingTag("Action", "registerUserOrLogin"),
+  registerOrLogin
+)
+
+--- TODO remove this
 Handlers.add(
   "registerUser",
   Handlers.utils.hasMatchingTag("Action", "registerUser"),
-  function(msg)
-    local address = msg.From
-    local avatar = msg.Tags.Avatar
-    local name = msg.Tags.UserName
-    local user = {
-      avatar = avatar,
-      name = name
-    }
-    if not Users[address] then
-      Users[address] = user
-    else
-      print('User existed.')
-    end
-  end
+  registerOrLogin
 )
 
 Handlers.add(

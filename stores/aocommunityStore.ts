@@ -32,6 +32,10 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
     currentUuid = uuid
   }
 
+  const clearJoinedCommunities = () => {
+    joinedCommunities = []
+  }
+
   const vouch = async () => {
     if (!address) {
       throw new Error('No address specified.')
@@ -279,7 +283,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
       joinedCommunities = communityList.filter((item) => item.isJoined === true)
       joinedCommunities.sort((a: CommunityListItem, b: CommunityListItem) => {
-        return parseInt(b.joinTime!) - parseInt(a.joinTime!)
+        return b.joinTime! - a.joinTime!
       })
       isLoading = false
       return result
@@ -332,7 +336,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       const dataStr = result.Messages[0].Data
 
       communityUser = JSON.parse(dataStr)
-      let parsedCommunityUser = {}
+      const parsedCommunityUser = {}
 
       for (const key in communityUser) {
         if (communityUser.hasOwnProperty(key)) {
@@ -410,18 +414,22 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
   //Methods of withdrawing from the community
   const exitCommunity = async (uuid: string) => {
-
-    const exit = await message({
+    const messageId = await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'exit' },
-        { name: 'userAddress', value: address }
+        { name: 'Action', value: 'Exit' },
+        { name: 'Uuid', value: uuid }
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: uuid,
     })
+    const { Error: error } = await result({ message: messageId, process: aoCommunityProcessID })
+    if (error) {
+      console.error(error)
+      throw new Error('Exit error. ' + error)
+    }
+
     await updateLocalCommunityJoin(uuid, 'exit')
-    return exit
   }
 
   //Modification of personal information
@@ -678,7 +686,8 @@ Handlers.add(
     getUser,
     getUserByAddress,
     getCommunityUser,
-    getCommunity
+    getCommunity,
+    clearJoinedCommunities
   })
 })
 

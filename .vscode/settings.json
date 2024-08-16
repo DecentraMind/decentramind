@@ -4,10 +4,10 @@
   ],
 
 
-  // #每次保存的时候将代码按eslint格式进行修复 ,"eslint.autoFixOnSave": true 这个已经过时了
-  //"editor.codeActionsOnSave": {
-  //  "source.fixAll": true
-  //},
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "never",
+    "source.fixAll.eslint": "explicit"
+  },
 
 
   "eslint.validate": [

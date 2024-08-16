@@ -73,7 +73,7 @@ export const aoStore = defineStore('aoStore', () => {
       const messageID = await message({
         process: aoCommunityProcessID,
         tags: [
-          { name: 'Action', value: 'registerUser' },
+          { name: 'Action', value: 'registerUserOrLogin' },
           { name: 'UserName', value: address.slice(-4) },
           { name: 'Avatar', value: defaultUserAvatar },
         ],

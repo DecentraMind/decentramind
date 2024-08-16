@@ -7,7 +7,6 @@ export default defineAppConfig({
         loadingIcon: 'svg-spinners:gooey-balls-2'
       }
     },
-
     icons: {
       dynamic: true
     },
@@ -41,6 +40,25 @@ export default defineAppConfig({
         lg: 'text-base',
         xl: 'text-base',
       },
+    },
+    inputMenu: {
+      option: {
+        container: 'gap-1'
+      }
+    },
+    table: {
+      loadingState: {
+        icon: 'animate-none'
+      },
+      default: {
+        loadingState: {
+          icon: 'svg-spinners:3-dots-fade',
+          label: ''
+        },
+        emptyState: {
+          label: 'Empty'
+        }
+      }
     }
   }
 })

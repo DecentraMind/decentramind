@@ -1,348 +1,327 @@
 local json = require("json")
 local ao = require('ao')
-TasksForTable = TasksForTable or {}
-SpaceTaskSubmittedTable = SpaceTaskSubmittedTable or {}
-TaskJoidRecord = TaskJoidRecord or {}
-XData = XData or {}
-Bounties = Bounties or {}
 
-Handlers.add(
-    "DeleteAll",
-    Handlers.utils.hasMatchingTag("Action", "DeleteAll"),
-    function (msg)
-        TasksForTable = {}
-        SpaceTaskSubmittedTable = {}
-        TaskJoidRecord = {}
-        Handlers.utils.reply("Delete TasksForTable SpaceTaskSubmittedTable and TaskJoidRecord success.")(msg)
-    end
-)
+--- @class Task
+--- @field processID string @process ID as unique primary key
+--- @field type string @The type of task, valid type: 'space'
+--- @field visible string @Visibility of the task, either 'public' or 'private'
+--- @field communityUuid string @UUID of the associated community
+--- @field name string @Name of the task
+--- @field intro string @Introduction or description of the task
+--- @field rule string @Rules associated with the task
+--- @field banner string @Banner image URL for the task
+--- @field totalChances number @Total number of chances available for the task
+--- @field timezone string @Timezone in which the task operates
+--- @field startTime number @Start time of the task (timestamp)
+--- @field endTime number @End time of the task (timestamp)
+--- @field createTime number @Creation time of the task (timestamp)
+--- @field ownerAddress string @Owner's address (likely a wallet address)
+--- @field submittersCount number @Number of submitters for the task
+--- @field isScoreCalculated boolean @Whether the score has been calculated
+--- @field isSettled boolean @Whether the task has been settled
+--- @field bounties TaskBounty[] @List of bounties associated with the task
+--- @field builders table<string, TaskBuilder> @Table of builders associated with the task, index by builder's address
+--- @field submissions Submission[] @List of submission
 
-Handlers.add(
-    "saveXData",
-    Handlers.utils.hasMatchingTag("Action", "saveXData"),
-    function (msg)
-        table.insert(XData, msg.Data)
-        Handlers.utils.reply("Data save success.")(msg)
-    end
-)
+--- @class TaskBounty
+--- @field amount number @Human readable amount of the bounty
+--- @field quantity string bigint string of bounty quantity
+--- @field tokenName string @Name of the token
+--- @field tokenProcessID string @Process ID of the token
+--- @field chain string @Name of the blockchain
 
-Handlers.add(
-    "CreateTask",
-    Handlers.utils.hasMatchingTag("Action", "CreateTask"),
-    function (msg)
-        table.insert(TasksForTable, msg.Data)
-        Handlers.utils.reply("created task by new method.")(msg)
-    end
-)
+--- @class TaskBuilder
+--- @field address string @Builder's address (likely a wallet address)
+--- @field inviterAddress string|nil @Address of the inviter (optional)
 
-Handlers.add(
-    "GetAllTasks",
-    Handlers.utils.hasMatchingTag("Action", "GetAllTasks"),
-    function (msg)
-        local response = {}
-      if next(TasksForTable) == nil then
-        Handlers.utils.reply("null")(msg)
-      end
-        Handlers.utils.reply(table.concat(TasksForTable, ";"))(msg)
-    end
-)
+--- @class Submission
+--- @field uuid string
+--- @field address string submitter's address
+--- @field taskPid string task process ID
+--- @field score number
+--- @field bounty string
+--- @field brandEffect number|nil
+--- @field inviteCount number|nil
+--- @field audience number|nil
+--- @field url string|nil
 
-Handlers.add(
-    "DeleteLastTask",
-    Handlers.utils.hasMatchingTag("Action", "DeleteLastTask"),
-    function (msg)
-        table.remove(TasksForTable)
-        Handlers.utils.reply("The last task has been deleted.")(msg)
-    end
-)
+--- @type table<string, Task> @Tasks table using task's processID as key
+Tasks = Tasks or {}
+--- @type table<string, string[]> @Tasks process ID table using community's uuid as key
+TasksByCommunity = TasksByCommunity or {}
 
-Handlers.add(
-    "JoinTask",
-    Handlers.utils.hasMatchingTag("Action", "JoinTask"),
-    function (msg)
-        local req = json.decode(msg.Data)
-        local taskId = req.taskId
-        for key, value in pairs(TasksForTable) do
-            local v = json.decode(value)
-            if(v.taskId == taskId) then
-                local tmp = v.joined
-                tmp = tmp + 1
-                v.joined = tmp
-                v.buildNumber = v.joined
-                print(tmp)
-                TasksForTable[key] = json.encode(v)
-                break
-            end
-        end
-        -- 将参与任务信息保存在表中
-        table.insert(TaskJoidRecord, msg.Data)
-    end
-)
+--- @class BountySend
+--- @field taskPid string
+--- @field sender string
+--- @field recipient string
+--- @field tokenProcessID string
+--- @field amount number
+--- @field quantity string BitInt string of bounty quantity. Human readable amount = quantity / Math.pow(10, token.denomination)
 
-Handlers.add(
-    "getTaskJoinRecord",
-    Handlers.utils.hasMatchingTag("Action", "getTaskJoinRecord"),
-    function (msg)
-        local taskId = msg.Tags.taskId
-        local resp = {}
-        for key, value in pairs(TaskJoidRecord) do
-            local v = json.decode(value)
-            if(v.taskId == taskId) then
-                table.insert(resp, value)
-            end
-        end
-        if next(resp) == nil then
-          Handlers.utils.reply("null")(msg)
-        end
-          Handlers.utils.reply(table.concat(resp, ";"))(msg)
-    end
-)
+--- @type table<string, BountySend[]> Bounty send history, using task's process ID as key
+BountySendHistory = BountySendHistory or {}
 
-Handlers.add(
-    "SubmitSpaceTask",
-    Handlers.utils.hasMatchingTag("Action", "SubmitSpaceTask"),
-    function (msg)
-        -- 将参与任务信息保存在表中
-        local req = json.decode(msg.Data)
-        local taskId = req.taskId
-        if not SpaceTaskSubmittedTable[taskId] then
-          -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
-          SpaceTaskSubmittedTable[taskId] = {}
-        end
-        local temp = SpaceTaskSubmittedTable[taskId]
-        table.insert(temp, msg.Data)
-        SpaceTaskSubmittedTable[taskId] = temp
-        Handlers.utils.reply("Joined in space task.")(msg)
-    end
-)
+local function replyError(request, errorMsg)
+  local action = request.Action .. "-Error"
+  local errString = errorMsg
+  if type(errorMsg) ~= "string" then
+    errString = json.encode(errorMsg)
+  end
 
-Handlers.add(
-    "getSpaceTaskSubmitInfo",
-    Handlers.utils.hasMatchingTag("Action", "getSpaceTaskSubmitInfo"),
-    function (msg)
-        local taskId = msg.Tags.taskId
-        local resp = {}
-        for key, value in pairs(SpaceTaskSubmittedTable) do
-          if(key == taskId) then
-            resp = value
-          end
-        end
-        if next(resp) == nil then
-          Handlers.utils.reply("null")(msg)
-        end
-          Handlers.utils.reply(table.concat(resp, ";"))(msg)
-    end
-)
-Handlers.add(
-    "getAllTaskSubmitInfo",
-    Handlers.utils.hasMatchingTag("Action", "getAllTaskSubmitInfo"),
-    function (msg)
-        local resp = {}
-        for key, value in pairs(SpaceTaskSubmittedTable) do
-          for i = 1, #value do
-          	table.insert(resp, value[i])
-          end
-          --print(resp)
-        end
-        if next(resp) == nil then
-          Handlers.utils.reply("null")(msg)
-        end
-          Handlers.utils.reply(table.concat(resp, ";"))(msg)
-    end
-)
---Handlers.add(
---    "GetJoinInfoByTaskId",
---    Handlers.utils.hasMatchingTag("Action", "GetJoinInfoByTaskId"),
---    function (msg)
---        -- 通过id获取该任务对应参与信息
---        local resp = {}
---        local taskId = msg.Data
---        for key, value in pairs(SpaceTaskSubmittedTable) do
---            local v = json.decode(value)
---            if(v.taskId == taskId) then
---                table.insert(resp, value)
---            end
---        end
---        Handlers.utils.reply(table.concat(resp, ";"))(msg)
---    end
---)
-
-Handlers.add(
-    "updateTaskToIng",
-    Handlers.utils.hasMatchingTag("Action", "updateTaskToIng"),
-    function (msg)
-        -- 通过id获取该任务对应参与信息
-        local taskId = msg.Data
-        for i = 1, #TasksForTable do
-            local v = json.decode(TasksForTable[i])
-            if(v.taskId == taskId) then
-                v.isBegin = 'Y'
-            end
-            TasksForTable[i] = json.encode(v)
-        end
-        Handlers.utils.reply("update task success")(msg)
-    end
-)
-Handlers.add(
-    "updateTaskToEnd",
-    Handlers.utils.hasMatchingTag("Action", "updateTaskToEnd"),
-    function (msg)
-        -- 通过id获取该任务对应参与信息
-        local taskId = msg.Data
-        for i = 1, #TasksForTable do
-            local v = json.decode(TasksForTable[i])
-            if(v.taskId == taskId) then
-                v.isBegin = 'N'
-            end
-            TasksForTable[i] = json.encode(v)
-        end
-        Handlers.utils.reply("update task success")(msg)
-    end
-)
-Handlers.add(
-    "updateTaskAfterCal",
-    Handlers.utils.hasMatchingTag("Action", "updateTaskAfterCal"),
-    function (msg)
-        -- 通过id获取该任务对应参与信息
-        local taskId = msg.Data
-        for i = 1, #TasksForTable do
-            local v = json.decode(TasksForTable[i])
-            if(v.taskId == taskId) then
-                v.isCal = 'Y'
-            end
-            TasksForTable[i] = json.encode(v)
-        end
-        Handlers.utils.reply("update task success")(msg)
-    end
-)
-Handlers.add(
-    "updateTaskAfterSettle",
-    Handlers.utils.hasMatchingTag("Action", "updateTaskAfterSettle"),
-    function (msg)
-        -- 通过id获取该任务对应参与信息
-        local taskId = msg.Data
-        for i = 1, #TasksForTable do
-            local v = json.decode(TasksForTable[i])
-            if(v.taskId == taskId) then
-                v.isSettle = 'Y'
-            end
-            TasksForTable[i] = json.encode(v)
-        end
-        Handlers.utils.reply("update task success")(msg)
-    end
-)
-
-Handlers.add(
-    "updateTaskSubmitInfoAfterCal",
-    Handlers.utils.hasMatchingTag("Action", "updateTaskSubmitInfoAfterCal"),
-    function (msg)
-        local temp = {}
-        local req = split(msg.Data, ';')
-        for i = 1, #req do
-        	table.insert(temp, req[i])
-        end
-        local taskId = msg.Tags.taskId
-        for  key, value in pairs(SpaceTaskSubmittedTable) do
-            -- TODO check msg.Tag.from == task.owner
-            if (key == taskId) then
-            	SpaceTaskSubmittedTable[key] = temp
-            end
-        end
-        Handlers.utils.reply("update task success")(msg)
-    end
-)
-
-function split(input, delimiter)
-    input = tostring(input)
-    delimiter = tostring(delimiter)
-    if (delimiter == "") then return false end
-    local pos, arr = 0, {}
-    for st, sp in function() return string.find(input, delimiter, pos, true) end do
-        table.insert(arr, string.sub(input, pos, st - 1))
-        pos = sp + 1
-    end
-    table.insert(arr, string.sub(input, pos))
-    return arr
+  ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString})
 end
-TaskOwnerWallet = "xxx"
-Handlers.add(
-    "sendBounty",
-    Handlers.utils.hasMatchingTag("Action", "sendBounty"),
-    function (msg)
-        if(msg.From == TaskOwnerWallet) then
-        	  local req = json.decode(msg.Data)
-            for _, value in pairs(req) do
-                ao.send({
-                  Target = value.tokenType,
-                  Action = "Transfer",
-                  Recipient = value.walletAddress,
-                  Quantity = tostring(value.tokenNumber)
-                })
-            end
-        else
-        Handlers.utils.reply("NotMatch")(msg)
-        end
-        -- 通过id获取该任务对应参与信息
-        Handlers.utils.reply("success")(msg)
-    end
-)
-Handlers.add(
-    "storeBounty",
-    Handlers.utils.hasMatchingTag("Action", "storeBounty"),
-    function (msg)
-        local req = json.decode(msg.Data)
-        for _, value in pairs(req) do
-            table.insert(Bounties, value)
-        end
-        -- 通过id获取该任务对应参与信息
-        Handlers.utils.reply("success")(msg)
-    end
-)
-Handlers.add(
-    "getAllBounties",
-    Handlers.utils.hasMatchingTag("Action", "getAllBounties"),
-    function (msg)
-        local cJson = json.encode(Bounties)
-        -- 通过id获取该任务对应参与信息
-        Handlers.utils.reply(cJson)(msg)
-    end
-)
-Handlers.add(
-    "testSend",
-    Handlers.utils.hasMatchingTag("Action", "testSend"),
-    function (msg)
-        local req = json.decode(msg.Data)
-        local tokenType = "x"
-        local receipt = "x"
-        local tokenNumber = "x"
-        --print(req[0].tokenType)
-        for _, value in pairs(req) do
-            tokenType = value.tokenType
-            receipt = value.walletAddress
-            tokenNumber = value.tokenNumber
-            print(tokenType)
-            print(receipt)
-            print(tokenNumber)
-            ao.send({
-            Target = tokenType,
-            Action = "Transfer",
-            Recipient = receipt,
-            Quantity = tostring(tokenNumber)
-            })
-        end
 
-        --local tokenType = "Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I"
-        --local receipt = "bOTVb61Rq91cVesuxZ_0fBk4Ii-GNsEbT3Iu5KD3HWg"
-        --local tokenNumber = 1000.1
+local function createUuid()
+  local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+  return string.gsub(template, '[xy]', function (c)
+      local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+      return string.format('%x', v)
+  end)
+end
 
-        Handlers.utils.reply("success")(msg)
+local function findIndex(array, predicate)
+  for index, value in ipairs(array) do
+      if predicate(value, index) then
+          return index
+      end
+  end
+  return nil  -- If no element satisfies the predicate
+end
+
+TaskManager = {
+  create = function (msg)
+    --- @type Task
+    local task = json.decode(msg.Data)
+    local cid = task.communityUuid
+    local pid = task.processID
+
+    if Tasks[pid] then
+      return replyError(msg, 'Task existed.')
     end
-)
+
+    -- TODO validate task fields
+    Tasks[pid] = task
+    Tasks[pid].createTime = msg.Timestamp
+    Tasks[pid].ownerAddress = msg.From
+    Tasks[pid].submittersCount = 0
+    Tasks[pid].isScoreCalculated = false
+    Tasks[pid].isSettled = false
+    Tasks[pid].builders = {}
+    Tasks[pid].submissions = {}
+
+    if not TasksByCommunity[cid] then
+      TasksByCommunity[cid] = {}
+    end
+    table.insert(TasksByCommunity[cid], pid)
+    Handlers.utils.reply(json.encode(Tasks[pid]))(msg)
+  end,
+
+  -- getAll = function (msg)
+  --   Handlers.utils.reply(json.encode(Tasks))(msg)
+  -- end,
+
+  getTask = function (msg)
+    local pid = msg.Tags.ProcessID
+
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+    Handlers.utils.reply(json.encode(Tasks[pid]))(msg)
+  end,
+
+  getTasksByCommunityUuid = function (msg)
+    local cid = msg.Tags.CommunityUuid
+    if not TasksByCommunity[cid] then
+      Handlers.utils.reply(json.encode({}))(msg)
+      return
+    end
+
+    local tasks = {}
+    for _, pid in pairs(TasksByCommunity[cid]) do
+      if Tasks[pid] then
+        table.insert(tasks, Tasks[pid])
+      end
+    end
+
+    Handlers.utils.reply(json.encode(tasks))(msg)
+  end,
+
+  joinTask = function(msg)
+    local pid = msg.Tags.TaskPid
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+
+    if Tasks[pid].builders[msg.From] then
+      return replyError(msg, 'You have joined this task.')
+    end
+
+    local builder = {
+      address = msg.From
+    }
+    if (msg.Tags.InviterAddress) then
+      builder.inviterAddress = msg.Tags.InviterAddress
+    end
+    Tasks[pid].builders[msg.From] = builder
+  end,
+
+  addSubmission = function(msg)
+    -- TOOD validate msg.Data
+    --- @type Submission
+    local submission = json.decode(msg.Data)
+    local pid = submission.taskPid
+
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+
+    --- TODO if not Tasks[pid].builders[msg.From] then Tasks[pid].builders[msg.From] = builder end
+    submission.uuid = createUuid()
+    submission.score = 0
+    submission.bounty = ""
+    --- if task.type == 'space'
+    --- submission.brandEffect = 0
+    --- submission.inviteCount = 0
+    --- submission.audience = 0
+
+    table.insert(Tasks[pid].submissions, submission)
+
+    --- update Tasks[pid].submittersCount
+    --- if submission.address is not seen in Tasks[pid].submissions, add it
+    if not findIndex(Tasks[pid].submissions, function (submit)
+      return submit.address == msg.From
+    end) then
+      Tasks[pid].submittersCount = Tasks[pid].submittersCount + 1
+    end
+
+    Handlers.utils.reply(submission.uuid)(msg)
+  end,
+
+
+  storeBountySendHistory = function (msg)
+    local pid = msg.Tags.TaskPid
+    if not Tasks[pid] then
+      return replyError('Task not found.')
+    end
+    if Tasks[pid] ~= msg.From then
+      return replyError('You are not the owner of this task.')
+    end
+
+    --- @type BountySend
+    local history = json.decode(msg.Data)
+    if not BountySendHistory[pid] then
+      BountySendHistory[pid] = {}
+    end
+    table.insert(BountySendHistory[pid], history)
+  end
+}
+
 Handlers.add(
-    "getMsgFrom",
-    Handlers.utils.hasMatchingTag("Action", "getMsgFrom"),
-    function (msg)
-        Handlers.utils.reply(msg.From)(msg)
-    end
+  "CreateTask",
+  Handlers.utils.hasMatchingTag("Action", "CreateTask"),
+  TaskManager.create
 )
 
+-- Handlers.add(
+--   "GetAll",
+--   Handlers.utils.hasMatchingTag("Action", "GetAll"),
+--   TaskManager.getAll
+-- )
+
+Handlers.add(
+  "GetTask",
+  Handlers.utils.hasMatchingTag("Action", "GetTask"),
+  TaskManager.getTask
+)
+
+Handlers.add(
+  'GetTasksByCommunityUuid',
+  Handlers.utils.hasMatchingTag('Action', 'GetTasksByCommunityUuid'),
+  TaskManager.getTasksByCommunityUuid
+)
+
+Handlers.add(
+  "JoinTask",
+  Handlers.utils.hasMatchingTag("Action", "JoinTask"),
+  TaskManager.joinTask
+)
+
+Handlers.add(
+  "AddSubmission",
+  Handlers.utils.hasMatchingTag("Action", "AddSubmission"),
+  TaskManager.addSubmission
+)
+
+Handlers.add(
+  "SetTaskIsCalculated",
+  Handlers.utils.hasMatchingTag("Action", "SetTaskIsCalculated"),
+  function(msg)
+    local pid = msg.Tags.TaskPid
+
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+
+    if Tasks[pid].ownerAddress ~= msg.From then
+      return replyError(msg, 'You are not the owner of this task.')
+    end
+
+    Tasks[pid].isScoreCalculated = true
+    Handlers.utils.reply("update task success")(msg)
+  end
+)
+
+Handlers.add(
+  "SetTaskIsSettled",
+  Handlers.utils.hasMatchingTag("Action", "SetTaskIsSettled"),
+  function (msg)
+    local pid = msg.Tags.TaskPid
+
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+
+    if Tasks[pid].ownerAddress ~= msg.From then
+      return replyError(msg, 'You are not the owner of this task.')
+    end
+
+    Tasks[pid].isSettled = true
+    Handlers.utils.reply("update task success")(msg)
+  end
+)
+
+Handlers.add(
+  "UpdateTaskSubmissions",
+  Handlers.utils.hasMatchingTag("Action", "UpdateTaskSubmissions"),
+  function (msg)
+    local pid = msg.Tags.TaskPid
+
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+
+    if Tasks[pid].ownerAddress ~= msg.From then
+      return replyError(msg, 'You are not the owner of this task.')
+    end
+
+    Tasks[pid].submissions = json.decode(msg.Data)
+
+    Handlers.utils.reply("update task submissions success")(msg)
+  end
+)
+
+Handlers.add(
+  "StoreBounty",
+  Handlers.utils.hasMatchingTag("Action", "StoreBounty"),
+  TaskManager.storeBountySendHistory
+)
+
+Handlers.add(
+  "getAllBounties",
+  Handlers.utils.hasMatchingTag("Action", "getAllBounties"),
+  function(msg)
+    local cJson = json.encode(BountySendHistory)
+    -- 通过id获取该任务对应参与信息
+    Handlers.utils.reply(cJson)(msg)
+  end
+)

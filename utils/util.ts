@@ -1,4 +1,12 @@
-import {dryrun} from '@permaweb/aoconnect'
+import { dryrun } from '@permaweb/aoconnect'
+import { useI18n, useGet } from '#imports'
+import type { Timezone } from './constants'
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 export function createUuid() {
     const str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
@@ -14,7 +22,7 @@ export function createUuid() {
  * @param {string} isoString - ISO 8601 format string
  * @returns {string}
  */
-export function formatToLocale(isoString: string, locale: string = 'en-US') {
+export function formatToLocale(isoString: string|number, locale: string = 'en-US') {
   if(!isoString) return ''
   const date = new Date(isoString)
 
@@ -31,9 +39,28 @@ export function formatToLocale(isoString: string, locale: string = 'en-US') {
   return new Intl.DateTimeFormat(locale, options).format(date).replace(/\sat\s/, ' ')
 }
 
+export function getLocalTimezone() {
+  const offset = Math.min(Math.max((new Date().getTimezoneOffset()) / 60, -11))
+  const sign = offset > 0 ? '-' : '+'
+  return 'GMT' + sign + Math.abs(offset).toString() + ':00' as Timezone
+}
+
 export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
-  if(!result?.Messages?.[0]?.Data) {
-    throw new Error('Failed to extract data from undefined result.Messages.')
+  if (result.Error) {
+    throw new Error(result.Error)
+  }
+
+  const tags = useGet(result, 'Messages[0].Tags') as {name: string, value: string}[]
+  if (tags) {
+    const errorTag = tags.find(tag => tag.name === 'Error')?.value
+    if (errorTag) {
+      throw new Error(errorTag)
+    }
+  }
+
+  if (!result?.Messages?.[0]?.Data) {
+    console.error('Failed to extract data from result.Messages', result)
+    throw new Error('Failed to extract data from result.Messages.')
   }
 
   return result.Messages[0].Data as T
@@ -91,4 +118,25 @@ export function toBase62(num: number) {
       num = Math.floor(num / 62)
   }
   return result
+}
+
+export function taskProgress(now: number, startTime: number, endTime: number) {
+  const { t } = useI18n()
+  const res = {
+    isNotStarted: false,
+    isIng: false,
+    isEnded: false,
+    text: ''
+  }
+  if (now < startTime) {
+    res.isNotStarted = true
+    res.text = t('Not Start')
+  } else if (now > startTime && now < endTime) {
+    res.isIng = true
+    res.text = t('Ing')
+  } else {
+    res.isEnded = true
+    res.text = t('End')
+  }
+  return res
 }

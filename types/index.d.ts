@@ -69,6 +69,7 @@ export type Community = {
   bounty: TokenName[]
   /** how many user joined in this community */
   buildnum: number
+  // TODO replace chatroom ID with chatroom process ID
   /** ID of community's chatroom */
   communitychatid: string
   communitytoken: CommunityToken[]
@@ -142,31 +143,85 @@ export type Tokens = {
 
 export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
 
+type ChainNames = 'AO'
+
+type Submission = {
+  uuid: string
+  taskPid: string
+  /** submitter's address */
+  address: string
+  score: number
+  bounty: string
+}
+
+interface SpaceSubmission extends Submission {
+  brandEffect: number
+  inviteCount: number
+  audience: number
+  url: string
+}
+
+export type TaskFormBounty = {
+  /** Human readable number of bounty amount. amount = quantity / Math.pow(10, token.denomination) */
+  amount: number
+  tokenName: string
+  tokenProcessID: string
+  chain: ChainName
+}
+
 export type Task = {
-  buildNumber: number
-  communityId: string
-  endTime: string
-  isBegin: 'Y' | 'N'
-  isCal: 'Y' | 'N'
-  isSettle: 'Y' | 'N'
-  joined: number
-  ownerId: string
-  processId: string
-  rewardTotal: number
-  startTime: string
-  taskId: string
-  taskInfo: string
-  taskLogo: string
-  taskName: string
-  taskRule: string
-  tokenChain: string
-  tokenChain1: string
-  tokenNumber: number
-  tokenNumber1: number
-  tokenType: string
-  tokenType1: string
-  zone: string
+  /** process ID as unique primary key */
+  processID: string
+
+  type: 'space'
+  visible: 'public' | 'private'
+  communityUuid: string
+  name: string
+  intro: string
+  rule: string
+  banner: string
+  totalChances: number
+  timezone: Timezone
+  startTime: number
+  endTime: number
+
   createTime: number
+  ownerAddress: string
+  submittersCount: number
+
+  isScoreCalculated: boolean
+  isSettled: boolean
+
+  bounties: Array<TaskFormBounty & {
+    /** BitInt string of bounty quantity. Human readable amount = quantity / Math.pow(10, token.denomination) */
+    quantity: string
+  }>
+
+  builders: Record<[address: string], {
+    address: string,
+    inviterAddress?: string
+  }>
+
+  submissions: SpaceSubmission[]
+}
+
+export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & {
+  calculatedBounties: Task['bounties']
+}
+
+/** bounty item for SendBounty action of task process */
+export type Bounty = {
+  taskPid: string
+  sender: string
+  recipient: string
+  tokenProcessID: string
+  amount: number
+  /** BitInt of bounty quantity. Human readable amount = quantity / Math.pow(10, token.denomination) */
+  quantity: bigInt
+}
+
+export type TaskForm = Omit<Task, 'createTime'|'ownerAddress'|'submittersCount'|'isScoreCalculated'|'isSettled'|'builders'|'submissions'|'bounties'> & {
+  bounties: TaskFormBounty[]
 }
 
 export type InviteInfo = {
