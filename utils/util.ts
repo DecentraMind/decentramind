@@ -1,4 +1,4 @@
-import { dryrun } from '@permaweb/aoconnect'
+import { dryrun, result } from '@permaweb/aoconnect'
 import type { Timezone } from './constants'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -44,18 +44,23 @@ export function getLocalTimezone() {
   return 'GMT' + sign + Math.abs(offset).toString() + ':00' as Timezone
 }
 
-export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
-  if (result.Error) {
-    throw new Error(result.Error)
+export function checkResult(res: Awaited<ReturnType<typeof result>>) {
+  if (res.Error) {
+    throw new Error(res.Error)
   }
 
-  const tags = useGet(result, 'Messages[0].Tags') as {name: string, value: string}[]
+  const tags = useGet(res, 'Messages[0].Tags') as {name: string, value: string}[]
   if (tags) {
     const errorTag = tags.find(tag => tag.name === 'Error')?.value
     if (errorTag) {
       throw new Error(errorTag)
     }
   }
+  return true
+}
+
+export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
+  checkResult(result)
 
   if (!result?.Messages?.[0]?.Data) {
     console.error('Failed to extract data from result.Messages', result)

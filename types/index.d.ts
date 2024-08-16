@@ -62,8 +62,7 @@ export type Community = {
   /** ID of community's chatroom */
   communitychatid: string
   communitytoken: CommunityToken[]
-  /** creator's address TODO rename this to 'creator' */
-  creater: string
+  creator: string
   /** description */
   desc: string
   github: string

@@ -8,7 +8,7 @@ import {
 import type { Community, CommunityList, CommunityListItem, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo } from '~/utils/arAssets'
-import { createUuid, sleep, retry } from '~/utils/util'
+import { createUuid, sleep, retry, checkResult } from '~/utils/util'
 import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
 
 // Read the Lua file
@@ -23,10 +23,10 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
   let joinedCommunities = $ref<CommunityList>([])
   let mutedUsers = $ref<string[]>([])
 
-  let currentUuid = $ref('')
+  let currentUuid = $ref<string>()
 
   //Set the uuid of the currently selected community
-  const setCurrentUuid = (uuid: any) => {
+  const setCurrentCommunityUuid = (uuid: any) => {
     currentUuid = uuid
   }
 
@@ -158,7 +158,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       banner,
       name,
       desc,
-      creater: address,
+      creator: address,
       owner: address,
       website,
       twitter,
@@ -234,10 +234,7 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
       process: aoCommunityProcessID
     })
     console.log({ communityUpdateRes: res })
-    if (!res.Messages.length) {
-      res.Output.data && console.error(res.Output.data)
-      throw new Error('Failed to update community.')
-    }
+    checkResult(res)
   }
 
   /**
@@ -309,11 +306,10 @@ export const aoCommunityStore = defineStore('aoCommunityStore', () => {
 
   //Get joined users in a given community
   const getCommunityUser = async (uuid: any) => {
-
     const result = await dryrun({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'communityuser' },
+        { name: 'Action', value: 'GetUsersByCommunityUUID' },
         { name: 'uuid', value: uuid }
       ],
     })
@@ -636,7 +632,7 @@ Handlers.add(
     unmute,
     createToken,
     getMutedUsers,
-    setCurrentUuid,
+    setCurrentCommunityUuid,
     makeCommunityChat,
     getLocalCommunity,
     getCommunityList,

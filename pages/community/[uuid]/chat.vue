@@ -55,7 +55,7 @@ onMounted(async () => {
   if (!address) {
     router.push('/')
   }
-  if (!route.params.pid) return
+  if (!route.params.uuid) return
   chatID = route.params.pid
 
   console.log('--------------test')
@@ -231,7 +231,7 @@ const isUserBanned = (userAddress: string) => {
             <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
             <div>{{ communityInfo.buildnum }}</div>
           </div>
-          <div v-if="communityInfo.creater !== address" class="flex">
+          <div v-if="communityInfo.owner !== address" class="flex">
             <UButton
               color="white"
               variant="solid"
@@ -246,7 +246,7 @@ const isUserBanned = (userAddress: string) => {
         <UDivider />
 
         <div class="flex-1" />
-        <div v-if="communityInfo.creater == address" class="flex">
+        <div v-if="communityInfo.owner == address" class="flex">
           <UButton class="ml-auto" variant="ghost" icon="heroicons:cog-6-tooth" @click="communitySetting = true" />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }">

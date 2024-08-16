@@ -5,24 +5,57 @@ import type { Community, Task, TaskForm } from '~/types'
 import { arUrl, taskBanners, gateways } from '~/utils/arAssets'
 import { getLocalTimezone } from '~/utils/util'
 import { taskSchema } from '~/utils/schemas'
+import { provide } from 'vue'
 
 const { t } = useI18n()
 const { createTask, getTasksByCommunityUuid } = $(taskStore())
-const { setCurrentUuid, exitCommunity, getCommunity, getCommunityList } = $(
-  aoCommunityStore(),
-)
+const { setCurrentCommunityUuid, getCommunity } = $(aoCommunityStore())
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
+const { showError, showMessage } = $(notificationStore())
 
 const route = useRoute()
+const router = useRouter()
 
-const communityId = $computed(() => route.params.communityId) as string
-
-const isSettingModalOpen = $ref(false)
+const uuid = $computed(() => route.params.uuid) as string
 
 let tasks = $ref<Array<Task & { reward: string }>>([])
 
-const tabItems = [
+function alertNotReady() {
+  showMessage('Being Cooked')
+}
+const taskTypes = [
+  [
+    {
+      label: 'Twitter Space Quest',
+      click: () => {
+        isCreateTaskModalOpen = true
+      },
+    },
+    {
+      label: 'Promotion Quest',
+      click: alertNotReady,
+    },
+    {
+      label: 'Invitation Quest',
+      click: alertNotReady,
+    },
+    {
+      label: 'Try Our Product Quest',
+      click: alertNotReady,
+    },
+    {
+      label: 'Thread Quest',
+      click: alertNotReady,
+    },
+    {
+      label: 'Twitter Article Quest',
+      click: alertNotReady,
+    },
+  ]
+]
+
+const taskVisibleTabs = [
   {
     label: t('Public Quests'),
     content: '',
@@ -32,32 +65,26 @@ const tabItems = [
     content: '',
   },
 ]
-let isCreateTaskModalOpen = $ref(false)
 
-function onChange(index: number) {
-  const item = tabItems[index]
-  // console.log(item)
+function onTaskVisibleTabChange(index: number) {
+  const item = taskVisibleTabs[index]
   if (item.label === 'Private Quests') {
-    alert('Being Cooked!')
+    showMessage('Being Cooked!')
   }
 }
 
-type RangeValue = [Dayjs, Dayjs]
+let isCreateTaskModalOpen = $ref(false)
 
-const value2 = $ref<RangeValue>()
+type RangeValue = [Dayjs, Dayjs]
+const taskDateRange = $ref<RangeValue>()
 
 function handleDateChange(
   value: [string, string] | [Dayjs, Dayjs],
-  dateString: [string, string],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _: [string, string],
 ) {
   taskForm.startTime = new Date(value[0].toString()).getTime()
   taskForm.endTime = new Date(value[1].toString()).getTime()
-  console.log(
-    'Selected Date:',
-    { dateString, value },
-    taskForm.startTime,
-    taskForm.endTime,
-  )
 }
 
 const taskForm = $ref<TaskForm>({
@@ -88,9 +115,6 @@ const taskForm = $ref<TaskForm>({
   endTime: undefined as unknown as number,
   communityUuid: '',
 })
-const form = $ref()
-
-const { showError } = $(notificationStore())
 
 let isPostingTask = $ref(false)
 async function onSubmitTaskForm() {
@@ -122,53 +146,14 @@ async function onSubmitTaskForm() {
     isPostingTask = false
   }
 
-  tasks = await getTasksByCommunityUuid(communityId)
+  tasks = await getTasksByCommunityUuid(uuid)
   isPostingTask = false
 }
 
-console.log('get community info of ', communityId)
+console.log('get community info of ', uuid)
 let community = $ref<Community>()
 
-let isCommunityOwner = $ref(false)
-
-let isLoading = $ref(true)
-onMounted(async () => {
-  if (!address) {
-    router.push('/')
-  }
-  setCurrentUuid(communityId)
-
-  try {
-    community = await getCommunity(communityId)
-    if (!community) {
-      throw new Error('Failed to load community info. Please try again later.')
-    }
-    console.log('get communityInfo', community.name, community, communityId)
-
-    taskForm.communityUuid = community.uuid
-
-    if (community.communitychatid) {
-      await inboxAdd(community.name, community.communitychatid)
-    }
-
-    tasks = await getTasksByCommunityUuid(communityId)
-
-    if (community.owner === address) {
-      isCommunityOwner = true
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    showError('', error as Error)
-  } finally {
-    isLoading = false
-  }
-})
-
-async function reload() {
-  isLoading = true
-  community = await getCommunity(communityId)
-  isLoading = false
-}
+const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
 const taskBannersUrl = taskBanners.map(banner => arUrl(banner))
 const currentBannerIndex = $ref(0)
@@ -178,287 +163,56 @@ const updateBanner = (index: number) => {
   }
 }
 
-const alertNotReady = () => {
-  alert('Being Cooked')
-}
-const taskTypes = [
-  [
-    {
-      label: 'Twitter Space Quest',
-      click: () => {
-        isCreateTaskModalOpen = true
-      },
-    },
-  ],
-  [
-    {
-      label: 'Promotion Quest',
-      click: alertNotReady,
-    },
-  ],
-  [
-    {
-      label: 'Invitation Quest',
-      click: alertNotReady,
-    },
-  ],
-  [
-    {
-      label: 'Try Our Product Quest',
-      click: alertNotReady,
-    },
-  ],
-  [
-    {
-      label: 'Thread Quest',
-      click: alertNotReady,
-    },
-  ],
-  [
-    {
-      label: 'Twitter Article Quest',
-      click: alertNotReady,
-    },
-  ],
-]
+let isLoading = $ref(true)
+onMounted(async () => {
+  if (!address) {
+    router.push('/')
+  }
+  setCurrentCommunityUuid(uuid)
 
-const exitButton = $ref(false)
-const router = useRouter()
-
-let isExiting = $ref(false)
-const quitCommunity = async (communityUuid: string) => {
-  isExiting = true
   try {
-    await exitCommunity(communityUuid)
-    await getCommunityList()
-    isExiting = false
-    router.push('/discovery')
+    community = await getCommunity(uuid)
+    if (!community) {
+      throw new Error('Failed to load community info. Please try again later.')
+    }
+    console.log('get communityInfo', community.name, community, uuid)
+
+    taskForm.communityUuid = community.uuid
+
+    if (community.communitychatid) {
+      await inboxAdd(community.name, community.communitychatid)
+    }
+
+    tasks = await getTasksByCommunityUuid(uuid)
   } catch (error) {
-    showError('Exit community failed.', error)
+    console.error('Error fetching data:', error)
+    showError('Loading data error.', error as Error)
   } finally {
-    isExiting = false
+    isLoading = false
   }
-}
-
-const textToCopy = $ref<HTMLParagraphElement>()
-
-const copyText = async () => {
-  try {
-    if (!textToCopy) return
-    // 使用 navigator.clipboard.writeText 复制文本
-    await navigator.clipboard.writeText(textToCopy.innerText)
-    // 复制成功后设置一段时间后隐藏提示信息
-  } catch (err) {
-    console.error('复制失败: ', err)
-  }
-}
-
-const formattedTwitterLink = (twitter: string) => {
-  // Add https:// prefix if the link doesn't start with http:// or https://
-  if (!/^(http|https):\/\//.test(twitter)) {
-    return `https://${twitter}`
-  }
-  return twitter
-}
-
-const shortedWebsite = $computed(() => {
-  return community?.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
 })
+
+async function reload() {
+  isLoading = true
+  community = await getCommunity(uuid)
+  isLoading = false
+}
+provide('reloadCommunity', reload)
 </script>
 <template>
   <UDashboardLayout :ui="{ wrapper: 'w-full static' }">
-    <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
-      <UDashboardSidebar v-if="community">
-        <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
-        <div class="pt-6">
-          <div class="flex justify-between my-3 items-center">
-            <div class="text-3xl">{{ community.name }}</div>
-            <div>
-              <UButton
-                color="white"
-                variant="solid"
-                :to="`/community/detail/${communityId}`"
-              >
-                {{ $t('View Details') }}
-              </UButton>
-            </div>
-          </div>
-
-          <UDivider />
-
-          <div
-            v-if="community.website"
-            class="flex justify-between my-3 mt-5 items-center"
-          >
-            <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
-
-            <UButton
-              variant="link"
-              class="text-right border rounded-lg max-w-[60%] overflow-hidden pl-2 pr-2 text-nowrap"
-              :title="community.website"
-              style="direction: rtl"
-            >
-              <a :href="community.website" _target="_blank">{{
-                shortedWebsite
-              }}</a>
-            </UButton>
-          </div>
-
-          <div
-            v-if="community.twitter"
-            class="flex justify-between my-3 items-center"
-          >
-            <div>{{ $t('SocialOfCommunityDetail') }}</div>
-            <div>
-              <ULink
-                :to="formattedTwitterLink(community.twitter)"
-                active-class="text-primary"
-                target="_blank"
-                inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                <UButton variant="link">
-                  <UIcon name="ri:twitter-line" class="h-5 w-5" />
-                  Twitter
-                </UButton>
-              </ULink>
-            </div>
-          </div>
-
-          <div
-            v-if="community.github"
-            class="flex justify-between my-3 items-center"
-          >
-            <div>{{ $t('GithubOfCommunityDetail') }}</div>
-            <div>
-              <ULink
-                :to="formattedTwitterLink(community.github)"
-                active-class="text-primary"
-                target="_blank"
-                inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                <UButton variant="link">
-                  <UIcon name="ri:github-line" class="h-5 w-5" />
-                  Github
-                </UButton>
-              </ULink>
-            </div>
-          </div>
-
-          <div class="flex justify-between my-3 items-center">
-            <div>{{ $t('TokenOfCommunityDetail') }}</div>
-            <div
-              v-if="
-                community.communitytoken && community.communitytoken.length > 0
-              "
-              class="flex space-x-3"
-            >
-              <div
-                v-for="(token, index) in community.communitytoken.slice(0, 2)"
-                :key="index"
-                class="flex justify-center border rounded-lg w-full pl-2 pr-2"
-              >
-                {{ token.tokenName }}
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-between my-3 items-center">
-            <div>{{ $t('Trading Support') }}</div>
-            <div
-              v-if="community.support && community.support.length > 0"
-              class="flex space-x-3"
-            >
-              <div
-                v-for="(token, index) in community.support.slice(0, 2)"
-                :key="index"
-                class="flex justify-center border rounded-lg w-full pl-2 pr-2"
-              >
-                {{ token }}
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-between my-3 pr-3 items-center">
-            <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-            <div>{{ community.buildnum }}</div>
-          </div>
-
-          <div v-if="community.creater !== address" class="flex">
-            <UButton
-              color="white"
-              variant="solid"
-              class="ml-auto mt-10"
-              @click="exitButton = true"
-            >
-              {{ $t('Quit') }}
-              <UIcon name="bi:arrow-left-circle" />
-            </UButton>
-          </div>
-        </div>
-
-        <UDivider />
-
-        <!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
-        <!--        @update:links="(colors) => (defaultColors = colors)" />-->
-
-        <div class="flex-1" />
-        <div v-if="community.creater == address" class="text-right">
-          <UButton
-            size="lg"
-            variant="ghost"
-            icon="heroicons:cog-6-tooth"
-            @click="isSettingModalOpen = true"
-          />
-        </div>
-        <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60]">
-          <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
-          <Button class="center-text border rounded-lg w-full h-8">Invite People</Button>
-          <template #panel>
-            <div class="p-4 w-96">
-              <div>Invite URL:</div>
-              <div class="flex items-center">
-                <p ref="textToCopy" class="break-all mr-2">
-                  https://decentramind.club/invite/{{ communityId }}&{{
-                    address
-                  }}
-                </p>
-                <UButton
-                  icon="carbon:align-box-bottom-right"
-                  variant="ghost"
-                  @click="copyText"
-                />
-              </div>
-            </div>
-          </template>
-        </UPopover>
-        <NuxtLink :to="`/community/${community.uuid}`">
-          <Button class="center-text border rounded-lg bg-black text-white w-full h-8">Quests Home</Button>
-        </NuxtLink>
-        <NuxtLink :to="`/chat/${community.communitychatid}`">
-          <Button class="center-text border rounded-lg w-full h-8">Chatroom</Button>
-        </NuxtLink>
-        <!--<UDashboardSidebarLinks :links="footerLinks" />-->
-
-        <UDivider class="bottom-0 sticky" />
-        <!--
-        <template #footer>
-          <UserDropdown />
-        </template>
-        -->
-      </UDashboardSidebar>
-    </UDashboardPanel>
-
+    <CommunitySidebar v-if="community" :community="community" :address="address" />
     <UDashboardPage>
       <UPage class="bg-grid overflow-y-auto h-full w-full">
         <div class="relative flex flex-col mx-10 pt-10 items-center h-screen">
           <div class="flex w-full justify-between items-center mb-6">
             <UTabs
-              :items="tabItems"
+              :items="taskVisibleTabs"
               :ui="{ wrapper: 'space-y-0' }"
-              @change="onChange"
+              @change="onTaskVisibleTabChange"
             />
             <UDropdown
-              v-if="community && community.creater == address"
+              v-if="community && isCommunityOwner"
               :items="taskTypes"
               :popper="{ placement: 'bottom-start' }"
               :ui="{ wrapper: 'h-8' }"
@@ -482,16 +236,14 @@ const shortedWebsite = $computed(() => {
                 <div class="text-xl">
                   {{
                     isCommunityOwner
-                      ? $t(
-                        'Nothing here,\nclick to start your first public quest.',
-                      )
-                      : 'Nothing here, \nthe quests will coming soon.'
+                      ? $t('No quest.')
+                      : 'Nothing here, \nquests will coming soon.'
                   }}
                 </div>
               </div>
               <div class="flex mt-10 justify-center items-center">
                 <div
-                  v-if="community && community.creater == address"
+                  v-if="community && isCommunityOwner"
                   class="flex justify-center items-center"
                 >
                   <UDropdown
@@ -609,9 +361,8 @@ const shortedWebsite = $computed(() => {
             </div>
           </template>
           <UForm
-            ref="form"
-            :schema="taskSchema"
             :state="taskForm"
+            :schema="taskSchema"
             class="space-y-6 flex flex-col justify-center"
             :validate="validateTaskForm"
             @submit="onSubmitTaskForm"
@@ -753,7 +504,7 @@ const shortedWebsite = $computed(() => {
                   }"
                 />
                 <a-range-picker
-                  v-model:value="value2"
+                  v-model:value="taskDateRange"
                   show-time
                   @change="handleDateChange"
                 />
@@ -770,35 +521,6 @@ const shortedWebsite = $computed(() => {
               {{ $t('Post the Quest') }}
             </UButton>
           </UForm>
-        </UCard>
-      </UModal>
-
-      <UModal
-        v-model="isSettingModalOpen"
-        :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }"
-      >
-        <CommunityCreate
-          :is-setting-mode="true"
-          :init-state="community"
-          @created="reload()"
-          @close-modal="isSettingModalOpen = false"
-        />
-      </UModal>
-
-      <UModal v-model="exitButton">
-        <UCard class="min-w-[300px] flex justify-center">
-          <div class="w-full flex justify-center text-2xl">Sure to Exit?</div>
-          <div v-if="!isExiting" class="w-full flex space-x-10 mt-6">
-            <UButton @click="exitButton = false"> No </UButton>
-            <UButton @click="quitCommunity(communityId)"> Yes </UButton>
-          </div>
-          <div
-            v-else
-            class="h-[80px] flex flex-col items-center justify-center"
-          >
-            <div>Leave...</div>
-            <UIcon name="svg-spinners:12-dots-scale-rotate" />
-          </div>
         </UCard>
       </UModal>
     </UDashboardPage>

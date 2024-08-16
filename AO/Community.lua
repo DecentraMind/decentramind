@@ -1,10 +1,11 @@
 ---@class Community
+---@field uuid string
 ---@field logo string arweave hash of logo
 ---@field bounty string[] bounty token names
 ---@field communitychatid string process ID of chatroom
 ---@field banner string banner name or arwaeve hash of banner
 ---@field support
----@field creater string
+---@field creator string
 ---@field owner string
 ---@field timestamp number
 ---@field communitytoken
@@ -101,6 +102,7 @@ Handlers.add(
 
     Communities[uuid] = community
     Communities[uuid].uuid = uuid
+    Communities[uuid].creator = address
     Communities[uuid]['timestamp'] = msg.Timestamp
     Communities[uuid]['buildnum'] = 1
 
@@ -111,7 +113,7 @@ Handlers.add(
       Invites[address][uuid] = { time = msg.Timestamp }
     end
 
-    Handlers.utils.reply(Communities[uuid])(msg)
+    Handlers.utils.reply(json.encode(Communities[uuid]))(msg)
   end
 )
 
@@ -177,7 +179,7 @@ Handlers.add(
     for field, value in pairs(setting) do
       community[field] = value
     end
-    Handlers.utils.reply(community)(msg)
+    Handlers.utils.reply(json.encode(community))(msg)
   end
 )
 
@@ -310,10 +312,9 @@ Handlers.add(
   end
 )
 
--- TODO rename this to getUsersByCommunityUUID
 Handlers.add(
-  "communityuser",
-  Handlers.utils.hasMatchingTag("Action", "communityuser"),
+  "GetUsersByCommunityUUID",
+  Handlers.utils.hasMatchingTag("Action", "GetUsersByCommunityUUID"),
   function(msg)
     local uuid = msg.Tags.uuid
     local communityUsers = {}
@@ -346,13 +347,6 @@ end
 Handlers.add(
   "registerUserOrLogin",
   Handlers.utils.hasMatchingTag("Action", "registerUserOrLogin"),
-  registerOrLogin
-)
-
---- TODO remove this
-Handlers.add(
-  "registerUser",
-  Handlers.utils.hasMatchingTag("Action", "registerUser"),
   registerOrLogin
 )
 

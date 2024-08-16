@@ -17,7 +17,7 @@ const columns = [{
 const pending = $ref(true)
 
 const route = useRoute()
-const communityID = $computed(() => route.params.pid) as string
+const communityID = $computed(() => route.params.uuid) as string
 
 let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
 
@@ -186,7 +186,8 @@ const formattedTwitterLink = (twitter: string) => {
         <ULandingCard
           description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
           color="primary"
-          :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]">
+          :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]"
+        >
           <template #title>
             <div class="w-full flex justify-between text-3xl mb-12 mt-3 px-12">
               {{ communityInfo.name }}
@@ -208,7 +209,7 @@ const formattedTwitterLink = (twitter: string) => {
             <ULandingCard class="col-span-8 row-span-2 flex">
               <div class="flex justify-between w-full">
                 <div class="" style="flex: 1; height: 100%;">
-                  <div class="flex justify-between px-6" v-if="communityInfo.website">
+                  <div v-if="communityInfo.website" class="flex justify-between px-6">
                     <div>{{ $t('community.website') }}</div>
                     <div class="w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[350px]">
@@ -223,7 +224,7 @@ const formattedTwitterLink = (twitter: string) => {
                       </div>
                     </div>
                   </div>
-                  <div class="flex justify-between px-6 pt-2" v-if="communityInfo.twitter">
+                  <div v-if="communityInfo.twitter" class="flex justify-between px-6 pt-2">
                     <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
                     <div class="w-48 flex justify-around items-center">
                       <div class="flex justify-center border rounded-lg w-[350px]">
@@ -310,7 +311,7 @@ const formattedTwitterLink = (twitter: string) => {
                     </div>
                   </div>
                 </div>
-                <div class="" style="flex: 1;" v-if="communityInfo.github">
+                <div v-if="communityInfo.github" class="" style="flex: 1;">
                   <div class="flex justify-between px-6">
                     <div>Github</div>
                     <div class="w-48 flex justify-around items-center">

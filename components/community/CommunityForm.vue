@@ -74,7 +74,7 @@ async function onFormSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   }
 }
 
-const emit = defineEmits(['close-modal', 'created'])
+const emit = defineEmits(['close-modal', 'saved'])
 
 let showWaitingModal = $ref(false)
 let disableSave = $ref(false)
@@ -483,7 +483,7 @@ onMounted(async () => {
           <UIcon name="svg-spinners:6-dots-scale" />
         </UContainer>
         <UContainer v-else class="w-full flex justify-around">
-          <UButton @click="!props.isSettingMode && $router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('created'); showWaitingModal = false">
+          <UButton @click="!props.isSettingMode && $router.push(`/community/${createdCommunityID}`); emit('close-modal'); emit('saved'); showWaitingModal = false">
             {{ $t('community.look') }}
           </UButton>
         </UContainer>
