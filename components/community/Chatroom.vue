@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 const { community, address } = $(toRefs(props))
 
-const { getCommunityUser, mute, unmute, getMutedUsers } = $(aoCommunityStore())
+const { getCommunityUser, mute, unmute, getMutedUsers } = $(communityStore())
 
 const selectedTab = $ref(0)
 
@@ -89,7 +89,7 @@ const isUserBanned = (userAddress: string) => {
     <UPageGrid class="w-full h-full">
       <div class="flex col-span-2 w-full h-full ml-6">
         <div v-if="chatID" class="w-full mr-2">
-          <InboxMail :mail="chatID" class="" />
+          <InboxMail :chat="chatID" />
         </div>
         <UDivider orientation="vertical" />
       </div>

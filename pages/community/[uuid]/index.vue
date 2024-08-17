@@ -10,7 +10,7 @@ import Chatroom from '~/components/community/Chatroom.vue'
 
 const { t } = useI18n()
 const { createTask, getTasksByCommunityUuid } = $(taskStore())
-const { setCurrentCommunityUuid, getCommunity } = $(aoCommunityStore())
+const { setCurrentCommunityUuid, getCommunity } = $(communityStore())
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
 const { showError, showMessage } = $(notificationStore())

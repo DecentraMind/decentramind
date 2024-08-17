@@ -11,7 +11,7 @@ const communityID = $computed(() => {
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet } = $(aoStore())
-const { joinedCommunities, userInfo, getUser, getCommunityList } = $(aoCommunityStore())
+const { joinedCommunities, userInfo, getUser, getCommunityList } = $(communityStore())
 
 const isCreateModalOpen = $ref(false)
 

@@ -6,7 +6,7 @@ import { arUrl, defaultTokenLogo } from '~/utils/arAssets'
 import { useUpload } from '~/composables/useUpload'
 
 const { address } = $(aoStore())
-const { createToken } = $(aoCommunityStore())
+const { createToken } = $(communityStore())
 const { showError } = $(notificationStore())
 
 const state = $ref<CreateToken>({

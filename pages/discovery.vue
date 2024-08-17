@@ -3,7 +3,7 @@ import { getCommunityBannerUrl, arUrl, defaultCommunityLogo } from '~/utils/arAs
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, twitterVouched, getCommunityList, joinCommunity, clearJoinedCommunities } = $(aoCommunityStore())
+const { communityList, vouch, twitterVouched, getCommunityList, joinCommunity, clearJoinedCommunities } = $(communityStore())
 
 const { showError } = $(notificationStore())
 

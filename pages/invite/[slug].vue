@@ -6,7 +6,7 @@ definePageMeta({
   layout: 'landing',
 })
 
-const { joinCommunity, getCommunity, getUserByAddress } = $(aoCommunityStore())
+const { joinCommunity, getCommunity, getUserByAddress } = $(communityStore())
 
 const { doLogin } = $(aoStore())
 

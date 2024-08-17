@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {tokenProcessIDs} from '~/utils/constants'
 import { shortString } from '~/utils/util'
-const { getLocalCommunity } = $(aoCommunityStore())
+const { getLocalCommunity } = $(communityStore())
 const { address } = $(aoStore())
 const { t } = useI18n()
 const router = useRouter()

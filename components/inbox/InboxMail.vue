@@ -4,8 +4,8 @@ import type { Mail } from '~/types'
 import { nextTick } from 'vue'
 import { useElementVisibility, watchDebounced } from '@vueuse/core'
 
-const { mail } = $defineProps<{
-  mail: string
+const { chat: chatID } = $defineProps<{
+  chat: string
 }>()
 
 const msgTop = ref(null)
@@ -14,29 +14,30 @@ const msgTopIsVisible = useElementVisibility(msgTop)
 // load this process data list
 // send msg
 // auto load new message for this process and other process, so we can show last unread message on the left sidebar msg list
-const { sendMessage, loadInboxList, itemsCache } = $(inboxStore())
+const { sendMessage, loadInboxList, mailCache } = $(inboxStore())
 const { showSuccess } = $(notificationStore())
-const { mutedUsers, currentUuid } = $(aoCommunityStore())
+const { mutedUsers } = $(communityStore())
 const { address } = $(aoStore())
 
-const msgBottom = $ref(null)
+const msgBottom = $ref<HTMLDivElement>()
 
 let msg = $ref('')
 let isLoading = $ref(false)
 
-const loadedItemsCount = $computed(() => Object.keys(itemsCache[chatID]).length)
+const loadedItemsCount = $computed(() => mailCache && mailCache[chatID] ? Object.keys(mailCache[chatID]).length : 0)
+
 const scrollToBottom = () => {
   nextTick(() => {
-    msgBottom.scrollIntoView({ behavior: 'smooth' })
+    msgBottom && msgBottom.scrollIntoView({ behavior: 'smooth' })
   })
 }
 
 const doSubmit = async () => {
-  if (isLoading) return
+  if (isLoading || !mailCache) return
   isLoading = true
 
   // show pending status
-  itemsCache[chatID][999999] = {
+  mailCache[chatID][999999] = {
     id: 999999,
     isPending: true,
     Timestamp: Date.now(),
@@ -70,18 +71,10 @@ defineShortcuts({
   },
 })
 
-const route = useRoute()
-let chatID = $ref<string | string[] | null>(null)
-
-onMounted(async () => {
-  if (!route.params.pid) return
-  chatID = route.params.pid
-})
-
 const isTextareaDisabled = computed(() => {
   return (
     isLoading ||
-    (mutedUsers[currentUuid] && mutedUsers[currentUuid].includes(address))
+    (mutedUsers && mutedUsers.includes(address))
   )
 })
 </script>

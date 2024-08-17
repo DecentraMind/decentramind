@@ -34,7 +34,7 @@ const {
   getSubmissionsByTaskPid,
 } = $(taskStore())
 
-const { getLocalCommunity, twitterVouchedIDs } = $(aoCommunityStore())
+const { getLocalCommunity, twitterVouchedIDs } = $(communityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 

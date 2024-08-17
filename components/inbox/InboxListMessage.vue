@@ -7,12 +7,12 @@ import audioFile from '@/assets/notify.mp3' // Adjust the path accordingly
 
 const emitLoaded = defineEmit('loaded')
 
-const { state, itemsCache, loadInboxList, isInboxLoading: isLoading, getInboxCount } = $(inboxStore())
-const { communityUser } = $(aoCommunityStore())
+const { state, mailCache, loadInboxList, isInboxLoading: isLoading, getInboxCount } = $(inboxStore())
+const { communityUser } = $(communityStore())
 //const { address, getActiveAddress } = $(arweaveWalletStore())
 const { address } = $(aoStore())
 const items = $computed(() => {
-  return useSortBy(useFilter(itemsCache[id], item => !!item.Data), item => parseInt(item.index))
+  return useSortBy(useFilter(mailCache[id], item => !!item.Data), item => parseInt(item.index))
 })
 
 const doLoadMore = async () => {
@@ -24,17 +24,17 @@ const doLoadMore = async () => {
 watchEffect(doLoadMore)
 
 const playAudio = () => {
-  const audio = new Audio(audioFile);
-  audio.play();
-};
+  const audio = new Audio(audioFile)
+  audio.play()
+}
 
-let interval = null
+let interval: ReturnType<typeof setInterval>
 onMounted(async () => {
   //await getActiveAddress()
   interval = setInterval(async () => {
     const oldCount = state[id].inboxCount
     const newCount = await getInboxCount(id, true)
-    if (oldCount < newCount) {
+    if (oldCount && oldCount < newCount) {
       playAudio()
     }
   }, 5000)
@@ -43,7 +43,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearInterval(interval)
-  interval = null
 })
 const isSelf = item => item.From === address
 
@@ -51,21 +50,15 @@ const getData = item => {
   return item.Data
 }
 
-const getUserName = (from) => {
+const getUserName = (from: string) => {
   const user = communityUser[from]
   return user && user.length > 0 ? user[0].name : shortAddress(from)
 }
 
-const getUserAvatar = (from) => {
+const getUserAvatar = (from: string) => {
   const user = communityUser[from]
   return user && user.length > 0 ? user[0].avatar : ''
 }
-//const makecommunityChat = $(aoCommunityStore())
-
-//const test = async()=> {
-//  const a = await makecommunityChat()
-//  console.log("--------",a)
-//}
 
 </script>
 <template>

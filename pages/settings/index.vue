@@ -5,7 +5,7 @@ import { userSchema } from '~/utils/schemas'
 import { useUpload } from '~/composables/useUpload'
 
 const { address } = $(aoStore())
-const { userInfo, updateUser } = $(aoCommunityStore())
+const { userInfo, updateUser } = $(communityStore())
 const { showSuccess, showError } = $(notificationStore())
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

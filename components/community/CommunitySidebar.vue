@@ -10,7 +10,7 @@ const props = defineProps<{
 const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
-const { exitCommunity, getCommunityList } = $(aoCommunityStore())
+const { exitCommunity, getCommunityList } = $(communityStore())
 const { showError, showSuccess } = $(notificationStore())
 
 const router = useRouter()

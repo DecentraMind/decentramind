@@ -17,7 +17,7 @@ const props = defineProps<{
 
 const { address } = $(aoStore())
 
-const { updateCommunity, addCommunity, makeCommunityChat } = $(aoCommunityStore())
+const { updateCommunity, addCommunity, makeCommunityChat } = $(communityStore())
 
 const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
 

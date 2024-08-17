@@ -6,27 +6,44 @@ import {
   dryrun
 } from '@permaweb/aoconnect'
 
+type MailCache = {
+  id: number
+  isPending: boolean
+  Timestamp: number
+  From: string
+  Data: string
+  index?: number
+}
+type InboxState = {
+  name: string
+  latestMsgTime: number
+  createdAt: number
+  inboxCount?: number
+}
+
 export const inboxStore = defineStore('inboxStore', () => {
-  const itemsCache = $ref({})
+  const mailCache = $ref<Record<string, MailCache[]>>()
   let isInboxLoading = $ref(false)
 
-  const state = $(lsItemRef('inboxStore', {
-    'CvgIA17jnhmuh3VtYozqlFy4sLKPVJV1c4eVZOY97to': {
-      name: 'HelloRWA',
-      latestMsgTime: new Date(),
-      createdAt: new Date()
-    },
-    'Fv5lQPftoQ4VGhLGc-ZV0EteHaYSjsvaQQJoYxxwE40': {
-      name: 'AO Arena DAO Chat',
-      latestMsgTime: new Date(),
-      createdAt: new Date()
-    },
-    'U1HFLMW0ZykPip03efMNpUpWcDlzkdxXwtoKZrOzhEA': {
-      name: 'HelloRWA',
-      latestMsgTime: new Date(),
-      createdAt: new Date()
-    },
-  }))
+  const state = $(lsItemRef<Record<string, InboxState>>('inboxStore',
+    {
+      // 'CvgIA17jnhmuh3VtYozqlFy4sLKPVJV1c4eVZOY97to': {
+      //   name: 'HelloRWA',
+      //   latestMsgTime: new Date(),
+      //   createdAt: new Date()
+      // },
+      // 'Fv5lQPftoQ4VGhLGc-ZV0EteHaYSjsvaQQJoYxxwE40': {
+      //   name: 'AO Arena DAO Chat',
+      //   latestMsgTime: new Date(),
+      //   createdAt: new Date()
+      // },
+      // 'U1HFLMW0ZykPip03efMNpUpWcDlzkdxXwtoKZrOzhEA': {
+      //   name: 'HelloRWA',
+      //   latestMsgTime: new Date(),
+      //   createdAt: new Date()
+      // },
+    }
+  ))
   const stateArr = $computed(() => {
     return Object.keys(state).map(id => {
       return {
@@ -46,19 +63,20 @@ export const inboxStore = defineStore('inboxStore', () => {
 
     state[id] = {
       name,
-      latestMsgTime: new Date(),
-      createdAt: new Date()
+      latestMsgTime: new Date().getTime(),
+      createdAt: new Date().getTime()
     }
     return true
   }
 
-  const remove = async (id) => {
+  const remove = async (id: string) => {
     delete state[id]
   }
 
-  const loadList = async (id) => {
-    if (itemsCache[id]) {
-      return itemsCache[id]
+  const loadList = async (id: string) => {
+    if (!mailCache) return
+    if (mailCache[id]) {
+      return mailCache[id]
     }
     let items = []
     const rz = await results({
@@ -68,13 +86,13 @@ export const inboxStore = defineStore('inboxStore', () => {
     })
 
     items = rz.edges.reverse()
-    itemsCache[id] = items
+    mailCache[id] = items
 
     return items
   }
 
-  const loadOne = async (process, message) => {
-    let { Messages, Spawns, Output, Error } = await result({
+  const loadOne = async (process: string, message: string) => {
+    const { Messages, Spawns, Output, Error } = await result({
       message,
       process,
     })
@@ -82,8 +100,8 @@ export const inboxStore = defineStore('inboxStore', () => {
     return { Messages, Spawns, Output, Error }
   }
 
-  const sendMessage = async (process, data) => {
-    await globalThis.arweaveWallet.connect(['SIGN_TRANSACTION'])
+  const sendMessage = async (process: string, data: string) => {
+    await window.arweaveWallet.connect(['SIGN_TRANSACTION'])
     const rz = await message({
       process,
       //signer: createDataItemSigner(globalThis.arweaveWallet),
@@ -97,15 +115,20 @@ export const inboxStore = defineStore('inboxStore', () => {
     return rz
   }
 
-  const getDryrunData = (rz, key) => {
-    return useGet(useKeyBy(useGet(rz, 'Messages[0].Tags'), 'name'), key)
+  const getDryrunData = (result: Awaited<ReturnType<typeof dryrun>>, key: string) => {
+    return useGet(
+      useKeyBy(
+        useGet(result, 'Messages[0].Tags'), 'name'
+      ),
+      key
+    )
   }
   const getInboxCount = async (process: string, isForce = false) => {
     if (state[process].inboxCount && !isForce) {
       return state[process].inboxCount
     }
 
-    let rz = await dryrun({
+    const res = await dryrun({
       process, // Use the processId from the context
       tags: [
         {
@@ -116,18 +139,19 @@ export const inboxStore = defineStore('inboxStore', () => {
       ],
       data: '#Inbox',
     })
-    rz = getDryrunData(rz, 'InboxCount.value')
-    state[process].inboxCount = rz
-    return rz
+    const data = getDryrunData(res, 'InboxCount.value')
+    state[process].inboxCount = data
+    return data
   }
 
   const loadInboxList = async (process: string, limit = 10, isNewer = true) => {
-    if (!itemsCache[process]) {
-      itemsCache[process] = {}
+    if (!mailCache) return
+    if (!mailCache[process]) {
+      mailCache[process] = {}
     }
 
     const inboxCount = await getInboxCount(process, true)
-    const cachedIndex = useWithout(Object.keys(itemsCache[process]).map(item => parseInt(item)), 999999)
+    const cachedIndex = useWithout(Object.keys(mailCache[process]).map(item => parseInt(item)), 999999)
     const start = isNewer ? useMax(cachedIndex) : 1
     const allIndex = useRange(start, parseInt(inboxCount) + 1)
     const waitForReadIndex = useDifference(allIndex, cachedIndex).reverse()
@@ -136,11 +160,11 @@ export const inboxStore = defineStore('inboxStore', () => {
     }
 
     isInboxLoading = true
-    const waitForReadIndexTrunk = useChunk(waitForReadIndex, limit)
+    const waitForReadIndexChunk = useChunk(waitForReadIndex, limit)
 
-    await Promise.all(waitForReadIndexTrunk[0].map(async index => {
-      if (itemsCache[process][index]) {
-        return itemsCache[process][index]
+    await Promise.all(waitForReadIndexChunk[0].map(async index => {
+      if (mailCache[process][index]) {
+        return mailCache[process][index]
       }
 
       const rz = await dryrun({
@@ -154,21 +178,21 @@ export const inboxStore = defineStore('inboxStore', () => {
           { name: 'Index', value: String(index) },
         ],
       })
-      itemsCache[process][index] = {
+      mailCache[process][index] = {
         ...getDryrunData(rz, 'MessageDetails.value'),
         index,
       }
 
-      return itemsCache[process][index]
+      return mailCache[process][index]
     }))
-    if (itemsCache[process][999999]) {
-      delete itemsCache[process][999999]
+    if (mailCache[process][999999]) {
+      delete mailCache[process][999999]
     }
     isInboxLoading = false
   }
 
 
-  return $$({ state, stateArr, itemsCache, isInboxLoading, add, remove, loadList, loadOne, sendMessage, getInboxCount, loadInboxList })
+  return $$({ state, stateArr, mailCache, isInboxLoading, add, remove, loadList, loadOne, sendMessage, getInboxCount, loadInboxList })
 })
 
 if (import.meta.hot)

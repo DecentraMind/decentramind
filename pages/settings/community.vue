@@ -2,7 +2,7 @@
 import { arUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
 const { address } = $(aoStore())
-const { joinedCommunities } = $(aoCommunityStore())
+const { joinedCommunities } = $(communityStore())
 
 const router = useRouter()
 

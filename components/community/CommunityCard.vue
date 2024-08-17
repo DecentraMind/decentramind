@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { getCommunityBannerUrl } from '~/utils/arAssets'
 
-const { joinCommunity, getCommunity, getUserByAddress } = $(aoCommunityStore())
+const { joinCommunity, getCommunity, getUserByAddress } = $(communityStore())
 
 const { doLogin } = $(aoStore())
 

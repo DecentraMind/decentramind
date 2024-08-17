@@ -4,7 +4,7 @@ import type { InviteInfo, RelatedUserMap } from '~/types'
 import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils/util'
 
-const { getLocalCommunity } = $(aoCommunityStore())
+const { getLocalCommunity } = $(communityStore())
 const { getInvitesByInviter } = $(taskStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())

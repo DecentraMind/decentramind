@@ -14,7 +14,7 @@ import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
 // Read the Lua file
 //const luaCode = fs.readFileSync('./AO/chat.lua', 'utf8')
 
-export const aoCommunityStore = defineStore('aoCommunityStore', () => {
+export const communityStore = defineStore('communityStore', () => {
   const { address } = $(aoStore())
   let twitterVouched = $ref(true)
   let twitterVouchedIDs = $ref<string[]>([])
@@ -652,4 +652,4 @@ Handlers.add(
 
 
 if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(aoCommunityStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(communityStore, import.meta.hot))
