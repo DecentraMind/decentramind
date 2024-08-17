@@ -17,7 +17,7 @@
     "create": "创建社区",
     "detail": {
       "contribute": "贡献社区",
-      "contribute.rank": "社区贡献排行榜",
+      "contributeRank": "社区贡献排行榜",
       "reward.issued": "项目已发放激励",
       "social": "社交媒体",
       "token": "社区代币"

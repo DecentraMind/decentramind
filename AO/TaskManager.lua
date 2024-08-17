@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.1.0'
+Variant = '0.1.1'
 
 local json = require("json")
 local ao = require('ao')
@@ -216,6 +216,28 @@ TaskManager = {
       BountySendHistory[pid] = {}
     end
     table.insert(BountySendHistory[pid], history)
+  end,
+
+  getAllBounties = function(msg)
+    Handlers.utils.reply(json.encode(BountySendHistory))(msg)
+  end,
+
+  getBountiesByCommuintyID = function (msg)
+    local uuid = msg.Tags.CommunityUuid
+    if not TasksByCommunity[uuid] then
+      return Handlers.utils.replay('[]')(msg)
+    end
+
+    local result = {}
+    for _, taskPid in pairs(TasksByCommunity[uuid]) do
+      if BountySendHistory[taskPid] then
+        for _, bounty in pairs(BountySendHistory[taskPid]) do
+          table.insert(result, bounty)
+        end
+      end
+    end
+
+    Handlers.utils.reply(json.encode(result))(msg)
   end
 }
 
@@ -320,11 +342,14 @@ Handlers.add(
 )
 
 Handlers.add(
-  "getAllBounties",
-  Handlers.utils.hasMatchingTag("Action", "getAllBounties"),
-  function(msg)
-    local cJson = json.encode(BountySendHistory)
-    -- 通过id获取该任务对应参与信息
-    Handlers.utils.reply(cJson)(msg)
-  end
+  "GetAllBounties",
+  Handlers.utils.hasMatchingTag("Action", "GetAllBounties"),
+  TaskManager.getAllBounties
+)
+
+
+Handlers.add(
+  "GetBountiesByCommunityID",
+  Handlers.utils.hasMatchingTag("Action", "GetBountiesByCommunityID"),
+  TaskManager.getBountiesByCommuintyID
 )

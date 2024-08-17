@@ -55,11 +55,14 @@ export const aoStore = defineStore('aoStore', () => {
     })
     console.log('register/login result', messageID, address)
 
-    window.addEventListener('walletSwitch', async (e) => {
-      if(e.detail.address !== address) {
+    const onSwitch = async (e) => {
+      if (e.detail.address !== address) {
+        console.log('Wallet switched, logout.', e.detail.address, address)
         await doLogout()
+        globalThis.removeEventListener('walletSwitch', onSwitch)
       }
-    })
+    }
+    globalThis.addEventListener('walletSwitch', onSwitch)
 
     return messageID
   }

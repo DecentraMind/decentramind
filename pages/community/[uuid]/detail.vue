@@ -8,7 +8,7 @@ const router = useRouter()
 
 const columns = [{
   key: 'name',
-  label: t('community.detail.contribute.rank'),
+  label: t('community.detail.contributeRank'),
   class: 'text-xl'
 }, {
   key: 'bountyCount',
@@ -32,17 +32,6 @@ type Rank = {
   bountyCount: number
 }
 
-type Bounty = {
-  communityId: string
-  communityName: string
-  receive: string
-  send: string
-  taskId: string
-  taskName: string
-  tokenNumber: number
-  tokenType: string
-}
-
 const { getBountiesByCommunityID } = $(taskStore())
 let rankings = $ref<Rank[]>()
 onMounted( async () => {
@@ -50,14 +39,14 @@ onMounted( async () => {
     router.push('/')
   }
   try {
-    const bounties = await getBountiesByCommunityID(communityID) as Bounty[]
+    const bounties = await getBountiesByCommunityID(communityID)
     console.log({bounties})
     rankings = bounties.reduce((ranks, bounty) => {
-      const index = ranks.findIndex(rank => rank.receiver === bounty.receive)
+      const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
       if (index >= 0) {
         ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
       } else {
-        ranks.push({receiver: bounty.receive, bountyCount: 1})
+        ranks.push({receiver: bounty.recipient, bountyCount: 1})
       }
       return ranks
     }, [] as Rank[]).sort((a, b) => {
@@ -111,7 +100,7 @@ const initChart = (tokensupply) => {
 
     if (tokensupply && Array.isArray(tokensupply)) {
       // Convert communityInfo.supply to the format required by ECharts
-      const a = JSON.parse(JSON.stringify(communityInfo.tokensupply))
+      const a = JSON.parse(JSON.stringify(tokensupply))
 
       const data = a.map(item => ({
         value: item.supply,

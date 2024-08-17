@@ -17,7 +17,7 @@
     "create": "Create a Community",
     "detail": {
       "contribute": "Contributing Community",
-      "contribute.rank": "Contribution Ranking",
+      "contributeRank": "Contribution Ranking",
       "reward.issued": "Incentives granted",
       "social": "Social Media",
       "token": "Community Token"

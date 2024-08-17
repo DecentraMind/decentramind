@@ -59,6 +59,11 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
   return true
 }
 
+/**
+ * Get data from dryrun result
+ * @param result dryrun result
+ * @returns 
+ */
 export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
   checkResult(result)
 

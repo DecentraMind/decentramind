@@ -15,7 +15,6 @@ const msgTopIsVisible = useElementVisibility(msgTop)
 // send msg
 // auto load new message for this process and other process, so we can show last unread message on the left sidebar msg list
 const { sendMessage, loadInboxList, mailCache } = $(inboxStore())
-const { showSuccess } = $(notificationStore())
 const { mutedUsers } = $(communityStore())
 const { address } = $(aoStore())
 
@@ -53,7 +52,7 @@ const submitMessage = async () => {
   scrollToBottom()
 
   await sendMessage(chatID, msg)
-  // showSuccess('Send message succeed!')
+
   isSubmitting = false
   msg = ''
   await loadInboxList(chatID)

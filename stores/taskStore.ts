@@ -376,11 +376,24 @@ export const taskStore = defineStore('taskStore', () => {
   const getAllBounty = async () => {
     const res = await dryrun({
       process: taskManagerProcessID,
-      tags: [{ name: 'Action', value: 'getAllBounties' }]
+      tags: [{ name: 'Action', value: 'GetAllBounties' }]
     })
     // console.log('all bounties = ' + res.Messages[0].Data)
     const bountyMap = JSON.parse(res.Messages[0].Data) as Record<string, Bounty[]>
     return Object.values(bountyMap).flat()
+  }
+
+  const getBountiesByCommunityID = async (communityUuid: string) => {
+    const res = await dryrun({
+      process: taskManagerProcessID,
+      tags: [{
+        name: 'Action', value: 'GetBountiesByCommunityID'
+      }, {
+        name: 'CommunityUuid', value: communityUuid
+      }]
+    })
+    const data = extractResult<string>(res)
+    return JSON.parse(data) as Bounty[]
   }
 
   return $$({
@@ -389,7 +402,7 @@ export const taskStore = defineStore('taskStore', () => {
 
     setTaskIsSettled, setTaskIsCalculated,
 
-    sendBounty, storeBounty, getAllBounty,
+    sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID,
 
     submitSpaceTask,
     getSubmissionsByTaskPid,
