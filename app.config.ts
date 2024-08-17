@@ -2,13 +2,22 @@ export default defineAppConfig({
   ui: {
     primary: 'sky',
     gray: 'cool',
+    avatar: {
+      wrapper: 'ring-.5 ring-gray-300 dark:ring-gray-700',
+      rounded: 'object-cover'
+    },
     button: {
+      padding: {
+        '2xs': 'px-2 py-1',
+        xs: 'px-2.5 py-1.5',
+        sm: 'px-2.5 py-1.5',
+        md: 'px-3 py-2',
+        lg: 'px-3.5 py-2.5',
+        xl: 'px-3.5 py-2.5',
+      },
       default: {
         loadingIcon: 'svg-spinners:gooey-balls-2'
       }
-    },
-    icons: {
-      dynamic: true
     },
     alert: {
       icon: {
@@ -16,9 +25,6 @@ export default defineAppConfig({
       },
       title: 'text-xl font-semibold mb-2',
       description: 'mt-1 text-sm leading-6 text-gray-600 text-justify',
-    },
-    avatar: {
-      rounded: 'object-cover'
     },
     formGroup: {
       label: {

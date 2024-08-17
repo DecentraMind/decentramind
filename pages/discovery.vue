@@ -190,7 +190,7 @@ const checkVouch = async () => {
     </div>
     <UModal v-model="vouchModalOpen">
       <div class="h-[200px] flex flex-col items-center justify-center">
-        <Text class="text-2xl">Not Vouched</Text>
+        <Text class="text-xl">Not Vouched</Text>
         <div>
           <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank">
             <UButton color="white" class="mt-10">Get Vouched</UButton>

@@ -26,9 +26,10 @@ const quitCommunity = async (communityUuid: string) => {
   isExiting = true
   try {
     await exitCommunity(communityUuid)
-    await getCommunityList()
+    showExitModal = false
     isExiting = false
     router.push('/discovery')
+    await getCommunityList()
   } catch (error) {
     showError('Exit community failed.', error as Error)
   } finally {
@@ -67,8 +68,8 @@ const emit = defineEmits(['switch-right-page'])
     <UDashboardSidebar v-if="community" class="pb-3">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
       <div class="pt-6">
-        <div class="flex justify-between my-3 items-center">
-          <div class="text-3xl">{{ community.name }}</div>
+        <div class="flex justify-between my-3 items-start">
+          <div class="max-w-[70%] text-3xl break-all">{{ community.name }}</div>
           <div>
             <UButton
               color="white"
@@ -176,6 +177,8 @@ const emit = defineEmits(['switch-right-page'])
           <div>{{ community.buildnum }}</div>
         </div>
 
+        <UDivider />
+
         <div v-if="!isCommunityOwner" class="flex">
           <UButton
             color="white"
@@ -189,7 +192,6 @@ const emit = defineEmits(['switch-right-page'])
         </div>
       </div>
 
-      <UDivider />
 
       <!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
       <!--        @update:links="(colors) => (defaultColors = colors)" />-->
@@ -238,15 +240,17 @@ const emit = defineEmits(['switch-right-page'])
       </Button>
     </UDashboardSidebar>
 
-    <UModal v-if="community" v-model="showExitModal">
-      <UCard class="min-w-[300px] flex justify-center">
-        <div class="w-full flex justify-center text-2xl">Sure to Exit?</div>
-        <div v-if="!isExiting" class="w-full flex space-x-10 mt-6">
-          <UButton @click="showExitModal = false"> No </UButton>
-          <UButton @click="quitCommunity(community.uuid)"> Yes </UButton>
+    <UModal v-model="showExitModal" :ui="{width: 'w-72 ssss'}">
+      <UCard v-if="community">
+        <template #header>
+          <div class="text-center text-xl font-medium">Sure to Exit?</div>
+        </template>
+        <div v-if="!isExiting" class="h-12 w-full flex-center space-x-10">
+          <UButton color="gray" size="md" @click="showExitModal = false">No</UButton>
+          <UButton color="red" size="md" @click="quitCommunity(community.uuid)">Yes</UButton>
         </div>
-        <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <div>Leave...</div>
+        <div v-else class="h-20 flex flex-col items-center justify-center">
+          <div>Leaving...</div>
           <UIcon name="svg-spinners:12-dots-scale-rotate" />
         </div>
       </UCard>

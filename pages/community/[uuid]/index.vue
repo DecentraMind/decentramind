@@ -534,7 +534,7 @@ function switchRightPage(page: PageSymbol) {
       </UPage>
 
       <Chatroom
-        v-if="currentRightPage === communityRightPages.chatroom"
+        v-if="community && currentRightPage === communityRightPages.chatroom"
         :community="community"
         :address="address"
       />

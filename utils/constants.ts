@@ -205,3 +205,5 @@ export const communityRightPages = {
   chatroom: Symbol()
 }
 export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRightPages]
+
+export const chatroomFetchInterval = 5000

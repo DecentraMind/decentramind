@@ -32,7 +32,6 @@ watchEffect(() => {
   }
 })
 
-
 let users = $ref<UserInfoWithAddress[]>([])
 
 const chatID = community.communitychatid
@@ -104,30 +103,26 @@ const doUnmute = async() => {
 
 <template>
   <UPage class="w-full">
-    <UPageGrid class="w-full h-full">
-      <div class="flex col-span-2 w-full h-full ml-6">
-        <div v-if="chatID" class="w-full mr-2">
-          <InboxMail :chat="chatID" />
-        </div>
+    <div class="w-full h-full grid grid-cols-1 sm:grid-cols-[1fr,230px]">
+      <div class="flex h-full">
+        <InboxMail v-if="chatID" :chat="chatID" />
         <UDivider orientation="vertical" />
       </div>
-      <div class="pt-2 pr-10 pl-2">
+      <div class="hidden sm:block pt-2 bg-gray-50">
         <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="users.length">
           <template #title>
-            <Text class="text-3xl">
-              User
-            </Text>
+            <span class="text-2xl mr-2">Users</span>
           </template>
         </UDashboardNavbar>
 
-        <div v-if="community" class="pt-2 pl-2">
+        <div v-if="community" class="py-4 px-2">
           <div
             v-for="user in users"
             :key="user.address"
-            class="relative group mb-2 flex items-center justify-between"
+            class="relative group py-2 px-2 rounded-md hover:bg-slate-100 p-1 flex items-center justify-between max-w-full overflow-hidden"
           >
-            <div class="flex-center gap-3">
-              <UAvatar size="lg" :src="user.avatar ? arUrl(user.avatar) : arUrl(defaultUserAvatar)" class="overflow-hidden ring-1 ring-gray-300 dark:ring-gray-700" />
+            <div class="flex-center gap-2">
+              <UAvatar size="sm" :src="user.avatar ? arUrl(user.avatar) : arUrl(defaultUserAvatar)" class="overflow-hidden ring-gray-300 dark:ring-gray-700" />
               <div class="flex text-base">
                 <span class="text-center font-medium">{{ user.name || shortString(user.address) }}</span>
               </div>
@@ -146,14 +141,14 @@ const doUnmute = async() => {
           </div>
         </div>
       </div>
-    </UPageGrid>
+    </div>
 
     <UModal v-model="isMuteModalOpen">
-      <UCard class="min-w-[300px] flex justify-center">
-        <div class="w-full flex justify-center text-2xl">
+      <UCard class="flex justify-center">
+        <div class="w-full flex justify-center text-xl">
           Sure to Mute?
         </div>
-        <div v-if="!isDoingMute" class="w-full flex space-x-10 mt-6 justify-between">
+        <div v-if="!isDoingMute" class="h-16 w-full flex space-x-10 mt-6 justify-between">
           <UButton
             variant="outline"
             @click="isMuteModalOpen = false"
@@ -167,19 +162,18 @@ const doUnmute = async() => {
             Yes
           </UButton>
         </div>
-        <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <Text>Mute...</Text>
-          <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        <div v-else class="h-16 flex flex-col items-center justify-center">
+          <span><UIcon name="svg-spinners:12-dots-scale-rotate" />Mute...</span>
         </div>
       </UCard>
     </UModal>
 
     <UModal v-model="isUnmuteModalOpen">
-      <UCard class="min-w-[300px] flex justify-center">
-        <div class="w-full flex justify-center text-2xl">
+      <UCard class="flex justify-center">
+        <div class="w-full flex justify-center text-xl">
           Sure to Unmute?
         </div>
-        <div v-if="!isDoingUnmute" class="w-full flex space-x-10 mt-6 justify-between">
+        <div v-if="!isDoingUnmute" class="h-16 w-full flex space-x-10 mt-6 justify-between">
           <UButton
             variant="outline"
             @click="isUnmuteModalOpen = false"
@@ -193,9 +187,8 @@ const doUnmute = async() => {
             Yes
           </UButton>
         </div>
-        <div v-else class="h-[80px] flex flex-col items-center justify-center">
-          <Text>Unmute...</Text>
-          <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        <div v-else class="h-16 flex flex-col items-center justify-center">
+          <span><UIcon name="svg-spinners:12-dots-scale-rotate" />Unmute...</span>
         </div>
       </UCard>
     </UModal>

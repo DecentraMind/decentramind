@@ -17,6 +17,7 @@ const msgTopIsVisible = useElementVisibility(msgTop)
 const { sendMessage, loadInboxList, mailCache } = $(inboxStore())
 const { mutedUsers } = $(communityStore())
 const { address } = $(aoStore())
+const { showError } = $(notificationStore())
 
 const msgBottom = $ref<HTMLDivElement>()
 
@@ -51,10 +52,16 @@ const submitMessage = async () => {
   }
   scrollToBottom()
 
-  await sendMessage(chatID, msg)
+  try {
+    await sendMessage(chatID, msg)
+    msg = ''
+  } catch (e) {
+    console.error(e)
+    showError('Failed to send message.', e as Error)
+  } finally {
+    isSubmitting = false
+  }
 
-  isSubmitting = false
-  msg = ''
   await loadInboxList(chatID)
   scrollToBottom()
 }
@@ -85,7 +92,7 @@ const isTextareaDisabled = computed(() => {
 </script>
 
 <template>
-  <div class="h-full">
+  <div class="w-full h-full">
     <div class="sticky">
       <div class="bg-background flex p-4 justify-between">
         <div class="flex gap-4 items-center">
@@ -105,12 +112,12 @@ const isTextareaDisabled = computed(() => {
     </div>
     -->
     <div class="h-screen flex flex-col justify-between pt-10 pb-10">
-      <div class="overflow-y-auto h-5/6 flex flex-col-reverse" style="-ms-overflow-style: none; scrollbar-width: none;">
+      <div class="overflow-y-auto h-5/6 flex flex-col-reverse">
         <!--<InboxListMessage :id="chatID" @loaded="scrollToBottom" />-->
-        <InboxListMessage :id="chatID" />
+        <InboxListMessage :pid="chatID" />
       </div>
       <div ref="msgBottom" class="" />
-      <div class="bottom-4 sticky mt-2">
+      <div class="bottom-4 sticky mt-2 px-3">
         <form @submit.prevent="submitMessage">
           <UTextarea
             v-model="msg"
@@ -125,11 +132,12 @@ const isTextareaDisabled = computed(() => {
             <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->
             <UButton
               :disabled="isTextareaDisabled"
+              :loading="isSubmitting"
               type="submit"
               color="black"
               label="Send"
               icon="i-heroicons-paper-airplane"
-              class="right-3.5 bottom-2.5 absolute"
+              class="right-2.5 bottom-2.5 absolute"
             />
           </UTextarea>
         </form>

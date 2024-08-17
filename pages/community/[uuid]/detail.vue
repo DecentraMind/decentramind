@@ -14,7 +14,7 @@ const columns = [{
   key: 'bountyCount',
 }]
 
-const pending = $ref(true)
+let isLoadingRankings = $ref(true)
 
 const route = useRoute()
 const communityID = $computed(() => route.params.uuid) as string
@@ -56,6 +56,8 @@ onMounted( async () => {
   } catch (e) {
     console.error(e)
     showError('Failed to get ranking data.')
+  } finally {
+    isLoadingRankings = false
   }
 
   await loadCommunityInfo(communityID)
@@ -329,7 +331,7 @@ const formattedTwitterLink = (twitter: string) => {
             </ULandingCard>
 
             <ULandingCard class="col-span-4 row-span-4">
-              <UTable :columns="columns" :rows="rankings" :loading="pending" class="pl-12">
+              <UTable :columns="columns" :rows="rankings" :loading="isLoadingRankings" class="pl-12">
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
                     <!-- <UAvatar v-bind="row.avatar" :alt="row.receiver" size="xs" /> -->

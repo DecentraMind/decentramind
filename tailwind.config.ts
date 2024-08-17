@@ -26,8 +26,11 @@ export default <Partial<Config>>{
       16: '16',
     },
     extend: {
+      ringWidth: {
+        '.5': '0.5px',
+      },
       fontFamily: {
-        sans: ['DM Sans', ...defaultTheme.fontFamily.sans]
+        sans: ['Proxima Nova', ...defaultTheme.fontFamily.sans]
       },
       backgroundImage: {
         grid: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 32 32\' width=\'13\' height=\'13\' fill=\'none\' stroke=\'rgb(0 0 0 / 0.04)\'%3e%3cpath d=\'M0 .5H31.5V32\'/%3e%3c/svg%3e")',
