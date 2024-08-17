@@ -22,7 +22,7 @@ const { address } = $(aoStore())
 const msgBottom = $ref<HTMLDivElement>()
 
 let msg = $ref('')
-let isLoading = $ref(false)
+let isSubmitting = $ref(false)
 
 const loadedItemsCount = $computed(() => mailCache && mailCache[chatID] ? Object.keys(mailCache[chatID]).length : 0)
 
@@ -32,10 +32,16 @@ const scrollToBottom = () => {
   })
 }
 
-const doSubmit = async () => {
-  if (isLoading || !mailCache) return
-  isLoading = true
+const submitMessage = async () => {
+  if (isSubmitting || !mailCache) {
+    console.log('cannot submit', {isLoading: isSubmitting, mailCache})
+    return
+  }
+  isSubmitting = true
 
+  if (!mailCache[chatID]) {
+    mailCache[chatID] = []
+  }
   // show pending status
   mailCache[chatID][999999] = {
     id: 999999,
@@ -47,8 +53,8 @@ const doSubmit = async () => {
   scrollToBottom()
 
   await sendMessage(chatID, msg)
-  showSuccess('Send message succeed!')
-  isLoading = false
+  // showSuccess('Send message succeed!')
+  isSubmitting = false
   msg = ''
   await loadInboxList(chatID)
   scrollToBottom()
@@ -67,13 +73,13 @@ watchDebounced(msgTopIsVisible, async () => {
 defineShortcuts({
   meta_enter: {
     usingInput: 'msg',
-    handler: doSubmit,
+    handler: submitMessage,
   },
 })
 
 const isTextareaDisabled = computed(() => {
   return (
-    isLoading ||
+    isSubmitting ||
     (mutedUsers && mutedUsers.includes(address))
   )
 })
@@ -81,10 +87,11 @@ const isTextareaDisabled = computed(() => {
 
 <template>
   <div class="h-full">
-    <div class="m-4 top-4 z-99 sticky">
+    <div class="sticky">
       <div class="bg-background flex p-4 justify-between">
         <div class="flex gap-4 items-center">
           <div class="min-w-0">
+            <!-- this area is for new message number button -->
             <p class="font-semibold text-gray-900 dark:text-white" />
           </div>
         </div>
@@ -99,13 +106,13 @@ const isTextareaDisabled = computed(() => {
     </div>
     -->
     <div class="h-screen flex flex-col justify-between pt-10 pb-10">
-      <div class="overflow-y-auto h-5/6 flex flex-col-reverse">
+      <div class="overflow-y-auto h-5/6 flex flex-col-reverse" style="-ms-overflow-style: none; scrollbar-width: none;">
         <!--<InboxListMessage :id="chatID" @loaded="scrollToBottom" />-->
         <InboxListMessage :id="chatID" />
       </div>
       <div ref="msgBottom" class="" />
       <div class="bottom-4 sticky mt-2">
-        <form @submit.prevent="doSubmit">
+        <form @submit.prevent="submitMessage">
           <UTextarea
             v-model="msg"
             :disabled="isTextareaDisabled"

@@ -8,7 +8,7 @@ import {
 import type { InboxState, MailCache } from '~/types'
 
 export const inboxStore = defineStore('inboxStore', () => {
-  const mailCache = $ref<Record<string, MailCache[]>>()
+  const mailCache = $ref<Record<string, MailCache[]>>({})
   let isInboxLoading = $ref(false)
 
   const state = $(lsItemRef<Record<string, InboxState>>('inboxStore',
