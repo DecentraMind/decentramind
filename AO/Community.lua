@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.1.2'
+Variant = '0.1.3'
 
 ---@class Community
 ---@field uuid string
@@ -25,14 +25,14 @@ Communities = Communities or {}
 ---@field invite? string The inviter's address, who invited this user.
 ---@field time number The timestamp when user join community.
 
---[[
-User's community related data
-@type Invites = {
-  [address: string]: { -- the user
-    [communityID: string]: InviteInfo
-  }
-}
-]] --
+
+--- User's community related data
+---@type table<string, table<string, InviteInfo>>
+---{
+---  [address: string]: { -- the user
+---    [communityID: string]: InviteInfo
+---  }
+-- }
 Invites = Invites or {}
 --[[
 type Users = {
@@ -326,6 +326,9 @@ Handlers.add(
 
     for address, inviteInfo in pairs(Invites) do
       if inviteInfo[uuid] then
+        if not Users[address] then
+          Users[address] = { name = '', avatar = '' }
+        end
         communityUsers[address] = Users[address]
         communityUsers[address].muted = false
 
