@@ -262,8 +262,8 @@ export type UserInfo = {
   avatar: string
 }
 
-export type UserInfoWithAddress = UserInfo & { address: string }
-export type UserInfoWithMuted = UserInfo & { muted: string }
+export type UserInfoWithMuted = UserInfo & { muted: boolean }
+export type UserInfoWithAddress = UserInfoWithMuted & { address: string }
 
 export type UploadResponse = {
   url?: string

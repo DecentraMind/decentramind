@@ -2,6 +2,7 @@
 import type { Community, Mail, UserInfoWithAddress } from '~/types'
 import { shortString } from '~/utils/util'
 import { defaultUserAvatar, arUrl } from '~/utils/arAssets'
+import { transpileModule } from 'typescript'
 
 const props = defineProps<{
   community: Community
@@ -59,37 +60,45 @@ onMounted(async () => {
 let isMuteModalOpen =$ref(false)
 let isUnmuteModalOpen =$ref(false)
 
-let currentUser = $ref('')
-
-const showMuteOrUnmute = $ref(false)
+let currentUser = $ref<string>()
 
 let isDoingMute = $ref(false)
-const OpenMuteModal = (index: string) => {
+const OpenMuteModal = (address: string) => {
   isMuteModalOpen = true
-  currentUser = index
+  currentUser = address
 }
 const doMute = async() => {
+  if (!currentUser) return
   isDoingMute = true
   await mute(community.uuid, currentUser)
+
+  const index = users.findIndex(user => user.address === currentUser)
+  if (index > -1) {
+    users[index].muted = true
+  }
+
   isDoingMute = false
   isMuteModalOpen = false
 }
 
 let isDoingUnmute = $ref(false)
-const OpenUnmuteModal = (index: string) => {
+const OpenUnmuteModal = (address: string) => {
   isUnmuteModalOpen = true
-  currentUser = index
+  currentUser = address
 }
 const doUnmute = async() => {
+  if (!currentUser) return
   isDoingUnmute = true
   await unmute(community.uuid, currentUser)
   mutedUsers = await getMutedUsers(community.uuid)
+
+  const index = users.findIndex(user => user.address === currentUser)
+  if (index > -1) {
+    users[index].muted = false
+  }
+
   isDoingUnmute = false
   isUnmuteModalOpen = false
-}
-
-const isUserBanned = (userAddress: string) => {
-  return mutedUsers.includes(userAddress)
 }
 
 </script>
@@ -111,6 +120,7 @@ const isUserBanned = (userAddress: string) => {
             </Text>
           </template>
         </UDashboardNavbar>
+
         <div v-if="community" class="pt-2 pl-2">
           <div
             v-for="user in users"
@@ -126,12 +136,13 @@ const isUserBanned = (userAddress: string) => {
 
             <UButton
               v-show="community.owner === address"
-              :color="isUserBanned(user.address) ? 'gray' : 'gray'"
+              :color="user.muted ? 'white' : 'gray'"
               variant="solid"
+              size="xs"
               class="absolute right-[-100px] group-hover:right-0 top-1/2 transform -translate-y-1/2 translate-x-full group-hover:translate-x-0 transition-all duration-200 ease-in-out"
-              @click="isUserBanned(user.address) ? OpenUnmuteModal(user.address) : OpenMuteModal(user.address)"
+              @click="user.muted ? OpenUnmuteModal(user.address) : OpenMuteModal(user.address)"
             >
-              {{ isUserBanned(user.address) ? 'unmute' : 'mute' }}
+              {{ user.muted ? 'unmute' : 'mute' }}
             </UButton>
           </div>
         </div>
