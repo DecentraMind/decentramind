@@ -2,6 +2,7 @@
 import type { Community, Mail, UserInfoWithAddress } from '~/types'
 import { shortString } from '~/utils/util'
 import { defaultUserAvatar, arUrl } from '~/utils/arAssets'
+import { transpileModule } from 'typescript'
 
 const props = defineProps<{
   community: Community
