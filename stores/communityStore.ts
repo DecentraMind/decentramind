@@ -5,7 +5,7 @@ import {
   dryrun,
   result
 } from '@permaweb/aoconnect'
-import type { Community, CommunityList, CommunityListItem, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
+import type { Community, CommunityList, CommunityListItem, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo } from '~/utils/arAssets'
 import { createUuid, sleep, retry, checkResult } from '~/utils/util'
@@ -304,28 +304,23 @@ export const communityStore = defineStore('communityStore', () => {
     joinedCommunities = communityList.filter((item) => item.isJoined === true)
   }
 
-  //Get joined users in a given community
-  const getCommunityUser = async (uuid: any) => {
+  /**
+   * Get joined users of a community.
+   * */
+  const getCommunityUser = async (communityUuid: string) => {
     const result = await dryrun({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'GetUsersByCommunityUUID' },
-        { name: 'uuid', value: uuid }
+        { name: 'CommunityUuid', value: communityUuid }
       ],
     })
 
     const dataStr = extractResult<string>(result)
 
-    const communityUser = JSON.parse(dataStr) as Record<string, UserInfo>
+    const communityUserMap = JSON.parse(dataStr) as Record<string, UserInfoWithMuted>
 
-    return Object.entries(communityUser).map((
-      [key, user]
-    ) => {
-      return {
-        address: key,
-        ...user
-      }
-    })
+    return communityUserMap
   }
 
   //Getting information about a specific community from a cached community list
@@ -619,6 +614,12 @@ Handlers.add(
     return processID
   }
 
+  let currentCommunityUserMap = $ref<Record<string, UserInfo>>()
+  const setCurrentCommunityUserMap = async(users: Record<string, UserInfo>) => {
+    currentCommunityUserMap = users
+  }
+
+
   return $$({
     userInfo,
     communityList,
@@ -644,6 +645,8 @@ Handlers.add(
     getUser,
     getUserByAddress,
     getCommunityUser,
+    setCurrentCommunityUserMap,
+    currentCommunityUserMap,
     getCommunity,
     clearJoinedCommunities
   })

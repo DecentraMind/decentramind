@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format, isToday } from 'date-fns'
-import type { Mail } from '~/types'
+import type { Mail, UserInfo } from '~/types'
 import { nextTick } from 'vue'
 import { useElementVisibility, watchDebounced } from '@vueuse/core'
 
@@ -81,7 +81,7 @@ const isTextareaDisabled = computed(() => {
 
 <template>
   <div class="h-full">
-    <div class="-m-4 -top-4 z-99 sticky">
+    <div class="m-4 top-4 z-99 sticky">
       <div class="bg-background flex p-4 justify-between">
         <div class="flex gap-4 items-center">
           <div class="min-w-0">
@@ -89,8 +89,6 @@ const isTextareaDisabled = computed(() => {
           </div>
         </div>
       </div>
-
-      <UDivider class="" />
     </div>
     <!--
     <div ref="msgTop" class="my-5">
@@ -106,7 +104,7 @@ const isTextareaDisabled = computed(() => {
         <InboxListMessage :id="chatID" />
       </div>
       <div ref="msgBottom" class="" />
-      <div class="-bottom-4 sticky mt-2">
+      <div class="bottom-4 sticky mt-2">
         <form @submit.prevent="doSubmit">
           <UTextarea
             v-model="msg"

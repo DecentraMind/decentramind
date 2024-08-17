@@ -5,21 +5,7 @@ import {
   message,
   dryrun
 } from '@permaweb/aoconnect'
-
-type MailCache = {
-  id: number
-  isPending: boolean
-  Timestamp: number
-  From: string
-  Data: string
-  index?: number
-}
-type InboxState = {
-  name: string
-  latestMsgTime: number
-  createdAt: number
-  inboxCount?: number
-}
+import type { InboxState, MailCache } from '~/types'
 
 export const inboxStore = defineStore('inboxStore', () => {
   const mailCache = $ref<Record<string, MailCache[]>>()

@@ -25,6 +25,21 @@ export interface Mail {
   date: string
 }
 
+type MailCache = {
+  id: number
+  isPending: boolean
+  Timestamp: number
+  From: string
+  Data: string
+  index?: number
+}
+type InboxState = {
+  name: string
+  latestMsgTime: number
+  createdAt: number
+  inboxCount?: number
+}
+
 export interface Member {
   name: string
   username: string
@@ -246,6 +261,9 @@ export type UserInfo = {
   name: string
   avatar: string
 }
+
+export type UserInfoWithAddress = UserInfo & { address: string }
+export type UserInfoWithMuted = UserInfo & { muted: string }
 
 export type UploadResponse = {
   url?: string

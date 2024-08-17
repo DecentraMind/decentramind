@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Community, Mail, UserInfo } from '~/types'
+import type { Community, Mail, UserInfoWithAddress } from '~/types'
 import { shortString } from '~/utils/util'
 import { defaultUserAvatar, arUrl } from '~/utils/arAssets'
 
@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 const { community, address } = $(toRefs(props))
 
-const { getCommunityUser, mute, unmute, getMutedUsers } = $(communityStore())
+const { getCommunityUser, mute, unmute, getMutedUsers, setCurrentCommunityUuid, setCurrentCommunityUserMap } = $(communityStore())
 
 const selectedTab = $ref(0)
 
@@ -24,7 +24,7 @@ const filteredMails = $computed(() => {
   return mails
 })
 
-let selectedMail = $ref<Mail | null>()
+let selectedMail = $ref<Mail>()
 
 watchEffect(() => {
   if (!filteredMails?.find(mail => mail.id === selectedMail?.id)) {
@@ -33,15 +33,25 @@ watchEffect(() => {
 })
 
 
-let users = $ref<Array<UserInfo & { address: string }>>([])
+let users = $ref<UserInfoWithAddress[]>([])
 
 const chatID = community.communitychatid
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mutedUsers = $ref<string[]>([])
 onMounted(async () => {
+  setCurrentCommunityUuid(community.uuid)
   mutedUsers = await getMutedUsers(community.uuid)
-  users = await getCommunityUser(community.uuid)
+  const userMap = await getCommunityUser(community.uuid)
+  users = Object.entries(userMap).map((
+      [key, user]
+    ) => {
+      return {
+        address: key,
+        ...user
+      }
+    })
+  await setCurrentCommunityUserMap(userMap)
   console.log('-------chatroom mounted--------')
   console.log({users})
 })
@@ -102,39 +112,27 @@ const isUserBanned = (userAddress: string) => {
           </template>
         </UDashboardNavbar>
         <div v-if="community" class="pt-2 pl-2">
-          <div v-for="user in users" :key="user.address" class="flex items-center justify-between pr-20">
-            <div
-              class="relative flex items-center justify-between overflow-hidden"
-              @mouseenter="showMuteOrUnmute = true"
-              @mouseleave="showMuteOrUnmute = false"
-            >
-              <div class="flex items-center">
-                <div class="mr-3">
-                  <UAvatar size="lg" :src="user.avatar || arUrl(defaultUserAvatar)" />
-                </div>
-                <div class="flex text-2xl">
-                  <div class="text-center">{{ user.name || shortString(user.address) }}</div>
-                </div>
+          <div
+            v-for="user in users"
+            :key="user.address"
+            class="relative group mb-2 flex items-center justify-between overflow-hidden"
+          >
+            <div class="flex-center gap-3">
+              <UAvatar size="lg" :src="user.avatar || arUrl(defaultUserAvatar)" />
+              <div class="flex text-base">
+                <span class="text-center font-medium">{{ user.name || shortString(user.address) }}</span>
               </div>
-              <transition
-                enter-active-class="transition-all duration-300 ease-out"
-                leave-active-class="transition-all duration-300 ease-in"
-                enter-from-class="translate-x-full opacity-0"
-                enter-to-class="translate-x-0 opacity-100"
-                leave-from-class="translate-x-0 opacity-100"
-                leave-to-class="translate-x-full opacity-0"
-              >
-                <UButton
-                  v-show="showMuteOrUnmute && community.owner === address"
-                  :color="isUserBanned(user.address) ? 'gray' : 'gray'"
-                  variant="solid"
-                  class="absolute right-0 top-1/2 transform -translate-y-1/2"
-                  @click="isUserBanned(user.address) ? OpenUnmuteModal(user.address) : OpenMuteModal(user.address)"
-                >
-                  {{ isUserBanned(user.address) ? 'unmute' : 'mute' }}
-                </UButton>
-              </transition>
             </div>
+
+            <UButton
+              v-show="community.owner === address"
+              :color="isUserBanned(user.address) ? 'gray' : 'gray'"
+              variant="solid"
+              class="absolute right-[-100px] group-hover:right-0 top-1/2 transform -translate-y-1/2 translate-x-full group-hover:translate-x-0 transition-all duration-200 ease-in-out"
+              @click="isUserBanned(user.address) ? OpenUnmuteModal(user.address) : OpenMuteModal(user.address)"
+            >
+              {{ isUserBanned(user.address) ? 'unmute' : 'mute' }}
+            </UButton>
           </div>
         </div>
       </div>

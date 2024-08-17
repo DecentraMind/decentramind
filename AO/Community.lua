@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.1.0'
+Variant = '0.1.2'
 
 ---@class Community
 ---@field uuid string
@@ -248,7 +248,11 @@ Handlers.add(
   "GetMutedUsers",
   Handlers.utils.hasMatchingTag("Action", "GetMutedUsers"),
   function(msg)
-    Handlers.utils.reply(json.encode(MutedUsers[msg.Tags.CommunityUuid]))(msg)
+    local uuid = msg.Tags.CommunityUuid
+    if not MutedUsers[uuid] then
+      return Handlers.utils.reply('[]')(msg)
+    end
+    Handlers.utils.reply(json.encode(MutedUsers[uuid]))(msg)
   end
 )
 
@@ -317,12 +321,21 @@ Handlers.add(
   "GetUsersByCommunityUUID",
   Handlers.utils.hasMatchingTag("Action", "GetUsersByCommunityUUID"),
   function(msg)
-    local uuid = msg.Tags.uuid
+    local uuid = msg.Tags.CommunityUuid
     local communityUsers = {}
 
     for address, inviteInfo in pairs(Invites) do
       if inviteInfo[uuid] then
         communityUsers[address] = Users[address]
+        communityUsers[address].muted = false
+
+        if MutedUsers[uuid] then
+          for _, mutedAddress in ipairs(MutedUsers[uuid]) do
+            if mutedAddress == address then
+              communityUsers[address].muted = true
+            end
+          end
+        end
       end
     end
 
