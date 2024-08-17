@@ -124,10 +124,10 @@ const doUnmute = async() => {
           <div
             v-for="user in users"
             :key="user.address"
-            class="relative group mb-2 flex items-center justify-between overflow-hidden"
+            class="relative group mb-2 flex items-center justify-between"
           >
             <div class="flex-center gap-3">
-              <UAvatar size="lg" :src="user.avatar || arUrl(defaultUserAvatar)" />
+              <UAvatar size="lg" :src="user.avatar ? arUrl(user.avatar) : arUrl(defaultUserAvatar)" class="overflow-hidden ring-1 ring-gray-300 dark:ring-gray-700" />
               <div class="flex text-base">
                 <span class="text-center font-medium">{{ user.name || shortString(user.address) }}</span>
               </div>
