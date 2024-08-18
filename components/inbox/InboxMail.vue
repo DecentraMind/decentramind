@@ -93,13 +93,11 @@ const isTextareaDisabled = computed(() => {
 
 <template>
   <div class="w-full h-full">
-    <div class="sticky">
-      <div class="bg-background flex p-4 justify-between">
-        <div class="flex gap-4 items-center">
-          <div class="min-w-0">
-            <!-- this area is for new message number button -->
-            <p class="font-semibold text-gray-900 dark:text-white" />
-          </div>
+    <div class="h-[calc(var(--header-height))] bg-background flex p-4 justify-between">
+      <div class="flex gap-4 items-center">
+        <div class="min-w-0">
+          <!-- this area is for new message number button -->
+          <p class="font-semibold text-gray-900 dark:text-white" />
         </div>
       </div>
     </div>
@@ -111,23 +109,23 @@ const isTextareaDisabled = computed(() => {
       </div>
     </div>
     -->
-    <div class="h-screen flex flex-col justify-between pt-10 pb-10">
-      <div class="overflow-y-auto h-5/6 flex flex-col-reverse">
+    <div class="relative h-[calc(100vh-var(--header-height))] flex flex-col justify-between pt-0 pb-4">
+      <div class="overflow-y-auto h-[calc(100%-160px)] flex flex-col-reverse">
         <!--<InboxListMessage :id="chatID" @loaded="scrollToBottom" />-->
         <InboxListMessage :pid="chatID" />
       </div>
-      <div ref="msgBottom" class="" />
-      <div class="bottom-4 sticky mt-2 px-3">
+      <div ref="msgBottom" class="msg-bottom" />
+      <div class="sticky px-3">
         <form @submit.prevent="submitMessage">
           <UTextarea
-            v-model="msg"
+            v-model.trim="msg"
             :disabled="isTextareaDisabled"
             name="msg"
             color="gray"
             required
             size="xl"
             :rows="5"
-            placeholder="Reply to test"
+            placeholder="Send a message to chatroom"
           >
             <!-- <Loading v-show="isLoading" class="h-8 top-1/2 left-1/2 w-8 absolute" /> -->
             <UButton

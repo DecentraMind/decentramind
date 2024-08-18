@@ -66,10 +66,10 @@ const emit = defineEmits(['switch-right-page'])
 </script>
 <template>
   <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
-    <UDashboardSidebar v-if="community" class="pb-3">
+    <UDashboardSidebar v-if="community" class="pb-2" :ui="{container: 'p-0'}">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
-      <div class="pt-6">
-        <div class="flex justify-between my-3 items-start">
+      <div>
+        <div class="flex justify-between items-center h-[calc(var(--header-height))]">
           <div class="max-w-[70%] text-3xl break-all">{{ community.name }}</div>
           <div>
             <UButton
@@ -180,19 +180,16 @@ const emit = defineEmits(['switch-right-page'])
 
         <UDivider />
 
-        <div v-if="!isCommunityOwner" class="flex">
+        <div v-if="!isCommunityOwner" class="flex justify-end mt-10">
           <Confirm
             title="Leave Community"
+            confirm-btn-text="Leave"
             :body="`Are you sure want to exit ${community.name}?`"
             @confirm="quitCommunity(community.uuid)"
           >
-            <UButton
-              color="white"
-              variant="solid"
-              class="ml-auto mt-10"
-            >
+            <UButton color="white">
+              <UIcon name="heroicons:arrow-left-start-on-rectangle-20-solid" />
               {{ $t('Quit') }}
-              <UIcon name="bi:arrow-left-circle" />
             </UButton>
           </Confirm>
         </div>
