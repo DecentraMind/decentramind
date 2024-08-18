@@ -103,7 +103,7 @@ const findInvitedByCommunityID = (communityID: string) => {
           <div class="flex">
             <UAvatarGroup v-if="users" size="sm" :max="2" class="ml-10">
               <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
-                <ArAvatar v-if="users[invite.inviteeAddress]" :hash="users[invite.inviteeAddress].avatar || defaultUserAvatar" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
+                <ArAvatar v-if="users[invite.inviteeAddress]" :src="users[invite.inviteeAddress].avatar || defaultUserAvatar" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
               </div>
             </UAvatarGroup>
             <UButton color="white" class="ml-4" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>

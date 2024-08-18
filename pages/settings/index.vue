@@ -102,7 +102,7 @@ async function upload2AR() {
             />
             <ArAvatar
               v-else
-              :hash="userForm.avatar || defaultUserAvatar"
+              :src="userForm.avatar || defaultUserAvatar"
               alt="Avatar"
               size="2xl"
             />

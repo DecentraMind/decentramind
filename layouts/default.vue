@@ -103,7 +103,7 @@ onMounted(async () => {
                 <UAvatar size="2xl" />
               </template>
               <template v-else>
-                <ArAvatar :hash="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
+                <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
             </NuxtLink>
           </UPopover>

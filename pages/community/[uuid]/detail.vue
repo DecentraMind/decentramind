@@ -334,7 +334,7 @@ const formattedTwitterLink = (twitter: string) => {
               <UTable :columns="columns" :rows="rankings" :loading="isLoadingRankings" class="pl-12">
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
-                    <!-- <ArAvatar :hash="row.avatar || defaultUserAvatar" :alt="row.receiver" size="xs" /> -->
+                    <!-- <ArAvatar :src="row.avatar || defaultUserAvatar" :alt="row.receiver" size="xs" /> -->
                     <span class="text-gray-900 dark:text-white font-medium">{{ shortString(row.receiver, 20) }}</span>
                   </div>
                 </template>

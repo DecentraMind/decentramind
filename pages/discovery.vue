@@ -143,7 +143,7 @@ const checkVouch = async () => {
             <template #title>
               <div class="flex items-center">
                 <ArAvatar
-                  :hash="community.logo || defaultCommunityLogo"
+                  :src="community.logo || defaultCommunityLogo"
                   :alt="community.name"
                 />
                 <div class="mx-3 text-xl">

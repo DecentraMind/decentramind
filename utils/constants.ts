@@ -206,4 +206,6 @@ export const communityRightPages = {
 }
 export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRightPages]
 
-export const chatroomFetchInterval = 5000
+export const chatroomFetchInterval = 500000
+
+export const ARWEAVE_ID_REGEXP = /^[a-zA-Z0-9-_]{43}$/

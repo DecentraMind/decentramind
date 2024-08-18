@@ -103,7 +103,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
             })"
           >
             <div class="flex-center gap-2">
-              <ArAvatar size="sm" :hash="user.avatar || defaultUserAvatar" />
+              <ArAvatar size="sm" :src="user.avatar || defaultUserAvatar" />
               <div class="flex text-base">
                 <span class="text-center font-medium">{{ user.name || shortString(user.address) }}</span>
               </div>
