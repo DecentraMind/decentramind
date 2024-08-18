@@ -2,7 +2,7 @@
   <div v-if="$slots.default" @click="showModal = true">
     <slot />
   </div>
-  <UModal v-model="showModal" :ui="{width: 'w-96'}" prevent-close>
+  <UModal v-model="showModal" :ui="{width: 'w-96'}" :prevent-close="isExecuting">
     <UCard
       :ui="{
         header: { padding: 'pt-5 pb-0' },
@@ -29,7 +29,7 @@
             size="lg"
             @click="execute"
           >
-            Leave
+            {{ confirmBtnText || 'Yes' }}
           </UButton>
         </p>
       </template>
@@ -39,12 +39,13 @@
 
 <script lang="ts" setup>
 const props = defineProps<{
+  confirmBtnText?: string
   title?: string
   body?: string
   onCancel?: ((...args: any[]) => void|Promise<any>)
   onConfirm?: ((...args: any[]) => void|Promise<any>)
 }>()
-const { title, body, onCancel, onConfirm } = $(toRefs(props))
+const { confirmBtnText, title, body, onCancel, onConfirm } = $(toRefs(props))
 
 // eslint-disable-next-line prefer-const
 let showModal = $ref<boolean>(false)
@@ -63,6 +64,7 @@ const execute = async() => {
   isExecuting = true
   try {
     await onConfirm()
+    showModal = false
   } finally {
     isExecuting = false
   }

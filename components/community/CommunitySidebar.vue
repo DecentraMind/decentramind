@@ -42,7 +42,8 @@ const textToCopy = $ref<HTMLParagraphElement>()
 const copyText = async () => {
   try {
     if (!textToCopy) return
-    await navigator.clipboard.writeText(textToCopy.innerText)
+    await navigator.clipbo
+    ard.writeText(textToCopy.innerText)
     showSuccess('Copied!')
   } catch (err) {
     showError('Copy failed.')
@@ -180,15 +181,20 @@ const emit = defineEmits(['switch-right-page'])
         <UDivider />
 
         <div v-if="!isCommunityOwner" class="flex">
-          <UButton
-            color="white"
-            variant="solid"
-            class="ml-auto mt-10"
-            @click="showExitModal = true"
+          <Confirm
+            title="Leave Community"
+            :body="`Are you sure want to exit ${community.name}?`"
+            @confirm="quitCommunity(community.uuid)"
           >
-            {{ $t('Quit') }}
-            <UIcon name="bi:arrow-left-circle" />
-          </UButton>
+            <UButton
+              color="white"
+              variant="solid"
+              class="ml-auto mt-10"
+            >
+              {{ $t('Quit') }}
+              <UIcon name="bi:arrow-left-circle" />
+            </UButton>
+          </Confirm>
         </div>
       </div>
 
@@ -239,22 +245,6 @@ const emit = defineEmits(['switch-right-page'])
         Chatroom
       </Button>
     </UDashboardSidebar>
-
-    <UModal v-model="showExitModal" :ui="{width: 'w-72 ssss'}">
-      <UCard v-if="community">
-        <template #header>
-          <div class="text-center text-xl font-medium">Sure to Exit?</div>
-        </template>
-        <div v-if="!isExiting" class="h-12 w-full flex-center space-x-10">
-          <UButton color="gray" size="md" @click="showExitModal = false">No</UButton>
-          <UButton color="red" size="md" @click="quitCommunity(community.uuid)">Yes</UButton>
-        </div>
-        <div v-else class="h-20 flex flex-col items-center justify-center">
-          <div>Leaving...</div>
-          <UIcon name="svg-spinners:12-dots-scale-rotate" />
-        </div>
-      </UCard>
-    </UModal>
 
     <UModal
       v-model="isSettingModalOpen"

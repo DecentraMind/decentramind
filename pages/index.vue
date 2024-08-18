@@ -23,7 +23,7 @@ useSeoMeta({
 <template>
   <UMain class="flex flex-col items-center gap-4 justify-center">
     <UColorModeImage src="DMLogo.png" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-2/3 lg:w-[600px] mb-6" />
-    <div class="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-center">Start your real community journey</div>
+    <div class="text-xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-center">Start your real community journey.</div>
     <div class="mt-3 mb-6 text-sm md:text-lg text-center">Try a better way than airdrop to build your community.</div>
     <UButton size="xl" color="black" @click="isLoginModalOpen = true">
       Open to Build
