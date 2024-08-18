@@ -103,7 +103,7 @@ const findInvitedByCommunityID = (communityID: string) => {
           <div class="flex">
             <UAvatarGroup v-if="users" size="sm" :max="2" class="ml-10">
               <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
-                <UAvatar v-if="users[invite.inviteeAddress]" :src="arUrl(users[invite.inviteeAddress].avatar) || arUrl(defaultUserAvatar)" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
+                <ArAvatar v-if="users[invite.inviteeAddress]" :hash="users[invite.inviteeAddress].avatar || defaultUserAvatar" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
               </div>
             </UAvatarGroup>
             <UButton color="white" class="ml-4" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>
@@ -116,7 +116,7 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div class="flex justify-center min-h-[300px] pt-10 px-6">
         <div v-if="users" class="border h-full px-2 py-2 mb-2">
           <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
-            <UAvatar :src="arUrl(users[invite.inviteeAddress]?.avatar) || arUrl(defaultUserAvatar)" alt="user avatar" />
+            <UAvatar :hash="users[invite.inviteeAddress]?.avatar || defaultUserAvatar" alt="user avatar" />
             <div class="w-fit">{{ users[invite.inviteeAddress]?.name || shortString(invite.inviteeAddress) }}</div>
             <div class="w-90">{{ invite.inviteeAddress }}</div>
           </div>

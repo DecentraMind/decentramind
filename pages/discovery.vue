@@ -142,7 +142,10 @@ const checkVouch = async () => {
           >
             <template #title>
               <div class="flex items-center">
-                <UAvatar :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)" :alt="community.name" class="ring-1 ring-gray-100" />
+                <ArAvatar
+                  :hash="community.logo || defaultCommunityLogo"
+                  :alt="community.name"
+                />
                 <div class="mx-3 text-xl">
                   {{ community.name }}
                 </div>
@@ -190,7 +193,7 @@ const checkVouch = async () => {
     </div>
     <UModal v-model="vouchModalOpen">
       <div class="h-[200px] flex flex-col items-center justify-center">
-        <Text class="text-xl">Not Vouched</Text>
+        <span class="text-xl">Not Vouched</span>
         <div>
           <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank">
             <UButton color="white" class="mt-10">Get Vouched</UButton>

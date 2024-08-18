@@ -100,12 +100,10 @@ onMounted(async () => {
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
               <template v-if="!userInfo">
-                <UAvatar
-                  size="2xl"
-                />
+                <UAvatar size="2xl" />
               </template>
               <template v-else>
-                <UAvatar :src="userInfo.avatar ? arUrl(userInfo.avatar) : arUrl(defaultUserAvatar)" alt="User Settings" size="2xl" />
+                <ArAvatar :hash="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
             </NuxtLink>
           </UPopover>

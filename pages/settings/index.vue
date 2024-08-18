@@ -95,14 +95,14 @@ async function upload2AR() {
           @click="uploadInput && !isUploading && uploadInput.click()"
         >
           <div class="relative flex justify-center cursor-pointer">
-            <UAvatar
+            <ArAvatar
               v-if="!userForm.avatar || isLoading"
               alt=""
               size="2xl"
             />
-            <UAvatar
+            <ArAvatar
               v-else
-              :src="userForm.avatar ? arUrl(userForm.avatar) : arUrl(defaultUserAvatar)"
+              :hash="userForm.avatar || defaultUserAvatar"
               alt="Avatar"
               size="2xl"
             />

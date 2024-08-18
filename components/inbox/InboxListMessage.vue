@@ -53,7 +53,7 @@ const getUserName = (from: string) => {
 
 const getUserAvatar = (from: string) => {
   const user = userMap?.[from]
-  return user ? arUrl(user.avatar) : arUrl(defaultUserAvatar)
+  return user ? user.avatar : defaultUserAvatar
 }
 
 function bubbleClasses(message: MailCache) {
@@ -77,9 +77,9 @@ function bubbleClasses(message: MailCache) {
       })"
     >
       <!--<DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />-->
-      <UAvatar
+      <ArAvatar
         v-if="index === 0 || message.From !== messages[index - 1].From"
-        :src="getUserAvatar(message.From)"
+        :hash="getUserAvatar(message.From)"
         :alt="getUserName(message.From)"
         size="md"
         class="mt-0.5"

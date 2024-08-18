@@ -3,7 +3,6 @@ export default defineAppConfig({
     primary: 'sky',
     gray: 'cool',
     avatar: {
-      wrapper: 'ring-.5 ring-gray-300 dark:ring-gray-700',
       rounded: 'object-cover'
     },
     button: {
