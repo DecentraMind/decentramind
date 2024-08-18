@@ -228,6 +228,17 @@ export type Bounty = {
   quantity: bigInt
 }
 
+// export type Bounty = {
+//   communityId: string
+//   communityName: string
+//   receive: string
+//   send: string
+//   taskId: string
+//   taskName: string
+//   tokenNumber: number
+//   tokenType: string
+// }
+
 export type TaskForm = Omit<Task, 'createTime'|'ownerAddress'|'submittersCount'|'isScoreCalculated'|'isSettled'|'builders'|'submissions'|'bounties'> & {
   bounties: TaskFormBounty[]
 }
@@ -241,17 +252,6 @@ export type InviteInfo = {
 
 export type RelatedUserMap = {
   [address: string]: UserInfo
-}
-
-export type Bounty = {
-  communityId: string
-  communityName: string
-  receive: string
-  send: string
-  taskId: string
-  taskName: string
-  tokenNumber: number
-  tokenType: string
 }
 
 /**

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { toRefs, defineEmits } from 'vue'
+import { toRefs } from 'vue'
 import type { Community } from '~/types/index'
 import { communityRightPages } from '~/utils/constants'
+import CommunityForm from '~/components/community/CommunityForm.vue'
 
 const props = defineProps<{
   community?: Community
@@ -23,6 +24,7 @@ let showExitModal = $ref(false)
 let isExiting = $ref(false)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const quitCommunity = async (communityUuid: string) => {
+  if (!community) return
   isExiting = true
   try {
     await exitCommunity(communityUuid)
@@ -30,6 +32,7 @@ const quitCommunity = async (communityUuid: string) => {
     isExiting = false
     router.push('/discovery')
     await getCommunityList()
+    showSuccess(`You have leaved ${community.name}.`)
   } catch (error) {
     showError('Exit community failed.', error as Error)
   } finally {

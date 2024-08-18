@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { Dayjs } from 'dayjs'
 import { timezones, tokens, tokenChains, communityRightPages, type PageSymbol } from '~/utils/constants'
-import type { Community, Task, TaskForm } from '~/types'
+import type { Community, Task, TaskForm } from '~/types/index'
 import { arUrl, taskBanners, gateways } from '~/utils/arAssets'
 import { getLocalTimezone } from '~/utils/util'
 import { taskSchema } from '~/utils/schemas'
 import { provide } from 'vue'
 import Chatroom from '~/components/community/Chatroom.vue'
+import CommunitySidebar from '~/components/community/CommunitySidebar.vue'
+import TaskStatus from '~/components/task/TaskStatus.vue'
 
 const { t } = useI18n()
 const { createTask, getTasksByCommunityUuid } = $(taskStore())

@@ -54,6 +54,7 @@ export default defineNuxtConfig({
 
   macros: {
     setupSFC: true,
+    betterDefine: false
   },
 
   devtools: {

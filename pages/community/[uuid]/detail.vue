@@ -189,9 +189,9 @@ const formattedTwitterLink = (twitter: string) => {
           </template>
           <template #description>
             <div class="flex flex-col w-5/6 px-12">
-              <Text>
+              <p>
                 {{ communityInfo.desc }}
-              </Text>
+              </p>
             </div>
           </template>
         </ULandingCard>

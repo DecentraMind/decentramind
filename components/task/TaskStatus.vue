@@ -7,7 +7,7 @@ const props = defineProps<{
   task: Task
   address: string
 }>()
-const { task } = props
+const { task, address } = $(toRefs(props))
 
 function checkSubmit(submissions: Submission[], address: string) {
   return (

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
 import { tradePlatforms, tokenNames } from '~/utils/constants'
-import type { Community, CommunitySetting } from '~/types'
+import type { Community, CommunitySetting } from '~/types/index'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
 import { createUuid } from '~/utils/util'
@@ -69,7 +69,7 @@ const form = ref()
 
 async function onFormSubmit(event: FormSubmitEvent<CommunitySettingSchema>) {
   // Do something with event.data
-  console.log('onCreateCommunitySubmit: ', event.data)
+  console.log('onCommunityFormSubmit: ', event.data)
   if (props.isSettingMode) {
     await setCommunity()
   } else {

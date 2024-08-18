@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { arUrl, defaultCommunityLogo, defaultUserAvatar } from '~/utils/arAssets'
 import { normalizeClass } from 'vue'
+import CommunityForm from '~/components/community/CommunityForm.vue'
 
 const router = useRouter()
 const communityID = $computed(() => {
