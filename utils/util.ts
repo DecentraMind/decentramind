@@ -62,7 +62,7 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
 /**
  * Get data from dryrun result
  * @param result dryrun result
- * @returns 
+ * @returns
  */
 export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
   checkResult(result)
@@ -117,6 +117,15 @@ export function shortString(str: string, startLength: number = 6, endLength: num
   }
 
   return `${str.slice(0, startLength)}...${str.slice(-endLength)}`
+}
+
+/**
+ * domain part of a url
+ * @param url
+ * @returns
+ */
+export function getDomain(url: string) {
+  return url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
 }
 
 export function toBase62(num: number) {

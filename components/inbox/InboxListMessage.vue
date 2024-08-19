@@ -104,19 +104,3 @@ function bubbleClasses(message: MailCache) {
     </div>
   </div>
 </template>
-<style>
-/* Example of using Tailwind's theme function for colors */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: theme('colors.gray.200');
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-track {
-  background-color: theme('colors.gray.50');
-  border-radius: 3px;
-}
-</style>

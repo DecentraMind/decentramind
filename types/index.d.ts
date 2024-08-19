@@ -105,7 +105,7 @@ export type Community = {
 }
 
 export type CommunityListItem = Community & {
-  whitebook: string
+  whitebook?: string
   isJoined?: boolean
   joinTime?: number
 }

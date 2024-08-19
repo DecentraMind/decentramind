@@ -1,18 +1,14 @@
 <script setup lang="ts">
 import { arUrl, defaultCommunityLogo, defaultUserAvatar } from '~/utils/arAssets'
-import { normalizeClass } from 'vue'
+import { cn } from '~/utils/util'
 import CommunityForm from '~/components/community/CommunityForm.vue'
 
 const router = useRouter()
-const communityID = $computed(() => {
-  const params = router.currentRoute.value.params
-  return params.communityId || ''
-})
 
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet } = $(aoStore())
-const { joinedCommunities, userInfo, getUser, getCommunityList } = $(communityStore())
+const { joinedCommunities, currentUuid: currentCommunityID, userInfo, getUser, getCommunityList } = $(communityStore())
 
 const isCreateModalOpen = $ref(false)
 
@@ -59,10 +55,13 @@ onMounted(async () => {
             class="group w-full block mt-2 relative"
           >
             <div
-              :class="normalizeClass([
+              :class="cn(
                 'transition-all ease-in-out duration-500 rounded-sm bg-gray-900 absolute left-[-6px]',
-                community.uuid === communityID ? 'w-1 h-12 top-2 bg-opacity-80' : 'w-0 group-hover:w-1 h-8 top-4 bg-opacity-0 group-hover:bg-opacity-60'
-              ])"
+                'w-0 group-hover:w-1 h-8 top-4 bg-opacity-0 group-hover:bg-opacity-60',
+                {
+                  'w-1 h-12 top-2 bg-opacity-80': community.uuid === currentCommunityID
+                }
+              )"
             />
             <!--<img src="/logo.png" :title="item.name" class="h-full w-full">-->
 
