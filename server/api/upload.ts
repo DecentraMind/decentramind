@@ -29,11 +29,11 @@ export default defineEventHandler(async (event: H3Event<EventHandlerRequest>): P
     }
 
     const {
-      '4EVERLAND_API_ENDPOINT': endpoint,
-      '4EVERLAND_API_KEY': apiKey,
-      '4EVERLAND_API_SECRET': secret,
-      '4EVERLAND_API_REGION': region,
-      '4EVERLAND_BUCKET_NAME': bucketName
+      EVERLAND_API_ENDPOINT: endpoint,
+      EVERLAND_API_KEY: apiKey,
+      EVERLAND_API_SECRET: secret,
+      EVERLAND_API_REGION: region,
+      EVERLAND_BUCKET_NAME: bucketName
     } = import.meta.env
     const EverLandUrlPrefix = `https://${bucketName}.4everland.store`
 
