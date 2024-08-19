@@ -2,6 +2,7 @@
 import { toRefs } from 'vue'
 import type { Community } from '~/types/index'
 import { communityRightPages } from '~/utils/constants'
+import { getDomain } from '~/utils/util'
 import CommunityForm from '~/components/community/CommunityForm.vue'
 
 const props = defineProps<{
@@ -18,17 +19,12 @@ const router = useRouter()
 
 const isSettingModalOpen = $ref(false)
 
-// eslint-disable-next-line prefer-const
-let showExitModal = $ref(false)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let isExiting = $ref(false)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const quitCommunity = async (communityUuid: string) => {
   if (!community) return
   isExiting = true
   try {
     await exitCommunity(communityUuid)
-    showExitModal = false
     isExiting = false
     router.push('/discovery')
     await getCommunityList()
@@ -45,25 +41,12 @@ const textToCopy = $ref<HTMLParagraphElement>()
 const copyText = async () => {
   try {
     if (!textToCopy) return
-    await navigator.clipbo
-    ard.writeText(textToCopy.innerText)
+    await navigator.clipboard.writeText(textToCopy.innerText)
     showSuccess('Copied!')
   } catch (err) {
     showError('Copy failed.')
   }
 }
-
-const formattedTwitterLink = (twitter: string) => {
-  // Add https:// prefix if the link doesn't start with http:// or https://
-  if (!/^(http|https):\/\//.test(twitter)) {
-    return `https://${twitter}`
-  }
-  return twitter
-}
-
-const shortedWebsite = $computed(() => {
-  return community?.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
-})
 
 const emit = defineEmits(['switch-right-page'])
 </script>
@@ -98,7 +81,7 @@ const emit = defineEmits(['switch-right-page'])
             class="text-right border rounded-lg max-w-[60%] overflow-hidden pl-2 pr-2 text-nowrap"
             :title="community.website"
           >
-            <a :href="community.website" _target="_blank">{{ shortedWebsite }}</a>
+            <a :href="community.website" _target="_blank">{{ getDomain(community.website) }}</a>
           </UButton>
         </div>
 
@@ -109,7 +92,7 @@ const emit = defineEmits(['switch-right-page'])
           <div>{{ $t('SocialOfCommunityDetail') }}</div>
           <div>
             <ULink
-              :to="formattedTwitterLink(community.twitter)"
+              :to="community.twitter"
               active-class="text-primary"
               target="_blank"
               inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -129,7 +112,7 @@ const emit = defineEmits(['switch-right-page'])
           <div>{{ $t('GithubOfCommunityDetail') }}</div>
           <div>
             <ULink
-              :to="formattedTwitterLink(community.github)"
+              :to="community.github"
               active-class="text-primary"
               target="_blank"
               inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -190,7 +173,7 @@ const emit = defineEmits(['switch-right-page'])
             :body="`Are you sure want to exit ${community.name}?`"
             @confirm="quitCommunity(community.uuid)"
           >
-            <UButton color="white">
+            <UButton :loading="isExiting" color="white">
               <UIcon name="heroicons:arrow-left-start-on-rectangle-20-solid" />
               {{ $t('Quit') }}
             </UButton>

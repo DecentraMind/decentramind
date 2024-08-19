@@ -67,12 +67,7 @@
     "vueuse",
     "yxxx"
   ],
-  "Lua.diagnostics.globals": [
-    "Handlers"
-  ],
-  "Lua.workspace.library": [
-    "/Users/apple/Library/Application Support/Code/User/globalStorage/sumneko.lua/addonManager/addons/ao/module/library"
-  ],
-  "Lua.workspace.checkThirdParty": false,
+  "Lua.workspace.library": [],
+  "Lua.workspace.checkThirdParty": true,
 
 }
