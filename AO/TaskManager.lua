@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.1.1'
+Variant = '0.2.1'
 
 local json = require("json")
 local ao = require('ao')
@@ -224,8 +224,9 @@ TaskManager = {
 
   getBountiesByCommuintyID = function (msg)
     local uuid = msg.Tags.CommunityUuid
+
     if not TasksByCommunity[uuid] then
-      return Handlers.utils.replay('[]')(msg)
+      return Handlers.utils.reply('[]')(msg)
     end
 
     local result = {}
