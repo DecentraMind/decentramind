@@ -93,7 +93,7 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   const mute = async (communityUuid: string, userAddress: string) => {
-    await message({
+    const messageId = await message({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'Mute' },
@@ -102,10 +102,12 @@ export const communityStore = defineStore('communityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
+    const res = await result({ process: aoCommunityProcessID, message: messageId})
+    checkResult(res)
   }
 
   const unmute = async (communityUuid: string, userAddress: string) => {
-    await message({
+    const messageId = await message({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'Unmute' },
@@ -114,6 +116,8 @@ export const communityStore = defineStore('communityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
+    const res = await result({ process: aoCommunityProcessID, message: messageId})
+    checkResult(res)
   }
 
   const getMutedUsers = async (communityUuid: string) => {

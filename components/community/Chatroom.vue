@@ -110,7 +110,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
             </div>
 
             <Confirm
-              v-show="community.owner === address"
+              v-if="community.owner === address"
               :confirm-btn-text="user.muted ? 'Unmute' : 'Mute'"
               :title="`${user.muted ? 'Unmute' : 'Mute'} User`"
               :body="`Are you sure want to ${user.muted ? 'unmute' : 'mute'} ${user.name || shortString(user.address)}?`"
