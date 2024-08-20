@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.8'
+Variant = '0.2.9'
 
 ---@class Community
 ---@field uuid string
@@ -388,7 +388,7 @@ Handlers.add(
   function (msg)
     local userInfo = Users[msg.Tags.Address]
     if not userInfo then
-      return replyError("Not found.")
+      return replyError(msg, "Not found.")
     end
 
     replyData(msg, userInfo)
