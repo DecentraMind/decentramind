@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.7'
+Variant = '0.2.8'
 
 ---@class Community
 ---@field uuid string
@@ -377,20 +377,18 @@ local function registerOrLogin(msg)
 end
 
 Handlers.add(
-  "registerUserOrLogin",
-  Handlers.utils.hasMatchingTag("Action", "registerUserOrLogin"),
+  "RegisterUserOrLogin",
+  Handlers.utils.hasMatchingTag("Action", "RegisterUserOrLogin"),
   registerOrLogin
 )
 
 Handlers.add(
-  "getUser",
-  Handlers.utils.hasMatchingTag("Action", "getUser"),
-  function(msg)
-    -- 检查 userinfo 中是否存在指定用户
-    local userInfo = Users[msg.Tags.userAddress]
+  "GetUserByAddress",
+  Handlers.utils.hasMatchingTag("Action", "GetUserByAddress"),
+  function (msg)
+    local userInfo = Users[msg.Tags.Address]
     if not userInfo then
-      print("Not found.")
-      return
+      return replyError("Not found.")
     end
 
     replyData(msg, userInfo)
@@ -399,8 +397,8 @@ Handlers.add(
 
 -- TODO only update specific field, don't replace the whole Users[address]
 Handlers.add(
-  "updateUser",
-  Handlers.utils.hasMatchingTag("Action", "updateUser"),
+  "UpdateUser",
+  Handlers.utils.hasMatchingTag("Action", "UpdateUser"),
   function(msg)
     local address = msg.From
     -- 检查是否已经存在相同名字的列
@@ -415,8 +413,8 @@ Handlers.add(
 
 -- invite info and related user info
 Handlers.add(
-  "getInvitesByInviter",
-  Handlers.utils.hasMatchingTag("Action", "getInvitesByInviter"),
+  "GetInvitesByInviter",
+  Handlers.utils.hasMatchingTag("Action", "GetInvitesByInviter"),
   function(msg)
     local invites = {}
     local relatedUsers = {}

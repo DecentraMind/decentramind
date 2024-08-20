@@ -151,7 +151,7 @@ export const taskStore = defineStore('taskStore', () => {
         process: aoCommunityProcessID,
         signer: createDataItemSigner(window.arweaveWallet),
         tags: [
-          { name: 'Action', value: 'getInvitesByInviter' },
+          { name: 'Action', value: 'GetInvitesByInviter' },
           { name: 'Inviter', value: address }
         ]
       })

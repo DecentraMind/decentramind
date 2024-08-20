@@ -398,7 +398,7 @@ export const communityStore = defineStore('communityStore', () => {
     const messageId = await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'updateUser' },
+        { name: 'Action', value: 'UpdateUser' },
         { name: 'userAddress', value: address }
       ],
       data: jsonString,
@@ -411,9 +411,8 @@ export const communityStore = defineStore('communityStore', () => {
     return messageId
   }
 
-  //Obtaining Personal Information
   const getUser = async () => {
-    userInfo = await getUserByAddress(address) || []
+    userInfo = await getUserByAddress(address)
 
     return userInfo
   }
@@ -422,8 +421,8 @@ export const communityStore = defineStore('communityStore', () => {
     const user = await dryrun({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'getUser' },
-        { name: 'userAddress', value: address }
+        { name: 'Action', value: 'GetUserByAddress' },
+        { name: 'Address', value: address }
       ]
     })
 
