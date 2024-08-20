@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import {tokenProcessIDs} from '~/utils/constants'
-import { shortString } from '~/utils/util'
-const { getLocalCommunity } = $(communityStore())
+import {tokenProcessIDs, type TokenSupply} from '~/utils/constants'
+import { shortString, getDomain, getHandle } from '~/utils/util'
+
+const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
+const { getBountiesByCommunityID } = $(taskStore())
+const { showError } = $(notificationStore())
+
 const { t } = useI18n()
 const router = useRouter()
 
@@ -14,12 +18,11 @@ const columns = [{
   key: 'bountyCount',
 }]
 
-let isLoadingRankings = $ref(true)
 
 const route = useRoute()
 const communityID = $computed(() => route.params.uuid) as string
 
-let communityInfo = $ref<Awaited<ReturnType<typeof getLocalCommunity>>>()
+let community = $ref<CommunityWithJoinInfo>()
 
 watchEffect(() => {
   if (!route.params.pid) return
@@ -32,16 +35,13 @@ type Rank = {
   bountyCount: number
 }
 
-const { getBountiesByCommunityID } = $(taskStore())
 let rankings = $ref<Rank[]>()
-onMounted( async () => {
-  if (!address) {
-    router.push('/')
-  }
+let isLoadingRankings = $ref(true)
+const loadRanks = async () => {
   try {
     const bounties = await getBountiesByCommunityID(communityID)
     console.log({bounties})
-    rankings = bounties.reduce((ranks, bounty) => {
+    return bounties.reduce((ranks, bounty) => {
       const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
       if (index >= 0) {
         ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
@@ -52,66 +52,73 @@ onMounted( async () => {
     }, [] as Rank[]).sort((a, b) => {
       return a.receiver > b.receiver ? 1 : -1
     })
-
-  } catch (e) {
-    console.error(e)
-    showError('Failed to get ranking data.')
+  } catch {
+    console.error('Failed to load ranks.')
   } finally {
     isLoadingRankings = false
   }
+}
 
-  await loadCommunityInfo(communityID)
-
-  if (communityInfo && communityInfo.tokensupply) {
-    initChart(communityInfo.tokensupply)
-  } else {
-    console.error('Failed to initialize chart: TokenSupply data is not available.')
+let isLoading = $ref(true)
+onMounted( async () => {
+  if (!address) {
+    return router.push('/')
   }
+  isLoading = true
+  rankings = await loadRanks()
 
-  if (typeof window !== 'undefined') {
-    window.addEventListener('resize', () => {
-      if (chartInstance) {
-        chartInstance.resize()
-      }
-    })
-  }
-})
-
-watch(() => route.params.pid, (newPid: string) => {
-  loadCommunityInfo(newPid)
-})
-
-const loadCommunityInfo = async (pid: string) => {
   try {
-    communityInfo = await getLocalCommunity(pid)
-  } catch (error) {
-    console.error('Error fetching data:', error)
+    community = await getLocalCommunity(communityID)
+    console.log({community})
+
+    setCurrentCommunityUuid(community.uuid)
+
+    if (community && community.tokensupply) {
+      initChart(community.tokensupply)
+    } else {
+      console.error('Failed to initialize chart: TokenSupply data is not available.')
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', onResize)
+    }
+  } catch (e) {
+    console.error(e)
+    showError('Failed to load data.', e as Error)
+  } finally {
+    isLoading = false
+    isLoadingRankings = false
+  }
+})
+
+function onResize() {
+  if (chartInstance) {
+    chartInstance.resize()
   }
 }
 
 const tokenMap = $ref(tokenProcessIDs)
 
 import * as echarts from 'echarts'
+import type { CommunityWithJoinInfo } from '~/types'
 
 const chart = ref(null)
-let chartInstance = null
+let chartInstance: echarts.ECharts
 
-const initChart = (tokensupply) => {
+const initChart = (tokenSupply: TokenSupply[]) => {
   if (chart.value) {
     chartInstance = echarts.init(chart.value)
 
-    if (tokensupply && Array.isArray(tokensupply)) {
+    if (tokenSupply) {
       // Convert communityInfo.supply to the format required by ECharts
-      const a = JSON.parse(JSON.stringify(tokensupply))
-
-      const data = a.map(item => ({
+      const data = tokenSupply.map(item => ({
         value: item.supply,
         name: item.name
       }))
 
       const option = {
         title: {
-          text: `Token Allocation\n${communityInfo?.alltoken ? 'Total Supply ' + communityInfo.alltoken : ''}`,
+          text: `Token Allocation\n${community?.alltoken ? 'Total Supply ' + community.alltoken : ''}`,
           left: 'center'
         },
         tooltip: {
@@ -147,191 +154,167 @@ const initChart = (tokensupply) => {
 
 onBeforeUnmount(() => {
   if (typeof window !== 'undefined' && chartInstance) {
-    window.removeEventListener('resize', chartInstance.resize)
+    window.removeEventListener('resize', onResize)
     chartInstance.dispose()
   }
 })
 
-const formatTwitter = (twitter: string | undefined): string => {
-  if (!twitter || twitter.length <= 12) {
-    return twitter || ''
-  }
-  return `${twitter.slice(0, 3)}...${twitter.slice(-3)}`
-}
-
-const formattedTwitterLink = (twitter: string) => {
-  const link = twitter
-  // Add https:// prefix if the link doesn't start with http:// or https://
-  if (!/^(http|https):\/\//.test(link)) {
-    return `https://${link}`
-  }
-  return link
+const classes = {
+  field: {
+    wrapper: 'flex justify-between',
+    value: 'flex justify-center border rounded-lg px-2',
+    shortValues: 'flex justify-end items-center space-x-1'
+  },
+  tag: 'bg-gray-200'
 }
 </script>
 
 <template>
   <UDashboardPage>
-    <div class="w-full px-20 pt-16 overflow-y-auto">
+    <div v-if="isLoading" class="absolute top-0 left-0 w-full h-full flex-center">
+      <UIcon
+        name="svg-spinners:blocks-scale"
+        dynamic
+        class="w-16 h-16 opacity-50"
+      />
+    </div>
+    <div else class="w-full px-10 pt-16 overflow-y-auto">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
-      <UPage v-if="communityInfo" class="px-10 min-w-[1520px]">
+      <UPage v-if="community" class="xl:m-auto xl:max-w-[1200px]">
         <ULandingCard
-          description="Choose a primary and a gray color from your Tailwind CSS color palette. Components will be styled accordingly."
-          color="primary"
+          :description="community.desc"
           :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]"
         >
           <template #title>
-            <div class="w-full flex justify-between text-3xl mb-12 mt-3 px-12">
-              {{ communityInfo.name }}
-              <NuxtLink :to="`/community/${communityInfo.uuid}`">
+            <div class="w-full flex justify-between text-3xl mb-8">
+              <div class="self-start flex-center gap-4">
+                <CuteRadius :width="64" :height="64">
+                  <div class="aspect-square rounded-lg bg-white z-10 overflow-hidden">
+                    <img
+                      :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
+                      :title="community.name"
+                      class="w-full h-full object-cover"
+                    >
+                  </div>
+                </CuteRadius>
+                {{ community.name }}
+              </div>
+              <NuxtLink :to="`/community/${community.uuid}`">
                 <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
               </NuxtLink>
             </div>
           </template>
-          <template #description>
-            <div class="flex flex-col w-5/6 px-12">
-              <p>
-                {{ communityInfo.desc }}
-              </p>
-            </div>
-          </template>
         </ULandingCard>
-        <UPageBody prose>
+
+        <UPageBody>
           <ULandingGrid>
-            <ULandingCard class="col-span-8 row-span-2 flex">
-              <div class="flex justify-between w-full">
-                <div class="" style="flex: 1; height: 100%;">
-                  <div v-if="communityInfo.website" class="flex justify-between px-6">
-                    <div>{{ $t('community.website') }}</div>
-                    <div class="w-48 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[350px]">
-                        <ULink
-                          :to="formattedTwitterLink(communityInfo.website)"
-                          active-class="text-primary"
-                          target="_blank"
-                          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                        >
-                          {{ formatTwitter(communityInfo.website) }}
-                        </ULink>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="communityInfo.twitter" class="flex justify-between px-6 pt-2">
-                    <div><!--{{ $t('community.detail.social') }}-->Twitter</div>
-                    <div class="w-48 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[350px]">
-                        <ULink
-                          :to="formattedTwitterLink(communityInfo.twitter)"
-                          active-class="text-primary"
-                          target="_blank"
-                          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                        >
-                          {{ formatTwitter(communityInfo.twitter) }}
-                        </ULink>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex justify-between px-6 pt-2">
-                    <div>{{ $t('community.detail.token') }}</div>
-                    <div v-if="communityInfo.communitytoken && communityInfo.communitytoken.length > 0" class="w-48 flex justify-around items-center space-x-1">
-                      <div
-                        v-for="(token, index) in communityInfo.communitytoken.slice(0,2)"
-                        :key="index"
-                        class="flex justify-center border rounded-lg w-[350px]"
-                      >
-                        <UPopover mode="hover">
-                          {{ token.tokenName }}
-                          <template #panel>
-                            <div
-                              v-for="(tokenname, tokenindex) in communityInfo.communitytoken"
-                              :key="index"
-                              class="flex flex-col pr-5 pl-5"
-                            >
-                              {{ tokenname.tokenName }}:
-                              {{ tokenMap[tokenname.tokenName] }}
-                            </div>
-                          </template>
-                        </UPopover>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="communityInfo.support && communityInfo.support.length > 0" class="flex justify-between px-6 pt-2">
-                    <div>{{ $t('community.token.platforms') }}</div>
-                    <div class="w-48 flex justify-around items-center space-x-1">
-                      <div
-                        v-for="(token, index) in communityInfo.support.slice(0,2)"
-                        :key="index"
-                        class="flex justify-center border rounded-lg w-[350px]"
-                      >
-                        <UPopover mode="hover" :popper="{ placement: 'top' }">
-                          {{ token }}
-                          <template #panel>
-                            <div
-                              v-for="(tokenname, tokenindex) in communityInfo.support"
-                              :key="tokenindex"
-                              class="flex flex-col pr-5 pl-5"
-                            >
-                              {{ tokenname }}
-                            </div>
-                          </template>
-                        </UPopover>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="communityInfo.bounty && communityInfo.bounty.length > 0" class="flex justify-between px-6 pt-2">
-                    <div>{{ $t('community.typereward') }}</div>
-                    <div class="w-48 flex justify-around items-center space-x-1">
-                      <div
-                        v-for="(token, index) in communityInfo.bounty.slice(0,2)"
-                        :key="index"
-                        class="flex justify-center border rounded-lg w-[350px]"
-                      >
-                        <UPopover mode="hover" :popper="{ placement: 'top' }">
-                          {{ token }}
-                          <template #panel>
-                            <div
-                              v-for="(tokenname, tokenindex) in communityInfo.bounty"
-                              :key="tokenindex"
-                              class="flex flex-col pr-5 pl-5"
-                            >
-                              {{ tokenname }}:
-                              {{ tokenMap[tokenname] }}
-                            </div>
-                          </template>
-                        </UPopover>
-                      </div>
-                    </div>
-                  </div>
+            <ULandingCard class="col-span-7 row-span-2" :ui="{wrapper: '', body: {base: 'gap-y-7 mb-3'}}">
+              <div v-if="community.website" :class="classes.field.wrapper">
+                <div class="font-medium">{{ $t('community.website') }}</div>
+
+                <ULink
+                  :to="community.website"
+                  active-class="hover:text-primary"
+                  target="_blank"
+                  :inactive-class="classes.tag"
+                >
+                  {{ getDomain(community.website) }}
+                </ULink>
+              </div>
+
+              <div v-if="community.twitter" :class="classes.field.wrapper">
+                <div class="font-medium">Twitter</div>
+
+                <ULink
+                  :to="community.twitter"
+                  active-class="hover:text-primary"
+                  target="_blank"
+                  :inactive-class="classes.tag"
+                >
+                  {{ getHandle(community.twitter) }}
+                </ULink>
+              </div>
+
+              <div v-if="community.github" :class="classes.field.wrapper">
+                <div class="font-medium">Github</div>
+
+                <ULink
+                  :to="community.github"
+                  active-class="text-primary"
+                  target="_blank"
+                  :inactive-class="classes.tag"
+                >
+                  {{ getHandle(community.github) }}
+                </ULink>
+              </div>
+
+              <div :class="classes.field.wrapper">
+                <div class="font-medium">{{ $t('community.buildnum') }}</div>
+                <div>
+                  {{ community.buildnum }}
                 </div>
-                <div v-if="communityInfo.github" class="" style="flex: 1;">
-                  <div class="flex justify-between px-6">
-                    <div>Github</div>
-                    <div class="w-48 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[300px]">
-                        <ULink
-                          :to="formattedTwitterLink(communityInfo.github)"
-                          active-class="text-primary"
-                          target="_blank"
-                          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                        >
-                          {{ formatTwitter(communityInfo.github) }}
-                        </ULink>
-                      </div>
-                    </div>
+              </div>
+
+              <div v-if="community.communitytoken && community.communitytoken.filter(token => token.tokenName).length > 0" :class="classes.field.wrapper">
+                <div class="font-medium">{{ $t('community.detail.token') }}</div>
+
+                <div :class="classes.field.shortValues">
+                  <span
+                    v-for="(token, index) in community.communitytoken.filter(token => token.tokenName)"
+                    :key="index"
+                    :class="classes.field.value"
+                  >{{ token.tokenName }}</span>
+                </div>
+              </div>
+
+              <div v-if="community.support && community.support.length > 0" :class="classes.field.wrapper">
+                <div class="font-medium">{{ $t('community.token.platforms') }}</div>
+                <UPopover
+                  mode="hover"
+                  :popper="{ placement: 'top' }"
+                >
+                  <div :class="classes.field.shortValues">
+                    <span
+                      v-for="(token, index) in community.support.slice(0, 2)"
+                      :key="index"
+                      :class="classes.field.value"
+                    >{{ token }}</span>
                   </div>
-                  <div class="flex justify-between px-6 pt-2">
-                    <div>{{ $t('community.buildnum') }}</div>
-                    <div class="w-48 flex justify-around items-center">
-                      <div class="flex justify-center border rounded-lg w-[300px]">
-                        {{ communityInfo.buildnum }}
+                  <template #panel>
+                    <div v-if="community.support.length > 2" class="flex-center gap-x-1">
+                      <div
+                        v-for="(tokenName, tokenIndex) in community.support"
+                        :key="tokenIndex"
+                        class="px-2"
+                      >
+                        {{ tokenName }}
                       </div>
                     </div>
+                  </template>
+                </UPopover>
+              </div>
+
+              <div v-if="community.bounty && community.bounty.length > 0" :class="classes.field.wrapper">
+                <div class="font-medium">{{ $t('community.typereward') }}</div>
+                <div :class="classes.field.shortValues">
+                  <div
+                    v-for="(token, index) in community.bounty.slice(0, 2)"
+                    :key="index"
+                    :class="classes.field.value"
+                  >
+                    {{ token }}
                   </div>
                 </div>
               </div>
             </ULandingCard>
 
-            <ULandingCard class="col-span-4 row-span-4">
-              <UTable :columns="columns" :rows="rankings" :loading="isLoadingRankings" class="pl-12">
+            <ULandingCard
+              class="col-span-5 row-span-4"
+              :ui="{body: {
+                base: 'gap-y-0'
+              }}"
+            >
+              <UTable :columns="columns" :rows="rankings" :loading="isLoadingRankings">
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
                     <!-- <ArAvatar :src="row.avatar || defaultUserAvatar" :alt="row.receiver" size="xs" /> -->
@@ -346,7 +329,7 @@ const formattedTwitterLink = (twitter: string) => {
               </UTable>
             </ULandingCard>
 
-            <ULandingCard v-if="communityInfo?.tokensupply" class="col-span-8 row-span-2">
+            <ULandingCard v-if="community?.tokensupply" class="col-span-7 row-span-2">
               <div ref="chart" :style="{ width: '100%', height: '400px' }" />
             </ULandingCard>
           </ULandingGrid>

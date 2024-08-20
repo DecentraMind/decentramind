@@ -12,7 +12,7 @@ import TaskStatus from '~/components/task/TaskStatus.vue'
 
 const { t } = useI18n()
 const { createTask, getTasksByCommunityUuid } = $(taskStore())
-const { setCurrentCommunityUuid, getCommunity } = $(communityStore())
+const { setCurrentCommunityUuid, getLocalCommunity } = $(communityStore())
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
 const { showError, showMessage } = $(notificationStore())
@@ -174,7 +174,7 @@ onMounted(async () => {
   setCurrentCommunityUuid(uuid)
 
   try {
-    community = await getCommunity(uuid)
+    community = await getLocalCommunity(uuid)
     if (!community) {
       throw new Error('Failed to load community info. Please try again later.')
     }
@@ -197,7 +197,7 @@ onMounted(async () => {
 
 const reloadCommunity = async () => {
   console.log('reloading community', uuid)
-  community = await getCommunity(uuid)
+  community = await getLocalCommunity(uuid)
 }
 provide('reloadCommunity', reloadCommunity)
 

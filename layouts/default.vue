@@ -8,7 +8,7 @@ const router = useRouter()
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet } = $(aoStore())
-const { joinedCommunities, currentUuid: currentCommunityID, userInfo, getUser, loadCommunityList } = $(communityStore())
+const { joinedCommunities, currentUuid, userInfo, getUser, loadCommunityList } = $(communityStore())
 
 const isCreateModalOpen = $ref(false)
 
@@ -20,7 +20,7 @@ onMounted(async () => {
       return
     }
 
-    Promise.all([loadCommunityList(), getUser()])
+    Promise.all([loadCommunityList(address), getUser()])
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -59,7 +59,7 @@ onMounted(async () => {
                 'transition-all ease-in-out duration-500 rounded-sm bg-gray-900 absolute left-[-6px]',
                 'w-0 group-hover:w-1 h-8 top-4 bg-opacity-0 group-hover:bg-opacity-60',
                 {
-                  'w-1 h-12 top-2 bg-opacity-80': community.uuid === currentCommunityID
+                  'w-1 h-12 top-2 bg-opacity-80': community.uuid === currentUuid
                 }
               )"
             />
@@ -119,7 +119,7 @@ onMounted(async () => {
       </div>
       <CommunityForm
         v-if="selectModal === 1"
-        @saved="loadCommunityList()"
+        @saved="loadCommunityList(address)"
         @close-modal="isCreateModalOpen = false"
       />
       <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />

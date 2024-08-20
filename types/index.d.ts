@@ -102,14 +102,10 @@ export type Community = {
   uuid: string
   website: string
   logoARHash?: string
-}
 
-export type CommunityWithJoinInfo = Community & {
   isJoined: boolean
   joinTime?: number
 }
-
-export type CommunityList = CommunityWithJoinInfo[]
 
 /**
  * type of community setting form

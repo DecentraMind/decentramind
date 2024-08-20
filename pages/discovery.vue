@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getCommunityBannerUrl, arUrl, defaultCommunityLogo } from '~/utils/arAssets'
+import { getCommunityBannerUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
 const { address, doLogout, doLogin } = $(aoStore())
 
@@ -69,7 +69,7 @@ const joinToCommunity = async(uuid: any) => {
     const invite = 'none'
     await joinCommunity(uuid, invite)
     toast.add({ title: 'joined success' })
-    await loadCommunityList()
+    await loadCommunityList(address)
     router.push('/community/' + uuid)
   } catch (error) {
     showError('Failed to join.', error as Error)

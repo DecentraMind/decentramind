@@ -128,6 +128,11 @@ export function getDomain(url: string) {
   return url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
 }
 
+export function getHandle(url: string) {
+  const handle = url.match(/\/(\w+)\/?$/)?.[1]
+  return `@${handle}` || url.replace(/https?:\/\//, '')
+}
+
 export function toBase62(num: number) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
   let result = ''

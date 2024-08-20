@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.4'
+Variant = '0.2.5'
 
 ---@class Community
 ---@field uuid string
@@ -43,7 +43,6 @@ type Users = {
 }
 ]] --
 Users = Users or {}
-GithubCodes = GithubCodes or {}
 
 --- @type table<string, string[]> table of community's muted user addresses
 MutedUsers = MutedUsers or {}
@@ -156,11 +155,9 @@ CommunityManager = {
     copy.isJoined = false
 
     local address = msg.Tags.userAddress
-    if address and Invites[address] then
-      if Invites[address][uuid] then
-        copy.isJoined = true
-        copy.joinTime = Invites[address][uuid].time
-      end
+    if address and Invites[address] and Invites[address][uuid] then
+      copy.isJoined = true
+      copy.joinTime = Invites[address][uuid].time
     end
 
     replyData(msg, copy)
@@ -400,20 +397,6 @@ Handlers.add(
   end
 )
 
---获取github code
-Handlers.add(
-  "getGithubcode",
-  Handlers.utils.hasMatchingTag("Action", "getGithubcode"),
-  function(msg)
-    local address = msg.Tags.userAddress
-    if not GithubCodes[address] then
-      replyData(msg, '')
-    end
-    local value = GithubCodes[address]
-    return replyData(msg, value)
-  end
-)
-
 -- TODO only update specific field, don't replace the whole Users[address]
 Handlers.add(
   "updateUser",
@@ -427,24 +410,6 @@ Handlers.add(
     end
 
     Users[address] = json.decode(msg.Data)
-
-    -- 判断msg.Tags.github是否存在并且等于"yes"
-    if msg.Tags.github and msg.Tags.github == "yes" then
-      -- 检查githubcode中是否存在key值为msg.From的列
-      if not GithubCodes[address] then
-        -- 生成一串10位数字的字符串
-        local randomString = ""
-        for i = 1, 10 do
-          randomString = randomString .. tostring(math.random(0, 9))
-        end
-
-        -- 将生成的字符串赋值给githubcode的这一列
-        print(randomString)
-        print("------------")
-        GithubCodes[address] = randomString
-        replyData(msg, randomString)
-      end
-    end
   end
 )
 

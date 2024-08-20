@@ -5,7 +5,7 @@ import {
   dryrun,
   result
 } from '@permaweb/aoconnect'
-import type { Community, CommunityList, CommunityWithJoinInfo, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
+import type { Community, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo } from '~/utils/arAssets'
 import { createUuid, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams } from '~/utils/util'
@@ -18,10 +18,12 @@ export const communityStore = defineStore('communityStore', () => {
   const { address } = $(aoStore())
   let twitterVouched = $ref(true)
   let twitterVouchedIDs = $ref<string[]>([])
-  let communityList = $ref<CommunityList>([])
+  let communityList = $ref<Community[]>([])
   let userInfo = $ref<UserInfo>()
-  const joinedCommunities = $computed<CommunityList>(() => {
-    return communityList.filter((item) => item.isJoined)
+  const joinedCommunities = $computed<Community[]>(() => {
+    if (!address) return []
+
+    return (communityList as Community[]).filter((item) => item.isJoined)
       .sort((a, b) => {
         if (a.joinTime && b.joinTime) {
           return b.joinTime - a.joinTime
@@ -35,6 +37,7 @@ export const communityStore = defineStore('communityStore', () => {
 
   //Set the uuid of the currently selected community
   const setCurrentCommunityUuid = (uuid: any) => {
+    console.log('set current community:', uuid)
     currentUuid = uuid
   }
 
@@ -230,7 +233,7 @@ export const communityStore = defineStore('communityStore', () => {
       github,
       bounty: bountyTokenNames,
       ispublished: isPublished,
-      communitytoken: communityToken,
+      communitytoken: communityToken.filter(token => token.tokenName),
       istradable: isTradable,
       support: tradePlatforms,
       alltoken: allTokenSupply,
@@ -257,9 +260,9 @@ export const communityStore = defineStore('communityStore', () => {
   /**
    * Get community list method. This function will update communityList and joinedCommunityList cache.
    * */
-  const loadCommunityList = async () => {
+  const loadCommunityList = async (address?: string) => {
     const tags = [
-      { name: 'Action', value: 'getCommunities' }
+      { name: 'Action', value: 'GetCommunities' }
     ]
     if (address) {
       tags.push({ name: 'userAddress', value: address })
@@ -269,26 +272,30 @@ export const communityStore = defineStore('communityStore', () => {
       tags
     })
     const data = extractResult<string>(result)
-    communityList = JSON.parse(data) as CommunityList
+    communityList = JSON.parse(data) as Community[]
+    console.log('communityList refreshed', {communityList, address})
 
     return communityList
   }
 
   // Getting information about a specific community
-  const getCommunity = async (uuid: string) => {
+  const getCommunity = async (uuid: string, address?: string) => {
+    const tags = [
+      { name: 'Action', value: 'GetCommunity' }
+    ]
+    if (address) {
+      tags.push({ name: 'userAddress', value: address })
+    }
     const result = await dryrun({
       process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'GetCommunity' },
-        { name: 'uuid', value: uuid }
-      ]
+      tags
     })
 
     const json = extractResult<string>(result)
-    if (!json) return
-    const res = JSON.parse(json) as CommunityWithJoinInfo
+    const res = JSON.parse(json) as Community
 
     updateLocalCommunity(uuid, res)
+    console.log('community refreshed', { res, uuid, address })
 
     return res
   }
@@ -314,12 +321,12 @@ export const communityStore = defineStore('communityStore', () => {
   /**
    * Update local communityList cache
    * */
-  function updateLocalCommunity<K extends keyof CommunityWithJoinInfo>(
+  function updateLocalCommunity<K extends keyof Community>(
     uuid: string,
-    fieldOrNewCommunity: K|CommunityWithJoinInfo,
-    value?: CommunityWithJoinInfo[K]
+    fieldOrNewCommunity: K|Community,
+    value?: Community[K]
   ) {
-    const params: UpdateItemParams<CommunityWithJoinInfo, K> = {
+    const params: UpdateItemParams<Community, K> = {
       array: communityList,
       identifierKey: 'uuid',
       identifierValue: uuid,

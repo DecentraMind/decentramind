@@ -179,6 +179,7 @@ const updateBanner = (index: number) => {
 
 let communityTokens = $ref([{
   tokenName: '',
+  // TODO remove showTokenName
   showTokenName: true
 }])
 
