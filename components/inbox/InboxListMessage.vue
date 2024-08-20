@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MailCache } from '~/types'
 import { cn } from '~/utils/util'
-import { chatroomFetchInterval } from '~/utils/constants'
+const runtimeConfig = useRuntimeConfig()
 
 const { pid } = $defineProps<{
   pid: string, // process id
@@ -37,7 +37,7 @@ onMounted(async () => {
     if (oldCount && oldCount < newCount) {
       notifySound.play()
     }
-  }, chatroomFetchInterval)
+  }, runtimeConfig.public.chatroomFetchInterval || 5000)
 })
 
 onUnmounted(() => {

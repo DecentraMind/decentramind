@@ -69,6 +69,9 @@ export default defineAppConfig({
 })
 
 declare module '@nuxt/schema' {
+  interface PublicRuntimeConfig {
+    chatroomFetchInterval: number
+  }
   interface AppConfigInput {
     // myLayer?: {
     //   /** Project name */

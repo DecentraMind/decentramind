@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly EVERLAND_BUCKET_NAME: string
   readonly EVERLAND_API_KEY: string
   readonly EVERLAND_API_SECRET: string
+  readonly NUXT_PUBLIC_CHATROOM_FETCH_INTERVAL: string
 }
 
 interface ImportMeta {
