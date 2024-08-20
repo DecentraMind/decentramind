@@ -31,7 +31,7 @@ const progress = taskProgress(now, task.startTime, task.endTime)
         {{ $t('task.submitted') }}
       </UBadge>
     </div>
-    <div v-if="task.ownerAddress === address && !task.isSettled && now >= task.endTime">
+    <div v-if="(task.ownerAddress === address || checkSubmit(task.submissions, address)) && !task.isSettled && now >= task.endTime">
       <UBadge color="orange" variant="soft">
         {{ $t('Unsettled') }}
       </UBadge>

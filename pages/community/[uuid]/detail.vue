@@ -26,12 +26,6 @@ const communityID = $computed(() => route.params.uuid) as string
 
 let community = $ref<Community>()
 
-watchEffect(() => {
-  if (!route.params.pid) return
-
-  console.log(route.params.pid)
-})
-
 type Rank = {
   receiver: string
   bountyCount: number
