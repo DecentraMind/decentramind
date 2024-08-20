@@ -281,7 +281,8 @@ export const communityStore = defineStore('communityStore', () => {
   // Getting information about a specific community
   const getCommunity = async (uuid: string, address?: string) => {
     const tags = [
-      { name: 'Action', value: 'GetCommunity' }
+      { name: 'Action', value: 'GetCommunity' },
+      { name: 'Uuid', value: uuid }
     ]
     if (address) {
       tags.push({ name: 'userAddress', value: address })

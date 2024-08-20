@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.6'
+Variant = '0.2.7'
 
 ---@class Community
 ---@field uuid string
@@ -145,8 +145,8 @@ CommunityManager = {
   end,
 
   GetCommunity = function(msg)
-    local community = deepCopy(Communities[msg.Tags.uuid])
-    local uuid = msg.Tags.uuid
+    local community = deepCopy(Communities[msg.Tags.Uuid])
+    local uuid = msg.Tags.Uuid
     if not community then
       return replyError(msg, "Not found.")
     end
