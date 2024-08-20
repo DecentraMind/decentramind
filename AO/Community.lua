@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.3'
+Variant = '0.2.4'
 
 ---@class Community
 ---@field uuid string
@@ -73,6 +73,17 @@ local function createUuid()
   end)
 end
 
+---Reply with data
+---@param data string|table
+local function replyData(request, data)
+  assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
+  if type(data) == 'string' then
+    request.reply({ Data = data })
+  else
+    request.reply({ Data = json.encode(data) })
+  end
+end
+
 local function replyError(request, errorMsg)
   local action = request.Action .. "-Error"
   local errString = errorMsg
@@ -83,11 +94,9 @@ local function replyError(request, errorMsg)
   ao.send({ Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
--- Creating new communities
-Handlers.add(
-  "create",
-  Handlers.utils.hasMatchingTag("Action", "createCommunity"),
-  function(msg)
+
+CommunityManager = {
+  CreateCommunity = function(msg)
     local community = json.decode(msg.Data)
     local address = msg.From
     -- Check if a column with the same name already exists
@@ -99,8 +108,7 @@ Handlers.add(
     local uuid = createUuid()
 
     if Communities[uuid] then
-      replyError(msg, 'uuid existed.')
-      return
+      return replyError(msg, 'uuid existed.')
     end
 
     Communities[uuid] = community
@@ -116,39 +124,28 @@ Handlers.add(
       Invites[address][uuid] = { time = msg.Timestamp }
     end
 
-    Handlers.utils.reply(json.encode(Communities[uuid]))(msg)
-  end
-)
+    replyData(msg, json.encode(Communities[uuid]))
+  end,
 
--- Get all communities
-Handlers.add(
-  "GetCommunities",
-  Handlers.utils.hasMatchingTag("Action", "GetCommunities"),
-  function(msg)
-    local communityCopy = {}
+  GetCommunities = function (msg)
+    local communities = {}
 
-    for uuid, community in pairs(Communities) do
+    for uuid,community in pairs(Communities) do
       local copy = deepCopy(community)
       copy.isJoined = false
 
       local address = msg.Tags.userAddress
-      if address and Invites[address] then
-        if Invites[address][uuid] then
-          copy.isJoined = true
-          copy.joinTime = Invites[address][uuid].time
-        end
+      if address and Invites[address] and Invites[address][uuid] then
+        copy.isJoined = true
+        copy.joinTime = Invites[address][uuid].time
       end
-      table.insert(communityCopy, copy)
+      table.insert(communities, copy)
     end
 
-    Handlers.utils.reply(json.encode(communityCopy))(msg)
-  end
-)
+    replyData(msg, communities)
+  end,
 
-Handlers.add(
-  "GetCommunity",
-  Handlers.utils.hasMatchingTag("Action", "GetCommunity"),
-  function(msg)
+  GetCommunity = function(msg)
     local community = deepCopy(Communities[msg.Tags.uuid])
     local uuid = msg.Tags.uuid
     if not community then
@@ -165,9 +162,20 @@ Handlers.add(
         copy.joinTime = Invites[address][uuid].time
       end
     end
-    Handlers.utils.reply(json.encode(copy))(msg)
-  end
-)
+
+    replyData(msg, copy)
+  end,
+
+  actions = { 'CreateCommunity', 'GetCommunities', 'GetCommunity' },
+}
+
+for action, handler in pairs(CommunityManager.actions) do
+  Handlers.add(
+    action,
+    Handlers.utils.hasMatchingTag("Action", action),
+    function(msg) CommunityManager[handler](msg) end
+  )
+end
 
 -- TODO only update specific field, don't replace the whole Communities[uuid]
 -- TODO only whitelisted field can be updated here. uuid/buildNum cannot updated by this Action.
@@ -192,7 +200,7 @@ Handlers.add(
     for field, value in pairs(setting) do
       community[field] = value
     end
-    Handlers.utils.reply(json.encode(community))(msg)
+    replyData(msg, community)
   end
 )
 
@@ -251,8 +259,6 @@ Handlers.add(
         end
       end
     end
-
-    Handlers.utils.reply("unchatban")(msg)
   end
 )
 
@@ -262,9 +268,9 @@ Handlers.add(
   function(msg)
     local uuid = msg.Tags.CommunityUuid
     if not MutedUsers[uuid] then
-      return Handlers.utils.reply('[]')(msg)
+      return replyData(msg, '[]')
     end
-    Handlers.utils.reply(json.encode(MutedUsers[uuid]))(msg)
+    replyData(msg, MutedUsers[uuid])
   end
 )
 
@@ -354,7 +360,7 @@ Handlers.add(
       end
     end
 
-    Handlers.utils.reply(json.encode(communityUsers))(msg)
+    replyData(msg, communityUsers)
   end
 )
 
@@ -370,7 +376,7 @@ local function registerOrLogin(msg)
     Users[address] = user
   end
 
-  Handlers.utils.reply(json.encode(Users[address]))(msg)
+  replyData(msg, Users[address])
 end
 
 Handlers.add(
@@ -390,7 +396,7 @@ Handlers.add(
       return
     end
 
-    Handlers.utils.reply(json.encode(userInfo))(msg)
+    replyData(msg, userInfo)
   end
 )
 
@@ -400,16 +406,11 @@ Handlers.add(
   Handlers.utils.hasMatchingTag("Action", "getGithubcode"),
   function(msg)
     local address = msg.Tags.userAddress
-    print("-----")
-    if GithubCodes[address] then
-      local value = GithubCodes[address]
-      print("Value for key " .. value)
-      Handlers.utils.reply(value)(msg)
-    else
-      local result = 'N/A'
-      print("Key not found")
-      Handlers.utils.reply(result)(msg)
+    if not GithubCodes[address] then
+      replyData(msg, '')
     end
+    local value = GithubCodes[address]
+    return replyData(msg, value)
   end
 )
 
@@ -441,7 +442,7 @@ Handlers.add(
         print(randomString)
         print("------------")
         GithubCodes[address] = randomString
-        Handlers.utils.reply(randomString)(msg)
+        replyData(msg, randomString)
       end
     end
   end
@@ -478,6 +479,6 @@ Handlers.add(
       relatedUsers = relatedUsers
     }
 
-    Handlers.utils.reply(json.encode(data))(msg)
+    replyData(msg, data)
   end
 )
