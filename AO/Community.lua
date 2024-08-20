@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.5'
+Variant = '0.2.6'
 
 ---@class Community
 ---@field uuid string
@@ -166,11 +166,11 @@ CommunityManager = {
   actions = { 'CreateCommunity', 'GetCommunities', 'GetCommunity' },
 }
 
-for action, handler in pairs(CommunityManager.actions) do
+for _, action in pairs(CommunityManager.actions) do
   Handlers.add(
     action,
     Handlers.utils.hasMatchingTag("Action", action),
-    function(msg) CommunityManager[handler](msg) end
+    function(msg) CommunityManager[action](msg) end
   )
 end
 
