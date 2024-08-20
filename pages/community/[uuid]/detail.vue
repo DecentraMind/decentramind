@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import {tokenProcessIDs, type TokenSupply} from '~/utils/constants'
+import { type TokenSupply } from '~/utils/constants'
 import { shortString, getDomain, getHandle } from '~/utils/util'
+import type { Community } from '~/types/index'
 
 const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
 const { getBountiesByCommunityID } = $(taskStore())
 const { showError } = $(notificationStore())
+import * as echarts from 'echarts'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -22,7 +24,7 @@ const columns = [{
 const route = useRoute()
 const communityID = $computed(() => route.params.uuid) as string
 
-let community = $ref<CommunityWithJoinInfo>()
+let community = $ref<Community>()
 
 watchEffect(() => {
   if (!route.params.pid) return
@@ -59,6 +61,7 @@ const loadRanks = async () => {
   }
 }
 
+const chart = $ref<HTMLDivElement>()
 let isLoading = $ref(true)
 onMounted( async () => {
   if (!address) {
@@ -74,7 +77,10 @@ onMounted( async () => {
     setCurrentCommunityUuid(community.uuid)
 
     if (community && community.tokensupply) {
-      initChart(community.tokensupply)
+      console.log('initialize chart with tokens info:', community.tokensupply)
+      nextTick(() => {
+        initChart(chart, community?.tokensupply)
+      })
     } else {
       console.error('Failed to initialize chart: TokenSupply data is not available.')
     }
@@ -97,59 +103,53 @@ function onResize() {
   }
 }
 
-const tokenMap = $ref(tokenProcessIDs)
-
-import * as echarts from 'echarts'
-import type { CommunityWithJoinInfo } from '~/types'
-
-const chart = ref(null)
 let chartInstance: echarts.ECharts
 
-const initChart = (tokenSupply: TokenSupply[]) => {
-  if (chart.value) {
-    chartInstance = echarts.init(chart.value)
-
-    if (tokenSupply) {
-      // Convert communityInfo.supply to the format required by ECharts
-      const data = tokenSupply.map(item => ({
-        value: item.supply,
-        name: item.name
-      }))
-
-      const option = {
-        title: {
-          text: `Token Allocation\n${community?.alltoken ? 'Total Supply ' + community.alltoken : ''}`,
-          left: 'center'
-        },
-        tooltip: {
-          trigger: 'item'
-        },
-        legend: {
-          orient: 'vertical',
-          left: 'left'
-        },
-        series: [
-          {
-            name: 'Access From',
-            type: 'pie',
-            radius: '50%',
-            data: data,
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)'
-              }
-            }
-          }
-        ]
-      }
-
-      chartInstance.setOption(option)
-    } else {
-      console.warn('TokenSupply is not available or is not an array.')
-    }
+const initChart = (chart: HTMLDivElement, tokenSupply: TokenSupply[]) => {
+  if(!chart) {
+    throw new Error('chart element not ready.')
   }
+  chartInstance = echarts.init(chart)
+
+  if (!tokenSupply || tokenSupply.length === 0) {
+    console.warn('TokenSupply is not available or is not an array.')
+  }
+  // Convert communityInfo.supply to the format required by ECharts
+  const data = tokenSupply.map(item => ({
+    value: item.supply,
+    name: item.name
+  }))
+
+  const option = {
+    title: {
+      text: `Token Allocation\n${community?.alltoken ? 'Total Supply ' + community.alltoken : ''}`,
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      orient: 'vertical',
+      left: 'left'
+    },
+    series: [
+      {
+        name: 'Access From',
+        type: 'pie',
+        radius: '50%',
+        data: data,
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }
+    ]
+  }
+
+  chartInstance.setOption(option)
 }
 
 onBeforeUnmount(() => {
@@ -165,7 +165,7 @@ const classes = {
     value: 'flex justify-center border rounded-lg px-2',
     shortValues: 'flex justify-end items-center space-x-1'
   },
-  tag: 'bg-gray-200'
+  tag: 'inline-block py-1 px-2 rounded-md bg-gray-200'
 }
 </script>
 
@@ -300,7 +300,7 @@ const classes = {
                   <div
                     v-for="(token, index) in community.bounty.slice(0, 2)"
                     :key="index"
-                    :class="classes.field.value"
+                    :class="classes.tag"
                   >
                     {{ token }}
                   </div>
@@ -330,7 +330,7 @@ const classes = {
             </ULandingCard>
 
             <ULandingCard v-if="community?.tokensupply" class="col-span-7 row-span-2">
-              <div ref="chart" :style="{ width: '100%', height: '400px' }" />
+              <div ref="chart" class="w-full h-96" />
             </ULandingCard>
           </ULandingGrid>
         </UPageBody>

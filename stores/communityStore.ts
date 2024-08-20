@@ -301,12 +301,12 @@ export const communityStore = defineStore('communityStore', () => {
    */
   const getLocalCommunity = async (uuid: string, reFetch = false) => {
     if (reFetch) {
-      return await getCommunity(uuid)
+      return await getCommunity(uuid, address)
     }
 
     const community = communityList.find(community => community.uuid === uuid)
     if (!community) {
-      return await getCommunity(uuid)
+      return await getCommunity(uuid, address)
     }
     return community
   }
