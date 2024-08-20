@@ -158,3 +158,42 @@ export function taskProgress(now: number, startTime: number, endTime: number) {
   }
   return res
 }
+
+export interface UpdateItemParams<T, K extends keyof T> {
+  array: T[];
+  identifierKey: keyof T;
+  identifierValue: T[keyof T];
+  fieldOrNewItem: K | T;
+  value?: T[K];
+}
+export function updateItemInArray<
+  T extends Record<string, any>,
+  K extends Extract<keyof T, string>
+  >(params: UpdateItemParams<T, K>): boolean {
+  const {
+    array,
+    identifierKey,
+    identifierValue,
+    fieldOrNewItem,
+    value
+  } = params
+
+  const index = array.findIndex(item => item[identifierKey] === identifierValue)
+
+  if (index === -1) return false
+
+  if (typeof fieldOrNewItem === 'string') {
+    /**
+     * If the fieldOrNewItem is a string (i.e., a field name),
+     * ensure that value is explicitly provided. If not, throw an error.
+     */
+    if (value === undefined && !('value' in params)) {
+      throw new Error(`${ fieldOrNewItem }' value is not provided.`)
+    }
+
+    array[index][fieldOrNewItem] = value!
+  } else {
+    array[index] = fieldOrNewItem
+  }
+  return true
+}

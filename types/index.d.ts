@@ -104,13 +104,12 @@ export type Community = {
   logoARHash?: string
 }
 
-export type CommunityListItem = Community & {
-  whitebook?: string
-  isJoined?: boolean
+export type CommunityWithJoinInfo = Community & {
+  isJoined: boolean
   joinTime?: number
 }
 
-export type CommunityList = CommunityListItem[]
+export type CommunityList = CommunityWithJoinInfo[]
 
 /**
  * type of community setting form

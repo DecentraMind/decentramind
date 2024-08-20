@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.1.3'
+Variant = '0.2.3'
 
 ---@class Community
 ---@field uuid string
@@ -66,11 +66,11 @@ local function deepCopy(orig)
 end
 
 local function createUuid()
-    local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-    return string.gsub(template, '[xy]', function (c)
-        local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
-        return string.format('%x', v)
-    end)
+  local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+  return string.gsub(template, '[xy]', function(c)
+    local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+    return string.format('%x', v)
+  end)
 end
 
 local function replyError(request, errorMsg)
@@ -80,7 +80,7 @@ local function replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
-  ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString})
+  ao.send({ Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
 -- Creating new communities
@@ -122,18 +122,20 @@ Handlers.add(
 
 -- Get all communities
 Handlers.add(
-  "getCommunities",
-  Handlers.utils.hasMatchingTag("Action", "getCommunities"),
+  "GetCommunities",
+  Handlers.utils.hasMatchingTag("Action", "GetCommunities"),
   function(msg)
     local communityCopy = {}
+
     for uuid, community in pairs(Communities) do
       local copy = deepCopy(community)
-      copy.uuid = uuid
       copy.isJoined = false
-      if Invites[msg.Tags.userAddress] then
-        if Invites[msg.Tags.userAddress][uuid] then
+
+      local address = msg.Tags.userAddress
+      if address and Invites[address] then
+        if Invites[address][uuid] then
           copy.isJoined = true
-          copy.joinTime = Invites[msg.Tags.userAddress][uuid].time
+          copy.joinTime = Invites[address][uuid].time
         end
       end
       table.insert(communityCopy, copy)
@@ -144,16 +146,26 @@ Handlers.add(
 )
 
 Handlers.add(
-  "getCommunity",
-  Handlers.utils.hasMatchingTag("Action", "getCommunity"),
+  "GetCommunity",
+  Handlers.utils.hasMatchingTag("Action", "GetCommunity"),
   function(msg)
     local community = deepCopy(Communities[msg.Tags.uuid])
-    community.uuid = msg.Tags.uuid
+    local uuid = msg.Tags.uuid
     if not community then
-      print("Not found.")
-      return
+      return replyError(msg, "Not found.")
     end
-    Handlers.utils.reply(json.encode(community))(msg)
+
+    local copy = deepCopy(community)
+    copy.isJoined = false
+
+    local address = msg.Tags.userAddress
+    if address and Invites[address] then
+      if Invites[address][uuid] then
+        copy.isJoined = true
+        copy.joinTime = Invites[address][uuid].time
+      end
+    end
+    Handlers.utils.reply(json.encode(copy))(msg)
   end
 )
 

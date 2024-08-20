@@ -8,7 +8,7 @@ const router = useRouter()
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet } = $(aoStore())
-const { joinedCommunities, currentUuid: currentCommunityID, userInfo, getUser, getCommunityList } = $(communityStore())
+const { joinedCommunities, currentUuid: currentCommunityID, userInfo, getUser, loadCommunityList } = $(communityStore())
 
 const isCreateModalOpen = $ref(false)
 
@@ -20,7 +20,7 @@ onMounted(async () => {
       return
     }
 
-    Promise.all([getCommunityList(), getUser()])
+    Promise.all([loadCommunityList(), getUser()])
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -119,7 +119,7 @@ onMounted(async () => {
       </div>
       <CommunityForm
         v-if="selectModal === 1"
-        @saved="getCommunityList()"
+        @saved="loadCommunityList()"
         @close-modal="isCreateModalOpen = false"
       />
       <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />

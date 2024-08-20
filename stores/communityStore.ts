@@ -5,10 +5,10 @@ import {
   dryrun,
   result
 } from '@permaweb/aoconnect'
-import type { Community, CommunityList, CommunityListItem, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
+import type { Community, CommunityList, CommunityWithJoinInfo, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo } from '~/utils/arAssets'
-import { createUuid, sleep, retry, checkResult } from '~/utils/util'
+import { createUuid, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams } from '~/utils/util'
 import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
 
 // Read the Lua file
@@ -20,7 +20,15 @@ export const communityStore = defineStore('communityStore', () => {
   let twitterVouchedIDs = $ref<string[]>([])
   let communityList = $ref<CommunityList>([])
   let userInfo = $ref<UserInfo>()
-  let joinedCommunities = $ref<CommunityList>([])
+  const joinedCommunities = $computed<CommunityList>(() => {
+    return communityList.filter((item) => item.isJoined)
+      .sort((a, b) => {
+        if (a.joinTime && b.joinTime) {
+          return b.joinTime - a.joinTime
+        }
+        return 0
+      })
+  })
   let mutedUsers = $ref<string[]>([])
 
   let currentUuid = $ref<string>()
@@ -31,9 +39,14 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   const clearJoinedCommunities = () => {
-    joinedCommunities = []
+    communityList.map((item) => {
+     item.isJoined = false
+     item.joinTime = undefined
+     return item
+    })
   }
 
+  /** move this function to aoStore */
   const vouch = async () => {
     if (!address) {
       throw new Error('No address specified.')
@@ -192,7 +205,7 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   /**
-   * Modifying the community approach.
+   * Modifying the community.
    * @param {CommunitySetting} setting - The community settings object.
    * @param {string} bounty - The token type.
    * @param {string} communityToken - The community token distribution ratio.
@@ -242,70 +255,80 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   /**
-   * Get community list method (which generates a community table, and a joined community table)
+   * Get community list method. This function will update communityList and joinedCommunityList cache.
    * */
-  const getCommunityList = async () => {
-    if (address !== '') {
-      const result = await dryrun({
-        process: aoCommunityProcessID,
-        tags: [
-          { name: 'Action', value: 'getCommunities' },
-          { name: 'userAddress', value: address }
-        ],
-      })
-      const jsonData = result.Messages[0].Data
-      communityList = JSON.parse(jsonData) as CommunityList
-
-      // Iterate through each object and parse nested JSON strings
-      communityList = communityList.map((item) => {
-        if (item.communitytoken && typeof item.communitytoken === 'string') {
-          try {
-            item.communitytoken = JSON.parse(item.communitytoken)
-          } catch (e) {
-            console.error('Failed to parse communitytoken:', e, item.communitytoken)
-          }
-        }
-        return item
-      })
-
-      joinedCommunities = communityList.filter((item) => item.isJoined === true)
-      joinedCommunities.sort((a: CommunityListItem, b: CommunityListItem) => {
-        return b.joinTime! - a.joinTime!
-      })
-
-      return result
-    } else {
-      const result = await dryrun({
-        process: aoCommunityProcessID,
-        tags: [
-          { name: 'Action', value: 'getCommunities' }
-        ],
-      })
-      const jsonData = result.Messages[0].Data // 获取原始的 JSON 字符串
-      communityList = JSON.parse(jsonData) as CommunityList
-      joinedCommunities = []
-
-      return result
+  const loadCommunityList = async () => {
+    const tags = [
+      { name: 'Action', value: 'getCommunities' }
+    ]
+    if (address) {
+      tags.push({ name: 'userAddress', value: address })
     }
+    const result = await dryrun({
+      process: aoCommunityProcessID,
+      tags
+    })
+    const data = extractResult<string>(result)
+    communityList = JSON.parse(data) as CommunityList
+
+    return communityList
+  }
+
+  // Getting information about a specific community
+  const getCommunity = async (uuid: string) => {
+    const result = await dryrun({
+      process: aoCommunityProcessID,
+      tags: [
+        { name: 'Action', value: 'GetCommunity' },
+        { name: 'uuid', value: uuid }
+      ]
+    })
+
+    const json = extractResult<string>(result)
+    if (!json) return
+    const res = JSON.parse(json) as CommunityWithJoinInfo
+
+    updateLocalCommunity(uuid, res)
+
+    return res
   }
 
   /**
-   * Update local community.isJoined
-   * */
-  const updateLocalCommunityJoin = async (uuid: string, joinStatus: 'join' | 'exit') => {
-    for (let i = 0;i < communityList.length;i++) {
-      if (communityList[i].uuid === uuid) {
-        if (joinStatus == 'join') {
-          console.log('join')
-          communityList[i].isJoined = true
-        } else {
-          console.log('exit')
-          communityList[i].isJoined = false
-        }
-        break
-      }
+   * Getting information about a specific community from a cached community list.
+   * @param uuid
+   * @param reFetch should refetch from AO
+   * @returns
+   */
+  const getLocalCommunity = async (uuid: string, reFetch = false) => {
+    if (reFetch) {
+      return await getCommunity(uuid)
     }
-    joinedCommunities = communityList.filter((item) => item.isJoined === true)
+
+    const community = communityList.find(community => community.uuid === uuid)
+    if (!community) {
+      return await getCommunity(uuid)
+    }
+    return community
+  }
+
+  /**
+   * Update local communityList cache
+   * */
+  function updateLocalCommunity<K extends keyof CommunityWithJoinInfo>(
+    uuid: string,
+    fieldOrNewCommunity: K|CommunityWithJoinInfo,
+    value?: CommunityWithJoinInfo[K]
+  ) {
+    const params: UpdateItemParams<CommunityWithJoinInfo, K> = {
+      array: communityList,
+      identifierKey: 'uuid',
+      identifierValue: uuid,
+      fieldOrNewItem: fieldOrNewCommunity
+    }
+    if (arguments.length >= 3) {
+      params.value = value
+    }
+    return updateItemInArray(params)
   }
 
   /**
@@ -327,37 +350,7 @@ export const communityStore = defineStore('communityStore', () => {
     return communityUserMap
   }
 
-  //Getting information about a specific community from a cached community list
-  const getLocalCommunity = async (uuid: string, reFetch = false) => {
-    if (!communityList || !communityList.length || reFetch) {
-      await getCommunityList()
-    }
-
-    if (!communityList || !communityList.length) {
-      await getCommunityList()
-    }
-
-    const community = communityList.find(community => community.uuid === uuid)
-    return community
-  }
-
-  //Getting information about a specific community
-  const getCommunity = async (uuid: any) => {
-    const result = await dryrun({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'getCommunity' },
-        { name: 'uuid', value: uuid }
-      ]
-    })
-
-    const json = extractResult<string>(result)
-    if (!json) return
-
-    return JSON.parse(json) as Community
-  }
-
-  const joinCommunity = async (communityID: string, inviterAddress: string) => {
+  const joinCommunity = async (communityUuid: string, inviterAddress: string) => {
     const join = await message({
       process: aoCommunityProcessID,
       tags: [
@@ -365,8 +358,9 @@ export const communityStore = defineStore('communityStore', () => {
         { name: 'invite', value: inviterAddress },
       ],
       signer: createDataItemSigner(window.arweaveWallet),
-      data: communityID,
+      data: communityUuid,
     })
+    updateLocalCommunity(communityUuid, 'isJoined', true)
     return join
   }
 
@@ -387,7 +381,7 @@ export const communityStore = defineStore('communityStore', () => {
       throw new Error('Exit error. ' + error)
     }
 
-    await updateLocalCommunityJoin(uuid, 'exit')
+    updateLocalCommunity(uuid, 'isJoined', false)
   }
 
   //Modification of personal information
@@ -640,7 +634,7 @@ Handlers.add(
     setCurrentCommunityUuid,
     makeCommunityChat,
     getLocalCommunity,
-    getCommunityList,
+    loadCommunityList,
     addCommunity,
     updateCommunity,
     joinCommunity,

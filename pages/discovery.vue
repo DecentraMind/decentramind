@@ -3,7 +3,7 @@ import { getCommunityBannerUrl, arUrl, defaultCommunityLogo } from '~/utils/arAs
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, twitterVouched, getCommunityList, joinCommunity, clearJoinedCommunities } = $(communityStore())
+const { communityList, vouch, twitterVouched, loadCommunityList, joinCommunity, clearJoinedCommunities } = $(communityStore())
 
 const { showError } = $(notificationStore())
 
@@ -69,7 +69,7 @@ const joinToCommunity = async(uuid: any) => {
     const invite = 'none'
     await joinCommunity(uuid, invite)
     toast.add({ title: 'joined success' })
-    await getCommunityList()
+    await loadCommunityList()
     router.push('/community/' + uuid)
   } catch (error) {
     showError('Failed to join.', error as Error)

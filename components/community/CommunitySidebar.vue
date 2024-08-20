@@ -12,7 +12,7 @@ const props = defineProps<{
 const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
-const { exitCommunity, getCommunityList } = $(communityStore())
+const { exitCommunity } = $(communityStore())
 const { showError, showSuccess } = $(notificationStore())
 
 const router = useRouter()
@@ -27,7 +27,6 @@ const quitCommunity = async (communityUuid: string) => {
     await exitCommunity(communityUuid)
     isExiting = false
     router.push('/discovery')
-    await getCommunityList()
     showSuccess(`You have leaved ${community.name}.`)
   } catch (error) {
     showError('Exit community failed.', error as Error)
