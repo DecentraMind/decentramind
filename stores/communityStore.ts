@@ -54,7 +54,7 @@ export const communityStore = defineStore('communityStore', () => {
     if (!address) {
       throw new Error('No address specified.')
     }
-    const result2 = await message({
+    const res = await dryrun({
       process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
       tags: [
         { name: 'Action', value: 'Get-Vouches' },
@@ -63,34 +63,26 @@ export const communityStore = defineStore('communityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
     })
 
-    console.log(result2)
-    const res = await result({
-      message: result2,
-      process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
-    })
-    if (!res.Messages || res.Messages.length === 0) {
-      twitterVouched = false
-      console.log('No Messages found in the response.')
+    let data: string
+    try {
+      data = extractResult<string>(res)
+    } catch (e) {
+      console.error('Failed to get vouch data', e)
       return []
     }
-    if (!res.Messages[0].Data) {
-      twitterVouched = false
-      console.log('No Data found in the first Message.')
-      return []
-    }
-    console.log('vouch data:', res.Messages[0].Data)
+    console.log('vouch data:', data)
     // Parse the JSON string
-    const data = JSON.parse(res.Messages[0].Data) as VouchData
+    const vouchData = JSON.parse(data) as VouchData
 
     // Check if Vouchers exist in the data
-    if (!data.Vouchers || Object.keys(data.Vouchers).length === 0) {
+    if (!vouchData.Vouchers || Object.keys(vouchData.Vouchers).length === 0) {
       twitterVouched = false
       console.log('No Vouchers found in the data.')
       return []
     }
 
     // Get the Vouchers object
-    const vouchers = data.Vouchers
+    const vouchers = vouchData.Vouchers
 
     // Get all Identifiers
     twitterVouchedIDs = Object.values(vouchers)
