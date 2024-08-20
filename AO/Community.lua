@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.9'
+Variant = '0.2.10'
 
 ---@class Community
 ---@field uuid string
@@ -77,9 +77,9 @@ end
 local function replyData(request, data)
   assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
   if type(data) == 'string' then
-    request.reply({ Data = data })
+    ao.send({ Target = request.From, Data = data })
   else
-    request.reply({ Data = json.encode(data) })
+    ao.send({ Target = request.From, Data = json.encode(data) })
   end
 end
 
