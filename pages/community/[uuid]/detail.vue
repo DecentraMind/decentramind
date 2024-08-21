@@ -2,19 +2,18 @@
 import { type TokenSupply } from '~/utils/constants'
 import { shortString, getDomain, getHandle } from '~/utils/util'
 import type { Community } from '~/types/index'
+import BaseField from '~/components/fields/BaseField.vue'
+import * as echarts from 'echarts'
 
 const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
 const { getBountiesByCommunityID } = $(taskStore())
 const { showError } = $(notificationStore())
-import * as echarts from 'echarts'
 
-const { t } = useI18n()
 const router = useRouter()
 
 const columns = [{
   key: 'name',
-  label: t('community.detail.contributeRank'),
   class: 'text-xl'
 }, {
   key: 'bountyCount',
@@ -116,11 +115,18 @@ const initChart = (chart: HTMLDivElement, tokenSupply: TokenSupply[]) => {
 
   const option = {
     title: {
-      text: `Token Allocation\n${community?.alltoken ? 'Total Supply ' + community.alltoken : ''}`,
-      left: 'center'
+      text: `${community?.alltoken ? 'Total Supply ' + community.alltoken : ''}`,
+      left: 'center',
+      top: 'bottom',
+      textStyle: {
+        color: '#444',
+        fontSize: 14,
+        fontWeight: 600
+      }
     },
     tooltip: {
-      trigger: 'item'
+      trigger: 'item',
+      formatter: '{b}: {d}%'
     },
     legend: {
       orient: 'vertical',
@@ -128,7 +134,7 @@ const initChart = (chart: HTMLDivElement, tokenSupply: TokenSupply[]) => {
     },
     series: [
       {
-        name: 'Access From',
+        name: '',
         type: 'pie',
         radius: '50%',
         data: data,
@@ -153,14 +159,6 @@ onBeforeUnmount(() => {
   }
 })
 
-const classes = {
-  field: {
-    wrapper: 'flex justify-between',
-    value: 'flex justify-center border rounded-lg px-2',
-    shortValues: 'flex justify-end items-center space-x-1'
-  },
-  tag: 'inline-block py-1 px-2 rounded-md bg-gray-200'
-}
 </script>
 
 <template>
@@ -202,109 +200,38 @@ const classes = {
 
         <UPageBody>
           <ULandingGrid>
-            <ULandingCard class="col-span-7 row-span-2" :ui="{wrapper: '', body: {base: 'gap-y-7 mb-3'}}">
-              <div v-if="community.website" :class="classes.field.wrapper">
-                <div class="font-medium">{{ $t('community.website') }}</div>
+            <ULandingCard class="col-span-7 row-span-2" title="Profile" :ui="{title: 'text-lg', body: {base: 'gap-y-5 md:gap-y-7 mb-3'}}">
+              <BaseField
+                :name="$t('community.website')"
+                :link="community.website"
+                :link-text="getDomain(community.website)"
+              />
 
-                <ULink
-                  :to="community.website"
-                  active-class="hover:text-primary"
-                  target="_blank"
-                  :inactive-class="classes.tag"
-                >
-                  {{ getDomain(community.website) }}
-                </ULink>
-              </div>
+              <BaseField
+                :name="$t('community.twitter')"
+                :link="community.twitter"
+                :link-text="getHandle(community.twitter)"
+                link-icon="ri:twitter-fill"
+              />
 
-              <div v-if="community.twitter" :class="classes.field.wrapper">
-                <div class="font-medium">Twitter</div>
+              <BaseField
+                :name="$t('community.github')"
+                :link="community.github"
+                :link-text="getHandle(community.github)"
+                link-icon="ri:github-fill"
+              />
 
-                <ULink
-                  :to="community.twitter"
-                  active-class="hover:text-primary"
-                  target="_blank"
-                  :inactive-class="classes.tag"
-                >
-                  {{ getHandle(community.twitter) }}
-                </ULink>
-              </div>
+              <BaseField :name="$t('TokenOfCommunityDetail')" :values="community.communitytoken as unknown as Record<string, string>[]" value-key="tokenName" />
 
-              <div v-if="community.github" :class="classes.field.wrapper">
-                <div class="font-medium">Github</div>
+              <BaseField :name="$t('community.token.platforms')" :values="community.support as unknown as Record<string, string>[]" />
 
-                <ULink
-                  :to="community.github"
-                  active-class="text-primary"
-                  target="_blank"
-                  :inactive-class="classes.tag"
-                >
-                  {{ getHandle(community.github) }}
-                </ULink>
-              </div>
-
-              <div :class="classes.field.wrapper">
-                <div class="font-medium">{{ $t('community.buildnum') }}</div>
-                <div>
-                  {{ community.buildnum }}
-                </div>
-              </div>
-
-              <div v-if="community.communitytoken && community.communitytoken.filter(token => token.tokenName).length > 0" :class="classes.field.wrapper">
-                <div class="font-medium">{{ $t('community.detail.token') }}</div>
-
-                <div :class="classes.field.shortValues">
-                  <span
-                    v-for="(token, index) in community.communitytoken.filter(token => token.tokenName)"
-                    :key="index"
-                    :class="classes.field.value"
-                  >{{ token.tokenName }}</span>
-                </div>
-              </div>
-
-              <div v-if="community.support && community.support.length > 0" :class="classes.field.wrapper">
-                <div class="font-medium">{{ $t('community.token.platforms') }}</div>
-                <UPopover
-                  mode="hover"
-                  :popper="{ placement: 'top' }"
-                >
-                  <div :class="classes.field.shortValues">
-                    <span
-                      v-for="(token, index) in community.support.slice(0, 2)"
-                      :key="index"
-                      :class="classes.field.value"
-                    >{{ token }}</span>
-                  </div>
-                  <template #panel>
-                    <div v-if="community.support.length > 2" class="flex-center gap-x-1">
-                      <div
-                        v-for="(tokenName, tokenIndex) in community.support"
-                        :key="tokenIndex"
-                        class="px-2"
-                      >
-                        {{ tokenName }}
-                      </div>
-                    </div>
-                  </template>
-                </UPopover>
-              </div>
-
-              <div v-if="community.bounty && community.bounty.length > 0" :class="classes.field.wrapper">
-                <div class="font-medium">{{ $t('community.typereward') }}</div>
-                <div :class="classes.field.shortValues">
-                  <div
-                    v-for="(token, index) in community.bounty.slice(0, 2)"
-                    :key="index"
-                    :class="classes.tag"
-                  >
-                    {{ token }}
-                  </div>
-                </div>
-              </div>
+              <BaseField :name="$t('community.typereward')" :values="community.bounty as unknown as Record<string, string>[]" />
             </ULandingCard>
 
             <ULandingCard
               class="col-span-5 row-span-4"
-              :ui="{body: {
+              :title="$t('community.detail.contributeRank')"
+              :ui="{title: 'text-lg', body: {
                 base: 'gap-y-0'
               }}"
             >
@@ -323,7 +250,12 @@ const classes = {
               </UTable>
             </ULandingCard>
 
-            <ULandingCard v-if="community?.tokensupply" class="col-span-7 row-span-2">
+            <ULandingCard
+              v-if="community?.tokensupply"
+              title="Token Allocation"
+              class="col-span-7 row-span-2"
+              :ui="{title: 'text-lg'}"
+            >
               <div ref="chart" class="w-full h-96" />
             </ULandingCard>
           </ULandingGrid>

@@ -4,6 +4,7 @@ import type { Community } from '~/types/index'
 import { communityRightPages } from '~/utils/constants'
 import { getDomain } from '~/utils/util'
 import CommunityForm from '~/components/community/CommunityForm.vue'
+import BaseField from '~/components/fields/BaseField.vue'
 
 const props = defineProps<{
   community?: Community
@@ -48,18 +49,25 @@ const copyText = async () => {
 }
 
 const emit = defineEmits(['switch-right-page'])
+
+const classes = {
+  bottomButtons: 'center-text border rounded-lg w-full h-8'
+}
 </script>
 <template>
-  <UDashboardPanel :width="420" :resizable="{ min: 0, max: 420 }" collapsible>
-    <UDashboardSidebar v-if="community" class="pb-2" :ui="{container: 'p-0'}">
-      <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="h-[80px]" />-->
+  <UDashboardPanel :width="384" class="w-96">
+    <UDashboardSidebar v-if="community" class="pb-2" :ui="{header: 'px-0', footer: 'flex-col-center gap-y-2 flex-shrink-0'}">
+      <template #header>
+        <img :src="getCommunityBannerUrl(community.banner)" :alt="community.name">
+      </template>
+
       <div>
         <div class="flex justify-between items-center h-[calc(var(--header-height))]">
           <div class="max-w-[70%] text-3xl break-all">{{ community.name }}</div>
           <div>
             <UButton
-              color="white"
-              variant="solid"
+              color="primary"
+              variant="soft"
               :to="`/community/${community.uuid}/detail`"
             >
               {{ $t('View Details') }}
@@ -68,99 +76,32 @@ const emit = defineEmits(['switch-right-page'])
         </div>
 
         <UDivider />
+        <div class="flex flex-col gap-y-6 py-4">
+          <BaseField
+            :name="$t('community.website')"
+            :link="community.website"
+            :link-text="getDomain(community.website)"
+          />
 
-        <div
-          v-if="community.website"
-          class="flex justify-between my-3 mt-5 items-center"
-        >
-          <div>{{ $t('WebsiteOfCommunityDetail') }}</div>
+          <BaseField
+            :name="$t('community.twitter')"
+            :link="community.twitter"
+            :link-text="getHandle(community.twitter)"
+            link-icon="ri:twitter-fill"
+          />
 
-          <UButton
-            variant="link"
-            class="text-right border rounded-lg max-w-[60%] overflow-hidden pl-2 pr-2 text-nowrap"
-            :title="community.website"
-          >
-            <a :href="community.website" _target="_blank">{{ getDomain(community.website) }}</a>
-          </UButton>
-        </div>
+          <BaseField
+            :name="$t('community.github')"
+            :link="community.github"
+            :link-text="getHandle(community.github)"
+            link-icon="ri:github-fill"
+          />
 
-        <div
-          v-if="community.twitter"
-          class="flex justify-between my-3 items-center"
-        >
-          <div>{{ $t('SocialOfCommunityDetail') }}</div>
-          <div>
-            <ULink
-              :to="community.twitter"
-              active-class="text-primary"
-              target="_blank"
-              inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            >
-              <UButton variant="link">
-                <UIcon name="ri:twitter-line" class="h-5 w-5" />
-                Twitter
-              </UButton>
-            </ULink>
-          </div>
-        </div>
+          <BaseField :name="$t('TokenOfCommunityDetail')" :values="community.communitytoken as unknown as Record<string, string>[]" value-key="tokenName" />
 
-        <div
-          v-if="community.github"
-          class="flex justify-between my-3 items-center"
-        >
-          <div>{{ $t('GithubOfCommunityDetail') }}</div>
-          <div>
-            <ULink
-              :to="community.github"
-              active-class="text-primary"
-              target="_blank"
-              inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            >
-              <UButton variant="link">
-                <UIcon name="ri:github-line" class="h-5 w-5" />
-                Github
-              </UButton>
-            </ULink>
-          </div>
-        </div>
+          <BaseField :name="$t('Trading Support')" :values="community.support" />
 
-        <div class="flex justify-between my-3 items-center">
-          <div>{{ $t('TokenOfCommunityDetail') }}</div>
-          <div
-            v-if="
-              community.communitytoken && community.communitytoken.length > 0
-            "
-            class="flex space-x-3"
-          >
-            <div
-              v-for="(token, index) in community.communitytoken.slice(0, 2)"
-              :key="index"
-              class="flex justify-center border rounded-lg w-full pl-2 pr-2"
-            >
-              {{ token.tokenName }}
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-between my-3 items-center">
-          <div>{{ $t('Trading Support') }}</div>
-          <div
-            v-if="community.support && community.support.length > 0"
-            class="flex space-x-3"
-          >
-            <div
-              v-for="(token, index) in community.support.slice(0, 2)"
-              :key="index"
-              class="flex justify-center border rounded-lg w-full pl-2 pr-2"
-            >
-              {{ token }}
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-between my-3 pr-3 items-center">
-          <div>{{ $t('BuilderNumberOfCommunityDetail') }}</div>
-          <div>{{ community.buildnum }}</div>
+          <BaseField :name="$t('community.builders')" :value="community.buildnum" />
         </div>
 
         <UDivider />
@@ -180,52 +121,49 @@ const emit = defineEmits(['switch-right-page'])
         </div>
       </div>
 
-
-      <!--      <UDashboardSidebarLinks :links="[{ label: 'Colors', draggable: true, children: colors }]"-->
-      <!--        @update:links="(colors) => (defaultColors = colors)" />-->
-
-      <div class="flex-1" />
-      <div v-if="isCommunityOwner" class="text-right">
-        <UButton
-          size="lg"
-          variant="ghost"
-          icon="heroicons:cog-6-tooth"
-          @click="isSettingModalOpen = true"
-        />
-      </div>
-      <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60]">
-        <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
-        <Button class="center-text border rounded-lg w-full h-8">Invite People</Button>
-        <template #panel>
-          <div class="p-4 w-96">
-            <div>Invite URL:</div>
-            <div class="flex items-center">
-              <p ref="textToCopy" class="break-all mr-2">
-                https://decentramind.club/invite/{{ community.uuid }}&{{ address }}
-              </p>
-              <UButton
-                icon="carbon:align-box-bottom-right"
-                variant="ghost"
-                @click="copyText"
-              />
+      <template #footer>
+        <div v-if="isCommunityOwner" class="self-end">
+          <UButton
+            size="lg"
+            variant="soft"
+            icon="heroicons:cog-6-tooth"
+            @click="isSettingModalOpen = true"
+          />
+        </div>
+        <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
+          <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
+          <Button :class="classes.bottomButtons">Invite People</Button>
+          <template #panel>
+            <div class="p-4 w-80">
+              <div>Invite URL:</div>
+              <div class="flex items-center">
+                <p ref="textToCopy" class="break-all mr-2">
+                  https://decentramind.club/invite/{{ community.uuid }}&{{ address }}
+                </p>
+                <UButton
+                  icon="carbon:align-box-bottom-right"
+                  variant="ghost"
+                  @click="copyText"
+                />
+              </div>
             </div>
-          </div>
-        </template>
-      </UPopover>
+          </template>
+        </UPopover>
 
-      <Button
-        class="center-text border rounded-lg bg-black text-white w-full h-8"
-        @click="emit('switch-right-page', communityRightPages.tasks)"
-      >
-        Quests Home
-      </Button>
+        <Button
+          :class="cn(classes.bottomButtons, 'bg-black text-white')"
+          @click="emit('switch-right-page', communityRightPages.tasks)"
+        >
+          Quests Home
+        </Button>
 
-      <Button
-        class="center-text border rounded-lg w-full h-8"
-        @click="emit('switch-right-page', communityRightPages.chatroom)"
-      >
-        Chatroom
-      </Button>
+        <Button
+          :class="classes.bottomButtons"
+          @click="emit('switch-right-page', communityRightPages.chatroom)"
+        >
+          Chatroom
+        </Button>
+      </template>
     </UDashboardSidebar>
 
     <UModal

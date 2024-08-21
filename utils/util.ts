@@ -133,7 +133,7 @@ export function getDomain(url: string) {
 
 export function getHandle(url: string) {
   const handle = url.match(/\/(\w+)\/?$/)?.[1]
-  return `@${handle}` || url.replace(/https?:\/\//, '')
+  return `${handle}` || url.replace(/https?:\/\//, '')
 }
 
 export function toBase62(num: number) {

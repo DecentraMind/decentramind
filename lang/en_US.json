@@ -11,10 +11,12 @@
     "after": "you can complete that later",
     "banner": "Banner",
     "banner.submit": "Click to upload banner (recommended size xxx)",
-    "buildnum": "Builders",
-    "buildnum.label": "150U (uneditable, auto-generated)",
+    "builders": "Builders",
     "continue": "Continue Add",
     "create": "Create a Community",
+    "website": "Website",
+    "github": "Github",
+    "twitter": "Twitter",
     "detail": {
       "contribute": "Contributing Community",
       "contributeRank": "Contribution Ranking",
@@ -43,15 +45,12 @@
       "release": "Have Token?",
       "trade": "Can be Traded?"
     },
-    "twitter": "Twitter",
     "typereward": "Type of Bounty",
-    "typereward.label": "USDT PSN Multi-fill",
-    "website": "Website"
+    "typereward.label": "USDT PSN Multi-fill"
   },
   "End": "End",
   "Friends": "Friends",
   "github.link": "Link my github",
-  "GithubOfCommunityDetail": "Github",
   "I have read all rules": "Got It",
   "Ing": "Ing",
   "Invitation Quest": "Invitation Quest",
@@ -94,7 +93,6 @@
   "Settled": "Settled",
   "show": "Show",
   "showall": "All Show",
-  "SocialOfCommunityDetail": "Twitter",
   "Space Url": "Space URL",
   "Start a Public Quest": "Start a Public Quest",
   "Submit": "Submit",
@@ -144,7 +142,6 @@
   "wallet.balance": "Balance",
   "wallet.Dashboard": "Dashboard",
   "wallet.token": "Token Application",
-  "wallet.withdraw": "withdraw ",
-  "WebsiteOfCommunityDetail": "Website",
+  "wallet.withdraw": "withdraw",
   "yes": "yes"
 }
