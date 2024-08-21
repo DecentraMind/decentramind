@@ -3,7 +3,7 @@ import { getCommunityBannerUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, twitterVouched, loadCommunityList, joinCommunity, clearJoinedCommunities } = $(communityStore())
+const { communityList, vouch, twitterVouched, loadCommunityList, joinCommunity } = $(communityStore())
 
 const { showError } = $(notificationStore())
 
@@ -53,7 +53,7 @@ const translate = [
 
 const Logout = async() => {
   await doLogout()
-  clearJoinedCommunities()
+
   router.push('/')
 }
 
