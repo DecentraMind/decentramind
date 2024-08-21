@@ -117,7 +117,7 @@ const classes = {
 
         <UDivider />
 
-        <div v-if="!isCommunityOwner" class="flex justify-end mt-10">
+        <div v-if="!isCommunityOwner && community.isJoined" class="flex justify-end mt-10">
           <Confirm
             title="Leave Community"
             confirm-btn-text="Leave"
