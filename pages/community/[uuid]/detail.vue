@@ -202,12 +202,14 @@ onBeforeUnmount(() => {
           <ULandingGrid>
             <ULandingCard class="col-span-7 row-span-2" title="Profile" :ui="{title: 'text-lg', body: {base: 'gap-y-5 md:gap-y-7 mb-3'}}">
               <BaseField
+                v-if="community.website"
                 :name="$t('community.website')"
                 :link="community.website"
                 :link-text="getDomain(community.website)"
               />
 
               <BaseField
+                v-if="community.twitter"
                 :name="$t('community.twitter')"
                 :link="community.twitter"
                 :link-text="getHandle(community.twitter)"
@@ -215,6 +217,7 @@ onBeforeUnmount(() => {
               />
 
               <BaseField
+                v-if="community.github"
                 :name="$t('community.github')"
                 :link="community.github"
                 :link-text="getHandle(community.github)"

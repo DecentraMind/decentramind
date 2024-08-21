@@ -56,7 +56,15 @@ const classes = {
 </script>
 <template>
   <UDashboardPanel :width="384" class="w-96">
-    <UDashboardSidebar v-if="community" class="pb-2" :ui="{header: 'px-0', footer: 'flex-col-center gap-y-2 flex-shrink-0'}">
+    <UDashboardSidebar
+      v-if="community"
+      class="pb-2"
+      :ui="{
+        container: 'py-0',
+        header: 'px-0',
+        footer: 'flex-col-center pb-2 gap-y-2 flex-shrink-0'
+      }"
+    >
       <template #header>
         <img :src="getCommunityBannerUrl(community.banner)" :alt="community.name">
       </template>
@@ -78,12 +86,14 @@ const classes = {
         <UDivider />
         <div class="flex flex-col gap-y-6 py-4">
           <BaseField
+            v-if="community.website"
             :name="$t('community.website')"
             :link="community.website"
             :link-text="getDomain(community.website)"
           />
 
           <BaseField
+            v-if="community.twitter"
             :name="$t('community.twitter')"
             :link="community.twitter"
             :link-text="getHandle(community.twitter)"
@@ -91,6 +101,7 @@ const classes = {
           />
 
           <BaseField
+            v-if="community.github"
             :name="$t('community.github')"
             :link="community.github"
             :link-text="getHandle(community.github)"
@@ -99,7 +110,7 @@ const classes = {
 
           <BaseField :name="$t('TokenOfCommunityDetail')" :values="community.communitytoken as unknown as Record<string, string>[]" value-key="tokenName" />
 
-          <BaseField :name="$t('Trading Support')" :values="community.support" />
+          <BaseField :name="$t('Trading Support')" :values="community.support as unknown as Record<string, string>[]" />
 
           <BaseField :name="$t('community.builders')" :value="community.buildnum" />
         </div>

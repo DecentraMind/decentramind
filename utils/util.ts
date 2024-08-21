@@ -128,10 +128,12 @@ export function shortString(str: string, startLength: number = 6, endLength: num
  * @returns
  */
 export function getDomain(url: string) {
+  if (!url) return ''
   return url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
 }
 
 export function getHandle(url: string) {
+  if (!url) return ''
   const handle = url.match(/\/(\w+)\/?$/)?.[1]
   return `${handle}` || url.replace(/https?:\/\//, '')
 }

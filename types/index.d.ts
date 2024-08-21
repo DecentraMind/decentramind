@@ -72,36 +72,39 @@ export interface Range {
 }
 
 export type Community = {
+  /** AR tx ID */
+  logo: string
+  name: string
+  /** description */
+  desc: string
+  banner: `banner${6 | 7 | 8 | 9 | 10}`
+  website?: string
+  github?: string
+  twitter?: string
+
+  bounty: TokenName[]
+  communitytoken: CommunityToken[]
+  ispublished: boolean
+
+  istradable: boolean
+  /** trade platforms */
+  support: TradePlatform[]
+
   /** total supply of community token */
   alltoken: string
-  banner: `banner${6 | 7 | 8 | 9 | 10}`
-  bounty: TokenName[]
+  tokensupply: TokenSupply[]
+
   /** how many user joined in this community */
   buildnum: number
   // TODO replace chatroom ID with chatroom process ID
   /** ID of community's chatroom */
   communitychatid: string
-  communitytoken: CommunityToken[]
   creator: string
-  /** description */
-  desc: string
-  github: string
-  ispublished: boolean
-  istradable: boolean
-  /** base64 encoded data URI */
-  logo: string
-  name: string
   /** owner's address */
   owner: string
-  /** trade platforms */
-  support: TradePlatform[]
   /** created time */
   timestamp: number
-  tokensupply: TokenSupply[]
-  twitter: string
   uuid: string
-  website: string
-  logoARHash?: string
 
   isJoined: boolean
   joinTime?: number
@@ -118,6 +121,7 @@ export type CommunitySetting = {
   website?: string
   twitter?: string
   github?: string
+
   bountyTokenNames: TokenName[]
   /** 是否有发行 token */
   isPublished: boolean
