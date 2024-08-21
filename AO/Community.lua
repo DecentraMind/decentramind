@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.10'
+Variant = '0.2.11'
 
 ---@class Community
 ---@field uuid string
@@ -217,6 +217,10 @@ Handlers.add(
     end
 
     local userAddress = msg.Tags.User
+    if userAddress == community.owner then
+      return replyError(msg, 'You can not mute the owner.')
+    end
+
     MutedUsers[cid] = MutedUsers[cid] or {}
 
     local userExists = false
