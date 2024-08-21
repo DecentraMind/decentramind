@@ -224,7 +224,7 @@ onBeforeUnmount(() => {
                 link-icon="ri:github-fill"
               />
 
-              <BaseField :name="$t('TokenOfCommunityDetail')" :values="community.communitytoken as unknown as Record<string, string>[]" value-key="tokenName" />
+              <BaseField :name="$t('TokenOfCommunityDetail')" :values="community.communitytoken.filter(token => token.tokenName) as unknown as Record<string, string>[]" value-key="tokenName" />
 
               <BaseField :name="$t('community.token.platforms')" :values="community.support as unknown as Record<string, string>[]" />
 

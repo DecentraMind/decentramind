@@ -156,7 +156,7 @@ export const communityStore = defineStore('communityStore', () => {
     github,
     bounty,
     isPublished,
-    communityToken,
+    communityToken: CommunityToken[],
     isTradable,
     support,
     allToken,
@@ -177,7 +177,7 @@ export const communityStore = defineStore('communityStore', () => {
       github,
       bounty,
       ispublished: isPublished,
-      communitytoken: communityToken,
+      communitytoken: communityToken.filter(token => token.tokenName),
       istradable: isTradable,
       support: support,
       alltoken: allToken,
@@ -201,16 +201,11 @@ export const communityStore = defineStore('communityStore', () => {
 
   /**
    * Modifying the community.
-   * @param {CommunitySetting} setting - The community settings object.
-   * @param {string} bounty - The token type.
-   * @param {string} communityToken - The community token distribution ratio.
-   * @param {string} support - The trading platform.
-   * @param {any} tokenSupply - The details of the community token distribution ratio.
    */
   const updateCommunity = async (
     uuid: string,
     setting: CommunitySetting,
-    communityToken: CommunityToken[], // 社区 token 分配比例
+    communityToken: CommunityToken[],
     owner: string
   ) => {
     const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting

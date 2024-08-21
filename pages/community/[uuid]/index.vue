@@ -178,7 +178,7 @@ onMounted(async () => {
     if (!community) {
       throw new Error('Failed to load community info. Please try again later.')
     }
-    console.log('get communityInfo', community.name, community, uuid)
+    console.log('get communityInfo:', community.name, community, uuid)
 
     taskForm.communityUuid = community.uuid
 
