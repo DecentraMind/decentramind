@@ -44,7 +44,6 @@
     "ssim.js": "^3.5.0",
     "twitter-api-sdk": "^1.2.1",
     "v-calendar": "^3.1.2",
-    "viem": "^2.8.6",
     "zod": "^3.22.4"
   },
   "devDependencies": {

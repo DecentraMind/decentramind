@@ -114,6 +114,7 @@ export async function retry<T>(args: {
   }
 }
 
+/** transform long string into string like 4cbaab...3111 */
 export function shortString(str: string, startLength: number = 6, endLength: number = 4) {
   if (!str || str.length <= startLength + endLength) {
     return str || ''
