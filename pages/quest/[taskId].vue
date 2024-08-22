@@ -265,10 +265,10 @@ async function onClickSubmit() {
     // TODO 调用提交space链接并解析方法
     const matched = spaceUrl.trim().match(/(x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
 
-    if (!matched || !matched[1]) {
+    if (!matched || !matched[2]) {
       throw new Error('Invalid space URL.')
     }
-    const spaceId = matched[1]
+    const spaceId = matched[2]
 
     const { data, error } = await useFetch(
       '/api/twitter?' + new URLSearchParams({ spaceId }),
@@ -563,20 +563,13 @@ watch(
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
         -->
-        <UBlogPost :key="task.processID" :description="task.intro" class="p-10">
-          <template #title>
-            <div class="flex flex-col justify-start">
-              <div class="flex-none w-44">
-                <div>{{ task.name }}</div>
-              </div>
-              <TaskStatus :task="task" :address="address" />
-            </div>
-          </template>
+        <UBlogPost :key="task.processID" :title="task.name" :description="task.intro" class="p-10" :ui="{title: 'text-2xl mb-4 text-clip'}">
           <template #description>
             <div class="flex flex-col space-y-4">
-              <div class="h-6 overflow-hidden">
+              <div class="text-justify">
                 {{ task.intro }}
               </div>
+              <TaskStatus size="lg" :task="task" :address="address" />
               <div class="flex">
                 <div class="font-medium w-44 shrink-0">
                   <div>{{ $t('Time Zone') }}</div>

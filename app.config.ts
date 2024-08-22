@@ -5,6 +5,9 @@ export default defineAppConfig({
     avatar: {
       rounded: 'object-cover'
     },
+    badge: {
+      font: 'font-semibold'
+    },
     button: {
       padding: {
         '2xs': 'px-2 py-1',
