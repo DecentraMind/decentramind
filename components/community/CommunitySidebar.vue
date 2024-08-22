@@ -48,14 +48,24 @@ const copyText = async () => {
   }
 }
 
-const emit = defineEmits(['switch-right-page'])
 
 const classes = {
-  bottomButtons: 'center-text border rounded-lg w-full h-8'
+  bottomButtons: 'center-text border rounded-lg w-full h-8',
+  buttonActive: 'bg-black text-white'
 }
+
+const route = useRoute()
+const currentHash = ref(route.hash || '#quests')
+
+watch(
+  () => route.hash,
+  (newHash) => {
+    currentHash.value = newHash || '#quests'
+  }
+)
 </script>
 <template>
-  <UDashboardPanel :width="384" class="w-96">
+  <UDashboardPanel :width="384" class="w-96" collapsible>
     <UDashboardSidebar
       v-if="community"
       class="pb-2"
@@ -162,15 +172,15 @@ const classes = {
         </UPopover>
 
         <Button
-          :class="cn(classes.bottomButtons, 'bg-black text-white')"
-          @click="emit('switch-right-page', communityRightPages.tasks)"
+          :class="cn(classes.bottomButtons, {[classes.buttonActive]: currentHash=='#quests'})"
+          @click="router.push({hash: '#quests'})"
         >
           Quests Home
         </Button>
 
         <Button
-          :class="classes.bottomButtons"
-          @click="emit('switch-right-page', communityRightPages.chatroom)"
+          :class="cn(classes.bottomButtons, {[classes.buttonActive]: currentHash=='#chatroom'})"
+          @click="router.push({hash: '#chatroom'})"
         >
           Chatroom
         </Button>

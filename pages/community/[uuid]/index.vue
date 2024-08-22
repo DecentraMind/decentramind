@@ -201,20 +201,20 @@ const reloadCommunity = async () => {
 }
 provide('reloadCommunity', reloadCommunity)
 
-let currentRightPage = $ref<PageSymbol>(communityRightPages.tasks)
-function switchRightPage(page: PageSymbol) {
-  currentRightPage = page
-}
+let currentRightPage = $ref<PageSymbol>(communityRightPages['#quests'])
+watch(() => route.hash, newHash => {
+  const page = Object.keys(communityRightPages).includes(newHash) ? newHash : '#quests'
+  currentRightPage = communityRightPages[page as keyof typeof communityRightPages] || communityRightPages['#quests']
+})
 </script>
 <template>
   <UDashboardLayout :ui="{ wrapper: 'w-full static' }">
     <CommunitySidebar
       :community="community"
       :address="address"
-      @switch-right-page="switchRightPage"
     />
     <UDashboardPage>
-      <UPage v-if="currentRightPage === communityRightPages.tasks" class="bg-grid overflow-y-auto h-full w-full">
+      <UPage v-if="currentRightPage === communityRightPages['#quests']" class="bg-grid overflow-y-auto h-full w-full">
         <div class="relative flex flex-col mx-10 pt-10 items-center h-screen">
           <div class="flex w-full justify-between items-center mb-6">
             <UTabs
@@ -536,7 +536,7 @@ function switchRightPage(page: PageSymbol) {
       </UPage>
 
       <Chatroom
-        v-if="community && currentRightPage === communityRightPages.chatroom"
+        v-if="community && currentRightPage === communityRightPages['#chatroom']"
         :community="community"
         :address="address"
       />
