@@ -153,7 +153,7 @@ watch(
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
-          <Button :class="classes.bottomButtons">Invite People</Button>
+          <button :class="classes.bottomButtons">Invite People</button>
           <template #panel>
             <div class="p-4 w-80">
               <div>Invite URL:</div>
@@ -171,19 +171,19 @@ watch(
           </template>
         </UPopover>
 
-        <Button
+        <button
           :class="cn(classes.bottomButtons, {[classes.buttonActive]: currentHash=='#quests'})"
           @click="router.push({hash: '#quests'})"
         >
           Quests Home
-        </Button>
+        </button>
 
-        <Button
+        <button
           :class="cn(classes.bottomButtons, {[classes.buttonActive]: currentHash=='#chatroom'})"
           @click="router.push({hash: '#chatroom'})"
         >
           Chatroom
-        </Button>
+        </button>
       </template>
     </UDashboardSidebar>
 

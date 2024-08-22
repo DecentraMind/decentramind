@@ -564,7 +564,7 @@ watch(
         -->
         <UBlogPost :key="task.processID" :description="task.intro" class="p-10">
           <template #title>
-            <div class="flex justify-start">
+            <div class="flex flex-col justify-start">
               <div class="flex-none w-44">
                 <div>{{ task.name }}</div>
               </div>
@@ -712,43 +712,42 @@ watch(
               <div>
                 <p>
                   1 Total score is 100 including Brand 10%, Friends 40%,
-                  Popularity 50%
+                  Popularity 50%.
                 </p>
 
                 <p>
                   2 Brand is decided by your avatar, change it you’ll get 10,
-                  not change get 0
+                  not change get 0.
                 </p>
 
                 <p>
-                  3 Friends is decided by the amount of new friends you
-                  invited
+                  3 Fri ends is decided by the number of users invited through your quest invitation.
                 </p>
 
                 <p>
                   4 Popularity is decided by the amount of audience in your
-                  Twitter Space
+                  Twitter Space.
                 </p>
 
                 <p>
                   5 The person with the highest data gets the maximum scores
-                  including Brand, Friends and Popularity
+                  including Brand, Friends and Popularity.
                 </p>
 
                 <p>
                   6 Everyone will have a total score, it decide the amount of
-                  your bounty
+                  your bounty.
                 </p>
 
                 <p>
                   7 If the total chances are 20 but you are in 21st, sorry you
-                  can get nothing
+                  can get nothing.
                 </p>
 
-                <p>8 You only have 1 chance for this quest</p>
+                <p>8 You only have 1 chance for this quest.</p>
                 <p>
                   9 If no one meets the bounty, the bounty will be returned to
-                  the bounty owner's wallet
+                  the bounty owner's wallet.
                 </p>
               </div>
             </div>

@@ -94,7 +94,7 @@ const emit = defineEmits(['close-modal'])
             height="64"
             alt="logo"
           >
-          <Input ref="uploadInput" type="file" size="sm" class="opacity-0 w-0 h-0" @change="upload2AR" />
+          <input ref="uploadInput" type="file" size="sm" class="opacity-0 w-0 h-0" @change="upload2AR">
 
           <div v-if="isUploading" class="absolute left-0 top-0 flex justify-center items-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
         </div>

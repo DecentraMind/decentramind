@@ -82,7 +82,7 @@ async function upload2AR() {
 
 <template>
   <UDashboardPanelContent class="pt-10 pb-24">
-    <Input ref="uploadInput" type="file" size="sm" class="opacity-0 h-0" @change="upload2AR" />
+    <input ref="uploadInput" type="file" size="sm" class="opacity-0 h-0" @change="upload2AR">
 
     <div v-if="isLoading" class="w-full h-52 flex justify-center items-center">
       <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" />
