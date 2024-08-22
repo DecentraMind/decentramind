@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.11'
+Variant = '0.2.12'
 
 ---@class Community
 ---@field uuid string
@@ -123,7 +123,10 @@ CommunityManager = {
       Invites[address][uuid] = { time = msg.Timestamp }
     end
 
-    replyData(msg, json.encode(Communities[uuid]))
+    local copy = deepCopy(Communities[uuid])
+    copy.isJoined = true
+    copy.joinTime = msg.Timestamp
+    replyData(msg, json.encode(copy))
   end,
 
   GetCommunities = function (msg)
@@ -197,7 +200,15 @@ Handlers.add(
     for field, value in pairs(setting) do
       community[field] = value
     end
-    replyData(msg, community)
+
+    local copy = deepCopy(community)
+    copy.isJoined = false
+    local address = msg.From
+    if Invites[address] and Invites[address][uuid] then
+      copy.isJoined = true
+      copy.joinTime = Invites[address][uuid].time
+    end
+    replyData(msg, json.encode(copy))
   end
 )
 

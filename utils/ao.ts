@@ -74,14 +74,18 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
   return true
 }
 
-export async function messageResult(messageParams: SendMessageArgs) {
+export async function messageResult<T>(messageParams: SendMessageArgs) {
   const messageId = await message(messageParams)
   const res = await result({ process: messageParams.process, message: messageId })
-  checkResult(res)
+  return extractResult<T>(res)
+}
+
+export async function messageResultParsed(messageParams: SendMessageArgs) {
+  return JSON.parse(await messageResult<string>(messageParams))
 }
 
 /**
- * Get data from dryrun result
+ * Get data from dryrun/result() return value
  * @param result dryrun result
  * @returns
  */

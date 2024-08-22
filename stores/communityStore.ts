@@ -152,22 +152,11 @@ export const communityStore = defineStore('communityStore', () => {
 
   //Creating a community approach
   const addCommunity = async (
-    logo,
-    banner,
-    name,
-    desc,
-    website,
-    twitter,
-    github,
-    bounty,
-    isPublished,
+    setting: CommunitySetting,
     communityToken: CommunityToken[],
-    isTradable,
-    support,
-    allToken,
-    tokenSupply,
-    chatroomID
+    chatroomID: string
   ) => {
+    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
     const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined'> = {
       logo,
       banner,
@@ -178,18 +167,18 @@ export const communityStore = defineStore('communityStore', () => {
       website,
       twitter,
       github,
-      bounty,
+      bounty: bountyTokenNames,
       ispublished: isPublished,
       communitytoken: communityToken.filter(token => token.tokenName),
       istradable: isTradable,
-      support: support,
-      alltoken: allToken,
-      tokensupply: tokenSupply,
+      support: tradePlatforms,
+      alltoken: allTokenSupply,
+      tokensupply: tokenAllocations,
       communitychatid: chatroomID,
     }
     const jsonString = JSON.stringify(community)
 
-    const createdUuid = await messageResult({
+    const createdCommunity = await messageResultParsed({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'createCommunity' }
@@ -198,7 +187,9 @@ export const communityStore = defineStore('communityStore', () => {
       data: jsonString,
     })
 
-    return createdUuid
+    updateLocalCommunity(createdCommunity.uuid, createdCommunity)
+
+    return createdCommunity.uuid
   }
 
   /**
@@ -230,7 +221,7 @@ export const communityStore = defineStore('communityStore', () => {
       uuid
     }
     const jsonString = JSON.stringify(communitySetting)
-    const messageID = await message({
+    const res = await messageResultParsed({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'updateCommunity' },
@@ -238,12 +229,9 @@ export const communityStore = defineStore('communityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
     })
-    const res = await result({
-      message: messageID,
-      process: aoCommunityProcessID
-    })
     console.log({ communityUpdateRes: res })
-    checkResult(res)
+
+    updateLocalCommunity(uuid, res)
   }
 
   /**

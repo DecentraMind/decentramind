@@ -91,7 +91,7 @@ export type Community = {
   support: TradePlatform[]
 
   /** total supply of community token */
-  alltoken: string
+  alltoken?: number
   tokensupply: TokenSupply[]
 
   /** how many user joined in this community */
@@ -128,7 +128,7 @@ export type CommunitySetting = {
   isTradable: boolean
   tradePlatforms: TradePlatform[]
   /** 分配的 community token 总量  */
-  allTokenSupply?: string
+  allTokenSupply?: number
   /** community token allocations */
   tokenAllocations: TokenSupply[]
 }

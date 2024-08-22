@@ -124,20 +124,8 @@ const createCommunity = async () => {
     }
 
     createdCommunityID = await addCommunity(
-      formState.logo,
-      formState.banner,
-      formState.name,
-      formState.desc,          // introduction
-      formState.website,
-      formState.twitter,
-      formState.github,
-      formState.bountyTokenNames,     // 选择的 bounty token 类型
-      formState.isPublished,    // 是否有发行token
-      communityTokens, // 社区token分配比例额度
-      formState.isTradable,     // 是否可以交易
-      formState.tradePlatforms,  // 交易的平台
-      formState.allTokenSupply,       // 分配的社区 token 总量
-      formState.tokenAllocations.filter(tokenSupply => tokenSupply.name), // 社区 token 分配比例详情
+      formState,
+      communityTokens,
       communityChatID
     )
     emit('saved')
