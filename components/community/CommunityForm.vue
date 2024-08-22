@@ -4,7 +4,7 @@ import { tradePlatforms, tokenNames } from '~/utils/constants'
 import type { Community, CommunitySetting } from '~/types/index'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
-import { createUuid } from '~/utils/util'
+import { createUuid } from '~/utils'
 import { useUpload } from '~/composables/useUpload'
 import { inject } from 'vue'
 

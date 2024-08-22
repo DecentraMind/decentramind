@@ -36,18 +36,3 @@ export const getLsItem = (key: string, defaultVal = '') => {
 export const removeLsItem = (key: string) => {
   window.localStorage.removeItem(key)
 }
-
-// ls.setLsItem('aString', 'a string')
-// ls.setLsItem('aInt', 10)
-// ls.setLsItem('aFloat', 10.00001)
-// ls.setLsItem('anArray', ['aaa', 'bbbb'])
-// ls.setLsItem('anObject', { aaa: 'valA', bbbb: 'valB' })
-// const key = 'key value'
-// setItem('aaaa', 'bbb')
-// setItem({ key })
-
-// const rz1 = ls.getLsItem('aString', 'a string')
-// const rz2 = ls.getLsItem('aInt', 10)
-// const rz3 = ls.getLsItem('aFloat', 10.00001)
-// const rz4 = ls.getLsItem('anArray', ['aaa', 'bbbb'])
-// const rz5 = ls.getLsItem('anObject', { aaa: 'valA', bbbb: 'valB' })

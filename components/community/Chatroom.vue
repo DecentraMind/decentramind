@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Community, Mail, UserInfoWithAddress } from '~/types'
-import { shortString } from '~/utils/util'
-import { defaultUserAvatar } from '~/utils/arAssets'
+import { shortString, defaultUserAvatar } from '~/utils'
 import InboxMail from '../inbox/InboxMail.vue'
 
 const props = defineProps<{
@@ -73,7 +72,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
 
     user.muted = !user.muted
 
-    showSuccess(`You have ${action} ` + user.name || shortAddress(user.address))
+    showSuccess(`You have ${action} ` + user.name || shortString(user.address))
   } catch (e) {
     showError('Failed to mute.', e as Error)
   }

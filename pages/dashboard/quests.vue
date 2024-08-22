@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Bounty } from '~/types'
-import { tokens, tokensByProcessID, type TokenName } from '~/utils/constants'
+import { tokensByProcessID, type TokenName } from '~/utils/constants'
 
 const questColumns = [{
   key: 'taskName',

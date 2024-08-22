@@ -9,7 +9,7 @@ import {
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
 import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties } from '~/types'
-import { sleep, retry } from '~/utils/util'
+import { sleep, retry, extractResult } from '~/utils'
 import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 

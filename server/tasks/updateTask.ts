@@ -5,7 +5,7 @@ import {
   dryrun,
 } from '@permaweb/aoconnect'
 import { taskManagerProcessID } from '~/utils/processID'
-import { extractResult } from '~/utils/util'
+import { extractResult } from '~/utils'
 
 const {
   WALLET: walletJson

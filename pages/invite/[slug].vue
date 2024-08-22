@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Community, UserInfo } from '~/types'
-import { shortString } from '~/utils/util'
+import { shortString } from '~/utils'
 
 definePageMeta({
   layout: 'landing',

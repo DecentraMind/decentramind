@@ -6,8 +6,8 @@ import {
 } from '@permaweb/aoconnect'
 import { Community } from '~/types'
 import { aoCommunityProcessID } from '~/utils/processID'
-import { extractResult, retry, toBase62 } from '~/utils/util'
-import { S3, PutObjectCommand } from '@aws-sdk/client-s3'
+import { extractResult, retry, toBase62 } from '~/utils'
+import { S3 } from '@aws-sdk/client-s3'
 import { uploadPath } from '~/utils/constants'
 
 const {

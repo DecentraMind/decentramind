@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MailCache } from '~/types'
-import { cn } from '~/utils/util'
+import { cn, shortString } from '~/utils'
 const runtimeConfig = useRuntimeConfig()
 
 const { pid } = $defineProps<{
@@ -48,7 +48,7 @@ const isSelf = (item: MailCache) => item.From === address
 
 const getUserName = (from: string) => {
   const user = userMap?.[from]
-  return user?.name || shortAddress(from)
+  return user?.name || shortString(from)
 }
 
 const getUserAvatar = (from: string) => {

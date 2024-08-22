@@ -2,7 +2,7 @@
 import {taskStore} from '~/stores/taskStore'
 import type { InviteInfo, RelatedUserMap } from '~/types'
 import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
-import { shortString } from '~/utils/util'
+import { shortString } from '~/utils'
 
 const { getLocalCommunity } = $(communityStore())
 const { getInvitesByInviter } = $(taskStore())

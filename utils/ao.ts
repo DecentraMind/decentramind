@@ -1,4 +1,4 @@
-import { message, result } from '@permaweb/aoconnect'
+import { dryrun, message, result } from '@permaweb/aoconnect'
 import type { z } from 'zod'
 
 type SignerSchema = z.ZodFunction<z.ZodTuple<[z.ZodObject<{
@@ -59,8 +59,42 @@ export type SendMessageArgs = {
   signer: Types['signer'];
 }
 
+export function checkResult(res: Awaited<ReturnType<typeof result>>) {
+  if (res.Error) {
+    throw new Error(res.Error)
+  }
+
+  const tags = useGet(res, 'Messages[0].Tags') as {name: string, value: string}[]
+  if (tags) {
+    const errorTag = tags.find(tag => tag.name === 'Error')?.value
+    if (errorTag) {
+      throw new Error(errorTag)
+    }
+  }
+  return true
+}
+
 export async function messageResult(messageParams: SendMessageArgs) {
   const messageId = await message(messageParams)
   const res = await result({ process: messageParams.process, message: messageId })
   checkResult(res)
+}
+
+/**
+ * Get data from dryrun result
+ * @param result dryrun result
+ * @returns
+ */
+export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
+  checkResult(result)
+
+  if (!result?.Messages?.[0]?.Data) {
+    console.error('Failed to extract data from result.Messages', result)
+    if (result.Output.print) {
+      console.error(result.Output.data)
+    }
+    throw new Error('Failed to extract data from result.Messages.')
+  }
+
+  return result.Messages[0].Data as T
 }

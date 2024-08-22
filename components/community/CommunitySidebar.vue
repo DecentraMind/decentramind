@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
 import type { Community } from '~/types/index'
-import { communityRightPages } from '~/utils/constants'
-import { getDomain } from '~/utils/util'
+import { getDomain, getHandle } from '~/utils'
 import CommunityForm from '~/components/community/CommunityForm.vue'
 import BaseField from '~/components/fields/BaseField.vue'
 

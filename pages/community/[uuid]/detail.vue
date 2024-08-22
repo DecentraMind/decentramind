@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type TokenSupply } from '~/utils/constants'
-import { shortString, getDomain, getHandle } from '~/utils/util'
+import { shortString, getDomain, getHandle } from '~/utils'
 import type { Community } from '~/types/index'
 import BaseField from '~/components/fields/BaseField.vue'
 import * as echarts from 'echarts'
@@ -71,8 +71,9 @@ onMounted( async () => {
 
     if (community && community.tokensupply) {
       console.log('initialize chart with tokens info:', community.tokensupply)
+      const supply = community.tokensupply
       nextTick(() => {
-        initChart(chart, community?.tokensupply)
+        initChart(supply, chart)
       })
     } else {
       console.error('Failed to initialize chart: TokenSupply data is not available.')
@@ -98,8 +99,11 @@ function onResize() {
 
 let chartInstance: echarts.ECharts
 
-const initChart = (chart: HTMLDivElement, tokenSupply: TokenSupply[]) => {
+const initChart = (tokenSupply: TokenSupply[], chart?: HTMLDivElement) => {
   if(!chart) {
+    nextTick(() => {
+      initChart(tokenSupply, chart)
+    })
     throw new Error('chart element not ready.')
   }
   chartInstance = echarts.init(chart)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getCommunityBannerUrl, defaultCommunityLogo } from '~/utils/arAssets'
+import { getCommunityBannerUrl, defaultCommunityLogo, shortString } from '~/utils'
 
 const { address, doLogout, doLogin } = $(aoStore())
 
@@ -98,7 +98,7 @@ const checkVouch = async () => {
           |
           <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
             <UButton variant="ghost" color="white" block>
-              {{ shortAddress(address) }}
+              {{ shortString(address) }}
             </UButton>
             <template #panel>
               <UButton color="red" @click="Logout">

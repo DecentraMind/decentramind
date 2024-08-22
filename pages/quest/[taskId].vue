@@ -2,7 +2,7 @@
 import { useFetch } from '@vueuse/core'
 import { taskStore } from '~/stores/taskStore'
 import { compareImages } from '~/utils/image'
-import { formatToLocale, shortString } from '~/utils/util'
+import { formatToLocale, shortString } from '~/utils'
 import type {
   SpaceSubmission,
   InviteInfo,

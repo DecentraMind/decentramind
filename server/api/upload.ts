@@ -1,7 +1,7 @@
 import type { EventHandlerRequest, H3Event } from 'h3'
 import { PutObjectCommandInput, S3 } from '@aws-sdk/client-s3'
 import { allowedImageType, uploadPath, type UploadPath } from '~/utils/constants'
-import { retry, sleep, toBase62 } from '~/utils/util'
+import { retry, sleep, toBase62 } from '~/utils'
 import type { UploadResponse } from '~/types'
 
 export default defineEventHandler(async (event: H3Event<EventHandlerRequest>): Promise<UploadResponse> => {

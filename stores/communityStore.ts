@@ -7,9 +7,8 @@ import {
 } from '@permaweb/aoconnect'
 import type { Community, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
-import { defaultTokenLogo } from '~/utils/arAssets'
-import { createUuid, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams } from '~/utils/util'
-import { aoCommunityProcessID, moduleID, schedulerID } from '~/utils/processID'
+import { defaultTokenLogo, messageResult, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams } from '~/utils'
+import { aoCommunityProcessID, moduleID, schedulerID, extractResult } from '~/utils'
 
 // Read the Lua file
 //const luaCode = fs.readFileSync('./AO/chat.lua', 'utf8')
@@ -169,9 +168,7 @@ export const communityStore = defineStore('communityStore', () => {
     tokenSupply,
     chatroomID
   ) => {
-    const uuid = createUuid()
-
-    const community: Omit<Community, 'timestamp' | 'buildnum'> = {
+    const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined'> = {
       logo,
       banner,
       name,
@@ -188,12 +185,11 @@ export const communityStore = defineStore('communityStore', () => {
       support: support,
       alltoken: allToken,
       tokensupply: tokenSupply,
-      uuid,
       communitychatid: chatroomID,
     }
     const jsonString = JSON.stringify(community)
 
-    await message({
+    const createdUuid = await messageResult({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'createCommunity' }
@@ -202,7 +198,7 @@ export const communityStore = defineStore('communityStore', () => {
       data: jsonString,
     })
 
-    return uuid
+    return createdUuid
   }
 
   /**
