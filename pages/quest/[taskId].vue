@@ -294,9 +294,10 @@ async function onClickSubmit() {
     ).getTime()
 
     const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
-    if (minuteDifference < 15) {
-      throw Error('Space lasts less than 15 minutes')
-    }
+    // TODO enable this
+    // if (minuteDifference < 15) {
+    //   throw Error('Space lasts less than 15 minutes')
+    // }
 
     const hostID = spaceInfo.data.creator_id
     const host = spaceInfo.includes.users.find(user => user.id === hostID)
