@@ -30,6 +30,7 @@ const s3 = new S3({
   region: region,
 })
 
+// TODO this task is deprecated, try change it to replaceBanner2ArTxId
 async function uploadBase64Image(base64Image: string, key: string) {
   // Extract MIME type and base64 data from the data URI
   const matches = base64Image.match(/^data:(.+);base64,(.*)$/)
