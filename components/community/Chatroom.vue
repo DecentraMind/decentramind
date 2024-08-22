@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Community, Mail, UserInfoWithAddress } from '~/types'
 import { shortString } from '~/utils/util'
-import { defaultUserAvatar, arUrl } from '~/utils/arAssets'
+import { defaultUserAvatar } from '~/utils/arAssets'
+import InboxMail from '../inbox/InboxMail.vue'
 
 const props = defineProps<{
   community: Community
@@ -82,12 +83,12 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
 
 <template>
   <UPage class="w-full">
-    <div class="w-full h-full grid grid-cols-1 sm:grid-cols-[1fr,230px]">
-      <div class="flex h-full">
+    <div class="relative w-full h-full grid grid-cols-1 sm:grid-cols-[1fr,230px]">
+      <div v-if="community.isJoined" class="flex h-screen ">
         <InboxMail :chat="community.communitychatid" />
         <UDivider orientation="vertical" />
       </div>
-      <div class="hidden sm:block bg-gray-50">
+      <div v-if="community.isJoined" class="hidden sm:block bg-gray-50">
         <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="users.length">
           <template #title>
             <span class="text-2xl mr-2">Users</span>
@@ -128,6 +129,8 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
           </div>
         </div>
       </div>
+      <!-- TODO show modal at click chat room button -->
+      <div v-else class="absolute w-full h-screen flex-col-center"><span>Join this community to unlock chatroom.</span></div>
     </div>
   </UPage>
 </template>
