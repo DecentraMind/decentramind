@@ -76,7 +76,7 @@ watch(
       }"
     >
       <template #header>
-        <img :src="getCommunityBannerUrl(community.banner)" :alt="community.name">
+        <img :src="getCommunityBannerUrl(community.banner)" :alt="community.name" class="object-cover w-full h-52">
       </template>
 
       <div>
