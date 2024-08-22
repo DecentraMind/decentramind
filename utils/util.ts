@@ -149,7 +149,8 @@ export function toBase62(num: number) {
 }
 
 export function taskProgress(now: number, startTime: number, endTime: number) {
-  const { t } = useI18n()
+  const { $i18n } = useNuxtApp()
+  const t = $i18n.t
   const res = {
     isNotStarted: false,
     isIng: false,
@@ -159,7 +160,7 @@ export function taskProgress(now: number, startTime: number, endTime: number) {
   if (now < startTime) {
     res.isNotStarted = true
     res.text = t('Not Start')
-  } else if (now > startTime && now < endTime) {
+  } else if (now >= startTime && now <= endTime) {
     res.isIng = true
     res.text = t('Ing')
   } else {

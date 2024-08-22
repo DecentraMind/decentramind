@@ -10,13 +10,11 @@ const props = defineProps<{
 const { task, address } = $(toRefs(props))
 
 function checkSubmit(submissions: Submission[], address: string) {
-  return (
-    submissions.findIndex(submission => submission.address === address) > -1
-  )
+  return submissions.findIndex(submission => submission.address === address) > -1
 }
 
 const now = $(useClock(3000))
-const progress = taskProgress(now, task.startTime, task.endTime)
+const progress = $computed(() => taskProgress(now, task.startTime, task.endTime))
 </script>
 
 <template>
@@ -31,7 +29,7 @@ const progress = taskProgress(now, task.startTime, task.endTime)
         {{ $t('task.submitted') }}
       </UBadge>
     </div>
-    <div v-if="(task.ownerAddress === address || checkSubmit(task.submissions, address)) && !task.isSettled && now >= task.endTime">
+    <div v-if="(task.ownerAddress === address || checkSubmit(task.submissions, address)) && !task.isSettled && progress.isEnded">
       <UBadge color="orange" variant="soft">
         {{ $t('Unsettled') }}
       </UBadge>
