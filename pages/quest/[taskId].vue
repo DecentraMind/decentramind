@@ -696,7 +696,7 @@ watch(
               </div>
             </div>
 
-            <div v-if="!isLoading && isOwner && !task.isSettled && now >= task.endTime">
+            <div v-if="!isLoading && isOwner && !task.isSettled && now >= task.endTime" class="flex-center">
               <UButton
                 color="white"
                 :label="sendBountyBtnLabel()"
