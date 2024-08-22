@@ -22,7 +22,7 @@
           <span
             v-for="(v, index) in values.slice(0, 2)"
             :key="index"
-            :class="classes.tag"
+            :class="cn(classes.tag, 'cursor-default')"
           >{{ valueKey ? v[valueKey] : v }}</span>
         </div>
         <template #panel>
@@ -59,10 +59,10 @@
 const classes = {
   wrapper: 'flex justify-between items-center',
   base: 'min-h-8',
-  link: 'font-medium flex-center gap-x-1 hover:text-primary dark:hover:text-gray-200',
+  link: 'font-medium flex-center gap-x-1 dark:hover:text-gray-200',
   shortValues: 'flex justify-end items-center space-x-1',
   tags: 'flex space-x-3',
-  tag: 'inline-block text-sm font-medium py-1 px-2 rounded-md bg-gray-100'
+  tag: 'inline-block text-sm py-1 px-2 rounded-md bg-gray-100 hover:bg-gray-200'
 }
 
 // TODO show token/trading platform icons
