@@ -19,7 +19,12 @@ export const communityStore = defineStore('communityStore', () => {
   let twitterVouched = $ref(true)
   let twitterVouchedIDs = $ref<string[]>([])
   let communityList = $ref<Community[]>([])
+  /** current user info */
   let userInfo = $ref<UserInfo>()
+  let mutedUsers = $ref<string[]>([])
+  let currentUuid = $ref<string>()
+
+  /** joined communities of current user */
   const joinedCommunities = $computed<Community[]>(() => {
     if (!address) return []
 
@@ -31,9 +36,6 @@ export const communityStore = defineStore('communityStore', () => {
         return 0
       })
   })
-  let mutedUsers = $ref<string[]>([])
-
-  let currentUuid = $ref<string>()
 
   //Set the uuid of the currently selected community
   const setCurrentCommunityUuid = (uuid: any) => {
@@ -41,12 +43,16 @@ export const communityStore = defineStore('communityStore', () => {
     currentUuid = uuid
   }
 
-  const clearJoinedCommunities = () => {
+  const clearCommunityData = () => {
     communityList.map((item) => {
      item.isJoined = false
      item.joinTime = undefined
      return item
     })
+    twitterVouched = false
+    twitterVouchedIDs = []
+    mutedUsers = []
+    currentUuid = undefined
   }
 
   /** move this function to aoStore */
@@ -640,7 +646,7 @@ Handlers.add(
     setCurrentCommunityUserMap,
     currentCommunityUserMap,
     getCommunity,
-    clearJoinedCommunities
+    clearCommunityData
   })
 })
 

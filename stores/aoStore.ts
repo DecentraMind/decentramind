@@ -34,7 +34,7 @@ const arweave = Arweave.init({
 })
 
 export const aoStore = defineStore('aoStore', () => {
-  const { clearJoinedCommunities } = $(communityStore())
+  const { clearCommunityData } = $(communityStore())
 
   const tokenMap = $ref(tokenProcessIDs)
   const isLoginModalOpen = $ref(false)
@@ -110,7 +110,7 @@ export const aoStore = defineStore('aoStore', () => {
 
   const doLogout = async () => {
     await window.arweaveWallet.disconnect()
-    clearJoinedCommunities()
+    clearCommunityData()
     address = ''
   }
 
