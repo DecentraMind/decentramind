@@ -81,7 +81,7 @@ onMounted(async () => {
             variant="soft"
             :ui="{
               variant: {
-                soft: 'bg-{color}-100'
+                soft: 'bg-{color}-50 hover:bg-{color}-100'
               }
             }"
             @click="selectModal=0; isCreateModalOpen = true"
