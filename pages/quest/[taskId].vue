@@ -263,7 +263,7 @@ async function onClickSubmit() {
     //   }
     // }
     // TODO 调用提交space链接并解析方法
-    const matched = spaceUrl.trim().match(/x\.com\/i\/spaces\/([^/]+)\/?/)
+    const matched = spaceUrl.trim().match(/(x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
 
     if (!matched || !matched[1]) {
       throw new Error('Invalid space URL.')
