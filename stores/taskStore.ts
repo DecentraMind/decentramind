@@ -1,4 +1,3 @@
-import {tokenProcessIDs} from '~/utils/constants'
 import {
   createDataItemSigner,
   result,
@@ -9,7 +8,7 @@ import {
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
 import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties } from '~/types'
-import { sleep, retry, extractResult } from '~/utils'
+import { sleep, retry, messageResult, messageResultCheck, extractResult } from '~/utils'
 import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 
@@ -39,32 +38,40 @@ export const taskStore = defineStore('taskStore', () => {
         if (!token) {
           throw new Error(`Bounty token ${bounty.tokenName} not supported.`)
         }
-        bounty.quantity = (BigInt(bounty.amount) * BigInt(Math.pow(10, token.denomination))).toString()
+        bounty.quantity = (BigInt(bounty.amount * Math.pow(10, token.denomination))).toString()
         return bounty
       })
 
     // wait for process creating until you can send message to it
-    await sleep(1000)
+    await sleep(3000)
 
     console.log(JSON.stringify(data))
     console.log('newProcessId = ' + taskProcessID)
 
-    // 把此次任务需要的钱转给process两种bounty，转两次，如果不为0的话
-    // TODO use Promise.all here
-    await Promise.all((data.bounties as Task['bounties']).map(bounty => {
-      if (bounty.quantity) {
-        return transferBounty(bounty.tokenProcessID, bounty.tokenName, bounty.quantity)
-      } else {
-        return Promise.resolve()
-      }
-    }))
-
-    // 向新的 process 里写入 sendBounty action
-    await evalTaskProcess(taskProcessID)
-
-    return await retry({
+    // set task process handlers
+    await retry({
       fn: async () => {
-        return await message({
+        return await evalTaskProcess(taskProcessID)
+      },
+      maxAttempts: 3,
+      interval: 2000
+    })
+
+    // send bounty tokens to task process
+    const transferedTokens: {
+        tokenProcessID: string;
+        tokenName: string;
+    }[] = []
+    const bountiesToBeTransfered = (data.bounties as Task['bounties']).filter(bounty => bounty.quantity)
+    for (const bounty of bountiesToBeTransfered) {
+      console.log('transfer bounty:', bounty.tokenName)
+      transferedTokens.push(await transferBounty(taskProcessID, bounty))
+    }
+    console.log({transferedTokens})
+
+    const createdTaskInfo = await retry({
+      fn: async () => {
+        return await messageResult({
           process: taskManagerProcessID,
           signer: createDataItemSigner(window.arweaveWallet),
           tags: [{ name: 'Action', value: 'CreateTask' }],
@@ -74,15 +81,33 @@ export const taskStore = defineStore('taskStore', () => {
       maxAttempts: 3,
       interval: 5000
     })
+
+    // set task process owner to nil
+    await retry({
+      fn: async () => {
+        await messageResultCheck({
+          process: taskProcessID,
+          tags: [
+            { name: 'Action', value: 'SetOwnerNil' }
+          ],
+          signer: createDataItemSigner(window.arweaveWallet),
+        })
+      },
+      maxAttempts: 3,
+      interval: 1000
+    })
+
+    return createdTaskInfo
   }
 
   async function evalTaskProcess(processID: string) {
-    return await message({
+    console.log('eval at process:', processID)
+    return await messageResultCheck({
       process: processID,
       tags: [
         { name: 'Action', value: 'Eval' }
       ],
-      data: taskProcessCode,
+      data: taskProcessCode.replace('__TaskManagerProcess__', taskManagerProcessID),
       signer: createDataItemSigner(window.arweaveWallet),
     })
   }
@@ -90,7 +115,7 @@ export const taskStore = defineStore('taskStore', () => {
   function calcReward(bounties: Task['bounties']) {
     return bounties.reduce((reward, bounty) => {
       if (bounty.amount && bounty.tokenProcessID && bounty.tokenName) {
-        reward += Number(bounty.amount) + ' ' + bounty.tokenName
+        reward += (reward ? '+' : '') + Number(bounty.amount) + ' ' + bounty.tokenName
       }
       return reward
     }, '')
@@ -416,22 +441,21 @@ export const taskStore = defineStore('taskStore', () => {
   })
 })
 
-async function transferBounty(receiver: string, tokenName: string, quantity: string) {
-  const tokenProcess = tokenProcessIDs[tokenName as TokenName]
+async function transferBounty(receiver: string, token: Task['bounties'][number]) {
+  const { tokenProcessID, tokenName, quantity } = token
 
-  if (!tokenProcess) {
+  if (!tokenProcessID) {
     throw new Error(`Bounty token ${tokenName} not supported.`)
   }
-  console.log(tokenName, 'token processID: ', tokenProcess)
+  console.log('sending ', tokenName, ' token processID: ', tokenProcessID)
   console.log({tokenName, amount: quantity, receiver})
-  await window.arweaveWallet.connect(permissions)
 
   let mTags
   try {
     mTags = await retry({
       fn: async () => {
         const messageId = await message({
-          process: tokenProcess,
+          process: tokenProcessID,
           signer: createDataItemSigner(window.arweaveWallet),
           tags: [
             { name: 'Action', value: 'Transfer' },
@@ -443,7 +467,7 @@ async function transferBounty(receiver: string, tokenName: string, quantity: str
           // the arweave TXID of the message
           message: messageId,
           // the arweave TXID of the process
-          process: tokenProcess,
+          process: tokenProcessID,
         })
         return Messages[0].Tags as {name: string, value: string}[]
       },
@@ -462,16 +486,22 @@ async function transferBounty(receiver: string, tokenName: string, quantity: str
 
   let transError = false
   let errorMessage = ''
-  for(let k = 0; k < mTags.length; ++k){
+  for (let k = 0; k < mTags.length; ++k) {
     const tag = mTags[k]
-    if(tag.name === 'Error'){
+    if (tag.name === 'Error') {
       errorMessage = tag.value
       transError = true
       break
     }
   }
 
-  if(transError){
+  if (transError) {
     throw new Error('Pay bounty failed. ' + errorMessage)
+  } else {
+    console.info(`You have sent ${quantity} ${tokenName} to ${receiver}`)
+    return {tokenProcessID, tokenName}
   }
 }
+
+if (import.meta.hot)
+  import.meta.hot.accept(acceptHMRUpdate(taskStore, import.meta.hot))

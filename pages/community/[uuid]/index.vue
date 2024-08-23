@@ -143,6 +143,9 @@ async function onSubmitTaskForm() {
       }
     }
 
+    // TODO show progress of task creation
+    // TODO return bounty if creation failed in the middle
+
     showError('Failed to create task. ' + message || '')
     console.error('create task error', e)
     isPostingTask = false

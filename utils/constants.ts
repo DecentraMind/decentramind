@@ -84,7 +84,7 @@ export const tokens: Record<string, Token> = {
   },
   '0rbit': {
     ticker: '0RBT',
-    label: '0rbit', // 0rbit Points
+    label: '0RBT', // 0rbit Points
     processID: 'BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc',
     denomination: 12,
     logo: 'quMiswyIjELM0FZtjVSiUtg9_-pvQ8K25yfxrp1TgnQ'

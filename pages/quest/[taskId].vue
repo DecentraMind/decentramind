@@ -540,6 +540,17 @@ watch(
     }
   },
 )
+
+const formattedBounties = $computed(() => {
+  if (!task) return ''
+  return task.bounties.reduce((carry, bounty) => {
+    const tokenLogo = tokensByProcessID[bounty.tokenProcessID].logo
+    carry += (carry ? ' + ' : '') + bounty.amount + ' '
+      + bounty.tokenName
+      + (tokenLogo ? '<img src="' + arUrl(tokenLogo, gateways.ario) + '" class="w-6 h-6 rounded-full border border-gray-200 ml-1 mr-2">' : '')
+    return carry
+  }, '')
+})
 </script>
 
 <template>
@@ -563,15 +574,18 @@ watch(
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
         -->
-        <UBlogPost :key="task.processID" :title="task.name" :description="task.intro" class="p-10" :ui="{title: 'text-2xl mb-4 text-clip'}">
+        <UBlogPost :key="task.processID" :title="task.name" :description="task.intro" class="px-10 pt-0 pb-10" :ui="{title: 'text-5xl mb-6 text-clip'}">
           <template #description>
-            <div class="flex flex-col space-y-4">
-              <div class="text-justify">
+            <div class="flex flex-col space-y-6">
+              <div class="text-justify text-md leading-8">
                 {{ task.intro }}
               </div>
               <TaskStatus size="lg" :task="task" :address="address" />
+
+              <UDivider />
+
               <div class="flex">
-                <div class="font-medium w-44 shrink-0">
+                <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Time Zone') }}</div>
                 </div>
                 <div>
@@ -579,7 +593,7 @@ watch(
                 </div>
               </div>
               <div class="flex">
-                <div class="font-medium w-44 shrink-0">
+                <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Time') }}</div>
                 </div>
                 <div>
@@ -588,15 +602,13 @@ watch(
                 </div>
               </div>
               <div class="flex justify-start">
-                <div class="font-medium w-44 shrink-0">
+                <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div>
-                  {{ task.reward }}
-                </div>
+                <div class="flex-center" v-html="formattedBounties" />
               </div>
               <div class="flex justify-start">
-                <div class="font-medium w-44 shrink-0">
+                <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Total Chances') }}</div>
                 </div>
                 <div>
@@ -604,20 +616,20 @@ watch(
                 </div>
               </div>
               <div class="flex justify-start">
-                <div class="font-medium w-44 shrink-0">
+                <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('builders now') }}</div>
                 </div>
                 <div>
                   {{ isLoading ? '' : submittedBuilderCount }}
                 </div>
               </div>
-              <div class="flex justify-start">
-                <div class="font-medium w-44 shrink-0">
-                  <div>{{ $t('Rules of the Quest') }}</div>
-                </div>
-                <div style="white-space: pre-line">
+              <div>
+                <p class="font-semibold mb-2">
+                  {{ $t('Rules of the Quest') }}
+                </p>
+                <p class="leading-8 whitespace-pre-line">
                   {{ task.rule }}
-                </div>
+                </p>
               </div>
               <div
                 v-if="!isLoading && isIng && !isJoined"
@@ -630,13 +642,13 @@ watch(
                 />
               </div>
             </div>
-            <!--            <UDivider class="mt-4" />-->
+
             <div class="mt-8">
               <div
                 class="flex-center !justify-between py-3.5 border-b border-gray-300 dark:border-gray-700"
               >
                 <div class="flex items-center">
-                  <div class="font-medium w-44">{{ $t('Quests Form') }}</div>
+                  <div class="font-semibold w-44">{{ $t('Quests Form') }}</div>
                   <UInput v-model="searchKeyword" placeholder="Filter..." />
                 </div>
                 <ULink
@@ -699,51 +711,33 @@ watch(
               />
             </div>
 
-            <div class="flex mt-4">
-              <div class="font-medium w-44 shrink-0">
-                <div>{{ $t('Rules of Judgment') }}</div>
-              </div>
-              <div>
-                <p>
-                  1 Total score is 100 including Brand 10%, Friends 40%,
-                  Popularity 50%.
-                </p>
-
-                <p>
-                  2 Brand is decided by your avatar, change it you’ll get 10,
-                  not change get 0.
-                </p>
-
-                <p>
-                  3 Fri ends is decided by the number of users invited through your quest invitation.
-                </p>
-
-                <p>
-                  4 Popularity is decided by the amount of audience in your
-                  Twitter Space.
-                </p>
-
-                <p>
-                  5 The person with the highest data gets the maximum scores
-                  including Brand, Friends and Popularity.
-                </p>
-
-                <p>
-                  6 Everyone will have a total score, it decide the amount of
-                  your bounty.
-                </p>
-
-                <p>
-                  7 If the total chances are 20 but you are in 21st, sorry you
-                  can get nothing.
-                </p>
-
-                <p>8 You only have 1 chance for this quest.</p>
-                <p>
-                  9 If no one meets the bounty, the bounty will be returned to
-                  the bounty owner's wallet.
-                </p>
-              </div>
+            <div class="mt-4">
+              <h4 class="font-semibold mb-2">{{ $t('Rules of Judgment') }}</h4>
+              <p class="leading-6 text-gray-400 text-sm">
+                1 Total score is 100 including Brand 10%, Friends 40%,
+                Popularity 50%.
+                <br>
+                2 Brand is decided by your avatar, change it you’ll get 10,
+                not change get 0.
+                <br>
+                3 Fri ends is decided by the number of users invited through your quest invitation.
+                <br>
+                4 Popularity is decided by the amount of audience in your
+                Twitter Space.
+                <br>
+                5 The person with the highest data gets the maximum scores
+                including Brand, Friends and Popularity.
+                <br>
+                6 Everyone will have a total score, it decide the amount of
+                your bounty.
+                <br>
+                7 If the total chances are 20 but you are in 21st, sorry you
+                can get nothing.
+                <br>8 You only have 1 chance for this quest.
+                <br>
+                9 If no one meets the bounty, the bounty will be returned to
+                the bounty owner's wallet.
+              </p>
             </div>
           </template>
         </UBlogPost>

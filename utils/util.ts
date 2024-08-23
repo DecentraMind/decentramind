@@ -53,6 +53,7 @@ export async function retry<T>(args: {
     try {
       console.info(`Attempt ${triedTimes}, max ${maxTimes}`)
       const res = await fn()
+      console.info(`Attempt ${triedTimes} success, return value: `, res)
       return res
     } catch (error) {
       console.info(`Attempt ${triedTimes} failed:`, error)

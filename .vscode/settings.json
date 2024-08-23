@@ -67,7 +67,34 @@
     "vueuse",
     "yxxx"
   ],
-  "Lua.workspace.library": [],
-  "Lua.workspace.checkThirdParty": true,
+  "Lua.workspace.library": [
+    "/Users/apple/Library/Application Support/Cursor/User/globalStorage/sumneko.lua/addonManager/addons/ao/module/library"
+  ],
+  "Lua.workspace.checkThirdParty": false,
 
+  "Lua.diagnostics.groupSeverity": {
+    "ambiguity": "Warning",
+    "type-check": "Warning",
+    "unused": "Warning",
+    "duplicate": "Error",
+    "redefined": "Error",
+    "codestyle": "Warning",
+    "strong": "Error",
+    "conventions": "Warning"
+  },
+  "Lua.diagnostics.libraryFiles": "Enable",
+  "Lua.diagnostics.severity": {
+    "undefined-field": "Error",
+    "unused-local": "Error",
+    "assign-type-mismatch": "Warning",
+    "codestyle-check": "Warning",
+    "unknown-cast-variable": "Warning",
+    "unknown-diag-code": "Warning",
+    "no-unknown": "Error",
+    "ambiguity-1": "Warning"
+  },
+  "Lua.hint.setType": true,
+  "Lua.hint.enable": true,
+  "Lua.type.checkTableShape": true,
+  "Lua.type.inferParamType": true
 }

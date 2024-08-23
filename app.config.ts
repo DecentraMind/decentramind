@@ -6,7 +6,7 @@ export default defineAppConfig({
       rounded: 'object-cover'
     },
     badge: {
-      font: 'font-semibold'
+      font: 'font-bold'
     },
     button: {
       padding: {

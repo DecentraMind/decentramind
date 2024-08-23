@@ -74,6 +74,18 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
   return true
 }
 
+/**
+ * Send message to AO, then get result, check if error exists
+ */
+export async function messageResultCheck(messageParams: SendMessageArgs) {
+  const messageId = await message(messageParams)
+  const res = await result({ process: messageParams.process, message: messageId })
+  return checkResult(res)
+}
+
+/**
+ * Send message to AO, then get result, check if error exists, then extract data from result
+ */
 export async function messageResult<T>(messageParams: SendMessageArgs) {
   const messageId = await message(messageParams)
   const res = await result({ process: messageParams.process, message: messageId })
