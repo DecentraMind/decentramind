@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task'
-Variant = '0.2.0'
+Variant = '0.2.1'
 
 --- This is a task process deployed from DecentraMind
 local json = require("json")
@@ -8,7 +8,7 @@ TaskOwnerWallet = ao.env.Process.Owner
 TaskManagerProcess = "__TaskManagerProcess__"
 
 local function replyError(request, errorMsg)
-  local action = request.Action .. "-Error"
+  local action = request.Tags.Action .. "-Error"
   local errString = errorMsg
   if type(errorMsg) ~= "string" then
     errString = json.encode(errorMsg)

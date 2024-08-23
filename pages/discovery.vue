@@ -5,9 +5,8 @@ const { address, doLogout, doLogin } = $(aoStore())
 
 const { communityList, vouch, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
 
-const { showError } = $(notificationStore())
+const { showError, showSuccess } = $(notificationStore())
 
-const toast = useToast()
 const router = useRouter()
 
 let vouchModalOpen = $ref(false)
@@ -60,7 +59,7 @@ const Logout = async() => {
 
 let joinLoading = $ref(false)
 
-const joinToCommunity = async(uuid: any) => {
+const joinToCommunity = async(uuid: string, name: string) => {
   if (!twitterVouched) {
     vouchModalOpen = true
     return
@@ -69,7 +68,7 @@ const joinToCommunity = async(uuid: any) => {
   try {
     const invite = 'none'
     await joinCommunity(uuid, invite)
-    toast.add({ title: 'joined success' })
+    showSuccess(`Joined ${name}!`)
     await loadCommunityList(address)
     router.push('/community/' + uuid)
   } catch (error) {
@@ -181,7 +180,7 @@ const checkVouch = async () => {
                     color="white"
                     size="md"
                     variant="outline"
-                    @click="() => joinToCommunity(community.uuid)"
+                    @click="() => joinToCommunity(community.uuid, community.name)"
                   >
                     {{ $t('community.list.join') }}
                   </UButton>
