@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
-import { tradePlatforms, tokenNames } from '~/utils/constants'
+import { tradePlatforms, tokenNames, maxCommunityLogoDimension } from '~/utils/constants'
 import type { Community, CommunitySetting } from '~/types/index'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
@@ -25,10 +25,14 @@ const { showSuccess, showError } = $(notificationStore())
 
 const uploadInput = $ref<HTMLInputElement>()
 async function upload2AR() {
+  const file = uploadInput?.files?.[0]
+
   await upload({
     fileName: (props.initState?.uuid || createUuid()).slice(-4),
     pathName: 'communityLogo',
-    file: uploadInput?.files?.[0]
+    file,
+    maxWidth: maxCommunityLogoDimension.width,
+    maxHeight: maxCommunityLogoDimension.height
   })
 
   if (uploadError || !uploadResponse) {

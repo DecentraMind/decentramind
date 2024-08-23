@@ -1,7 +1,7 @@
 import { unref, readonly } from 'vue'
 import { useFetch } from '@vueuse/core'
 import type { UploadResponse } from '~/types'
-import { allowedImageType, type UploadPath } from '~/utils/constants'
+import { allowedImageType as imageTypes, type UploadPath } from '~/utils/constants'
 
 export function useUpload() {
   // eslint-disable-next-line prefer-const
@@ -16,8 +16,11 @@ export function useUpload() {
     pathName: keyof UploadPath,
     file?: File,
     maxSizeKB?: number
+    maxWidth?: number
+    maxHeight?: number
+    allowedImageType?: `image/${string}`[]
   }) {
-    const { fileName, pathName, file, maxSizeKB=150 } = options
+    const { fileName, pathName, file, maxSizeKB=150, maxWidth, maxHeight, allowedImageType=imageTypes } = options
 
     // TODO useResize before uploading
 
@@ -36,6 +39,12 @@ export function useUpload() {
       }
       if (!allowedImageType.includes(type)) {
         throw new Error('Only jpg and png files are allowed.')
+      } 
+      if (maxWidth || maxHeight) {
+        const img = await getImageElementFromFile(file)
+        if ((maxWidth && img.width > maxWidth) || (maxHeight && img.height > maxHeight)) {
+          throw new Error(`Image dimensions error. Max width ${maxWidth}px, Max height ${maxHeight}px.`)
+        }
       }
 
       const formData = new FormData()

@@ -1,5 +1,22 @@
 import { ssim } from 'ssim.js'
 
+export function getImageElementFromFile(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        resolve(img)
+      }
+      img.onerror = (e) => {
+        reject(e)
+      }
+      img.src = e?.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 export function resizeCrop(src: HTMLImageElement, width: number, height: number) {
   const crop = width == 0 || height == 0
   // not resize
