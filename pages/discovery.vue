@@ -3,7 +3,7 @@ import { getCommunityBannerUrl, defaultCommunityLogo, shortString } from '~/util
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, twitterVouched, loadCommunityList, joinCommunity } = $(communityStore())
+const { communityList, vouch, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
 
 const { showError } = $(notificationStore())
 
@@ -31,6 +31,7 @@ onMounted(async () => {
   if (!address) {
     router.push('/')
   }
+  setCurrentCommunityUuid(undefined)
 
   try {
     await checkVouch()

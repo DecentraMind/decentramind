@@ -40,31 +40,32 @@ onMounted(async () => {
       >
         <template #header>
           <UPopover
-            mode="click"
-            :popper="{ arrow: true, placement: 'right', strategy: 'fixed', overflowPadding: 990, offsetDistance: 8, offsetSkid: 700 }"
+            mode="hover"
+            :popper="{ arrow: true, placement: 'right', strategy: 'fixed', offsetDistance: 0 }"
             :ui="{
-              container: 'w-fit !top-[-46px]',
-              background: 'bg-gray-200',
-              base: 'static border-0',
-              shadow: 'shadow-none',
+              container: 'w-fit',
+              background: 'bg-gray-50',
+              base: 'font-bold py-0.5',
               ring: 'ring-0',
               arrow: {
-                ring: 'before:ring-0 before:border-1 before:border-gray-900',
+                base: 'before:z-50',
+                ring: 'before:ring-0 before:border-b before:border-l before:border-white',
+                background: 'before:bg-gray-50',
                 shadow: 'before:shadow-none',
-                background: 'before:z-50',
-                placemennt: '!top-3'
+                placemennt: '!top-0 !left-1'
               }
             }"
           >
             <UButton
+              to="/discovery"
               variant="outline"
               class="w-16 h-16 p-0 bg-white hover:bg-white border-0 rounded-full text-white transition duration-300 ease-in-out transform"
             >
               <img :src="arUrl(decentraMindLogo)" class="h-full w-full">
             </UButton>
             <template #panel>
-              <div class="flex-center px-2 py-1 top-[2px]">
-                <span>Discover</span>
+              <div class="flex-center px-2 py-1">
+                <span>Explore</span>
               </div>
             </template>
           </UPopover>
@@ -79,19 +80,24 @@ onMounted(async () => {
           >
             <UPopover
               mode="hover"
-              :popper="{ arrow: true, placement: 'right', strategy: 'fixed', overflowPadding: 990, offsetDistance: 8, offsetSkid: 700 }"
+              :popper="{ arrow: true, placement: 'right', strategy: 'fixed', offsetDistance: 8 }"
               :ui="{
-                container: 'w-fit !top-[-40px]',
+                container: 'w-fit !top-0',
+                background: 'bg-gray-50',
+                base: 'font-bold py-0.5',
+                ring: 'ring-0',
                 arrow: {
+                  ring: 'before:ring-0 before:border-b before:border-l before:border-white',
+                  background: 'before:bg-gray-50 before:z-50',
                   shadow: 'before:shadow-none',
-                  background: 'before:bg-white dark:before:bg-gray-800',
-                  placemennt: '!top-3 !left-1'
+                  placemennt: '!top-0 !left-1'
                 }
               }"
             >
-              <NuxtLink
+              <UButton
+                variant="link"
                 :to="`/community/${community.uuid}`"
-                class="group w-full block mt-2 relative"
+                class="group w-full block p-0 mt-2 relative ring-0"
               >
                 <!-- indicator of current community -->
                 <div
@@ -105,17 +111,15 @@ onMounted(async () => {
                 />
 
                 <CuteRadius :width="64" :height="64">
-                  <div class="aspect-square rounded-lg bg-white z-10 overflow-hidden">
-                    <img
-                      :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
-                      :title="community.name"
-                      class="w-full h-full object-cover"
-                    >
-                  </div>
+                  <img
+                    :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
+                    :title="community.name"
+                    class="w-full h-full object-cover bg-white"
+                  >
                 </CuteRadius>
-              </NuxtLink>
+              </UButton>
               <template #panel>
-                <div class="flex-center px-2 py-1 top-[2px]">
+                <div class="flex-center px-2 py-1">
                   <span>{{ community.name }}</span>
                 </div>
               </template>
