@@ -319,15 +319,17 @@ async function onClickSubmit() {
     //   }
     // }
     // url = url + '.png'
-    const userAvatar = host?.profile_image_url
+    const userAvatar = host?.profile_image_url.replace(/_(normal|bigger|mini).jpg$/, '.jpg')
     // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
     // const userCreatedAt = data._rawValue.includes.users[0].created_at
 
     // const userAvatarBase64 = await url2Base64(userAvatar)
+    // TODO use https://dms.4everland.store/... as communityLogo
     const ssim = userAvatar
       ? await compareImages(arUrl(communityInfo.logo, gateways.ario), userAvatar)
       : 0
-    console.log({ ssim })
+    console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
+    
     // TODO brandEffect, inviteCount, audience should be calculated again under task owner's login session
     // 品牌效应
     const brandEffect = ssim && ssim >= 0.8 ? 10 : 0
@@ -574,7 +576,7 @@ const formattedBounties = $computed(() => {
           <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
         </div>
         -->
-        <UBlogPost :key="task.processID" :title="task.name" :description="task.intro" class="px-10 pt-0 pb-10" :ui="{title: 'text-5xl mb-6 text-clip'}">
+        <UBlogPost :key="task.processID" :title="task.name" :description="task.intro" class="px-10 pt-0 pb-10" :ui="{title: 'text-3xl mb-6 text-clip'}">
           <template #description>
             <div class="flex flex-col space-y-6">
               <div class="text-justify text-md leading-8">
@@ -720,7 +722,7 @@ const formattedBounties = $computed(() => {
                 2 Brand is decided by your avatar, change it you’ll get 10,
                 not change get 0.
                 <br>
-                3 Fri ends is decided by the number of users invited through your quest invitation.
+                3 Friends is decided by the number of users invited through your quest invitation.
                 <br>
                 4 Popularity is decided by the amount of audience in your
                 Twitter Space.
