@@ -21,7 +21,7 @@ const router = useRouter()
 
 const uuid = $computed(() => route.params.uuid) as string
 
-let tasks = $ref<Array<Task & { reward: string }>>([])
+let tasks = $ref<Task[]>([])
 
 function alertNotReady() {
   showMessage('Being Cooked')
@@ -319,15 +319,11 @@ watch(() => route.hash, newHash => {
                     <!-- <div class="h-6 overflow-hidden">
                       {{ task.intro }}
                     </div> -->
-                    <div class="flex justify-between text-sm">
+                    <div class="flex justify-between text-sm gap-x-2">
                       <div>
                         <div>{{ $t('Bounty') }}</div>
                       </div>
-                      <div>
-                        <div>
-                          {{ task.reward }}
-                        </div>
-                      </div>
+                      <div class="text-right" v-html="calcRewardHtml(task.bounties).join('<br> + ')" />
                     </div>
                     <div class="flex justify-between text-sm">
                       <div>

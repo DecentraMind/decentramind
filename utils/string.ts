@@ -1,3 +1,5 @@
+import type { Task } from '~/types'
+
 export function createUuid() {
   const str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   return str.replace(/[xy]/g, function (c) {
@@ -40,4 +42,18 @@ export function toBase62(num: number) {
       num = Math.floor(num / 62)
   }
   return result
+}
+
+export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, classes = 'font-medium') {
+  return bounties.reduce((carry, bounty) => {
+    const tokenLogo = tokensByProcessID[bounty.tokenProcessID]?.logo
+    carry.push(
+      `<span class=${classes}>${bounty.amount} ${bounty.tokenName}</span>${
+        showLogo && tokenLogo
+        ? '<img src="' + arUrl(tokenLogo, gateways.ario) + '" class="w-6 h-6 rounded-full border border-gray-200 ml-1 mr-2">'
+        : ''
+      }`
+    )
+    return carry
+  }, [] as string[])
 }

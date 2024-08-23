@@ -112,15 +112,6 @@ export const taskStore = defineStore('taskStore', () => {
     })
   }
 
-  function calcReward(bounties: Task['bounties']) {
-    return bounties.reduce((reward, bounty) => {
-      if (bounty.amount && bounty.tokenProcessID && bounty.tokenName) {
-        reward += (reward ? '+' : '') + Number(bounty.amount) + ' ' + bounty.tokenName
-      }
-      return reward
-    }, '')
-  }
-
   const getTask = async (taskPid: string) => {
     if(!taskPid) {
       throw new Error('Task process ID is required to get task info.')
@@ -136,12 +127,8 @@ export const taskStore = defineStore('taskStore', () => {
 
     const resp = extractResult<string>(res)
     const task = JSON.parse(resp) as Task
-
-    const reward = calcReward(task.bounties)
-    return {
-      ...task,
-      reward
-    }
+    
+    return task
   }
 
   const getTasksByCommunityUuid = async (communityUuid: string) => {
@@ -158,12 +145,9 @@ export const taskStore = defineStore('taskStore', () => {
     })
 
     const resp = extractResult<string>(res)
-    const tasks = JSON.parse(resp) as Array<Task & {reward: string}>
+    const tasks = JSON.parse(resp) as Task[]
 
-    return tasks.map(task => {
-      task.reward = calcReward(task.bounties)
-      return task
-    }).sort((a, b) => {
+    return tasks.sort((a, b) => {
       return a.createTime >= b.createTime ? -1 : 1
     })
   }
@@ -366,6 +350,7 @@ export const taskStore = defineStore('taskStore', () => {
   const sendBounty = async (taskPid: string, bounties: Bounty[]) => {
     console.log('bounties to send ' + JSON.stringify(bounties))
     console.log('taskProcessId = ' + taskPid)
+    return
     await window.arweaveWallet.connect(permissions)
 
     const messageId = await message({
