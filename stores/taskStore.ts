@@ -22,13 +22,20 @@ const permissions: PermissionType[] = [
 export const taskStore = defineStore('taskStore', () => {
   const allTasks = $ref([])
 
-  const createTask = async (data: TaskForm) => {
+  const createTask = async (data: TaskForm, communityName: string) => {
     // create a task process，then add process ID to task info
     await window.arweaveWallet.connect(permissions)
     const taskProcessID = await spawn({
       module: moduleID,
       scheduler: schedulerID,
       signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{
+        name: 'Name', value: communityName + ' Task'
+      }, {
+        name: 'App-Name', value: 'DecentraMind'
+      }, {
+        name: 'App-Process', value: taskManagerProcessID,
+      }]
     })
     data.processID = taskProcessID
     data.bounties = (data.bounties as Task['bounties'])
@@ -239,7 +246,7 @@ export const taskStore = defineStore('taskStore', () => {
     return task.submissions.map(submission => {
       return {
         ...submission,
-        calculatedBounties: task.bounties
+        calculatedBounties: useCloneDeep(task.bounties)
       }
     })
   }

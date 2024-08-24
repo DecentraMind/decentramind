@@ -43,11 +43,7 @@ const { address } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
 
-let task = $ref<
-  Task & {
-    reward: string
-  }
->()
+let task = $ref<Task>()
 
 const isOwner = $computed(() => task?.ownerAddress === address)
 
@@ -75,7 +71,7 @@ onMounted(async () => {
   isLoading = true
   try {
     task = await getTask(taskPid)
-    console.log('getTask ' + JSON.stringify(task))
+    console.log('getTask ', task)
 
     if (!task) {
       throw new Error('Failed to get task ' + taskPid)
@@ -83,6 +79,7 @@ onMounted(async () => {
 
     console.log({ isIng, isSettle: task.isSettled, isCal: task.isScoreCalculated })
 
+    // TOOD invited number should calculated at AO
     invites = (await getInvitesByInviter(address)).invites
 
     communityInfo = await getLocalCommunity(task.communityUuid)
@@ -103,7 +100,7 @@ onMounted(async () => {
         !task.isSettled
       ) {
         calculateScore()
-        // console.log('after cal spaceTaskSubmitInfo = ' + spaceTaskSubmitInfo)
+        console.log('calculated submissions ', submissions)
 
         if (isOwner) {
           await setTaskIsCalculated(taskPid)
@@ -117,6 +114,10 @@ onMounted(async () => {
     console.log({ isSubmitted })
   } catch (e) {
     console.error(e)
+    // TODO show a page size error overlay and reload button
+    // if (!task) {
+    //   showErrorOverlay = true
+    // }
     showError('Data loading failed.')
   } finally {
     isLoading = false
@@ -158,6 +159,8 @@ function calculateScore() {
   }
   console.log('totalScore = ' + totalScore)
 
+  console.log('before calculated ')
+  submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
   for (const submission of submissions) {
 
     submission.calculatedBounties.forEach(bounty => {
@@ -167,19 +170,28 @@ function calculateScore() {
       if (!token) {
         throw new Error(`Bounty token ${bounty.tokenName} not supported.`)
       }
-      // TODO 5% 手续费
-      const bountyToSend =
-        (submission.score / totalScore) * Number(bounty.amount)
-      bounty.amount = Number(bountyToSend.toFixed(4))
 
-      submission.bounty +=
-        (submission.bounty ? ' ' : '') +
-        (bountyToSend / Math.pow(10, token.denomination)).toString() +
-        bounty.tokenName
+      // TODO 5% 手续费
+      const taskBounty = task?.bounties.find(taskBounty => taskBounty.tokenProcessID ===  token.processID)
+      if (!taskBounty) {
+        console.error('The shape of task.bounties and calculatedBounties may not match.', {taskBounties: task?.bounties, submissionBounty: bounty})
+        throw new Error('Failed to calculate submission\'s bounty.')
+      }
+      console.log(`${token.label} total bounty: ${taskBounty.amount} ${taskBounty.quantity}`)
+
+      const quantityToSend = BigInt(Math.floor((submission.score / totalScore * Math.pow(10, token.denomination)))) * BigInt(taskBounty.quantity)
+      bounty.quantity = quantityToSend.toString()
+      // don't use bountyToSend.toFixed here, otherwise the total amount will be rounded incorrectly
+      // Instead, we multiply by 10000 to shift the decimal point, then floor to remove fractional part, and finally divide by 10000 to get the correct decimal value
+      bounty.amount = Math.floor(submission.score / totalScore * taskBounty.amount * Math.pow(10, 4)) / Math.pow(10, 4)
+      console.log(`calculating: ${submission.address} should receive ${token.label} ${bounty.amount} ${bounty.quantity}`)
     })
 
-    console.log('calculated submitInfo ' + submission)
+    submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true).join(' + ')
   }
+
+  console.log('calculated submitInfo ')
+  submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
 }
 
 
@@ -348,16 +360,15 @@ async function onClickSubmit() {
     console.log('spaceEnded_at = ' + spaceEndedAt)
     console.log('participated = ' + participantCount)
     console.log('userAvatar = ' + userAvatar)
-    const spaceSubmission:SpaceSubmission = {
-      uuid: createUuid(), // will be override by task manager process
+    const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'> = {
       taskPid,
       address,
       brandEffect,
       inviteCount,
       audience,
       url: spaceUrl,
-      score: 0,
-      bounty: '0'
+      // TODO calculate score at server side or at AO
+      score: 0
     }
 
     await submitSpaceTask(spaceSubmission)
@@ -385,6 +396,12 @@ async function onClickSendBounty() {
   if (selectedSubmission.length > 0 && !task.isScoreCalculated) {
     showMessage('Being Cooked.')
     return
+  }
+
+  if (selectedSubmission.length === 0 && task.submissions.length > 0) {
+    if(!confirm('Confirm skipping all submissions?')) {
+      return
+    }
   }
 
   sendBountyLoading = true
@@ -450,11 +467,14 @@ async function onClickSendBounty() {
           recipient: decentraMindReceiver,
           tokenProcessID: tokenPid,
           amount: returnBounty.amount * DM_BOUNTY_CHARGE_RATE,
+          // error here
           quantity: returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_RATE),
         })
       }
     }
 
+    console.log('bounties to send:', {bounties, submissions, refoundMap})
+    return 
     // TODO try catch
     await sendBounty(task.processID, bounties)
     await setTaskIsSettled(task.processID)
@@ -481,6 +501,7 @@ async function onClickSendBounty() {
       showSuccess('Congrats! This quest has been successfully settled.')
     }
   } catch (e) {
+    console.error(e)
     showError('Send bounty failed.', e as Error)
   } finally {
     sendBountyLoading = false
@@ -542,17 +563,6 @@ watch(
     }
   },
 )
-
-const formattedBounties = $computed(() => {
-  if (!task) return ''
-  return task.bounties.reduce((carry, bounty) => {
-    const tokenLogo = tokensByProcessID[bounty.tokenProcessID].logo
-    carry += (carry ? ' + ' : '') + bounty.amount + ' '
-      + bounty.tokenName
-      + (tokenLogo ? '<img src="' + arUrl(tokenLogo, gateways.ario) + '" class="w-6 h-6 rounded-full border border-gray-200 ml-1 mr-2">' : '')
-    return carry
-  }, '')
-})
 </script>
 
 <template>
@@ -607,7 +617,7 @@ const formattedBounties = $computed(() => {
                 <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div class="flex-center" v-html="formattedBounties" />
+                <div class="flex-center" v-html="calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;')" />
               </div>
               <div class="flex justify-start">
                 <div class="font-semibold w-44 shrink-0">
@@ -677,6 +687,9 @@ const formattedBounties = $computed(() => {
                   </template>
                   <template #url-data="{ row }">
                     {{ row.url.replace(/^https?:\/\//, '').replace(/\/peek$/, '') }}
+                  </template>
+                  <template #bounty-data="{ row }">
+                    <p class="flex-center" v-html="row.rewardHtml" />
                   </template>
                 </UTable>
                 <div class="flex justify-end mt-2">
