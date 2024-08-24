@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.4'
+Variant = '0.2.5'
 
 local json = require("json")
 local ao = require('ao')
@@ -123,8 +123,12 @@ TaskManager = {
     replyData(msg, Tasks[pid])
   end,
 
-  dumpAllTasks = function (msg)
-    replyData(msg, Dump(Tasks))
+  dumpAll = function (msg)
+    replyData(msg, {
+      Tasks = Dump(Tasks, 0),
+      TasksByCommunity = Dump(TasksByCommunity, 0),
+      BountySendHistory = Dump(BountySendHistory, 0)
+    })
   end,
 
   getTask = function (msg)
@@ -266,9 +270,9 @@ Handlers.add(
 )
 
 Handlers.add(
-  "DumpAllTasks",
-  Handlers.utils.hasMatchingTag("Action", "DumpAllTasks"),
-  TaskManager.dumpAllTasks
+  "DumpAll",
+  Handlers.utils.hasMatchingTag("Action", "DumpAll"),
+  TaskManager.dumpAll
 )
 
 Handlers.add(
