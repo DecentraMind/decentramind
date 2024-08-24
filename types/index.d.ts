@@ -153,12 +153,12 @@ export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
 type ChainNames = 'AO'
 
 type Submission = {
-  uuid: string
+  id: number
   taskPid: string
   /** submitter's address */
   address: string
   score: number
-  bounty: string
+  createTime: number
 }
 
 interface SpaceSubmission extends Submission {
@@ -214,6 +214,11 @@ export type Task = {
 
 export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & {
   calculatedBounties: Task['bounties']
+  /**
+   * html representation of calculatedBounties 
+   * bounty is not included in process reply,
+   * this field is calculated at client, only for client display */
+  rewardHtml?: string
 }
 
 /** bounty item for SendBounty action of task process */

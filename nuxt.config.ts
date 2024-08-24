@@ -29,10 +29,10 @@ export default defineNuxtConfig({
     experimental: {
       tasks: true
     },
-    scheduledTasks: {
+    // scheduledTasks: {
       // Run `cms:update` task every minute
       // '*/15 * * * * *': 'updateTask'
-    }
+    // }
   },
 
   colorMode: {

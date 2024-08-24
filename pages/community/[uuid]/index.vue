@@ -323,7 +323,7 @@ watch(() => route.hash, newHash => {
                       <div>
                         <div>{{ $t('Bounty') }}</div>
                       </div>
-                      <div class="text-right" v-html="calcRewardHtml(task.bounties).join('<br> + ')" />
+                      <div class="text-right" v-html="calcRewardHtml(task.bounties).join('<br>+')" />
                     </div>
                     <div class="flex justify-between text-sm">
                       <div>
