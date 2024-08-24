@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.2'
+Variant = '0.2.4'
 
 local json = require("json")
 local ao = require('ao')
@@ -74,6 +74,17 @@ local function replyError(request, errorMsg)
   ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString})
 end
 
+---Reply with data
+---@param data string|table
+local function replyData(request, data)
+  assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
+  if type(data) == 'string' then
+    ao.send({ Target = request.From, Data = data })
+  else
+    ao.send({ Target = request.From, Data = json.encode(data) })
+  end
+end
+
 local function findIndex(array, predicate)
   for index, value in ipairs(array) do
       if predicate(value) then
@@ -108,12 +119,13 @@ TaskManager = {
       TasksByCommunity[cid] = {}
     end
     table.insert(TasksByCommunity[cid], pid)
-    Handlers.utils.reply(json.encode(Tasks[pid]))(msg)
+
+    replyData(msg, Tasks[pid])
   end,
 
-  -- getAll = function (msg)
-  --   Handlers.utils.reply(json.encode(Tasks))(msg)
-  -- end,
+  dumpAllTasks = function (msg)
+    replyData(msg, Dump(Tasks))
+  end,
 
   getTask = function (msg)
     local pid = msg.Tags.ProcessID
@@ -121,7 +133,8 @@ TaskManager = {
     if not Tasks[pid] then
       return replyError(msg, 'Task not found.')
     end
-    Handlers.utils.reply(json.encode(Tasks[pid]))(msg)
+
+    replyData(msg, Tasks[pid])
   end,
 
   getTasksByCommunityUuid = function (msg)
@@ -138,7 +151,7 @@ TaskManager = {
       end
     end
 
-    Handlers.utils.reply(json.encode(tasks))(msg)
+    replyData(msg, tasks)
   end,
 
   joinTask = function(msg)
@@ -211,7 +224,7 @@ TaskManager = {
   end,
 
   getAllBounties = function(msg)
-    Handlers.utils.reply(json.encode(BountySendHistory))(msg)
+    replyData(msg, BountySendHistory)
   end,
 
   getBountiesByCommuintyID = function (msg)
@@ -230,7 +243,7 @@ TaskManager = {
       end
     end
 
-    Handlers.utils.reply(json.encode(result))(msg)
+    replyData(msg, result)
   end
 }
 
@@ -250,6 +263,12 @@ Handlers.add(
   "GetTask",
   Handlers.utils.hasMatchingTag("Action", "GetTask"),
   TaskManager.getTask
+)
+
+Handlers.add(
+  "DumpAllTasks",
+  Handlers.utils.hasMatchingTag("Action", "DumpAllTasks"),
+  TaskManager.dumpAllTasks
 )
 
 Handlers.add(
@@ -285,7 +304,6 @@ Handlers.add(
     end
 
     Tasks[pid].isScoreCalculated = true
-    Handlers.utils.reply("update task success")(msg)
   end
 )
 
@@ -304,7 +322,6 @@ Handlers.add(
     end
 
     Tasks[pid].isSettled = true
-    Handlers.utils.reply("update task success")(msg)
   end
 )
 
@@ -323,8 +340,6 @@ Handlers.add(
     end
 
     Tasks[pid].submissions = json.decode(msg.Data)
-
-    Handlers.utils.reply("update task submissions success")(msg)
   end
 )
 
