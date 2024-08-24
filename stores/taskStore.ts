@@ -204,7 +204,7 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
-  const submitSpaceTask = async (spaceSubmission: SpaceSubmission) => {
+  const submitSpaceTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'>) => {
     await window.arweaveWallet.connect(permissions)
 
     const messageId = await message({
@@ -304,7 +304,7 @@ export const taskStore = defineStore('taskStore', () => {
   const sendBounty = async (taskPid: string, bounties: Bounty[]) => {
     console.log('bounties to send ' + JSON.stringify(bounties))
     console.log('taskProcessId = ' + taskPid)
-    return
+    
     await window.arweaveWallet.connect(permissions)
 
     const messageId = await message({
