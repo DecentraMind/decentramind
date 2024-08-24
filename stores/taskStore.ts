@@ -186,52 +186,6 @@ export const taskStore = defineStore('taskStore', () => {
     }
   }
 
-  const getAllTasks = async (communityId: string) => {
-    const communityTasks = []
-    const res = await dryrun({
-      process: taskManagerProcessID,
-      tags: [{ name: 'Action', value: 'GetAll' }],
-    })
-
-    const resp = extractResult<string>(res)
-    const tasks = JSON.parse(resp) as Task[]
-
-    for (const task of tasks) {
-      if (task.communityUuid !== communityId) {
-        continue
-      }
-
-      const reward = task.bounties.reduce((reward, bounty) => {
-        if (bounty.amount && bounty.tokenProcessID && bounty.tokenName) {
-          const token = tokensByProcessID[bounty.tokenProcessID]
-          reward += Number(bounty.amount) / Math.pow(10, token.denomination) + ' ' + bounty.tokenName
-        }
-        return reward
-      }, '')
-
-      const respData = {
-        ...task,
-        reward: reward
-      }
-
-      communityTasks.push(respData)
-    }
-
-    const sortedTasks = communityTasks.sort((a, b) => {
-      if(a.createTime && !b.createTime) return -1
-
-      if(!a.createTime && b.createTime) return 1
-
-      if(a.createTime && b.createTime) {
-        return a.createTime >= b.createTime ? -1 : 1
-      }
-
-      return a.startTime >= b.startTime ? -1 : 1
-    })
-    console.log({sortedTasks})
-    return sortedTasks
-  }
-
   const joinTask = async (taskPid: string, inviterAddress?: string) => {
     await window.arweaveWallet.connect(permissions)
 
@@ -407,7 +361,7 @@ export const taskStore = defineStore('taskStore', () => {
   }
 
   return $$({
-    createTask, getTask, getAllTasks, getTasksByCommunityUuid,
+    createTask, getTask, getTasksByCommunityUuid,
     allTasks,
 
     setTaskIsSettled, setTaskIsCalculated,

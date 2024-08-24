@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.1'
+Variant = '0.2.2'
 
 local json = require("json")
 local ao = require('ao')
@@ -38,11 +38,11 @@ local ao = require('ao')
 --- @field inviterAddress string|nil @Address of the inviter (optional)
 
 --- @class Submission
---- @field uuid string
+--- @field id number
 --- @field address string submitter's address
 --- @field taskPid string task process ID
 --- @field score number
---- @field bounty string
+--- @field createTime number
 --- @field brandEffect number|nil
 --- @field inviteCount number|nil
 --- @field audience number|nil
@@ -74,17 +74,9 @@ local function replyError(request, errorMsg)
   ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString})
 end
 
-local function createUuid()
-  local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-  return string.gsub(template, '[xy]', function (c)
-      local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
-      return string.format('%x', v)
-  end)
-end
-
 local function findIndex(array, predicate)
   for index, value in ipairs(array) do
-      if predicate(value, index) then
+      if predicate(value) then
           return index
       end
   end
@@ -179,9 +171,9 @@ TaskManager = {
     end
 
     --- TODO if not Tasks[pid].builders[msg.From] then Tasks[pid].builders[msg.From] = builder end
-    submission.uuid = createUuid()
+    submission.id = #Tasks[pid].submissions + 1
     submission.score = 0
-    submission.bounty = ""
+    submission.createTime = msg.Timestamp
     --- if task.type == 'space'
     --- submission.brandEffect = 0
     --- submission.inviteCount = 0
@@ -197,7 +189,7 @@ TaskManager = {
       Tasks[pid].submittersCount = Tasks[pid].submittersCount + 1
     end
 
-    Handlers.utils.reply(submission.uuid)(msg)
+    Handlers.utils.reply(tostring(submission.id))(msg)
   end,
 
 
