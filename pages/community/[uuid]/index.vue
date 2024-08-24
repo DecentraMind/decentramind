@@ -123,12 +123,15 @@ async function onSubmitTaskForm() {
   isPostingTask = true
 
   try {
+    if(!community) {
+      throw new Error('Community info not loaded.')
+    }
     if (!address) {
       throw new Error('Please connect wallet first.')
     }
     console.log({ taskForm })
 
-    await createTask(taskForm)
+    await createTask(taskForm, community.name)
     isCreateTaskModalOpen = false
   } catch (e) {
     const message = e instanceof Error ? e.message : e

@@ -418,6 +418,13 @@ export const communityStore = defineStore('communityStore', () => {
       module: moduleID,
       scheduler: schedulerID,
       signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{
+        name: 'Name', value: 'DecentraMind Chatroom'
+      }, {
+        name: 'App-Name', value: 'DecentraMind'
+      }, {
+        name: 'App-Process', value: aoCommunityProcessID,
+      }]
     })
 
     await sleep(1000)
@@ -459,6 +466,8 @@ export const communityStore = defineStore('communityStore', () => {
       scheduler: schedulerID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{
+        name: 'Name', value: name
+      }, {
         name: 'App-Name', value: 'DecentraMind'
       }, {
         name: 'App-Process', value: aoCommunityProcessID,

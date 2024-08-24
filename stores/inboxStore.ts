@@ -77,15 +77,6 @@ export const inboxStore = defineStore('inboxStore', () => {
     return items
   }
 
-  const loadOne = async (process: string, message: string) => {
-    const { Messages, Spawns, Output, Error } = await result({
-      message,
-      process,
-    })
-
-    return { Messages, Spawns, Output, Error }
-  }
-
   const sendMessage = async (process: string, data: string) => {
     await window.arweaveWallet.connect(['SIGN_TRANSACTION'])
     const rz = await message({
@@ -178,7 +169,7 @@ export const inboxStore = defineStore('inboxStore', () => {
   }
 
 
-  return $$({ state, stateArr, mailCache, isInboxLoading, add, remove, loadList, loadOne, sendMessage, getInboxCount, loadInboxList })
+  return $$({ state, stateArr, mailCache, isInboxLoading, add, remove, loadList, sendMessage, getInboxCount, loadInboxList })
 })
 
 if (import.meta.hot)
