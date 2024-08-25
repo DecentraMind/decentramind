@@ -1,4 +1,14 @@
 <script setup lang="ts">
+import { onErrorCaptured } from 'vue'
+const { showError } = $(notificationStore())
+
+onErrorCaptured((error, instance, info) => {
+  console.error('Global error handler:', error, info)
+  showError('Application Error: ', error)
+  // return false to avoid 'TypeError: Cannot destructure property 'type' of 'vnode' as it is null' and page freezing
+  return false
+})
+
 const colorMode = useColorMode()
 
 const color = computed(() => colorMode.value === 'dark' ? '#111827' : 'white')
