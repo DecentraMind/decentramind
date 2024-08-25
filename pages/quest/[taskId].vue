@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useFetch } from '@vueuse/core'
-import { taskStore } from '~/stores/taskStore'
+import { useTaskStore } from '~/stores/taskStore'
 import { compareImages } from '~/utils/image'
-import { formatToLocale, shortString } from '~/utils'
+import { formatToLocale, fractionalPart, shortString } from '~/utils'
 import type {
   SpaceSubmission,
   InviteInfo,
@@ -32,7 +32,7 @@ const {
   submitSpaceTask,
   joinTask,
   getSubmissionsByTaskPid,
-} = $(taskStore())
+} = useTaskStore()
 
 const { getLocalCommunity, twitterVouchedIDs } = $(communityStore())
 
@@ -51,7 +51,7 @@ let submissions = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
 const isSubmitted = $computed(() => submissions.findIndex(submission => submission.address === address) > -1)
 const isJoined = $computed(() => {
-  console.log('task', task)
+  // console.log('task', task)
   return task && task.builders ? Object.keys(task.builders).findIndex(builder => builder === address) > -1 : false
 })
 
@@ -59,13 +59,22 @@ const isIng = $computed(() => {
   return task ? now.value > task.startTime && now.value < task.endTime : false
 })
 
-let submittedBuilderCount = $ref<number>(0)
+const taskRewardHtml = $computed(() => {
+  return task ? calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;') : ''
+})
+
+const submittedBuilderCount = $computed(() => {
+  return !task ? '' : task.submissions.reduce((set, current) => {
+    set.add(current.address)
+    return set
+  }, new Set()).size
+})
 
 let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let invites: InviteInfo[]
 
-let isLoading = $ref(false)
+let isLoading = $ref(true)
 onMounted(async () => {
   now = useClock(3000)
   isLoading = true
@@ -87,11 +96,6 @@ onMounted(async () => {
     console.log('spaceTaskSubmitInfo = ' + JSON.stringify(submissions), taskPid)
 
     if (submissions && submissions.length !== 0) {
-      // TODO update task.submittedCount after every task submit in cronjob
-      submittedBuilderCount = submissions.reduce((set, current) => {
-        set.add(current.address)
-        return set
-      }, new Set()).size
 
       // TODO enable !task.isCalculated condition
       if (
@@ -170,65 +174,65 @@ function calculateScore() {
       if (!token) {
         throw new Error(`Bounty token ${bounty.tokenName} not supported.`)
       }
+      const { label, denomination, processID } = token
 
       // TODO 5% 手续费
-      const taskBounty = task?.bounties.find(taskBounty => taskBounty.tokenProcessID ===  token.processID)
+      const taskBounty = task?.bounties.find(taskBounty => taskBounty.tokenProcessID ===  processID)
       if (!taskBounty) {
         console.error('The shape of task.bounties and calculatedBounties may not match.', {taskBounties: task?.bounties, submissionBounty: bounty})
         throw new Error('Failed to calculate submission\'s bounty.')
       }
-      console.log(`${token.label} total bounty: ${taskBounty.amount} ${taskBounty.quantity}`)
+      console.log(`${label} total bounty: ${taskBounty.amount} ${taskBounty.quantity}`)
 
-      const quantityToSend = BigInt(Math.floor((submission.score / totalScore * Math.pow(10, token.denomination)))) * BigInt(taskBounty.quantity)
-      bounty.quantity = quantityToSend.toString()
       // don't use bountyToSend.toFixed here, otherwise the total amount will be rounded incorrectly
       // Instead, we multiply by 10000 to shift the decimal point, then floor to remove fractional part, and finally divide by 10000 to get the correct decimal value
-      bounty.amount = Math.floor(submission.score / totalScore * taskBounty.amount * Math.pow(10, 4)) / Math.pow(10, 4)
-      console.log(`calculating: ${submission.address} should receive ${token.label} ${bounty.amount} ${bounty.quantity}`)
+      const amountToSend = Math.floor(submission.score / totalScore * taskBounty.amount * Math.pow(10, 6)) / Math.pow(10, 6)
+      bounty.quantity = float2BigInt(amountToSend, denomination).toString()
+      bounty.amount = amountToSend
+      console.log(`calculating: ${submission.address} should receive ${label} ${bounty.amount} ${bounty.quantity}`)
     })
-
-    submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true).join(' + ')
   }
 
   console.log('calculated submitInfo ')
   submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
 }
 
-
-const columns = [
-  {
-    key: 'uuid',
-    label: 'ID',
-  },
-  {
-    key: 'address',
-    label: t('Wallet'),
-  },
-  {
-    key: 'brandEffect',
-    label: t('Brand'),
-  },
-  {
-    key: 'inviteCount',
-    label: t('Friends'),
-  },
-  {
-    key: 'audience',
-    label: t('Popularity'),
-  },
-  {
-    key: 'url',
-    label: t('URL'),
-  },
-  {
-    key: 'score',
-    label: t('Total Score'),
-  },
-  {
-    key: 'bounty',
-    label: t('Bounty'),
-  },
-]
+const columns = [{
+  key: 'id',
+  label: 'ID',
+}, {
+  key: 'address',
+  label: t('Wallet'),
+  rowClass: 'font-mono'
+}, {
+  key: 'brandEffect',
+  label: t('Brand'),
+  class: 'text-right',
+  rowClass: 'font-mono text-right'
+}, {
+  key: 'inviteCount',
+  label: t('Friends'),
+  class: 'text-right',
+  rowClass: 'font-mono text-right'
+}, {
+  key: 'audience',
+  label: t('Popularity'),
+  class: 'text-right',
+  rowClass: 'font-mono text-right'
+}, {
+  key: 'url',
+  label: t('URL'),
+}, {
+  key: 'score',
+  label: t('Total Score'),
+  class: 'text-right',
+  rowClass: 'font-mono text-right'
+}, {
+  key: 'rewardHtml',
+  label: t('Bounty'),
+  class: 'text-right',
+  rowClass: 'font-mono'
+}]
 
 let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
@@ -357,9 +361,6 @@ async function onClickSubmit() {
       )
     }).length
 
-    console.log('spaceEnded_at = ' + spaceEndedAt)
-    console.log('participated = ' + participantCount)
-    console.log('userAvatar = ' + userAvatar)
     const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'> = {
       taskPid,
       address,
@@ -474,7 +475,7 @@ async function onClickSendBounty() {
     }
 
     console.log('bounties to send:', {bounties, submissions, refoundMap})
-    return 
+    
     // TODO try catch
     await sendBounty(task.processID, bounties)
     await setTaskIsSettled(task.processID)
@@ -493,7 +494,7 @@ async function onClickSendBounty() {
     await storeBounty(task.processID, sentBounties)
 
     task = await getTask(taskPid)
-    console.log({ blogPostSettled: task })
+    console.log({ taskAfterSettled: task })
 
     if (!selectedSubmission.length) {
       showSuccess('The Bounty Has Been Returned!')
@@ -518,23 +519,17 @@ function sendBountyBtnLabel() {
 
 const searchKeyword = $ref('')
 
-let filteredRows = $ref<Awaited<ReturnType<typeof getSubmissionsByTaskPid>>>([])
+let filteredRows = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 const page = $ref(1)
 let pageSize = $ref<number>(maxTotalChances)
-let pageRows = $ref<Awaited<ReturnType<typeof getSubmissionsByTaskPid>>>([])
+let pageRows = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
 watch(
   () => [submissions, searchKeyword, page],
   () => {
     console.log('page rows should change')
-    if (!searchKeyword) {
-      console.info('spaceTaskSubmitInfo as filteredRows', submissions)
-      filteredRows = submissions
-    }
 
-    if (!submissions) filteredRows = []
-
-    filteredRows = submissions.filter(info => {
+    filteredRows = searchKeyword ? submissions : submissions.filter(info => {
       return Object.values(info).some(value => {
         return String(value).toLowerCase().includes(searchKeyword.toLowerCase())
       })
@@ -544,11 +539,15 @@ watch(
       ? task.totalChances >= submissions.length ? submissions.length : Math.max(task.totalChances, 10)
       : maxTotalChances
 
-    console.log(
-      'new pageRows',
-      filteredRows.slice((page - 1) * pageSize, page * pageSize),
-    )
-    pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize)
+    const precisions = task?.bounties.reduce((carry, bounty) => {
+      carry.set(bounty.tokenProcessID, fractionalPart(bounty.amount).length)
+      return carry
+    }, new Map<string, number>())
+    pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize).map(submission => {
+      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions).join('&nbsp;+&nbsp;')
+      return submission
+    })
+    // console.log('new pageRows', pageRows)
   },
 )
 
@@ -581,12 +580,26 @@ watch(
             </NuxtLink>
           </div>
         </div>
-        <!--
-        <div class="mx-10">
-          <UColorModeImage :src="`/task/${blogPost.image}.jpg`" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />
+        
+        <div
+          v-if="isLoading"
+          class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
+        >
+          <UIcon
+            name="svg-spinners:blocks-scale"
+            dynamic
+            class="w-16 h-16 opacity-50"
+          />
         </div>
-        -->
-        <UBlogPost :key="task.processID" :title="task.name" :description="task.intro" class="px-10 pt-0 pb-10" :ui="{title: 'text-3xl mb-6 text-clip'}">
+
+        <UBlogPost
+          v-if="!isLoading"
+          :key="task.processID"
+          :title="task.name"
+          :description="task.intro"
+          class="px-10 pt-0 pb-10"
+          :ui="{title: 'text-3xl mb-6 text-clip'}"
+        >
           <template #description>
             <div class="flex flex-col space-y-6">
               <div class="text-justify text-md leading-8">
@@ -617,7 +630,7 @@ watch(
                 <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div class="flex-center" v-html="calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;')" />
+                <div class="flex-center" v-html="taskRewardHtml" />
               </div>
               <div class="flex justify-start">
                 <div class="font-semibold w-44 shrink-0">
@@ -679,8 +692,8 @@ watch(
                   :columns="columns"
                   :loading="isLoading"
                 >
-                  <template #uuid-data="{ row }">
-                    {{ isOwner ? row.uuid : shortString(row.uuid, 4) }}
+                  <template #id-data="{ row, index }">
+                    {{ row.id || index+1 }}
                   </template>
                   <template #address-data="{ row }">
                     {{ isOwner ? row.address : shortString(row.address, 4) }}
@@ -688,8 +701,11 @@ watch(
                   <template #url-data="{ row }">
                     {{ row.url.replace(/^https?:\/\//, '').replace(/\/peek$/, '') }}
                   </template>
-                  <template #bounty-data="{ row }">
-                    <p class="flex-center" v-html="row.rewardHtml" />
+                  <template #score-data="{ row }">
+                    {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
+                  </template>
+                  <template #rewardHtml-data="{ row }">
+                    <p class="flex justify-end" v-html="task.isScoreCalculated ? row.rewardHtml : '/'" />
                   </template>
                 </UTable>
                 <div class="flex justify-end mt-2">

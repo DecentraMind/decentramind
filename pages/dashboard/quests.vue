@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Bounty } from '~/types'
 import { tokensByProcessID, type TokenName } from '~/utils/constants'
+import { useTaskStore } from '~/stores/taskStore'
 
 const questColumns = [{
   key: 'taskName',
@@ -20,7 +21,7 @@ const bountyColumns = [
 
 const sort = $ref({ column: 'id', direction: 'asc' as const })
 
-const { getAllBounty } = $(taskStore())
+const { getAllBounty } = useTaskStore()
 const { address } = $(aoStore())
 
 const page = $ref(1)

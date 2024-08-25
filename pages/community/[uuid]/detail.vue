@@ -2,12 +2,13 @@
 import { type TokenSupply } from '~/utils/constants'
 import { shortString, getDomain, getHandle } from '~/utils'
 import type { Community } from '~/types/index'
+import { useTaskStore } from '~/stores/taskStore'
 import BaseField from '~/components/fields/BaseField.vue'
 import * as echarts from 'echarts'
 
 const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
-const { getBountiesByCommunityID } = $(taskStore())
+const { getBountiesByCommunityID } = useTaskStore()
 const { showError } = $(notificationStore())
 
 const router = useRouter()

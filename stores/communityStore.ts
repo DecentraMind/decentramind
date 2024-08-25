@@ -459,7 +459,7 @@ export const communityStore = defineStore('communityStore', () => {
     console.log('creating token:', { name, ticker, totalSupply, logo })
 
     const denomination = 12
-    const totalSupplyStr = (BigInt(Number(totalSupply)) * BigInt(Math.pow(10, denomination))).toString()
+    const totalSupplyStr = float2BigInt(totalSupply, denomination).toString()
 
     const processID = await spawn({
       module: moduleID,

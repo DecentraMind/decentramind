@@ -19,7 +19,7 @@ const permissions: PermissionType[] = [
   'DISPATCH'
 ]
 
-export const taskStore = defineStore('taskStore', () => {
+export const useTaskStore = defineStore('task', () => {
   const allTasks = $ref([])
 
   const createTask = async (data: TaskForm, communityName: string) => {
@@ -156,6 +156,12 @@ export const taskStore = defineStore('taskStore', () => {
 
     return tasks.sort((a, b) => {
       return a.createTime >= b.createTime ? -1 : 1
+    }).map(task => {
+      // TODO this is a temp fix of submittersCount, remove this if TaskManger process reply correct submittersCount
+      task.submittersCount = task.submissions.reduce((set, submission) => {
+        return set.add(submission.address) 
+      }, new Set()).size
+      return task
     })
   }
 
@@ -367,7 +373,7 @@ export const taskStore = defineStore('taskStore', () => {
     return JSON.parse(data) as Bounty[]
   }
 
-  return $$({
+  return {
     createTask, getTask, getTasksByCommunityUuid,
     allTasks,
 
@@ -384,7 +390,7 @@ export const taskStore = defineStore('taskStore', () => {
 
     // TODO move this to communityStore
     getInvitesByInviter
-  })
+  }
 })
 
 async function transferBounty(receiver: string, token: Task['bounties'][number]) {
@@ -450,4 +456,4 @@ async function transferBounty(receiver: string, token: Task['bounties'][number])
 }
 
 if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(taskStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(useTaskStore, import.meta.hot))

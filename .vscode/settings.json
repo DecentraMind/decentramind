@@ -96,5 +96,11 @@
   "Lua.hint.setType": true,
   "Lua.hint.enable": true,
   "Lua.type.checkTableShape": true,
-  "Lua.type.inferParamType": true
+  "Lua.type.inferParamType": true,
+  "files.exclude": {
+    ".nuxt": true,
+    "node_modules": true
+  },
+  "javascript.preferGoToSourceDefinition": true,
+  "typescript.preferGoToSourceDefinition": true,
 }

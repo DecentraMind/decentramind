@@ -8,9 +8,11 @@ import { provide } from 'vue'
 import Chatroom from '~/components/community/Chatroom.vue'
 import CommunitySidebar from '~/components/community/CommunitySidebar.vue'
 import TaskStatus from '~/components/task/TaskStatus.vue'
+import { useTaskStore } from '~/stores/taskStore'
 
 const { t } = useI18n()
-const { createTask, getTasksByCommunityUuid } = $(taskStore())
+const taskStore = useTaskStore()
+const { getTasksByCommunityUuid, createTask } = taskStore
 const { setCurrentCommunityUuid, getLocalCommunity } = $(communityStore())
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
@@ -155,6 +157,7 @@ async function onSubmitTaskForm() {
   }
 
   tasks = await getTasksByCommunityUuid(uuid)
+  console.log('tasks loaded:', tasks)
   isPostingTask = false
 }
 
@@ -192,6 +195,7 @@ onMounted(async () => {
     }
 
     tasks = await getTasksByCommunityUuid(uuid)
+    console.log('tasks loaded:', tasks)
   } catch (error) {
     console.error('Error fetching data:', error)
     showError('Loading data error.', error as Error)
@@ -319,15 +323,6 @@ watch(() => route.hash, newHash => {
 
                 <template #description>
                   <div class="flex flex-col space-y-2">
-                    <!-- <div class="h-6 overflow-hidden">
-                      {{ task.intro }}
-                    </div> -->
-                    <div class="flex justify-between text-sm gap-x-2">
-                      <div>
-                        <div>{{ $t('Bounty') }}</div>
-                      </div>
-                      <div class="text-right" v-html="calcRewardHtml(task.bounties).join('<br>+')" />
-                    </div>
                     <div class="flex justify-between text-sm">
                       <div>
                         <div>{{ $t('builders now') }}</div>
@@ -338,16 +333,23 @@ watch(() => route.hash, newHash => {
                         </div>
                       </div>
                     </div>
+
+                    <div class="flex justify-between text-sm gap-x-2">
+                      <div>
+                        <div>{{ $t('Bounty') }}</div>
+                      </div>
+                      <div class="text-right" v-html="calcRewardHtml(task.bounties).join('<br>+')" />
+                    </div>
                   </div>
                 </template>
-                <UButton
+                <!-- <UButton
                   :to="`/quest/${task.processID}`"
-                  class="relative right-0 mt-2"
+                  class="absolute bottom-2 right-2 mt-2 ring-gray-200 hover:ring-gray-400"
                   color="white"
                   variant="outline"
                 >
                   {{ $t('View Details') }}
-                </UButton>
+                </UButton> -->
               </UBlogPost>
             </div>
           </div>

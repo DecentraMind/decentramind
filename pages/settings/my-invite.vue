@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {taskStore} from '~/stores/taskStore'
+import { useTaskStore } from '~/stores/taskStore'
 import type { InviteInfo, RelatedUserMap } from '~/types'
 import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils'
 
 const { getLocalCommunity } = $(communityStore())
-const { getInvitesByInviter } = $(taskStore())
+const { getInvitesByInviter } = useTaskStore()
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
