@@ -672,7 +672,7 @@ watch(() => selectedSubmissions.length, () => {
                   :rows="pageRows"
                   :columns="columns"
                   :loading="isLoading"
-                  :ui="{checkbox: {padding: task.isSettled ? 'hidden' : ''}}"
+                  :ui="{checkbox: {padding: task.isSettled || !isOwner ? 'hidden' : ''}}"
                 >
                   <template #id-data="{ row }">
                     {{ row.id }}
