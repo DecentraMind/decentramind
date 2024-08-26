@@ -26,6 +26,11 @@ export default defineNuxtConfig({
   ],
 
   nitro: {
+    esbuild: {
+      options: {
+        target: 'ES6'
+      }
+    },
     compressPublicAssets: { gzip: true, brotli: true },
     experimental: {
       tasks: true
