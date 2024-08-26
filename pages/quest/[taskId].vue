@@ -2,7 +2,7 @@
 import { useFetch } from '@vueuse/core'
 import { useTaskStore } from '~/stores/taskStore'
 import { compareImages } from '~/utils/image'
-import { formatToLocale, fractionalPart, shortString } from '~/utils'
+import { calcBounties, formatToLocale, fractionalPart, shortString } from '~/utils'
 import type {
   SpaceSubmission,
   InviteInfo,
@@ -11,11 +11,12 @@ import type {
   Bounty,
   SpaceSubmissionWithCalculatedBounties,
 } from '~/types'
-import { DM_BOUNTY_CHARGE_RATE, maxTotalChances, tokens } from '~/utils/constants'
+import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { unref, watch } from 'vue'
 import { useClock } from '~/composables/useClock'
 import { gateways, arUrl } from '~/utils/arAssets'
+const runtimeConfig = useRuntimeConfig()
 
 let now: Ref<number>
 
@@ -34,7 +35,7 @@ const {
   getSubmissionsByTaskPid,
 } = useTaskStore()
 
-const { getLocalCommunity, twitterVouchedIDs } = $(communityStore())
+const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(communityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
@@ -92,26 +93,25 @@ onMounted(async () => {
     invites = (await getInvitesByInviter(address)).invites
 
     communityInfo = await getLocalCommunity(task.communityUuid)
+    setCurrentCommunityUuid(communityInfo.uuid)
+
     submissions = await getSubmissionsByTaskPid(taskPid)
     console.log('spaceTaskSubmitInfo = ' + JSON.stringify(submissions), taskPid)
 
-    if (submissions && submissions.length !== 0) {
+    // TODO enable !task.isCalculated condition
+    if (
+      // !task.isCalculated &&
+      now.value >= task.endTime &&
+      !task.isSettled
+    ) {
+      submissions = calcScore(submissions)
+      console.log('score calculated submissions ', submissions)
 
-      // TODO enable !task.isCalculated condition
-      if (
-        // !task.isCalculated &&
-        now.value >= task.endTime &&
-        !task.isSettled
-      ) {
-        calculateScore()
-        console.log('calculated submissions ', submissions)
-
-        if (isOwner) {
-          await setTaskIsCalculated(taskPid)
-          await updateTaskSubmissions(taskPid, submissions)
-          // refetch task info
-          task = await getTask(taskPid)
-        }
+      if (isOwner) {
+        await setTaskIsCalculated(taskPid)
+        await updateTaskSubmissions(taskPid, submissions)
+        // refetch task info
+        task = await getTask(taskPid)
       }
     }
 
@@ -127,75 +127,6 @@ onMounted(async () => {
     isLoading = false
   }
 })
-
-function calculateScore() {
-  if (!submissions || !task) return
-  // 找到friends和audience的最大值
-  submissions.sort((a, b) => b.inviteCount - a.inviteCount)
-  const getPersonMax = submissions[0].inviteCount
-  submissions.sort((a, b) => b.audience - a.audience)
-  const audienceMax = submissions[0].audience
-  console.log('getPersonMax = ' + getPersonMax)
-  console.log('audienceMax = ' + audienceMax)
-  let totalScore = 0
-  let friendScore = 0
-  let audienceScore = 0
-
-  for (const submission of submissions) {
-    if (getPersonMax != 0) {
-      friendScore = (submission.inviteCount / getPersonMax) * 40
-    }
-    if (audienceMax != 0) {
-      audienceScore = (submission.audience / audienceMax) * 50
-    }
-    let brandScore = 0
-    if (submission.brandEffect === 10) {
-      brandScore = 10
-    }
-    console.log('friendScore = ' + friendScore)
-    console.log('audienceScore = ' + audienceScore)
-    console.log('brandScore = ' + brandScore)
-
-    submission.score = friendScore + audienceScore + brandScore
-
-    totalScore += submission.score
-
-  }
-  console.log('totalScore = ' + totalScore)
-
-  console.log('before calculated ')
-  submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
-  for (const submission of submissions) {
-
-    submission.calculatedBounties.forEach(bounty => {
-      if (!bounty.tokenName) return
-
-      const token = tokens[bounty.tokenName as TokenName]
-      if (!token) {
-        throw new Error(`Bounty token ${bounty.tokenName} not supported.`)
-      }
-      const { label, denomination, processID } = token
-
-      // TODO 5% 手续费
-      const taskBounty = task?.bounties.find(taskBounty => taskBounty.tokenProcessID ===  processID)
-      if (!taskBounty) {
-        console.error('The shape of task.bounties and calculatedBounties may not match.', {taskBounties: task?.bounties, submissionBounty: bounty})
-        throw new Error('Failed to calculate submission\'s bounty.')
-      }
-      console.log(`${label} total bounty: ${taskBounty.amount} ${taskBounty.quantity}`)
-
-      // don't use bountyToSend.toFixed here, otherwise the total amount will be rounded incorrectly
-      // Instead, we multiply by 10000 to shift the decimal point, then floor to remove fractional part, and finally divide by 10000 to get the correct decimal value
-      const amountToSend = Math.floor(submission.score / totalScore * taskBounty.amount * Math.pow(10, 6)) / Math.pow(10, 6)
-      bounty.quantity = float2BigInt(amountToSend, denomination).toString()
-      bounty.amount = amountToSend
-      console.log(`calculating: ${submission.address} should receive ${label} ${bounty.amount} ${bounty.quantity}`)
-    })
-  }
-
-  console.log('calculated submitInfo ')
-  submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
-}
 
 const columns = [{
   key: 'id',
@@ -384,7 +315,7 @@ async function onClickSubmit() {
   }
 }
 
-let selectedSubmission = $ref<SpaceSubmission[]>([])
+let selectedSubmission = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
 let sendBountyLoading = $ref(false)
 async function onClickSendBounty() {
@@ -408,6 +339,23 @@ async function onClickSendBounty() {
   sendBountyLoading = true
 
   try {
+    const selectedTotalScore = selectedSubmission.reduce((total, submission) => {
+      total += submission.score
+      return total
+    }, 0)
+    console.group('Bounty calculating')
+    submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
+
+    submissions.forEach(submission => {
+      const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
+
+      submission.calculatedBounties = calculated as Task['bounties']
+    })
+
+    console.log('calculated bounties')
+    submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
+    console.groupEnd()
+
     /** bounties to send */
     const bounties: Bounty[] = []
 
@@ -467,9 +415,8 @@ async function onClickSendBounty() {
           sender: task!.ownerAddress,
           recipient: decentraMindReceiver,
           tokenProcessID: tokenPid,
-          amount: returnBounty.amount * DM_BOUNTY_CHARGE_RATE,
-          // error here
-          quantity: returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_RATE),
+          amount: returnBounty.amount * (DM_BOUNTY_CHARGE_PERCENT / 100),
+          quantity: returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT) / 100n,
         })
       }
     }
@@ -524,6 +471,12 @@ const page = $ref(1)
 let pageSize = $ref<number>(maxTotalChances)
 let pageRows = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
+const precisions = $computed(() => task?.bounties.reduce((carry, bounty) => {
+    carry.set(bounty.tokenProcessID, fractionalPart(bounty.amount).length)
+    return carry
+  }, new Map<string, number>())
+)
+
 watch(
   () => [submissions, searchKeyword, page],
   () => {
@@ -539,10 +492,6 @@ watch(
       ? task.totalChances >= submissions.length ? submissions.length : Math.max(task.totalChances, 10)
       : maxTotalChances
 
-    const precisions = task?.bounties.reduce((carry, bounty) => {
-      carry.set(bounty.tokenProcessID, fractionalPart(bounty.amount).length)
-      return carry
-    }, new Map<string, number>())
     pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize).map(submission => {
       submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions).join('&nbsp;+&nbsp;')
       return submission
@@ -556,10 +505,26 @@ watch(
   newVal => {
     const maxSelection = task ? task.totalChances : 1
     if (newVal.length > maxSelection) {
-      alert(`Selected items exceed ${maxSelection}!`)
+      showMessage(`Selected items exceed ${maxSelection}!`)
       // 如果选择的数量超过最大值，取消超出的选择项
       selectedSubmission = newVal.slice(0, maxSelection)
+
     }
+
+    const selectedTotalScore = selectedSubmission.reduce((total, submission) => {
+      total += submission.score
+      return total
+    }, 0)
+    if (!selectedTotalScore) return
+    
+    selectedSubmission.forEach(submission => {
+      const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
+
+      submission.calculatedBounties = calculated as Task['bounties']
+      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions).join('&nbsp;+&nbsp;')
+    })
+    console.log('calculated bounties')
+    submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
   },
 )
 </script>
@@ -685,15 +650,16 @@ watch(
                   Transaction Book
                 </ULink>
               </div>
-              <div v-if="isJoined || isOwner">
+
+              <div v-if="isJoined || isOwner || runtimeConfig.public.debug">
                 <UTable
                   v-model="selectedSubmission"
                   :rows="pageRows"
                   :columns="columns"
                   :loading="isLoading"
                 >
-                  <template #id-data="{ row, index }">
-                    {{ row.id || index+1 }}
+                  <template #id-data="{ row }">
+                    {{ row.id }}
                   </template>
                   <template #address-data="{ row }">
                     {{ isOwner ? row.address : shortString(row.address, 4) }}
@@ -705,9 +671,10 @@ watch(
                     {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
                   </template>
                   <template #rewardHtml-data="{ row }">
-                    <p class="flex justify-end" v-html="task.isScoreCalculated ? row.rewardHtml : '/'" />
+                    <p class="flex justify-end" v-html="task.isSettled || selectedSubmission.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
                   </template>
                 </UTable>
+
                 <div class="flex justify-end mt-2">
                   <UPagination
                     v-model="page"
@@ -774,6 +741,7 @@ watch(
         </UBlogPost>
       </div>
     </UPage>
+
     <UModal v-model="isJoinModalOpen">
       <UCard>
         <div class="space-y-2">

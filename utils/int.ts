@@ -57,3 +57,23 @@ export function float2BigInt(num: number, denomination: number): bigint {
 
   return result
 }
+
+export function isValidNumber(value: unknown, isAcceptFloat = true) {
+  if (typeof value !== 'number') {
+    return false
+  }
+  
+  if (!isAcceptFloat) {
+    return Number.isInteger(value)
+  }
+
+  if (Number.isNaN(value) || !Number.isFinite(value)) {
+    return false
+  }
+  
+  return true
+}
+
+export function isValidInt(value: unknown) {
+  return isValidNumber(value, false)
+}

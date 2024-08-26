@@ -161,8 +161,9 @@ watch(
                   https://decentramind.club/invite/{{ community.uuid }}&{{ address }}
                 </p>
                 <UButton
-                  icon="carbon:align-box-bottom-right"
+                  icon="ri:checkbox-multiple-blank-line"
                   variant="ghost"
+                  title="Copy to clipboard"
                   @click="copyText"
                 />
               </div>

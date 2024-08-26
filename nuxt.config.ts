@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     // public environment variable, accessible in any file
     public: {
       chatroomFetchInterval: parseInt(process.env.NUXT_PUBLIC_CHATROOM_FETCH_INTERVAL || '5000'),
+      debug: process.env.NUXT_PUBLIC_DEBUG
     },
   },
 
@@ -58,6 +59,7 @@ export default defineNuxtConfig({
   ui: {
     safelistColors: ['primary', 'red', 'orange', 'green']
   },
+  css: ['@/assets/css/tailwind.css'],
 
   macros: {
     setupSFC: true,
