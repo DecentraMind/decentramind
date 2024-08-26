@@ -20,6 +20,7 @@ end
 local function isTaskCreationSuccess()
   return Owner == nil
 end
+
 -- If task creaation process failed in the middle,
 -- the task owner can invoke this action to get bounty tokens back.
 Handlers.add(

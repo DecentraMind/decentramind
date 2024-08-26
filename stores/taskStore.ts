@@ -327,7 +327,7 @@ export const useTaskStore = defineStore('task', () => {
     
     await window.arweaveWallet.connect(permissions)
 
-    const messageId = await message({
+    const resultMessages = await messageResultCheck({
       process: taskPid,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'SendBounty' }],
@@ -336,8 +336,9 @@ export const useTaskStore = defineStore('task', () => {
         return bounty
       }))
     })
-    console.log('return message = ' + messageId)
-    return messageId
+
+    console.log('return messages = ', resultMessages)
+    return resultMessages
   }
 
   /**

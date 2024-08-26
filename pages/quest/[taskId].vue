@@ -441,7 +441,6 @@ async function onClickSendBounty() {
     await sendBounty(task.processID, bountiesToSend)
     await setTaskIsSettled(task.processID)
 
-    // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
     // 将发送出去的bounty信息保存
     const sentBounties = []
     for (const bounty of bountiesToSend) {
