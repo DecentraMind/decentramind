@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.5'
+Variant = '0.2.6'
 
 local json = require("json")
 local ao = require('ao')
@@ -65,7 +65,8 @@ TasksByCommunity = TasksByCommunity or {}
 BountySendHistory = BountySendHistory or {}
 
 local function replyError(request, errorMsg)
-  local action = request.Action .. "-Error"
+  local action = (request.Tags and request.Tags.Action) or request.Action or "Unknow-Action"
+  action = action .. "-Error"
   local errString = errorMsg
   if type(errorMsg) ~= "string" then
     errString = json.encode(errorMsg)

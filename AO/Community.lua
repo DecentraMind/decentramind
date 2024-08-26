@@ -1,5 +1,5 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.12'
+Variant = '0.2.13'
 
 ---@class Community
 ---@field uuid string
@@ -84,7 +84,8 @@ local function replyData(request, data)
 end
 
 local function replyError(request, errorMsg)
-  local action = request.Action .. "-Error"
+  local action = (request.Tags and request.Tags.Action) or request.Action or "Unknow-Action"
+  action = action .. "-Error"
   local errString = errorMsg
   if type(errorMsg) ~= "string" then
     errString = json.encode(errorMsg)
