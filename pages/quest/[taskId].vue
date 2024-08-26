@@ -315,7 +315,7 @@ async function onClickSubmit() {
   }
 }
 
-let selectedSubmission = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
+let selectedSubmissions = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
 let sendBountyLoading = $ref(false)
 async function onClickSendBounty() {
@@ -325,12 +325,12 @@ async function onClickSendBounty() {
   }
 
   // if no submitted info, don't need isScoreCalculated
-  if (selectedSubmission.length > 0 && !task.isScoreCalculated) {
+  if (selectedSubmissions.length > 0 && !task.isScoreCalculated) {
     showMessage('Being Cooked.')
     return
   }
 
-  if (selectedSubmission.length === 0 && task.submissions.length > 0) {
+  if (selectedSubmissions.length === 0 && task.submissions.length > 0) {
     if(!confirm('Confirm skipping all submissions?')) {
       return
     }
@@ -339,7 +339,7 @@ async function onClickSendBounty() {
   sendBountyLoading = true
 
   try {
-    const selectedTotalScore = selectedSubmission.reduce((total, submission) => {
+    const selectedTotalScore = selectedSubmissions.reduce((total, submission) => {
       total += submission.score
       return total
     }, 0)
@@ -359,7 +359,7 @@ async function onClickSendBounty() {
     /** bounties to send */
     const bountiesToSend: Bounty[] = []
 
-    console.log({ selected: selectedSubmission })
+    console.log({ selected: selectedSubmissions })
 
     /** bounties that should send back to the task owner */
     const refoundMap = {} as Record<string, Bounty>
@@ -388,7 +388,7 @@ async function onClickSendBounty() {
     }
 
     // add selected submission's bounty to bountiesToSend
-    const selectedSubmitters = selectedSubmission.map(submission => submission.address)
+    const selectedSubmitters = selectedSubmissions.map(submission => submission.address)
     submissions.filter(submission => selectedSubmitters.includes(submission.address)).forEach(submission => {
       submission.calculatedBounties.forEach(bounty => {
         const pid = bounty.tokenProcessID
@@ -457,7 +457,7 @@ async function onClickSendBounty() {
     task = await getTask(taskPid)
     console.log({ taskAfterSettled: task })
 
-    if (!selectedSubmission.length) {
+    if (!selectedSubmissions.length) {
       showSuccess('The Bounty Has Been Returned!')
     } else {
       showSuccess('Congrats! This quest has been successfully settled.')
@@ -514,34 +514,32 @@ watch(
   },
 )
 
-watch(
-  () => selectedSubmission,
-  newVal => {
-    const maxSelection = task ? task.totalChances : 1
-    if (newVal.length > maxSelection) {
-      showMessage(`Selected items exceed ${maxSelection}!`)
-      // 如果选择的数量超过最大值，取消超出的选择项
-      selectedSubmission = newVal.slice(0, maxSelection)
+watch(() => selectedSubmissions.length, () => {
+  console.log('selection watch', selectedSubmissions)
 
-    }
-    console.log('selection changed')
+  const maxSelection = task ? task.totalChances : 1
+  if (selectedSubmissions.length > maxSelection) {
+    showMessage(`Selected items exceed ${maxSelection}!`)
+    // 如果选择的数量超过最大值，取消超出的选择项
+    selectedSubmissions = selectedSubmissions.slice(0, maxSelection)
+  }
 
-    const selectedTotalScore = selectedSubmission.reduce((total, submission) => {
-      total += submission.score
-      return total
-    }, 0)
-    if (!selectedTotalScore) return
-    
-    selectedSubmission.forEach(submission => {
-      const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
+  const selectedTotalScore = selectedSubmissions.reduce((total, submission) => {
+    total += submission.score
+    return total
+  }, 0)
+  if (!selectedTotalScore) return
+  
+  selectedSubmissions.forEach(submission => {
+    const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
 
-      submission.calculatedBounties = calculated as Task['bounties']
-      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
-    })
-    console.log('calculated bounties')
-    submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
-  },
-)
+    submission.calculatedBounties = calculated as Task['bounties']
+    submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
+  })
+  console.log('calculated bounties')
+  submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
+})
+
 </script>
 
 <template>
@@ -668,7 +666,7 @@ watch(
 
               <div v-if="isJoined || isOwner || runtimeConfig.public.debug">
                 <UTable
-                  v-model="selectedSubmission"
+                  v-model="selectedSubmissions"
                   :rows="pageRows"
                   :columns="columns"
                   :loading="isLoading"
@@ -686,7 +684,7 @@ watch(
                     {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
                   </template>
                   <template #rewardHtml-data="{ row }">
-                    <p class="flex justify-end items-center" v-html="task.isSettled || selectedSubmission.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
+                    <p class="flex justify-end items-center" v-html="task.isSettled || selectedSubmissions.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
                   </template>
                 </UTable>
 
