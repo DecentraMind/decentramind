@@ -202,9 +202,8 @@ export type Task = {
   bounties: Array<TaskFormBounty & {
     /**
      * BitInt string of bounty quantity. Human readable amount = quantity / Math.pow(10, token.denomination)
-     * It should be a string, not bigint, because it is a string type parameter in token transfer action.
      * */
-    quantity: string
+    quantity: bigint
   }>
 
   builders: Record<[address: string], {

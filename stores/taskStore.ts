@@ -45,7 +45,7 @@ export const useTaskStore = defineStore('task', () => {
         if (!token) {
           throw new Error(`Bounty token ${bounty.tokenName} not supported.`)
         }
-        bounty.quantity = (BigInt(bounty.amount * Math.pow(10, token.denomination))).toString()
+        bounty.quantity = BigInt(bounty.amount * Math.pow(10, token.denomination))
         return bounty
       })
 
@@ -252,7 +252,11 @@ export const useTaskStore = defineStore('task', () => {
     return task.submissions.map(submission => {
       return {
         ...submission,
-        calculatedBounties: useCloneDeep(task.bounties)
+        calculatedBounties: useCloneDeep(task.bounties.map(bounty => {
+          bounty.amount = 0
+          bounty.quantity = 0n
+          return bounty
+        }))
       }
     })
   }
@@ -288,7 +292,6 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const updateTaskSubmissions = async (taskPid: string, data: any) => {
-    // 计算之后将分数信息更新到提交信息中
     console.log('update task submit info after calculation', JSON.stringify(data))
 
     const messageId = await message({
@@ -315,7 +318,11 @@ export const useTaskStore = defineStore('task', () => {
    * @returns
    */
   const sendBounty = async (taskPid: string, bounties: Bounty[]) => {
-    console.log('bounties to send ' + JSON.stringify(bounties))
+    console.log('bounties to send ')
+    console.table(bounties.map(bounty => {
+      bounty.quantity = bounty.quantity.toString()
+      return bounty
+    }))
     console.log('taskProcessId = ' + taskPid)
     
     await window.arweaveWallet.connect(permissions)
@@ -324,7 +331,10 @@ export const useTaskStore = defineStore('task', () => {
       process: taskPid,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'SendBounty' }],
-      data: JSON.stringify(bounties)
+      data: JSON.stringify(bounties.map(bounty => {
+        bounty.quantity = bounty.quantity.toString()
+        return bounty
+      }))
     })
     console.log('return message = ' + messageId)
     return messageId
@@ -412,7 +422,7 @@ async function transferBounty(receiver: string, token: Task['bounties'][number])
           tags: [
             { name: 'Action', value: 'Transfer' },
             { name: 'Recipient', value: receiver },
-            { name: 'Quantity', value: quantity }
+            { name: 'Quantity', value: quantity.toString() }
           ]
         })
         const { Messages } = await result({

@@ -58,7 +58,7 @@ export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, pre
     // TODO add zod type validation on ao reply data, and don't need do validatio here
     // TODO this is only for old data format which have no quantity, remove this if old data removed
     if (bounty.quantity === undefined) {
-      bounty.quantity = (float2BigInt(bounty.amount, denomination)).toString()
+      bounty.quantity = float2BigInt(bounty.amount, denomination)
       console.error('quantity undefiend. try fix or delete task')
     }
 

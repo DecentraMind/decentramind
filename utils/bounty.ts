@@ -57,7 +57,7 @@ export function calcBounties(submission: SpaceSubmissionWithCalculatedBounties, 
     // don't use bountyToSend.toFixed here, otherwise the total amount will be rounded incorrectly
     // Instead, we multiply by 10000 to shift the decimal point, then floor to remove fractional part, and finally divide by 10000 to get the correct decimal value
     const amountToSend = (score / selectedTotalScore * taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100))
-    bounty.quantity = float2BigInt(Number(amountToSend.toFixed(denomination-1)), denomination).toString()
+    bounty.quantity = float2BigInt(Number(amountToSend.toFixed(denomination-1)), denomination)
     bounty.amount = amountToSend
 
     console.log(`calculating: ${address} should receive ${label} ${bounty.amount} ${bounty.quantity}`)

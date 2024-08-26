@@ -96,7 +96,7 @@ onMounted(async () => {
     setCurrentCommunityUuid(communityInfo.uuid)
 
     submissions = await getSubmissionsByTaskPid(taskPid)
-    console.log('spaceTaskSubmitInfo = ' + JSON.stringify(submissions), taskPid)
+    console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
     // TODO enable !task.isCalculated condition
     if (
@@ -107,7 +107,7 @@ onMounted(async () => {
       submissions = calcScore(submissions)
       console.log('score calculated submissions ', submissions)
 
-      if (isOwner) {
+      if (isOwner && !runtimeConfig.public.debug) {
         await setTaskIsCalculated(taskPid)
         await updateTaskSubmissions(taskPid, submissions)
         // refetch task info
@@ -162,7 +162,7 @@ const columns = [{
   key: 'rewardHtml',
   label: t('Bounty'),
   class: 'text-right',
-  rowClass: 'font-mono'
+  rowClass: 'font-mono pr-0 pl-10'
 }]
 
 let isSubmitModalOpen = $ref(false)
@@ -357,28 +357,37 @@ async function onClickSendBounty() {
     console.groupEnd()
 
     /** bounties to send */
-    const bounties: Bounty[] = []
+    const bountiesToSend: Bounty[] = []
 
     console.log({ selected: selectedSubmission })
 
     /** bounties that should send back to the task owner */
-    const refoundMap = task.bounties.reduce((returnBounties, taskBounty) => {
+    const refoundMap = {} as Record<string, Bounty>
+    // initialize refoundMap
+    for (const taskBounty of task.bounties) {
       const { tokenProcessID: pid } = taskBounty
-      if(!returnBounties[pid]) {
-        returnBounties[pid] = {
+      if(!refoundMap[pid]) {
+        refoundMap[pid] = {
           taskPid,
           sender: task!.ownerAddress,
           recipient: task!.ownerAddress,
           tokenProcessID: pid,
-          amount: taskBounty.amount,
-          quantity: BigInt(taskBounty.quantity)
+          amount: 0,
+          quantity: 0n
         }
       }
-      returnBounties[pid].amount += taskBounty.amount
-      returnBounties[pid].quantity += BigInt(taskBounty.quantity)
-      return returnBounties
-    }, {} as Record<string, Bounty>)
+      refoundMap[pid].amount += taskBounty.amount
+      refoundMap[pid].quantity += BigInt(taskBounty.quantity)
+    }
+    // set decentraMind service charge quantity
+    const dmQuantityMap = {} as Record<string, bigint>
+    for (const [pid, returnBounty] of Object.entries(refoundMap)) {
+      if (!dmQuantityMap[pid]) {
+        dmQuantityMap[pid] = returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT) / 100n
+      }
+    }
 
+    // add selected submission's bounty to bountiesToSend
     const selectedSubmitters = selectedSubmission.map(submission => submission.address)
     submissions.filter(submission => selectedSubmitters.includes(submission.address)).forEach(submission => {
       submission.calculatedBounties.forEach(bounty => {
@@ -392,45 +401,50 @@ async function onClickSendBounty() {
           quantity: bounty.quantity,
         }
 
+        // update refoundMap
         refoundMap[pid].amount -= bounty.amount
         refoundMap[pid].quantity -= BigInt(bounty.quantity)
 
-        bounties.push(bountyData)
+        bountiesToSend.push(bountyData)
       })
 
-      // TODO add bountyData of 5%
-
-      // const bountyData = {
-      //         recipient: ,
-      //         quantity: Math.floor(parseInt(spaceTaskSubmitInfo[j].bounty2)),
-      //         tokenProcessID: spaceTaskSubmitInfo[j].bountyType2,
-      //       }
     })
 
-    for (const [tokenPid, returnBounty] of Object.entries(refoundMap)) {
-      if (bounties.length) {
-        // add DecentraMind bounty service charges if any bounty send to winner
-        bounties.push({
+    for (const [pid, returnBounty] of Object.entries(refoundMap)) {
+      // add DecentraMind bounty service charges if submissions.length > 0
+      if (submissions.length) {
+        const quantity = dmQuantityMap[pid]
+
+        // to avoid total quantity greater than available number, you have to correct the quantity
+        const correctQuantity = quantity > returnBounty.quantity ? returnBounty.quantity : quantity
+        const denomination = tokensByProcessID[pid].denomination
+        const correctAmount = bigInt2Float(correctQuantity, denomination)
+        bountiesToSend.push({
           taskPid,
           sender: task!.ownerAddress,
           recipient: decentraMindReceiver,
-          tokenProcessID: tokenPid,
-          amount: returnBounty.amount * (DM_BOUNTY_CHARGE_PERCENT / 100),
-          quantity: returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT) / 100n,
+          tokenProcessID: pid,
+          amount: correctAmount,
+          quantity: correctQuantity,
         })
+
+        refoundMap[pid].amount -= correctAmount
+        refoundMap[pid].quantity -= BigInt(correctQuantity)
+      } else {
+        bountiesToSend.push(returnBounty)
       }
     }
 
-    console.log('bounties to send:', {bounties, submissions, refoundMap})
+    console.log('bounties to send:', {bounties: bountiesToSend, submissions, refoundMap})
     
     // TODO try catch
-    await sendBounty(task.processID, bounties)
+    await sendBounty(task.processID, bountiesToSend)
     await setTaskIsSettled(task.processID)
 
     // await sendBounty('Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I', bounties)
     // 将发送出去的bounty信息保存
     const sentBounties = []
-    for (const bounty of bounties) {
+    for (const bounty of bountiesToSend) {
       const sent = {
         ...bounty,
         communityUuid: communityInfo.uuid,
@@ -493,7 +507,7 @@ watch(
       : maxTotalChances
 
     pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize).map(submission => {
-      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions).join('&nbsp;+&nbsp;')
+      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
       return submission
     })
     // console.log('new pageRows', pageRows)
@@ -521,7 +535,7 @@ watch(
       const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
 
       submission.calculatedBounties = calculated as Task['bounties']
-      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions).join('&nbsp;+&nbsp;')
+      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
     })
     console.log('calculated bounties')
     submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
@@ -671,7 +685,7 @@ watch(
                     {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
                   </template>
                   <template #rewardHtml-data="{ row }">
-                    <p class="flex justify-end" v-html="task.isSettled || selectedSubmission.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
+                    <p class="flex justify-end items-center" v-html="task.isSettled || selectedSubmission.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
                   </template>
                 </UTable>
 
