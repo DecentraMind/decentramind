@@ -352,6 +352,8 @@ async function onClickSendBounty() {
       submission.calculatedBounties = calculated as Task['bounties']
     })
 
+    await updateTaskSubmissions(taskPid, submissions)
+
     console.log('calculated bounties')
     submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
     console.groupEnd()
@@ -506,7 +508,8 @@ watch(
       : maxTotalChances
 
     pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize).map(submission => {
-      submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
+      if (!task?.isSettled)
+        submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
       return submission
     })
     // console.log('new pageRows', pageRows)
@@ -669,6 +672,7 @@ watch(() => selectedSubmissions.length, () => {
                   :rows="pageRows"
                   :columns="columns"
                   :loading="isLoading"
+                  :ui="{checkbox: {padding: task.isSettled ? 'hidden' : ''}}"
                 >
                   <template #id-data="{ row }">
                     {{ row.id }}

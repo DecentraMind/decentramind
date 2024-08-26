@@ -291,8 +291,8 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const updateTaskSubmissions = async (taskPid: string, data: any) => {
-    console.log('update task submit info after calculation', JSON.stringify(data))
+  const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[]) => {
+    console.log('update task submit info after calculation', submissions)
 
     const messageId = await message({
       process: taskManagerProcessID,
@@ -301,7 +301,13 @@ export const useTaskStore = defineStore('task', () => {
         { name: 'Action', value: 'UpdateTaskSubmissions' },
         { name: 'TaskPid', value: taskPid }
       ],
-      data: JSON.stringify(data)
+      data: JSON.stringify(submissions.map(submission => {
+        submission.calculatedBounties.map(bounty => {
+          (bounty as unknown as {quantity: string}).quantity = bounty.quantity.toString()
+          return bounty
+        })
+        return submission
+      }))
     })
 
     const { Error: error } = await result({process: taskManagerProcessID, message: messageId})
