@@ -254,7 +254,7 @@ export const useTaskStore = defineStore('task', () => {
         ...submission,
         calculatedBounties: useCloneDeep(task.bounties.map(bounty => {
           bounty.amount = 0
-          bounty.quantity = 0n
+          bounty.quantity = BigInt(0)
           return bounty
         }))
       }

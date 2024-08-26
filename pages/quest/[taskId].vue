@@ -373,7 +373,7 @@ async function onClickSendBounty() {
           recipient: task!.ownerAddress,
           tokenProcessID: pid,
           amount: 0,
-          quantity: 0n
+          quantity: BigInt(0)
         }
       }
       refoundMap[pid].amount += taskBounty.amount
@@ -383,7 +383,7 @@ async function onClickSendBounty() {
     const dmQuantityMap = {} as Record<string, bigint>
     for (const [pid, returnBounty] of Object.entries(refoundMap)) {
       if (!dmQuantityMap[pid]) {
-        dmQuantityMap[pid] = returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT) / 100n
+        dmQuantityMap[pid] = returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT) / BigInt(100)
       }
     }
 
@@ -524,6 +524,7 @@ watch(
       selectedSubmission = newVal.slice(0, maxSelection)
 
     }
+    console.log('selection changed')
 
     const selectedTotalScore = selectedSubmission.reduce((total, submission) => {
       total += submission.score
