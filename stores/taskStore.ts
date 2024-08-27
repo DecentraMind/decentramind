@@ -270,6 +270,13 @@ export const useTaskStore = defineStore('task', () => {
 
   const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[]) => {
     console.log('update task submissions', submissions)
+    submissions.forEach(submission => {
+      submission.calculatedBounties.forEach(bounty => {
+        if (bounty.amount < 0) {
+          throw new Error('Bounty calculation error.')
+        }
+      })
+    })
 
     return await messageResultCheck({
       process: taskManagerProcessID,
@@ -301,6 +308,12 @@ export const useTaskStore = defineStore('task', () => {
       return bounty
     }))
     console.log('taskProcessId = ' + taskPid)
+
+    bounties.forEach(bounty => {
+      if (bounty.amount < 0) {
+        throw new Error('Bounty calculation error.')
+      }
+    })
     
     await window.arweaveWallet.connect(permissions)
 

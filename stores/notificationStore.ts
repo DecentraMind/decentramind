@@ -11,7 +11,7 @@ export const notificationStore = defineStore('notificationStore', () => {
     })
   }
   const showSuccess = (description: string) => {
-    toast.add({ title: 'succeed', description, icon: 'i-heroicons-check-circle', color: 'green' })
+    toast.add({ title: '', description, icon: 'i-heroicons-check-circle', color: 'green' })
   }
 
   const showMessage = (message: string) => {

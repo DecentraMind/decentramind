@@ -37,13 +37,13 @@ export function calcScore(submissions: SpaceSubmissionWithCalculatedBounties[]) 
 }
 
 export function calcBounties(submission: SpaceSubmissionWithCalculatedBounties, selectedTotalScore: number, taskBounties: Task['bounties']) {
-  const { calculatedBounties, score, address } = submission
+  const { score, address } = submission
 
   if (score > selectedTotalScore) {
     throw new Error('Submission\'s score can not greater than selected total score.')
   }
 
-  return useCloneDeep(calculatedBounties).map((bounty) => {
+  return useCloneDeep(taskBounties).map((bounty) => {
     if (!bounty.tokenName) return
 
     const token = tokens[bounty.tokenName as TokenName]

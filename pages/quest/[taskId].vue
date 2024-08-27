@@ -48,8 +48,6 @@ let task = $ref<Task>()
 
 const isOwner = $computed(() => runtimeConfig.public.debug || task?.ownerAddress === address)
 
-let submissions = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
-
 const isSubmitted = $computed(() => submissions.findIndex(submission => submission.address === address) > -1)
 const isJoined = $computed(() => {
   // console.log('task', task)
@@ -75,6 +73,8 @@ let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let invites: InviteInfo[]
 
+const submissions = $computed(() => task?.submissions as SpaceSubmissionWithCalculatedBounties[])
+
 let isLoading = $ref(true)
 onMounted(async () => {
   now = useClock(3000)
@@ -95,7 +95,6 @@ onMounted(async () => {
     communityInfo = await getLocalCommunity(task.communityUuid)
     setCurrentCommunityUuid(communityInfo.uuid)
 
-    submissions = task.submissions as SpaceSubmissionWithCalculatedBounties[]
     submissions.forEach(s => {
       s.rewardHtml = calcRewardHtml(s.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
       console.log('re', s.rewardHtml, s.calculatedBounties)
@@ -108,12 +107,12 @@ onMounted(async () => {
       now.value >= task.endTime &&
       !task.isSettled
     ) {
-      submissions = calcScore(submissions)
+      task.submissions = calcScore(submissions)
       console.log('score calculated submissions ', submissions)
 
       if (isOwner) {
         // save submission scores and set task.isScoreCalculated
-        const scores = submissions.map(s => {
+        const scores = task.submissions.map(s => {
           return {
             id: s.id,
             score: s.score
@@ -352,6 +351,7 @@ async function onClickSendBounty() {
 
   /** bounties to send */
   const bountiesToSend: Bounty[] = []
+  let sendBountyResult = false
   try {
     const selectedTotalScore = selectedSubmissions.reduce((total, submission) => {
       total += submission.score
@@ -452,7 +452,7 @@ async function onClickSendBounty() {
 
     console.log('bounties to send:', {bounties: bountiesToSend, submissions, refoundMap})
 
-    await sendBounty(task.processID, bountiesToSend)
+    sendBountyResult = await sendBounty(task.processID, bountiesToSend)
 
     if (!selectedSubmissions.length) {
       showSuccess('The bounty has been returned!')
@@ -465,6 +465,10 @@ async function onClickSendBounty() {
     showError('Send bounty failed.', e as Error)
   } finally {
     sendBountyLoading = false
+  }
+
+  if (!sendBountyResult) {
+    return
   }
 
   try {
@@ -553,6 +557,10 @@ watch(
 
 watch(() => selectedSubmissions.length, () => {
   console.log('selection watch', selectedSubmissions)
+  if (!task) {
+    showMessage('Task data not ready, please try again later, or refresh this page.')
+    return
+  }
 
   const maxSelection = task ? task.totalChances : 1
   if (selectedSubmissions.length > maxSelection) {
@@ -566,6 +574,11 @@ watch(() => selectedSubmissions.length, () => {
     return total
   }, 0)
   if (!selectedTotalScore) return
+
+  // clear all submission.calcuclatedBounties
+  submissions.forEach(submission => {
+    submission.calculatedBounties = []
+  })
   
   selectedSubmissions.forEach(submission => {
     const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
