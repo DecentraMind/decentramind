@@ -119,7 +119,7 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const getTask = async (taskPid: string) => {
+  const getTask = async (taskPid: string): Promise<Task> => {
     if(!taskPid) {
       throw new Error('Task process ID is required to get task info.')
     }
@@ -135,6 +135,16 @@ export const useTaskStore = defineStore('task', () => {
     const resp = extractResult<string>(res)
     const task = JSON.parse(resp) as Task
     
+    task.submissions = task.submissions.map(submission => {
+      return {
+        ...submission,
+        calculatedBounties: (submission as SpaceSubmissionWithCalculatedBounties).calculatedBounties || useCloneDeep(task.bounties.map(bounty => {
+          bounty.amount = 0
+          bounty.quantity = BigInt(0)
+          return bounty
+        }))
+      }
+    })
     return task
   }
 

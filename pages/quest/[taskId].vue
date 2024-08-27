@@ -61,11 +61,11 @@ const isIng = $computed(() => {
 })
 
 const taskRewardHtml = $computed(() => {
-  return task ? calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;') : ''
+  return task?.bounties ? calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;') : ''
 })
 
 const submittedBuilderCount = $computed(() => {
-  return !task ? '' : task.submissions.reduce((set, current) => {
+  return !task?.submissions ? '' : task.submissions.reduce((set, current) => {
     set.add(current.address)
     return set
   }, new Set()).size
