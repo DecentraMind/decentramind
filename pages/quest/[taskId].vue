@@ -96,11 +96,10 @@ onMounted(async () => {
     communityInfo = await getLocalCommunity(task.communityUuid)
     setCurrentCommunityUuid(communityInfo.uuid)
 
-    // TODO use task.submissions, don't need getSubmissionsByTaskPid here
-    submissions = await getSubmissionsByTaskPid(taskPid)
+    submissions = task.submissions as SpaceSubmissionWithCalculatedBounties[]
     submissions.forEach(s => {
       s.rewardHtml = calcRewardHtml(s.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
-      console.log('re', s.rewardHtml)
+      console.log('re', s.rewardHtml, s.calculatedBounties)
     })
     console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
@@ -314,7 +313,7 @@ async function onClickSubmit() {
     }
 
     await submitSpaceTask(spaceSubmission)
-    submissions = await getSubmissionsByTaskPid(taskPid)
+    task = await getTask(taskPid)
 
     isSubmitModalOpen = false
   } catch (e) {
