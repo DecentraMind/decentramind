@@ -1,44 +1,35 @@
 <script setup lang="ts">
 import { denominations } from '~/utils/constants'
+import { useTaskStore } from '~/stores/taskStore'
+import type { Bounty } from '~/types'
 
-interface TaskData {
-  communityName: string;
-  taskName: string;
-  receive: string;
-  send: string;
-  communityId: string;
-  tokenNumber: number;
-  taskId: string;
-  tokenType: string;
-}
-
-const { getAllBounty } = $(taskStore())
+const { getAllBounty } = useTaskStore()
 const { address } = $(aoStore())
-let bounties = $ref([])
-let did = $ref([])
-let created = $ref([])
+let bounties = $ref<Bounty[]>([])
+const did = $ref([])
+const created = $ref([])
 let result = $ref(0)
 
-function categorizeByTaskId(data: TaskData[]): Record<string, TaskData[]> {
+function categorizeByTaskId(data: Bounty[]): Record<string, Bounty[]> {
   return data.reduce((acc, item) => {
-    if (!acc[item.taskId]) {
-      acc[item.taskId] = []
+    if (!acc[item.taskPid]) {
+      acc[item.taskPid] = []
     }
-    acc[item.taskId].push(item)
+    acc[item.taskPid].push(item)
     return acc
-  }, {} as Record<string, TaskData[]>)
+  }, {} as Record<string, Bounty[]>)
 }
 onMounted( async () => {
   bounties = await getAllBounty()
-  let cori = []
-  let dori = []
+  const cori:Bounty[] = []
+  const dori:Bounty[] = []
 
   for(let i = 0; i < bounties.length; ++i){
     const tt = bounties[i]
-    if(address === tt.send){
+    if(address === tt.sender){
       cori.push(tt)
     }
-    if(address === tt.receive){
+    if(address === tt.recipient){
       dori.push(tt)
     }
   }
@@ -46,7 +37,7 @@ onMounted( async () => {
   const categorizedC = categorizeByTaskId(cori)
   const categorizedD = categorizeByTaskId(dori)
   for (const taskId in categorizedC) {
-    if (categorizedC.hasOwnProperty(taskId)) {
+    if (categorizedC[taskId]) {
       const taskArray = categorizedC[taskId]
       if(taskArray.length > 1){
         const b = (taskArray[0].tokenNumber / denominations[taskArray[0].tokenType as TokenName]) + ' ' + taskArray[0].tokenType + ' + ' + (taskArray[1].tokenNumber / denominations[taskArray[1].tokenType as TokenName]) + ' ' + taskArray[1].tokenType
