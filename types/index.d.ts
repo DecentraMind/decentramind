@@ -150,9 +150,9 @@ export type Tokens = {
 
 export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
 
-type ChainNames = 'AO'
+export type ChainNames = 'AO'
 
-type Submission = {
+export type Submission = {
   id: number
   taskPid: string
   /** submitter's address */
@@ -160,6 +160,11 @@ type Submission = {
   score: number
   createTime: number
 }
+
+export type Scores = {
+  id: number;
+  score: number;
+}[]
 
 interface SpaceSubmission extends Submission {
   brandEffect: number

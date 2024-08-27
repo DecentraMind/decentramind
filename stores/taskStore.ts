@@ -7,7 +7,7 @@ import {
 
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
-import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties } from '~/types'
+import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult } from '~/utils'
 import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
@@ -237,17 +237,17 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const setTaskIsCalculated = async (taskPid: string) => {
-    console.log('update task calculation status')
+  const updateTaskScores = async (taskPid: string, scores: Scores) => {
+    console.log('update task calculation scores', scores)
 
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [
-        { name: 'Action', value: 'SetTaskIsCalculated' },
+        { name: 'Action', value: 'UpdateTaskScores' },
         { name: 'TaskPid', value: taskPid },
       ],
-      data: taskPid
+      data: JSON.stringify(scores)
     })
   }
 
@@ -364,13 +364,13 @@ export const useTaskStore = defineStore('task', () => {
     createTask, getTask, getTasksByCommunityUuid,
     allTasks,
 
-    setTaskIsSettled, setTaskIsCalculated,
+    setTaskIsSettled,
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID,
 
     submitSpaceTask,
 
-    updateTaskSubmissions,
+    updateTaskSubmissions, updateTaskScores,
 
     joinTask,
 

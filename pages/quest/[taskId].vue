@@ -29,7 +29,7 @@ const {
   setTaskIsSettled,
   getInvitesByInviter,
   updateTaskSubmissions,
-  setTaskIsCalculated,
+  updateTaskScores,
   getTask,
   submitSpaceTask,
   joinTask
@@ -112,10 +112,14 @@ onMounted(async () => {
       console.log('score calculated submissions ', submissions)
 
       if (isOwner) {
-        // TODO save score only and set task.isScoreCalculated in on request here
-        await setTaskIsCalculated(taskPid)
-        // save scores
-        await updateTaskSubmissions(taskPid, submissions)
+        // save submission scores and set task.isScoreCalculated
+        const scores = submissions.map(s => {
+          return {
+            id: s.id,
+            score: s.score
+          }
+        })
+        await updateTaskScores(taskPid, scores)
         // refetch task info
         task = await getTask(taskPid)
       }
@@ -447,7 +451,9 @@ async function onClickSendBounty() {
     }
 
     console.log('bounties to send:', {bounties: bountiesToSend, submissions, refoundMap})
+
     await sendBounty(task.processID, bountiesToSend)
+
     if (!selectedSubmissions.length) {
       showSuccess('The bounty has been returned!')
     } else {
