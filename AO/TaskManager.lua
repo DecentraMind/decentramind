@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.8'
+Variant = '0.2.9'
 
 local json = require("json")
 local ao = require('ao')
@@ -52,6 +52,10 @@ local ao = require('ao')
 Tasks = Tasks or {}
 --- @type table<string, string[]> @Tasks process ID table using community's uuid as key
 TasksByCommunity = TasksByCommunity or {}
+
+--- @class Scores
+--- @field id number
+--- @field score number
 
 --- @class BountySend
 --- @field taskPid string
@@ -168,6 +172,8 @@ TaskManager = {
       return replyError(msg, 'Task not found.')
     end
 
+    assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
+
     if Tasks[pid].builders[msg.From] then
       return replyError(msg, 'You have joined this task.')
     end
@@ -190,6 +196,8 @@ TaskManager = {
     if not Tasks[pid] then
       return replyError(msg, 'Task not found.')
     end
+
+    assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
 
     --- TODO if not Tasks[pid].builders[msg.From] then Tasks[pid].builders[msg.From] = builder end
     submission.id = #Tasks[pid].submissions + 1
@@ -252,6 +260,29 @@ TaskManager = {
     end
 
     replyData(msg, result)
+  end,
+
+  updateTaskScores = function (msg)
+    local pid = msg.Tags.TaskPid
+
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+
+    if Tasks[pid].ownerAddress ~= msg.From then
+      return replyError(msg, 'You are not the owner of this task.')
+    end
+
+    assert(not Tasks[pid].isSettled, 'The task is already settled.')
+
+    --- @type table<number, Scores>
+    local scores = json.decode(msg.Data)
+    for _, score in pairs(scores) do
+      local submission = Tasks[pid].submissions[score.id]
+      submission.score = score.score
+    end
+
+    Tasks[pid].isScoreCalculated = true
   end
 }
 
@@ -298,21 +329,9 @@ Handlers.add(
 )
 
 Handlers.add(
-  "SetTaskIsCalculated",
-  Handlers.utils.hasMatchingTag("Action", "SetTaskIsCalculated"),
-  function(msg)
-    local pid = msg.Tags.TaskPid
-
-    if not Tasks[pid] then
-      return replyError(msg, 'Task not found.')
-    end
-
-    if Tasks[pid].ownerAddress ~= msg.From then
-      return replyError(msg, 'You are not the owner of this task.')
-    end
-
-    Tasks[pid].isScoreCalculated = true
-  end
+  "UpdateTaskScores",
+  Handlers.utils.hasMatchingTag("Action", "UpdateTaskScores"),
+  TaskManager.updateTaskScores
 )
 
 Handlers.add(
