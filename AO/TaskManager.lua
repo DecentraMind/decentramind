@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.9'
+Variant = '0.2.10'
 
 local json = require("json")
 local ao = require('ao')
@@ -240,7 +240,11 @@ TaskManager = {
   end,
 
   getAllBounties = function(msg)
-    replyData(msg, BountySendHistory)
+    local bounties = {}
+    for _, bounty in BountySendHistory do
+      table.insert(bounties, bounty)
+    end
+    replyData(msg, bounties)
   end,
 
   getBountiesByCommuintyID = function (msg)
