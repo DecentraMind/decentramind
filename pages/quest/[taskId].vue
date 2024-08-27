@@ -220,7 +220,6 @@ async function onClickSubmit() {
     //     throw new Error('You have submitted this quest.')
     //   }
     // }
-    // TODO 调用提交space链接并解析方法
     const matched = spaceUrl.trim().match(/(x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
 
     if (!matched || !matched[2]) {
@@ -470,20 +469,8 @@ async function onClickSendBounty() {
   if (!sendBountyResult) {
     return
   }
-
-  try {
-    await retry({
-      fn: async () => {
-        return await setTaskIsSettled(task!.processID)
-      },
-      maxAttempts: 3
-    })
-    
-    task = await getTask(taskPid)
-    console.log({ taskAfterSettled: task })
-  } catch (e) {
-    showError('Failed to set task status')
-  }
+  // disable send bounty button to avoid double send
+  task.isSettled = true
 
   try {
     const sentBounties: BountySendHistory[] = []
@@ -504,7 +491,7 @@ async function onClickSendBounty() {
       maxAttempts: 3
     })
   } catch (e) {
-    console.error('Failed to save bounty send history.')
+    console.error('Failed to set task status to settled.')
     console.error(e)
   }
 }
@@ -573,6 +560,7 @@ watch(() => selectedSubmissions.length, () => {
     total += submission.score
     return total
   }, 0)
+  console.log({selectedTotalScore})
   if (!selectedTotalScore) return
 
   // clear all submission.calcuclatedBounties

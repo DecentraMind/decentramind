@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.10'
+Variant = '0.2.12'
 
 local json = require("json")
 local ao = require('ao')
@@ -231,12 +231,19 @@ TaskManager = {
       return replyError(msg, 'You are not the owner of this task.')
     end
 
-    --- @type BountySend
-    local history = json.decode(msg.Data)
+    assert(not Tasks[pid].isSettled, 'This task is already settled.')
+
+    --- @type BountySend[]
+    local histories = json.decode(msg.Data)
     if not BountySendHistory[pid] then
       BountySendHistory[pid] = {}
     end
-    table.insert(BountySendHistory[pid], history)
+
+    for _, history in pairs(histories) do
+      table.insert(BountySendHistory[pid], history)
+    end
+
+    Tasks[pid].isSettled = true
   end,
 
   getAllBounties = function(msg)

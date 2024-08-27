@@ -38,6 +38,8 @@ const loadRanks = async () => {
     const bounties = await getBountiesByCommunityID(communityID)
     console.log({bounties})
     return bounties.reduce((ranks, bounty) => {
+      if (bounty.recipient === decentraMindReceiver) return ranks
+
       const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
       if (index >= 0) {
         ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
