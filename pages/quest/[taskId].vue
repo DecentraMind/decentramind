@@ -32,8 +32,7 @@ const {
   setTaskIsCalculated,
   getTask,
   submitSpaceTask,
-  joinTask,
-  getSubmissionsByTaskPid,
+  joinTask
 } = useTaskStore()
 
 const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(communityStore())

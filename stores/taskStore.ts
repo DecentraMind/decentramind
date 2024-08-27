@@ -227,34 +227,6 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  async function getSubmissionsByTaskPid (taskPid: string): Promise<SpaceSubmissionWithCalculatedBounties[]> {
-    if(!taskPid) {
-      throw new Error('Task process ID is required to get task info.')
-    }
-
-    const res = await dryrun({
-      process: taskManagerProcessID,
-      tags: [
-        { name: 'Action', value: 'GetTask' },
-        { name: 'ProcessID', value: taskPid },
-      ],
-    })
-
-    const resp = extractResult<string>(res)
-    const task = JSON.parse(resp) as Task
-
-    return task.submissions.map(submission => {
-      return {
-        ...submission,
-        calculatedBounties: useCloneDeep(task.bounties.map(bounty => {
-          bounty.amount = 0
-          bounty.quantity = BigInt(0)
-          return bounty
-        }))
-      }
-    })
-  }
-
   const setTaskIsCalculated = async (taskPid: string) => {
     console.log('update task calculation status')
 
@@ -387,7 +359,6 @@ export const useTaskStore = defineStore('task', () => {
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID,
 
     submitSpaceTask,
-    getSubmissionsByTaskPid,
 
     updateTaskSubmissions,
 
