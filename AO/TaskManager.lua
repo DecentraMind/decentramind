@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.6'
+Variant = '0.2.7'
 
 local json = require("json")
 local ao = require('ao')
@@ -60,6 +60,9 @@ TasksByCommunity = TasksByCommunity or {}
 --- @field tokenProcessID string
 --- @field amount number
 --- @field quantity string BitInt string of bounty quantity. Human readable amount = quantity / Math.pow(10, token.denomination)
+--- @field tokenName string
+--- @field comunityUuid string
+--- @field communityName string
 
 --- @type table<string, BountySend[]> Bounty send history, using task's process ID as key
 BountySendHistory = BountySendHistory or {}
@@ -214,10 +217,10 @@ TaskManager = {
   storeBountySendHistory = function (msg)
     local pid = msg.Tags.TaskPid
     if not Tasks[pid] then
-      return replyError('Task not found.')
+      return replyError(msg, 'Task not found.')
     end
     if Tasks[pid] ~= msg.From then
-      return replyError('You are not the owner of this task.')
+      return replyError(msg, 'You are not the owner of this task.')
     end
 
     --- @type BountySend
@@ -349,8 +352,8 @@ Handlers.add(
 )
 
 Handlers.add(
-  "StoreBounty",
-  Handlers.utils.hasMatchingTag("Action", "StoreBounty"),
+  "StoreBountySendHistory",
+  Handlers.utils.hasMatchingTag("Action", "StoreBountySendHistory"),
   TaskManager.storeBountySendHistory
 )
 
