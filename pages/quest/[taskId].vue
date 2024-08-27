@@ -96,7 +96,12 @@ onMounted(async () => {
     communityInfo = await getLocalCommunity(task.communityUuid)
     setCurrentCommunityUuid(communityInfo.uuid)
 
+    // TODO use task.submissions, don't need getSubmissionsByTaskPid here
     submissions = await getSubmissionsByTaskPid(taskPid)
+    submissions.forEach(s => {
+      s.rewardHtml = calcRewardHtml(s.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
+      console.log('re', s.rewardHtml)
+    })
     console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
     // TODO enable !task.isCalculated condition
@@ -142,17 +147,17 @@ const columns = [{
 }, {
   key: 'brandEffect',
   label: t('Brand'),
-  class: 'text-right',
+  class: 'text-center',
   rowClass: 'font-mono text-right'
 }, {
   key: 'inviteCount',
   label: t('Friends'),
-  class: 'text-right',
+  class: 'text-center',
   rowClass: 'font-mono text-right'
 }, {
   key: 'audience',
   label: t('Popularity'),
-  class: 'text-right',
+  class: 'text-center',
   rowClass: 'font-mono text-right'
 }, {
   key: 'url',
@@ -161,13 +166,13 @@ const columns = [{
 }, {
   key: 'score',
   label: t('Total Score'),
-  class: 'text-right',
+  class: 'text-center',
   rowClass: 'font-mono text-right'
 }, {
   key: 'rewardHtml',
   label: t('Bounty'),
-  class: 'text-center',
-  rowClass: 'font-mono pr-0 pl-10'
+  class: 'text-left',
+  rowClass: 'font-mono pr-0'
 }]
 
 let isSubmitModalOpen = $ref(false)
@@ -512,7 +517,8 @@ let pageSize = $ref<number>(maxTotalChances)
 let pageRows = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
 const precisions = $computed(() => task?.bounties.reduce((carry, bounty) => {
-    carry.set(bounty.tokenProcessID, fractionalPart(bounty.amount).length)
+    const fractionalLength = fractionalPart(bounty.amount).length
+    carry.set(bounty.tokenProcessID, bounty.amount < 1 ? fractionalLength + 2 : 2)
     return carry
   }, new Map<string, number>())
 )
@@ -712,7 +718,7 @@ watch(() => selectedSubmissions.length, () => {
                     {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
                   </template>
                   <template #rewardHtml-data="{ row }">
-                    <p class="flex justify-end items-center" v-html="task.isSettled || selectedSubmissions.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
+                    <p class="flex justify-start items-center" v-html="task.isSettled || selectedSubmissions.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
                   </template>
                 </UTable>
 

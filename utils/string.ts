@@ -63,8 +63,7 @@ export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, pre
     }
 
     
-    const p = precisions?.get(bounty.tokenProcessID) || 2
-    const precision = bounty.amount < 1 ? p + 2 : 2
+    const precision = precisions?.get(bounty.tokenProcessID) || 2
 
     carry.push(
       `<span class=${classes} title="${bigInt2Float(BigInt(bounty.quantity), denomination)}">${precisions ? bounty.amount.toFixed(precision) : bounty.amount} ${bounty.tokenName}</span>${
