@@ -137,7 +137,7 @@ export type CreateToken = {
   logo: string
   ticker: string
   name: string
-  totalSupply: number
+  totalSupply: string
 }
 
 export type Tokens = {

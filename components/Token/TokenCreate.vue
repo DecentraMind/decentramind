@@ -13,7 +13,7 @@ const state = $ref<CreateToken>({
   logo: defaultTokenLogo,
   name: '',
   ticker: '',
-  totalSupply: 0
+  totalSupply: '0'
 })
 
 const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
@@ -44,6 +44,8 @@ const onSubmit = async() => {
     tokenProcessID = await createToken(state)
     showSuccessModal = true
   } catch (error) {
+    console.error('Failed to create token.')
+    console.error(error)
     showError('Failed to create token.', error as Error)
   } finally {
     creating = false

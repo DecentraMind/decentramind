@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply } from '~/utils/constants'
+import { maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber } from '~/utils'
 import type { FormError } from '#ui/types'
 import type { CommunitySetting, Task } from '~/types'
 
@@ -218,7 +218,7 @@ export const createTokenSchema = z.object({
     }
     // Check if the string can be converted to a valid number
     const num = Number(value)
-    if (isNaN(num)) {
+    if (!isValidNumber(num)) {
       return false
     }
 
