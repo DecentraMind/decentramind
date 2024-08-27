@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.7'
+Variant = '0.2.8'
 
 local json = require("json")
 local ao = require('ao')
@@ -219,7 +219,7 @@ TaskManager = {
     if not Tasks[pid] then
       return replyError(msg, 'Task not found.')
     end
-    if Tasks[pid] ~= msg.From then
+    if Tasks[pid].ownerAddress ~= msg.From then
       return replyError(msg, 'You are not the owner of this task.')
     end
 
