@@ -202,7 +202,7 @@ export const useTaskStore = defineStore('task', () => {
   const joinTask = async (taskPid: string, inviterAddress?: string) => {
     await window.arweaveWallet.connect(permissions)
 
-    const messageId = await message({
+    return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{
@@ -213,24 +213,18 @@ export const useTaskStore = defineStore('task', () => {
         name: 'InviterAddress', value: inviterAddress
       }] : [])
     })
-    return messageId
   }
 
   // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
   const submitSpaceTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'>) => {
     await window.arweaveWallet.connect(permissions)
 
-    const messageId = await message({
+    return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'AddSubmission' }],
       data: JSON.stringify(spaceSubmission)
     })
-
-    const { Error: error } = await result({process: taskManagerProcessID, message: messageId})
-    if (error) {
-      throw new Error('Add space submission error. ', error)
-    }
   }
 
   async function getSubmissionsByTaskPid (taskPid: string): Promise<SpaceSubmissionWithCalculatedBounties[]> {
@@ -264,7 +258,7 @@ export const useTaskStore = defineStore('task', () => {
   const setTaskIsCalculated = async (taskPid: string) => {
     console.log('update task calculation status')
 
-    return await message({
+    return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [
@@ -281,7 +275,7 @@ export const useTaskStore = defineStore('task', () => {
    * @returns Promise<string>
    */
   const setTaskIsSettled = async (taskPid: string) => {
-    return await message({
+    return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [
@@ -292,9 +286,9 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[]) => {
-    console.log('update task submit info after calculation', submissions)
+    console.log('update task submissions', submissions)
 
-    const messageId = await message({
+    return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [
@@ -309,12 +303,6 @@ export const useTaskStore = defineStore('task', () => {
         return submission
       }))
     })
-
-    const { Error: error } = await result({process: taskManagerProcessID, message: messageId})
-    if (error) {
-      console.error('Update submissions error. ', error)
-      throw new Error('Update submissions error. ', error)
-    }
   }
 
   /**
@@ -354,11 +342,11 @@ export const useTaskStore = defineStore('task', () => {
    */
   const storeBounty = async (taskPid: string, bounties: Bounty[]) => {
     await window.arweaveWallet.connect(permissions)
-    const messageId = await message({
+    const messageId = await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [
-        { name: 'Action', value: 'StoreBounty' },
+        { name: 'Action', value: 'StoreBountySendHistory' },
         { name: 'TaskPid', value: taskPid }
       ],
       data: JSON.stringify(bounties)

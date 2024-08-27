@@ -10,6 +10,7 @@ import type {
   TwitterSpaceInfo,
   Bounty,
   SpaceSubmissionWithCalculatedBounties,
+  BountySendHistory,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
@@ -46,7 +47,7 @@ const taskPid = $computed(() => route.params.taskId) as string
 
 let task = $ref<Task>()
 
-const isOwner = $computed(() => task?.ownerAddress === address)
+const isOwner = $computed(() => runtimeConfig.public.debug || task?.ownerAddress === address)
 
 let submissions = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
@@ -107,8 +108,10 @@ onMounted(async () => {
       submissions = calcScore(submissions)
       console.log('score calculated submissions ', submissions)
 
-      if (isOwner && !runtimeConfig.public.debug) {
+      if (isOwner) {
+        // TODO save score only and set task.isScoreCalculated in on request here
         await setTaskIsCalculated(taskPid)
+        // save scores
         await updateTaskSubmissions(taskPid, submissions)
         // refetch task info
         task = await getTask(taskPid)
@@ -134,6 +137,7 @@ const columns = [{
 }, {
   key: 'address',
   label: t('Wallet'),
+  class: 'text-center',
   rowClass: 'font-mono'
 }, {
   key: 'brandEffect',
@@ -152,6 +156,7 @@ const columns = [{
   rowClass: 'font-mono text-right'
 }, {
   key: 'url',
+  class: 'text-center',
   label: t('URL'),
 }, {
   key: 'score',
@@ -161,7 +166,7 @@ const columns = [{
 }, {
   key: 'rewardHtml',
   label: t('Bounty'),
-  class: 'text-right',
+  class: 'text-center',
   rowClass: 'font-mono pr-0 pl-10'
 }]
 
@@ -338,37 +343,38 @@ async function onClickSendBounty() {
 
   sendBountyLoading = true
 
+  /** bounties to send */
+  const bountiesToSend: Bounty[] = []
   try {
     const selectedTotalScore = selectedSubmissions.reduce((total, submission) => {
       total += submission.score
       return total
     }, 0)
     console.group('Bounty calculating')
-    submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
+    console.log({ selected: selectedSubmissions })
+    submissions.map(s => {console.log(s.address); return s.calculatedBounties}).forEach(i => console.table(i))
 
-    submissions.forEach(submission => {
+    selectedSubmissions.forEach(submission => {
       const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
 
       submission.calculatedBounties = calculated as Task['bounties']
     })
 
-    await updateTaskSubmissions(taskPid, submissions)
-
     console.log('calculated bounties')
-    submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
+    submissions.forEach(s => {console.log(s.address);console.table(s.calculatedBounties)})
     console.groupEnd()
 
-    /** bounties to send */
-    const bountiesToSend: Bounty[] = []
+    // save calculatedBounties
+    // TODO save calculatedBounties of selected submissions only
+    await updateTaskSubmissions(taskPid, submissions)
 
-    console.log({ selected: selectedSubmissions })
 
     /** bounties that should send back to the task owner */
     const refoundMap = {} as Record<string, Bounty>
     // initialize refoundMap
     for (const taskBounty of task.bounties) {
       const { tokenProcessID: pid } = taskBounty
-      if(!refoundMap[pid]) {
+      if (!refoundMap[pid]) {
         refoundMap[pid] = {
           taskPid,
           sender: task!.ownerAddress,
@@ -438,36 +444,55 @@ async function onClickSendBounty() {
     }
 
     console.log('bounties to send:', {bounties: bountiesToSend, submissions, refoundMap})
-    
-    // TODO try catch
     await sendBounty(task.processID, bountiesToSend)
-    await setTaskIsSettled(task.processID)
-
-    // 将发送出去的bounty信息保存
-    const sentBounties = []
-    for (const bounty of bountiesToSend) {
-      const sent = {
-        ...bounty,
-        communityUuid: communityInfo.uuid,
-        communityName: communityInfo.name,
-      }
-      sentBounties.push(sent)
-    }
-    await storeBounty(task.processID, sentBounties)
-
-    task = await getTask(taskPid)
-    console.log({ taskAfterSettled: task })
-
     if (!selectedSubmissions.length) {
-      showSuccess('The Bounty Has Been Returned!')
+      showSuccess('The bounty has been returned!')
     } else {
-      showSuccess('Congrats! This quest has been successfully settled.')
+      showSuccess('Your bounties have been sent. You can view them in the Transaction Book.')
     }
+    
   } catch (e) {
     console.error(e)
     showError('Send bounty failed.', e as Error)
   } finally {
     sendBountyLoading = false
+  }
+
+  try {
+    await retry({
+      fn: async () => {
+        return await setTaskIsSettled(task!.processID)
+      },
+      maxAttempts: 3
+    })
+    
+    task = await getTask(taskPid)
+    console.log({ taskAfterSettled: task })
+  } catch (e) {
+    showError('Failed to set task status')
+  }
+
+  try {
+    const sentBounties: BountySendHistory[] = []
+    for (const bounty of (bountiesToSend as BountySendHistory[])) {
+      const sent = {
+        ...bounty,
+        tokenName: bounty.tokenName,
+        communityUuid: communityInfo.uuid,
+        communityName: communityInfo.name,
+      }
+      sentBounties.push(sent)
+    }
+
+    await retry({
+      fn: async () => {
+        return await storeBounty(task!.processID, sentBounties)
+      },
+      maxAttempts: 3
+    })
+  } catch (e) {
+    console.error('Failed to save bounty send history.')
+    console.error(e)
   }
 }
 
@@ -539,18 +564,29 @@ watch(() => selectedSubmissions.length, () => {
     submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
   })
   console.log('calculated bounties')
-  submissions.map(s => s.calculatedBounties).forEach(i => console.table(i))
+  submissions.forEach(s => {console.log(s.address);console.table(s.calculatedBounties)})
 })
 
 </script>
 
 <template>
   <UDashboardPage>
-    <UPage v-if="task" class="overflow-y-auto h-full w-full">
+    <div
+      v-if="isLoading"
+      class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
+    >
+      <UIcon
+        name="svg-spinners:blocks-scale"
+        dynamic
+        class="w-16 h-16 opacity-50"
+      />
+    </div>
+
+    <UPage v-if="!isLoading" class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full">
         <div class="flex justify-end mb-4">
           <div class="ml-3">
-            <NuxtLink :to="`/community/${task.communityUuid}`">
+            <NuxtLink v-if="task" :to="`/community/${task.communityUuid}`">
               <UButton
                 icon="i-heroicons-x-mark-20-solid"
                 color="white"
@@ -560,20 +596,9 @@ watch(() => selectedSubmissions.length, () => {
             </NuxtLink>
           </div>
         </div>
-        
-        <div
-          v-if="isLoading"
-          class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
-        >
-          <UIcon
-            name="svg-spinners:blocks-scale"
-            dynamic
-            class="w-16 h-16 opacity-50"
-          />
-        </div>
 
         <UBlogPost
-          v-if="!isLoading"
+          v-if="task"
           :key="task.processID"
           :title="task.name"
           :description="task.intro"
