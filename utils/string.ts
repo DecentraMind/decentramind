@@ -61,7 +61,6 @@ export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, pre
       bounty.quantity = float2BigInt(bounty.amount, denomination)
       console.error('quantity undefiend. try fix or delete task')
     }
-
     
     const precision = precisions?.get(bounty.tokenProcessID) || 2
 

@@ -249,9 +249,9 @@ watch(() => route.hash, newHash => {
             v-if="!tasks.length && !isLoading"
             class="absolute h-[calc(100vh-var(--header-height)-40px)] w-2/3 flex justify-center items-center"
           >
-            <Card highlight orientation="vertical">
+            <UCard>
               <div
-                class="flex justify-center items-center text-center whitespace-pre-line"
+                class="flex-center text-center whitespace-pre-line"
               >
                 <div class="text-xl">
                   {{
@@ -261,7 +261,7 @@ watch(() => route.hash, newHash => {
                   }}
                 </div>
               </div>
-              <div class="flex mt-10 justify-center items-center">
+              <div class="flex-center mt-10">
                 <div
                   v-if="community && isCommunityOwner"
                   class="flex justify-center items-center"
@@ -278,7 +278,7 @@ watch(() => route.hash, newHash => {
                   </UDropdown>
                 </div>
               </div>
-            </Card>
+            </UCard>
           </div>
 
           <div

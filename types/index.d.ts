@@ -243,6 +243,7 @@ export type BountySendHistory = Bounty & {
   tokenName: string
   communityUuid: string
   communityName: string
+  taskName: string
 }
 
 export type TaskForm = Omit<Task, 'createTime'|'ownerAddress'|'submittersCount'|'isScoreCalculated'|'isSettled'|'builders'|'submissions'|'bounties'> & {

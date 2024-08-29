@@ -77,3 +77,7 @@ export function isValidNumber(value: unknown, isAcceptFloat = true) {
 export function isValidInt(value: unknown) {
   return isValidNumber(value, false)
 }
+
+export function bigintReplacer(_: string, value: unknown) {
+  return typeof value === 'bigint' ? value.toString() : value
+}

@@ -381,7 +381,7 @@ onMounted(async () => {
             <template #panel>
               <div class="px-3 py-2 flex justify-center">
                 <ULink
-                  to="https://forms.gle/RwWbeFphvyi8ZEU9A"
+                  to="https://noteforms.com/forms/decentramind-new-token-application-rtzsai"
                   active-class="text-primary"
                   target="_blank"
                   inactive-class="text-primary-500 dark:text-gray-400 hover:text-primary-700 dark:hover:text-gray-200"

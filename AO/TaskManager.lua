@@ -1,5 +1,5 @@
 Name = 'DecentraMind Task Manager'
-Variant = '0.2.13'
+Variant = '0.2.16'
 
 local json = require("json")
 local ao = require('ao')
@@ -67,6 +67,7 @@ TasksByCommunity = TasksByCommunity or {}
 --- @field tokenName string
 --- @field comunityUuid string
 --- @field communityName string
+--- @field taskName string
 
 --- @type table<string, BountySend[]> Bounty send history, using task's process ID as key
 BountySendHistory = BountySendHistory or {}
@@ -160,6 +161,18 @@ TaskManager = {
     for _, pid in pairs(TasksByCommunity[cid]) do
       if Tasks[pid] then
         table.insert(tasks, Tasks[pid])
+      end
+    end
+
+    replyData(msg, tasks)
+  end,
+
+  getTasksByOwner = function (msg)
+    local address = msg.Tags.Address
+    local tasks = {}
+    for _, task in pairs(Tasks) do
+      if task.ownerAddress == address then
+        table.insert(tasks, task)
       end
     end
 
@@ -273,6 +286,29 @@ TaskManager = {
     replyData(msg, result)
   end,
 
+  getBountiesByAddress = function (msg)
+    local address = msg.Tags.Address
+    local bounties = {
+      published = {},
+      awarded = {}
+    }
+
+    for _, taskBounties in pairs(BountySendHistory) do
+      for _, bounty in pairs(taskBounties) do
+        if not bounty.taskName then
+          bounty.taskName = Tasks[bounty.taskPid].name
+        end
+        if bounty.sender == address then
+          table.insert(bounties.published, bounty)
+        end
+        if bounty.recipient == address then
+          table.insert(bounties.awarded, bounty)
+        end
+      end
+    end
+    replyData(msg, bounties)
+  end,
+
   updateTaskScores = function (msg)
     local pid = msg.Tags.TaskPid
 
@@ -325,6 +361,12 @@ Handlers.add(
   'GetTasksByCommunityUuid',
   Handlers.utils.hasMatchingTag('Action', 'GetTasksByCommunityUuid'),
   TaskManager.getTasksByCommunityUuid
+)
+
+Handlers.add(
+  'GetTasksByOwner',
+  Handlers.utils.hasMatchingTag('Action', 'GetTasksByOwner'),
+  TaskManager.getTasksByOwner
 )
 
 Handlers.add(
@@ -393,9 +435,14 @@ Handlers.add(
   TaskManager.getAllBounties
 )
 
-
 Handlers.add(
   "GetBountiesByCommunityID",
   Handlers.utils.hasMatchingTag("Action", "GetBountiesByCommunityID"),
   TaskManager.getBountiesByCommuintyID
+)
+
+Handlers.add(
+  "GetBountiesByAddress",
+  Handlers.utils.hasMatchingTag("Action", "GetBountiesByAddress"),
+  TaskManager.getBountiesByAddress
 )

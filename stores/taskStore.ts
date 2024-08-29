@@ -7,7 +7,7 @@ import {
 
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
-import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores } from '~/types'
+import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult } from '~/utils'
 import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
@@ -176,6 +176,18 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
+  const getTasksByOwner = async (address: string) => {
+    const res = await dryrun({
+      process: taskManagerProcessID,
+      tags: [
+        { name: 'Action', value: 'GetTasksByOwner' },
+        { name: 'Address', value: address }
+      ]
+    })
+    const resp = extractResult<string>(res)
+    return JSON.parse(resp) as Task[]
+  }
+
   // TODO move this to communityStore
   const getInvitesByInviter = async(address: string) => {
     await window.arweaveWallet.connect(permissions)
@@ -270,13 +282,6 @@ export const useTaskStore = defineStore('task', () => {
 
   const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[]) => {
     console.log('update task submissions', submissions)
-    submissions.forEach(submission => {
-      submission.calculatedBounties.forEach(bounty => {
-        if (bounty.amount < 0) {
-          throw new Error('Bounty calculation error.')
-        }
-      })
-    })
 
     return await messageResultCheck({
       process: taskManagerProcessID,
@@ -285,13 +290,7 @@ export const useTaskStore = defineStore('task', () => {
         { name: 'Action', value: 'UpdateTaskSubmissions' },
         { name: 'TaskPid', value: taskPid }
       ],
-      data: JSON.stringify(submissions.map(submission => {
-        submission.calculatedBounties.map(bounty => {
-          (bounty as unknown as {quantity: string}).quantity = bounty.quantity.toString()
-          return bounty
-        })
-        return submission
-      }))
+      data: JSON.stringify(submissions, bigintReplacer)
     })
   }
 
@@ -303,11 +302,9 @@ export const useTaskStore = defineStore('task', () => {
    */
   const sendBounty = async (taskPid: string, bounties: Bounty[]) => {
     console.log('bounties to send ')
-    console.table(bounties.map(bounty => {
-      bounty.quantity = bounty.quantity.toString()
-      return bounty
-    }))
     console.log('taskProcessId = ' + taskPid)
+
+    // throw Error('stop')
 
     bounties.forEach(bounty => {
       if (bounty.amount < 0) {
@@ -321,10 +318,7 @@ export const useTaskStore = defineStore('task', () => {
       process: taskPid,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'SendBounty' }],
-      data: JSON.stringify(bounties.map(bounty => {
-        bounty.quantity = bounty.quantity.toString()
-        return bounty
-      }))
+      data: JSON.stringify(bounties, bigintReplacer)
     })
 
     console.log('return messages = ', resultMessages)
@@ -374,13 +368,29 @@ export const useTaskStore = defineStore('task', () => {
     return JSON.parse(data) as Bounty[]
   }
 
+  const getBountiesByAddress = async (address: string) => {
+    const res = await dryrun({
+      process: taskManagerProcessID,
+      tags: [{
+        name: 'Action', value: 'GetBountiesByAddress'
+      }, {
+        name: 'Address', value: address
+      }]
+    })
+    const data = extractResult<string>(res)
+    return JSON.parse(data) as {
+      published: BountySendHistory[],
+      awarded: BountySendHistory[]
+    }
+  }
+
   return {
-    createTask, getTask, getTasksByCommunityUuid,
+    createTask, getTask, getTasksByCommunityUuid, getTasksByOwner,
     allTasks,
 
     setTaskIsSettled,
 
-    sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID,
+    sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
     submitSpaceTask,
 

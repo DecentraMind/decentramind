@@ -480,6 +480,7 @@ async function onClickSendBounty() {
         tokenName: bounty.tokenName,
         communityUuid: communityInfo.uuid,
         communityName: communityInfo.name,
+        taskName: task.name
       }
       sentBounties.push(sent)
     }
