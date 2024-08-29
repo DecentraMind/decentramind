@@ -65,7 +65,7 @@ export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, pre
     const precision = precisions?.get(bounty.tokenProcessID) || 2
 
     carry.push(
-      `<span class=${classes} title="${bigInt2Float(BigInt(bounty.quantity), denomination)}">${precisions ? bounty.amount.toFixed(precision) : bounty.amount} ${bounty.tokenName}</span>${
+      `<span class=${classes} title="${bigInt2Float(BigInt(bounty.quantity), denomination)}">${bounty.amount.toFixed(precision)} ${bounty.tokenName}</span>${
         showLogo && logo
         ? '<img src="' + arUrl(logo, gateways.ario) + '" class="w-6 h-6 rounded-full border border-gray-200 ml-1 mr-2">'
         : ''
