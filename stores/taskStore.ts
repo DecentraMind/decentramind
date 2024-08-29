@@ -24,7 +24,6 @@ export const useTaskStore = defineStore('task', () => {
 
   const createTask = async (data: TaskForm, communityName: string) => {
     // create a task process，then add process ID to task info
-    await window.arweaveWallet.connect(permissions)
     const taskProcessID = await spawn({
       module: moduleID,
       scheduler: schedulerID,
@@ -190,7 +189,6 @@ export const useTaskStore = defineStore('task', () => {
 
   // TODO move this to communityStore
   const getInvitesByInviter = async(address: string) => {
-    await window.arweaveWallet.connect(permissions)
     try{
       const res = await dryrun({
         process: aoCommunityProcessID,
@@ -223,8 +221,6 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const joinTask = async (taskPid: string, inviterAddress?: string) => {
-    await window.arweaveWallet.connect(permissions)
-
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -240,8 +236,6 @@ export const useTaskStore = defineStore('task', () => {
 
   // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
   const submitSpaceTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'>) => {
-    await window.arweaveWallet.connect(permissions)
-
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -311,8 +305,6 @@ export const useTaskStore = defineStore('task', () => {
         throw new Error('Bounty calculation error.')
       }
     })
-    
-    await window.arweaveWallet.connect(permissions)
 
     const resultMessages = await messageResultCheck({
       process: taskPid,
@@ -331,7 +323,6 @@ export const useTaskStore = defineStore('task', () => {
    * @returns
    */
   const storeBounty = async (taskPid: string, bounties: Bounty[]) => {
-    await window.arweaveWallet.connect(permissions)
     const messageId = await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
