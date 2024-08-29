@@ -275,7 +275,7 @@ function categorize(bounties: BountySendHistory[]) {
         </UCard>
       </div>
 
-      <UModal v-model="isPublishedBountyModalOpen">
+      <UModal v-model="isPublishedBountyModalOpen" :ui="{base: '!w-fit'}">
         <div class="p-4 flex justify-center items-center">
           <UTable
             v-model:sort="sort"
@@ -286,6 +286,9 @@ function categorize(bounties: BountySendHistory[]) {
             class="border"
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           >
+            <template #caption>
+              <caption class="font-semibold text-lg px-4 py-2 min-w-60">Published Bounties</caption>
+            </template>
             <template #sum-data="{ row }">
               <div class="text-center">
                 {{ row.sum.toFixed(2) }}
@@ -295,7 +298,7 @@ function categorize(bounties: BountySendHistory[]) {
         </div>
       </UModal>
 
-      <UModal v-model="isAwardedBountyModalOpen">
+      <UModal v-model="isAwardedBountyModalOpen" :ui="{base: '!w-fit'}">
         <div class="p-4 flex justify-center items-center">
           <UTable
             v-model:sort="sort"
@@ -306,6 +309,9 @@ function categorize(bounties: BountySendHistory[]) {
             class="border"
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           >
+            <template #caption>
+              <caption class="font-semibold text-lg px-4 py-2 min-w-60">Awarded Bounties</caption>
+            </template>
             <template #sum-data="{ row }">
               <div class="text-center">
                 {{ row.sum.toFixed(2) }}
