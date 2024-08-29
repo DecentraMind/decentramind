@@ -107,7 +107,8 @@ const awardedBountyRows = $computed(() => {
   console.log('awarded rows', awardedBounties, page, pageCount)
   return awardedBounties.slice((page - 1) * pageCount, page * pageCount)
 })
-const awardedSums = $computed(() => Object.values(awarded.sum))
+
+let awardedSums = $ref<sumRow[]>([])
 
 let loadingBounties = $ref(true)
 onMounted(async () => {
@@ -121,6 +122,22 @@ onMounted(async () => {
     console.log({ publishedTasks, awardedBounties })
 
     awarded = categorize(awardedBounties)
+    awardedSums = awardedBounties.reduce((acc, bounty) => {
+      const index = acc.findIndex(
+        sum => sum.tokenProcessID === bounty.tokenProcessID,
+      )
+    
+      if (index === -1) {
+        acc.push({
+          label: bounty.tokenName,
+          tokenProcessID: bounty.tokenProcessID,
+          sum: bounty.amount,
+        })
+      } else {
+        acc[index].sum += bounty.amount
+      }
+      return acc
+    }, [] as sumRow[])
     console.log('categorized awarded', awarded)
   } catch (e) {
     showError('Failed to load data.', e as Error)
