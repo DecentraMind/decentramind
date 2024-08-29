@@ -7,14 +7,17 @@ const questColumns = [
   {
     key: 'name',
     label: 'Task Name',
+    class: 'w-60',
   },
   {
     key: 'rewardHtml',
     label: 'Amount',
+    class: 'w-20',
   },
   {
     key: 'communityName',
     label: 'From Community',
+    class: 'w-16',
   },
 ]
 
@@ -84,13 +87,14 @@ const publishedTasksRows = $computed(() => {
 const publishedSums = $computed<sumRow[]>(() => {
   return publishedTasks.reduce((acc, task) => {
     for (const bounty of task.bounties) {
+      if (!bounty.tokenProcessID) continue
       const index = acc.findIndex(
         sum => sum.tokenProcessID === bounty.tokenProcessID,
       )
     
       if (index === -1) {
         acc.push({
-          label: bounty.tokenName,
+          label: bounty.tokenName || tokensByProcessID[bounty.tokenProcessID].label,
           tokenProcessID: bounty.tokenProcessID,
           sum: bounty.amount,
         })
@@ -98,6 +102,7 @@ const publishedSums = $computed<sumRow[]>(() => {
         acc[index].sum += bounty.amount
       }
     }
+    console.log('published sums', acc)
 
     return acc
   }, [] as sumRow[])
@@ -119,7 +124,7 @@ onMounted(async () => {
         calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;')
       return task
     })
-    console.log({ publishedTasks, awardedBounties })
+    // console.log({ publishedTasks, awardedBounties })
 
     awarded = categorize(awardedBounties)
     awardedSums = awardedBounties.reduce((acc, bounty) => {
@@ -129,7 +134,7 @@ onMounted(async () => {
     
       if (index === -1) {
         acc.push({
-          label: bounty.tokenName,
+          label: bounty.tokenName || tokensByProcessID[bounty.tokenProcessID].label,
           tokenProcessID: bounty.tokenProcessID,
           sum: bounty.amount,
         })
@@ -138,7 +143,7 @@ onMounted(async () => {
       }
       return acc
     }, [] as sumRow[])
-    console.log('categorized awarded', awarded)
+    // console.log('categorized awarded sums', awardedSums)
   } catch (e) {
     showError('Failed to load data.', e as Error)
   } finally {
@@ -187,7 +192,7 @@ function categorize(bounties: BountySendHistory[]) {
       <template #header>
         <UBadge variant="soft" size="lg"> Public Quests </UBadge>
       </template>
-      <div class="w-1/2">
+      <div class="w-full lg:w-[800px]">
         <UCard
           :ui="{
             header: {
@@ -232,7 +237,7 @@ function categorize(bounties: BountySendHistory[]) {
 
       <div class="my-10" />
 
-      <div class="w-1/2">
+      <div class="w-full lg:w-[800px]">
         <UCard
           :ui="{
             header: {
