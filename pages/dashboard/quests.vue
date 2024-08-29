@@ -80,32 +80,32 @@ const publishedTasksRows = $computed(() => {
     return res
   })
 })
-const awardedBountyRows = $computed(() => {
-  console.log('awarded rows', awardedBounties, page, pageCount)
-  return awardedBounties.slice((page - 1) * pageCount, page * pageCount)
-})
 
 const publishedSums = $computed<sumRow[]>(() => {
   return publishedTasks.reduce((acc, task) => {
-    const index = acc.findIndex(
-      sum => sum.tokenProcessID === task.bounties[0].tokenProcessID,
-    )
-    // TODO bug here
-    if (index === -1) {
-      acc.push({
-        label: task.bounties[0].tokenName,
-        tokenProcessID: task.bounties[0].tokenProcessID,
-        sum: task.bounties.reduce((sum, bounty) => sum + bounty.amount, 0),
-      })
-    } else {
-      acc[index].sum += task.bounties.reduce(
-        (sum, bounty) => sum + bounty.amount,
-        0,
+    for (const bounty of task.bounties) {
+      const index = acc.findIndex(
+        sum => sum.tokenProcessID === bounty.tokenProcessID,
       )
+    
+      if (index === -1) {
+        acc.push({
+          label: bounty.tokenName,
+          tokenProcessID: bounty.tokenProcessID,
+          sum: bounty.amount,
+        })
+      } else {
+        acc[index].sum += bounty.amount
+      }
     }
 
     return acc
   }, [] as sumRow[])
+})
+
+const awardedBountyRows = $computed(() => {
+  console.log('awarded rows', awardedBounties, page, pageCount)
+  return awardedBounties.slice((page - 1) * pageCount, page * pageCount)
 })
 const awardedSums = $computed(() => Object.values(awarded.sum))
 
