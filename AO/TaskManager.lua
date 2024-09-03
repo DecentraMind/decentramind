@@ -1,4 +1,4 @@
-Variant = '0.3.2'
+Variant = '0.3.3'
 Name = 'DecentraMindTaskManager-' .. Variant
 
 local json = require("json")
@@ -79,6 +79,7 @@ local function replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
+  print('Reply ' .. action .. ' ' .. errString)
   request.reply({ Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
@@ -225,13 +226,14 @@ Actions = {
 
     --- update Tasks[pid].submittersCount
     --- if submission.address is not seen in Tasks[pid].submissions, add it
-    if not findIndex(Tasks[pid].submissions, function(submit)
-          return submit.address == msg.From
-        end) then
+    local find = findIndex(Tasks[pid].submissions, function(submit)
+      return submit.address == msg.From
+    end)
+    if not find then
       Tasks[pid].submittersCount = Tasks[pid].submittersCount + 1
     end
 
-    replyData(msg, tostring(submission.id))(msg)
+    replyData(msg, tostring(submission.id))
   end,
 
   StoreBountySendHistory = function(msg)

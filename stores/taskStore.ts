@@ -287,15 +287,16 @@ export const useTaskStore = defineStore('task', () => {
       }
     })
 
-    const resultMessages = await messageResultCheck({
+    // TODO fix bug here: can not get error if send bounty before task end.
+    const isSuccess = await messageResultCheck({
       process: taskPid,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'SendBounty' }],
       data: JSON.stringify(bounties, bigintReplacer)
     })
 
-    console.log('return messages = ', resultMessages)
-    return resultMessages
+    console.log('return messages = ', isSuccess)
+    return isSuccess
   }
 
   /**

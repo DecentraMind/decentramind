@@ -1,5 +1,5 @@
-Name = 'DecentraMind Task'
-Variant = '0.3.1'
+Variant = '0.3.2'
+Name = 'DecentraMind Task-' .. Variant
 
 --- This is a task process deployed from DecentraMind
 local json = require("json")
@@ -27,6 +27,7 @@ local function replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
+  print('Reply ' .. action .. ' ' .. errString)
   request.reply({ Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
@@ -79,8 +80,10 @@ Handlers.add(
 
     -- error if task not end
     local task = json.decode(Send({ Target = TaskManagerProcess, Action = 'GetTask', ProcessID = ao.id }).receive().Data)
-    print('endTime' .. task.endTime .. 'timestamp' .. msg.Timestamp)
-    assert(msg.Timestamp > task.endTime, "The task has not ended yet.")
+    print('timestamp ' .. msg.Timestamp .. ' endTime ' .. task.endTime)
+    if msg.Timestamp <= task.endTime then
+      return replyError(msg, "The task has not ended yet.")
+    end
 
     local bounties = json.decode(msg.Data)
     local messages = {}
