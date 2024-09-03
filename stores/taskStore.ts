@@ -9,15 +9,8 @@ import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
 import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult } from '~/utils'
-import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID } from '~/utils/processID'
+import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID, MU } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
-
-const permissions: PermissionType[] = [
-  'ACCESS_ADDRESS',
-  'SIGNATURE',
-  'SIGN_TRANSACTION',
-  'DISPATCH'
-]
 
 export const useTaskStore = defineStore('task', () => {
   const allTasks = $ref([])
@@ -29,11 +22,15 @@ export const useTaskStore = defineStore('task', () => {
       scheduler: schedulerID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{
-        name: 'Name', value: communityName + ' Task'
+        name: 'Name', value: data.name + ' - ' + communityName + ' Task'
       }, {
         name: 'App-Name', value: 'DecentraMind'
       }, {
         name: 'App-Process', value: taskManagerProcessID,
+      }, {
+        name: 'Authority', value: MU
+      }, {
+        name: 'Authority', value: taskManagerProcessID
       }]
     })
     data.processID = taskProcessID
@@ -51,7 +48,7 @@ export const useTaskStore = defineStore('task', () => {
     // wait for process creating until you can send message to it
     await sleep(3000)
 
-    console.log(JSON.stringify(data))
+    console.log('create task data:', JSON.stringify(data, bigintReplacer))
     console.log('newProcessId = ' + taskProcessID)
 
     // set task process handlers
@@ -81,7 +78,7 @@ export const useTaskStore = defineStore('task', () => {
           process: taskManagerProcessID,
           signer: createDataItemSigner(window.arweaveWallet),
           tags: [{ name: 'Action', value: 'CreateTask' }],
-          data: JSON.stringify(data)
+          data: JSON.stringify(data, bigintReplacer)
         })
       },
       maxAttempts: 3,
@@ -258,22 +255,6 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  /**
-   * set task.isSettled to true
-   * @param taskId
-   * @returns Promise<string>
-   */
-  const setTaskIsSettled = async (taskPid: string) => {
-    return await messageResultCheck({
-      process: taskManagerProcessID,
-      signer: createDataItemSigner(window.arweaveWallet),
-      tags: [
-        { name: 'Action', value: 'SetTaskIsSettled' },
-        { name: 'TaskPid', value: taskPid },
-      ],
-    })
-  }
-
   const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[]) => {
     console.log('update task submissions', submissions)
 
@@ -330,7 +311,7 @@ export const useTaskStore = defineStore('task', () => {
         { name: 'Action', value: 'StoreBountySendHistory' },
         { name: 'TaskPid', value: taskPid }
       ],
-      data: JSON.stringify(bounties)
+      data: JSON.stringify(bounties, bigintReplacer)
     })
     console.log('return message = ' + messageId)
     return messageId
@@ -378,8 +359,6 @@ export const useTaskStore = defineStore('task', () => {
   return {
     createTask, getTask, getTasksByCommunityUuid, getTasksByOwner,
     allTasks,
-
-    setTaskIsSettled,
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 

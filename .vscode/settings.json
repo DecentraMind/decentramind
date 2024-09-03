@@ -67,9 +67,7 @@
     "vueuse",
     "yxxx"
   ],
-  "Lua.workspace.library": [
-    "/Users/apple/Library/Application Support/Cursor/User/globalStorage/sumneko.lua/addonManager/addons/ao/module/library"
-  ],
+  "Lua.workspace.library": [],
   "Lua.workspace.checkThirdParty": false,
 
   "Lua.diagnostics.groupSeverity": {

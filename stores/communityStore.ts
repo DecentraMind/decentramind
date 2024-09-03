@@ -7,7 +7,7 @@ import {
 } from '@permaweb/aoconnect'
 import type { Community, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
-import { defaultTokenLogo, messageResult, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams } from '~/utils'
+import { defaultTokenLogo, messageResult, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { aoCommunityProcessID, moduleID, schedulerID, extractResult } from '~/utils'
 
 // Read the Lua file
@@ -424,6 +424,8 @@ export const communityStore = defineStore('communityStore', () => {
         name: 'App-Name', value: 'DecentraMind'
       }, {
         name: 'App-Process', value: aoCommunityProcessID,
+      }, {
+        name: 'Authority', value: MU
       }]
     })
 
@@ -471,6 +473,8 @@ export const communityStore = defineStore('communityStore', () => {
         name: 'App-Name', value: 'DecentraMind'
       }, {
         name: 'App-Process', value: aoCommunityProcessID,
+      }, {
+        name: 'Authority', value: MU
       }]
     })
     await sleep(1000)

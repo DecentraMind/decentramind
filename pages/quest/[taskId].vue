@@ -26,7 +26,6 @@ const { t } = useI18n()
 const {
   storeBounty,
   sendBounty,
-  setTaskIsSettled,
   getInvitesByInviter,
   updateTaskSubmissions,
   updateTaskScores,

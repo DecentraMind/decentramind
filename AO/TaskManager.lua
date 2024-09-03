@@ -1,8 +1,7 @@
-Name = 'DecentraMind Task Manager'
-Variant = '0.2.16'
+Variant = '0.3.2'
+Name = 'DecentraMindTaskManager-' .. Variant
 
 local json = require("json")
-local ao = require('ao')
 
 --- @class Task
 --- @field processID string @process ID as unique primary key
@@ -80,7 +79,7 @@ local function replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
-  ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString})
+  request.reply({ Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
 ---Reply with data
@@ -88,23 +87,23 @@ end
 local function replyData(request, data)
   assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
   if type(data) == 'string' then
-    ao.send({ Target = request.From, Data = data })
+    request.reply({ Data = data })
   else
-    ao.send({ Target = request.From, Data = json.encode(data) })
+    request.reply({ Data = json.encode(data) })
   end
 end
 
 local function findIndex(array, predicate)
   for index, value in ipairs(array) do
-      if predicate(value) then
-          return index
-      end
+    if predicate(value) then
+      return index
+    end
   end
-  return nil  -- If no element satisfies the predicate
+  return nil -- If no element satisfies the predicate
 end
 
-TaskManager = {
-  create = function (msg)
+Actions = {
+  CreateTask = function(msg)
     --- @type Task
     local task = json.decode(msg.Data)
     local cid = task.communityUuid
@@ -132,28 +131,29 @@ TaskManager = {
     replyData(msg, Tasks[pid])
   end,
 
-  dumpAll = function (msg)
+  DumpAll = function(msg)
     replyData(msg, {
-      Tasks = Dump(Tasks, 0),
-      TasksByCommunity = Dump(TasksByCommunity, 0),
-      BountySendHistory = Dump(BountySendHistory, 0)
+      Tasks = json.encode(Tasks),
+      TasksByCommunity = json.encode(TasksByCommunity),
+      BountySendHistory = json.encode(BountySendHistory),
     })
   end,
 
-  getTask = function (msg)
+  GetTask = function(msg)
     local pid = msg.Tags.ProcessID
 
     if not Tasks[pid] then
       return replyError(msg, 'Task not found.')
     end
 
+    -- print('reply task: ' .. json.encode(Tasks[pid]))
     replyData(msg, Tasks[pid])
   end,
 
-  getTasksByCommunityUuid = function (msg)
+  GetTasksByCommunityUuid = function(msg)
     local cid = msg.Tags.CommunityUuid
     if not TasksByCommunity[cid] then
-      Handlers.utils.reply(json.encode({}))(msg)
+      replyData(msg, '[]')
       return
     end
 
@@ -167,7 +167,7 @@ TaskManager = {
     replyData(msg, tasks)
   end,
 
-  getTasksByOwner = function (msg)
+  GetTasksByOwner = function(msg)
     local address = msg.Tags.Address
     local tasks = {}
     for _, task in pairs(Tasks) do
@@ -179,7 +179,7 @@ TaskManager = {
     replyData(msg, tasks)
   end,
 
-  joinTask = function(msg)
+  JoinTask = function(msg)
     local pid = msg.Tags.TaskPid
     if not Tasks[pid] then
       return replyError(msg, 'Task not found.')
@@ -200,7 +200,7 @@ TaskManager = {
     Tasks[pid].builders[msg.From] = builder
   end,
 
-  addSubmission = function(msg)
+  AddSubmission = function(msg)
     -- TOOD validate msg.Data
     --- @type Submission
     local submission = json.decode(msg.Data)
@@ -225,17 +225,16 @@ TaskManager = {
 
     --- update Tasks[pid].submittersCount
     --- if submission.address is not seen in Tasks[pid].submissions, add it
-    if not findIndex(Tasks[pid].submissions, function (submit)
-      return submit.address == msg.From
-    end) then
+    if not findIndex(Tasks[pid].submissions, function(submit)
+          return submit.address == msg.From
+        end) then
       Tasks[pid].submittersCount = Tasks[pid].submittersCount + 1
     end
 
-    Handlers.utils.reply(tostring(submission.id))(msg)
+    replyData(msg, tostring(submission.id))(msg)
   end,
 
-
-  storeBountySendHistory = function (msg)
+  StoreBountySendHistory = function(msg)
     local pid = msg.Tags.TaskPid
     if not Tasks[pid] then
       return replyError(msg, 'Task not found.')
@@ -259,7 +258,7 @@ TaskManager = {
     Tasks[pid].isSettled = true
   end,
 
-  getAllBounties = function(msg)
+  GetAllBounties = function(msg)
     local bounties = {}
     for _, bounty in pairs(BountySendHistory) do
       table.insert(bounties, bounty)
@@ -267,11 +266,11 @@ TaskManager = {
     replyData(msg, bounties)
   end,
 
-  getBountiesByCommuintyID = function (msg)
+  GetBountiesByCommuintyID = function(msg)
     local uuid = msg.Tags.CommunityUuid
 
     if not TasksByCommunity[uuid] then
-      return Handlers.utils.reply('[]')(msg)
+      return replyData(msg, '[]')
     end
 
     local result = {}
@@ -286,7 +285,7 @@ TaskManager = {
     replyData(msg, result)
   end,
 
-  getBountiesByAddress = function (msg)
+  GetBountiesByAddress = function(msg)
     local address = msg.Tags.Address
     local bounties = {
       published = {},
@@ -309,7 +308,7 @@ TaskManager = {
     replyData(msg, bounties)
   end,
 
-  updateTaskScores = function (msg)
+  UpdateTaskScores = function(msg)
     local pid = msg.Tags.TaskPid
 
     if not Tasks[pid] then
@@ -330,85 +329,10 @@ TaskManager = {
     end
 
     Tasks[pid].isScoreCalculated = true
-  end
-}
+  end,
 
-Handlers.add(
-  "CreateTask",
-  Handlers.utils.hasMatchingTag("Action", "CreateTask"),
-  TaskManager.create
-)
-
--- Handlers.add(
---   "GetAll",
---   Handlers.utils.hasMatchingTag("Action", "GetAll"),
---   TaskManager.getAll
--- )
-
-Handlers.add(
-  "GetTask",
-  Handlers.utils.hasMatchingTag("Action", "GetTask"),
-  TaskManager.getTask
-)
-
-Handlers.add(
-  "DumpAll",
-  Handlers.utils.hasMatchingTag("Action", "DumpAll"),
-  TaskManager.dumpAll
-)
-
-Handlers.add(
-  'GetTasksByCommunityUuid',
-  Handlers.utils.hasMatchingTag('Action', 'GetTasksByCommunityUuid'),
-  TaskManager.getTasksByCommunityUuid
-)
-
-Handlers.add(
-  'GetTasksByOwner',
-  Handlers.utils.hasMatchingTag('Action', 'GetTasksByOwner'),
-  TaskManager.getTasksByOwner
-)
-
-Handlers.add(
-  "JoinTask",
-  Handlers.utils.hasMatchingTag("Action", "JoinTask"),
-  TaskManager.joinTask
-)
-
-Handlers.add(
-  "AddSubmission",
-  Handlers.utils.hasMatchingTag("Action", "AddSubmission"),
-  TaskManager.addSubmission
-)
-
-Handlers.add(
-  "UpdateTaskScores",
-  Handlers.utils.hasMatchingTag("Action", "UpdateTaskScores"),
-  TaskManager.updateTaskScores
-)
-
-Handlers.add(
-  "SetTaskIsSettled",
-  Handlers.utils.hasMatchingTag("Action", "SetTaskIsSettled"),
-  function (msg)
-    local pid = msg.Tags.TaskPid
-
-    if not Tasks[pid] then
-      return replyError(msg, 'Task not found.')
-    end
-
-    if Tasks[pid].ownerAddress ~= msg.From then
-      return replyError(msg, 'You are not the owner of this task.')
-    end
-
-    Tasks[pid].isSettled = true
-  end
-)
-
-Handlers.add(
-  "UpdateTaskSubmissions",
-  Handlers.utils.hasMatchingTag("Action", "UpdateTaskSubmissions"),
-  function (msg)
+  -- TODO Update submission.calculatedBounties only, don't update the whole submissions
+  UpdateTaskSubmissions = function(msg)
     local pid = msg.Tags.TaskPid
 
     if not Tasks[pid] then
@@ -421,28 +345,12 @@ Handlers.add(
 
     Tasks[pid].submissions = json.decode(msg.Data)
   end
-)
+}
 
-Handlers.add(
-  "StoreBountySendHistory",
-  Handlers.utils.hasMatchingTag("Action", "StoreBountySendHistory"),
-  TaskManager.storeBountySendHistory
-)
-
-Handlers.add(
-  "GetAllBounties",
-  Handlers.utils.hasMatchingTag("Action", "GetAllBounties"),
-  TaskManager.getAllBounties
-)
-
-Handlers.add(
-  "GetBountiesByCommunityID",
-  Handlers.utils.hasMatchingTag("Action", "GetBountiesByCommunityID"),
-  TaskManager.getBountiesByCommuintyID
-)
-
-Handlers.add(
-  "GetBountiesByAddress",
-  Handlers.utils.hasMatchingTag("Action", "GetBountiesByAddress"),
-  TaskManager.getBountiesByAddress
-)
+for name, action in pairs(Actions) do
+  Handlers.add(
+    name,
+    name,
+    function(msg) action(msg) end
+  )
+end

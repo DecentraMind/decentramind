@@ -157,7 +157,7 @@ watch(
             <div class="p-4 w-80">
               <div>Invite URL:</div>
               <div class="flex items-center">
-                <p ref="textToCopy" class="break-all mr-2">
+                <p ref="textToCopy" class="break-all mr-2 text-xs">
                   https://decentramind.club/invite/{{ community.uuid }}&{{ address }}
                 </p>
                 <UButton

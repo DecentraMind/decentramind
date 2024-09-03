@@ -1,11 +1,23 @@
 Name = 'DecentraMind Task'
-Variant = '0.2.2'
+Variant = '0.3.1'
 
 --- This is a task process deployed from DecentraMind
 local json = require("json")
+local ao = require('.ao')
 
 TaskOwnerWallet = ao.env.Process.Owner
-TaskManagerProcess = "__TaskManagerProcess__"
+TaskManagerProcess = TaskManagerProcess or "__TaskManagerProcess__"
+
+---Reply with data
+---@param data string|table
+local function replyData(request, data)
+  assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
+  if type(data) == 'string' then
+    request.reply({ Data = data })
+  else
+    request.reply({ Data = json.encode(data) })
+  end
+end
 
 local function replyError(request, errorMsg)
   local action = (request.Tags and request.Tags.Action) or request.Action or "Unknow-Action"
@@ -15,7 +27,7 @@ local function replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
-  ao.send({Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString})
+  request.reply({ Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
 local function isTaskCreationSuccess()
@@ -26,8 +38,8 @@ end
 -- the task owner can invoke this action to get bounty tokens back.
 Handlers.add(
   "SendBountyBackToTaskOwner",
-  Handlers.utils.hasMatchingTag("Action", "SendBountyBackToTaskOwner"),
-  function (msg)
+  "SendBountyBackToTaskOwner",
+  function(msg)
     if (msg.From ~= TaskOwnerWallet) then
       return replyError(msg, "You are not the owner of this task.")
     end
@@ -48,8 +60,8 @@ Handlers.add(
 -- and all task creation steps are finished successfully.
 Handlers.add(
   "SetOwnerNil",
-  Handlers.utils.hasMatchingTag("Action", "SetOwnerNil"),
-  function (msg)
+  "SetOwnerNil",
+  function(msg)
     assert(msg.From == Owner, 'You are not the current Owner of this task process.')
     print('Set process owner to nil.')
 
@@ -59,17 +71,16 @@ Handlers.add(
 
 Handlers.add(
   "SendBounty",
-  Handlers.utils.hasMatchingTag("Action", "SendBounty"),
-  function (msg)
+  "SendBounty",
+  function(msg)
     if (msg.From ~= TaskOwnerWallet) then
       return replyError(msg, "You are not the owner of this task.")
     end
 
-    ---TODO error if task not end
-    -- task = ao.send()
-    -- if (msg.Timestamp <= task.endTime) then
-    --   return replyError(msg, "The task has not ended yet.")
-    -- end
+    -- error if task not end
+    local task = json.decode(Send({ Target = TaskManagerProcess, Action = 'GetTask', ProcessID = ao.id }).receive().Data)
+    print('endTime' .. task.endTime .. 'timestamp' .. msg.Timestamp)
+    assert(msg.Timestamp > task.endTime, "The task has not ended yet.")
 
     local bounties = json.decode(msg.Data)
     local messages = {}
@@ -82,22 +93,22 @@ Handlers.add(
       })
       table.insert(messages, message)
     end
-    Handlers.utils.reply(json.encode(messages))(msg)
+    replyData(msg, messages)
   end
 )
 
 Handlers.add(
   "GetOwner",
-  Handlers.utils.hasMatchingTag("Action", "GetOwner"),
-  function (msg)
+  "GetOwner",
+  function(msg)
     Handlers.utils.reply(TaskOwnerWallet)(msg)
   end
 )
 
 Handlers.add(
   "GetVersion",
-  Handlers.utils.hasMatchingTag("Action", "GetVersion"),
-  function (msg)
+  "GetVersion",
+  function(msg)
     Handlers.utils.reply(Variant)(msg)
   end
 )
