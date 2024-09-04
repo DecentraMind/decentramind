@@ -196,7 +196,7 @@ function openJoinModal() {
 let isJoinLoading = $ref(false)
 async function onClickJoin() {
   isJoinLoading = true
-  await joinTask(taskPid, address)
+  await joinTask(taskPid)
   task = await getTask(taskPid)
   isJoinModalOpen = false
   isJoinLoading = false

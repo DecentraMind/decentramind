@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Community, UserInfo } from '~/types'
+import type { Community, Task, TaskInviteInfo, UserInfo } from '~/types'
 import { shortString } from '~/utils'
 
 definePageMeta({
@@ -7,7 +7,7 @@ definePageMeta({
 })
 
 const { joinCommunity, getCommunity, getUserByAddress } = $(communityStore())
-const { getInviteByCode } = useTaskStore()
+const { getInviteByCode, joinTask } = useTaskStore()
 
 const { doLogin } = $(aoStore())
 
@@ -19,20 +19,23 @@ const router = useRouter()
 const code = route.params.code as string
 
 async function join() {
-  if(!slug.communityID || !slug.inviterAddress) {
-    showError('URL not valid.')
+  if(!task?.communityUuid || !inviteInfo?.inviterAddress) {
+    showError('Failed to load related data, please try refresh this page.')
     return
   }
 
   await doLogin()
 
-  await joinCommunity(slug.communityID, slug.inviterAddress)
+  await joinCommunity(task.communityUuid, inviteInfo.inviterAddress)
+  await joinTask(task.processID, code)
 
   showSuccess('join success')
-  await router.push({path: '/community/' + slug.communityID})
+  await router.push({path: '/quest/' + task.processID})
 }
 
 let inviter = $ref<UserInfo>()
+let inviteInfo = $ref<TaskInviteInfo>()
+let task = $ref<Task>()
 let community = $ref<Community>()
 let isLoading = $ref(true)
 onMounted(async () => {
@@ -42,8 +45,11 @@ onMounted(async () => {
     return
   }
 
-  const { invite, task } = await getInviteByCode(code)
-  
+  const { invite, task: taskInfo } = await getInviteByCode(code)
+  inviteInfo = invite
+  task = taskInfo
+  console.log('invite info', invite, task)
+
   inviter = await getUserByAddress(invite.inviterAddress)
   community = await getCommunity(task.communityUuid)
   isLoading = false
@@ -61,9 +67,9 @@ onMounted(async () => {
         <UIcon name="svg-spinners:3-dots-fade" size="xl" />
       </div>
 
-      <div v-if="!isLoading && community && inviter" class="flex justify-between">
-        <p><span :title="slug.inviterAddress" class="font-bold">{{ inviter.name ? `${inviter.name} (${shortString(slug.inviterAddress)})` : shortString(slug.inviterAddress) }}</span> invited you to join a community:</p>
-        <p class="font-bold">{{ community.name }}</p>
+      <div v-if="!isLoading && community && inviter && inviteInfo && task" class="flex justify-between">
+        <p><span :title="inviteInfo.inviterAddress" class="font-bold">{{ inviter.name ? `${inviter.name} (${shortString(inviteInfo.inviterAddress)})` : shortString(inviteInfo.inviterAddress) }}</span> invited you to join a quest:</p>
+        <p class="font-bold">{{ task.name }}</p>
       </div>
 
       <template #footer>

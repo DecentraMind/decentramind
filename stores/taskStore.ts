@@ -217,7 +217,7 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  const joinTask = async (taskPid: string, inviterAddress?: string) => {
+  const joinTask = async (taskPid: string, inviteCode?: string) => {
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -225,8 +225,8 @@ export const useTaskStore = defineStore('task', () => {
         name: 'Action', value: 'JoinTask'
       }, {
         name: 'TaskPid', value: taskPid
-      }].concat(inviterAddress ? [{
-        name: 'InviterAddress', value: inviterAddress
+      }].concat(inviteCode ? [{
+        name: 'InviteCode', value: inviteCode
       }] : [])
     })
   }

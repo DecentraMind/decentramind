@@ -1,4 +1,4 @@
-Variant = '0.3.4'
+Variant = '0.3.5'
 Name = 'DecentraMindTaskManager-' .. Variant
 
 local json = require("json")
@@ -276,8 +276,13 @@ Actions = {
     local builder = {
       address = msg.From
     }
-    if (msg.Tags.InviterAddress) then
-      builder.inviterAddress = msg.Tags.InviterAddress
+    if (msg.Tags.InviteCode) then
+      local invite = Invites[msg.Tags.InviteCode]
+      if not invite then
+        return replyError(msg, 'Invite code not found.')
+      end
+      builder.inviterAddress = invite.inviterAddress
+      table.insert(invite.inviteeAddresses, msg.From)
     end
     Tasks[pid].builders[msg.From] = builder
   end,
