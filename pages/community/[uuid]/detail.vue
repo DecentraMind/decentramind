@@ -182,7 +182,6 @@ onBeforeUnmount(() => {
       <UPage v-if="community" class="xl:m-auto xl:max-w-[1200px]">
         <ULandingCard
           :description="community.desc"
-          :links="[{ label: 'GitHub', color: 'white', to: 'https://github.com/nuxt/ui-pro/blob/dev/components/page/PageHeader.vue', target: '_blank', icon: 'i-simple-icons-github' }]"
         >
           <template #title>
             <div class="w-full flex justify-between text-3xl mb-8">

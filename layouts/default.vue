@@ -105,7 +105,7 @@ onMounted(async () => {
                     'transition-all ease-in-out duration-500 rounded-sm bg-gray-900 absolute left-[-6px]',
                     'w-0 group-hover:w-1 h-8 top-4 bg-opacity-0 group-hover:bg-opacity-60',
                     {
-                      'w-1 h-12 top-2 bg-opacity-80': community.uuid === currentUuid
+                      'w-1 h-10 top-3 bg-opacity-80': community.uuid === currentUuid
                     }
                   )"
                 />

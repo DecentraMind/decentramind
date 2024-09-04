@@ -7,8 +7,8 @@ import {
 
 import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
-import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory } from '~/types'
-import { sleep, retry, messageResult, messageResultCheck, extractResult } from '~/utils'
+import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, TaskInviteInfo } from '~/types'
+import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID, MU } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 
@@ -357,6 +357,27 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
+  const createInviteCode  = async (taskPid: string) => {
+    const code = await messageResult<string>({
+      process: taskManagerProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: 'Action', value: 'CreateInviteCode' }, { name: 'TaskPid', value: taskPid }],
+    })
+    return code
+  }
+
+  const getInviteByCode = async (code: string) => {
+    const data = await dryrunResult<string>({
+      process: taskManagerProcessID,
+      tags: [
+        { name: 'Action', value: 'GetInviteByCode' },
+        { name: 'Code', value: code }
+      ]
+    })
+    
+    return JSON.parse(data) as { invite: TaskInviteInfo, task: Task }
+  }
+
   return {
     createTask, getTask, getTasksByCommunityUuid, getTasksByOwner,
     allTasks,
@@ -370,7 +391,8 @@ export const useTaskStore = defineStore('task', () => {
     joinTask,
 
     // TODO move this to communityStore
-    getInvitesByInviter
+    getInvitesByInviter,
+    createInviteCode, getInviteByCode
   }
 })
 

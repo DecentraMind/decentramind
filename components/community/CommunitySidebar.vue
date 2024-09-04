@@ -49,8 +49,7 @@ const copyText = async () => {
 
 
 const classes = {
-  bottomButtons: 'center-text border rounded-lg w-full h-8',
-  buttonActive: 'bg-black text-white'
+  bottomButtons: 'justify-center border rounded-lg w-full h-8'
 }
 
 const route = useRoute()
@@ -152,7 +151,7 @@ watch(
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
           <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
-          <button :class="classes.bottomButtons">Invite People</button>
+          <UButton color="white" variant="ghost" icon="heroicons:user-plus" :class="classes.bottomButtons">Invite People</UButton>
           <template #panel>
             <div class="p-4 w-80">
               <div>Invite URL:</div>
@@ -171,19 +170,25 @@ watch(
           </template>
         </UPopover>
 
-        <button
-          :class="cn(classes.bottomButtons, {[classes.buttonActive]: currentHash=='#quests'})"
+        <UButton
+          :color="currentHash=='#quests' ? 'black' : 'white'"
+          :variant="currentHash=='#quests' ? 'solid' : 'ghost'"
+          icon="heroicons:home"
+          :class="classes.bottomButtons"
           @click="router.push({hash: '#quests'})"
         >
           Quests Home
-        </button>
+        </UButton>
 
-        <button
-          :class="cn(classes.bottomButtons, {[classes.buttonActive]: currentHash=='#chatroom'})"
+        <UButton
+          :color="currentHash=='#chatroom' ? 'black' : 'white'"
+          :variant="currentHash=='#chatroom' ? 'solid' : 'ghost'"
+          icon="heroicons:chat-bubble-left-right"
+          :class="classes.bottomButtons"
           @click="router.push({hash: '#chatroom'})"
         >
           Chatroom
-        </button>
+        </UButton>
       </template>
     </UDashboardSidebar>
 

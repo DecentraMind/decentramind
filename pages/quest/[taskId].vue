@@ -31,14 +31,14 @@ const {
   updateTaskScores,
   getTask,
   submitSpaceTask,
-  joinTask
+  joinTask,
+  createInviteCode
 } = useTaskStore()
 
 const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(communityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
-// 用户钱包地址
 const { address } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
@@ -84,6 +84,11 @@ onMounted(async () => {
 
     if (!task) {
       throw new Error('Failed to get task ' + taskPid)
+    }
+
+    if (!task.inviteCode && address && now.value < task.endTime) {
+      task.inviteCode = await createInviteCode(taskPid)
+      console.log('create invite code ', task.inviteCode)
     }
 
     console.log({ isIng, isSettle: task.isSettled, isCal: task.isScoreCalculated })
@@ -578,6 +583,26 @@ watch(() => selectedSubmissions.length, () => {
   submissions.forEach(s => {console.log(s.address);console.table(s.calculatedBounties)})
 })
 
+const onClickCopyInviteCode = async () => {
+  try {
+    if (!task) return
+    await navigator.clipboard.writeText(location.origin + '/i/' + task.inviteCode!)
+    showSuccess('Copied!')
+  } catch (err) {
+    showError('Copy failed.')
+  }
+}
+
+const isInviteModalOpen = $ref(false)
+const inviteUrl = $computed(() => {
+  return typeof window !== 'undefined' ? `${window.location.origin}/i/${task?.inviteCode}` : ''
+})
+
+const onClickShareToTwitter = () => {
+  if (!inviteUrl || typeof window === 'undefined') return
+
+  window.open(`https://twitter.com/intent/tweet?text=Check%20out%20this%20Quest%20on%20DecentraMind!&url=${inviteUrl}`, '_blank')
+}
 </script>
 
 <template>
@@ -621,7 +646,15 @@ watch(() => selectedSubmissions.length, () => {
               <div class="text-justify text-md leading-8">
                 {{ task.intro }}
               </div>
-              <TaskStatus size="lg" :task="task" :address="address" />
+              <div class="flex items-center justify-between">
+                <TaskStatus size="lg" :task="task" :address="address" />
+                <UButton
+                  color="white"
+                  icon="heroicons:user-plus"
+                  label="Invite a Friend"
+                  @click="isInviteModalOpen = true"
+                />
+              </div>
 
               <UDivider />
 
@@ -767,7 +800,7 @@ watch(() => selectedSubmissions.length, () => {
                 1 Total score is 100 including Brand 10%, Friends 40%,
                 Popularity 50%.
                 <br>
-                2 Brand is decided by your avatar, change it you’ll get 10,
+                2 Brand is decided by your avatar, change it you'll get 10,
                 not change get 0.
                 <br>
                 3 Friends is decided by the number of users invited through your quest invitation.
@@ -816,6 +849,7 @@ watch(() => selectedSubmissions.length, () => {
         </div>
       </UCard>
     </UModal>
+
     <UModal v-model="isSubmitModalOpen">
       <UCard>
         <template #header>
@@ -853,6 +887,27 @@ watch(() => selectedSubmissions.length, () => {
               {{ $t('Submit Quest') }}
             </UButton>
           </div>
+        </div>
+      </UCard>
+    </UModal>
+
+    <UModal v-model="isInviteModalOpen">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3
+              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
+            >
+              {{ $t('Your Quest Invitation Link') }}
+            </h3>
+          </div>
+        </template>
+        <div class="flex-col-center w-full gap-y-4">
+          <div class="w-full h-full pl-2 flex items-center bg-slate-50 rounded-md cursor-pointer" @click="onClickCopyInviteCode">
+            <p class="w-full text-gray-500 font-semibold">{{ inviteUrl }}</p>
+            <UButton size="lg" icon="ri:checkbox-multiple-blank-line" variant="ghost" />
+          </div>
+          <UButton size="lg" label="Share to Twitter" icon="ri:twitter-fill" variant="soft" @click="onClickShareToTwitter" />
         </div>
       </UCard>
     </UModal>

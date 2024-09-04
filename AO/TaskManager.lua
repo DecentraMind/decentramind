@@ -1,4 +1,4 @@
-Variant = '0.3.3'
+Variant = '0.3.4'
 Name = 'DecentraMindTaskManager-' .. Variant
 
 local json = require("json")
@@ -24,6 +24,7 @@ local json = require("json")
 --- @field bounties TaskBounty[] @List of bounties associated with the task
 --- @field builders table<string, TaskBuilder> @Table of builders associated with the task, index by builder's address
 --- @field submissions Submission[] @List of submission
+--- @field inviteCode string|nil
 
 --- @class TaskBounty
 --- @field amount number @Human readable amount of the bounty
@@ -71,6 +72,17 @@ TasksByCommunity = TasksByCommunity or {}
 --- @type table<string, BountySend[]> Bounty send history, using task's process ID as key
 BountySendHistory = BountySendHistory or {}
 
+---@class Invite
+---@field taskPid string
+---@field inviterAddress string
+---@field inviteeAddresses string[]
+
+---@type table<string, Invite> Invites by invite codes
+Invites = Invites or {}
+---@type table<string, table<string, string>> Invite codes by inviter address and task pid
+InviteCodesByInviterByTaskPid = InviteCodesByInviterByTaskPid or {}
+
+
 local function replyError(request, errorMsg)
   local action = (request.Tags and request.Tags.Action) or request.Action or "Unknow-Action"
   action = action .. "-Error"
@@ -103,7 +115,71 @@ local function findIndex(array, predicate)
   return nil -- If no element satisfies the predicate
 end
 
+---Generate a random 6 chars uid using [a-zA-Z0-9]
+---@return string
+local function uid(length)
+  local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  local id = ""
+  for _ = 1, length do
+    local index = math.random(1, #chars)
+    id = id .. chars:sub(index, index)
+  end
+  return id
+end
+
+
 Actions = {
+
+  CreateInviteCode = function(msg)
+    local address = msg.From
+    local pid = msg.Tags.TaskPid
+
+    if not Tasks[pid] then
+      return replyError(msg, 'Task not found.')
+    end
+
+    if msg.Timestamp > Tasks[pid].endTime then
+      return replyError(msg, 'The task has already ended.')
+    end
+    -- TODO check if address is a registered user
+
+    if not InviteCodesByInviterByTaskPid[address] then
+      InviteCodesByInviterByTaskPid[address] = {}
+    end
+
+    if not InviteCodesByInviterByTaskPid[address][pid] then
+      local code = uid(8)
+      InviteCodesByInviterByTaskPid[address][pid] = code
+      local invite = {
+        taskPid = pid,
+        inviterAddress = address,
+        inviteeAddresses = {}
+      }
+      Invites[code] = invite
+    end
+
+    replyData(msg, InviteCodesByInviterByTaskPid[address][pid])
+  end,
+
+  GetInviteByCode = function(msg)
+    local code = msg.Tags.Code
+    if not Invites[code] then
+      return replyError(msg, 'Invite not found.')
+    end
+
+    local invite = Invites[code]
+    local task = Tasks[invite.taskPid]
+
+    if not task then
+      return replyError(msg, 'Task not found.')
+    end
+
+    replyData(msg, {
+      invite = invite,
+      task = task,
+    })
+  end,
+
   CreateTask = function(msg)
     --- @type Task
     local task = json.decode(msg.Data)
@@ -145,6 +221,11 @@ Actions = {
 
     if not Tasks[pid] then
       return replyError(msg, 'Task not found.')
+    end
+
+    local address = msg.From
+    if address and InviteCodesByInviterByTaskPid[address] and InviteCodesByInviterByTaskPid[address][pid] then
+      Tasks[pid].inviteCode = InviteCodesByInviterByTaskPid[address][pid]
     end
 
     -- print('reply task: ' .. json.encode(Tasks[pid]))

@@ -22,7 +22,7 @@ Variant = '0.2.13'
 Communities = Communities or {}
 
 ---@class InviteInfo
----@field invite? string The inviter's address, who invited this user.
+---@field invite string|nil The inviter's address, who invited this user
 ---@field time number The timestamp when user join community.
 
 
@@ -34,14 +34,12 @@ Communities = Communities or {}
 ---  }
 -- }
 Invites = Invites or {}
---[[
-type Users = {
-  [address: string]: {
-    name: string
-    avatar: string
-  }
-}
-]] --
+
+---@class User
+---@field name string
+---@field avatar string
+
+---@type table<string, User>
 Users = Users or {}
 
 --- @type table<string, string[]> table of community's muted user addresses

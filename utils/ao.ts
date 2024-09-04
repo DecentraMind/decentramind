@@ -48,6 +48,22 @@ type SignerSchema = z.ZodFunction<z.ZodTuple<[z.ZodObject<{
 export type Types = {
   signer: z.infer<SignerSchema>;
 }
+
+export type MessageInput = {
+  process: string;
+  data?: any;
+  tags?: {
+      name: string;
+      value: string;
+  }[];
+  anchor?: string;
+  Id?: string;
+  Owner?: string;
+}
+export type DryrunInput = MessageInput & {
+  [x: string]: any;
+}
+
 export type SendMessageArgs = {
   process: string;
   data?: string;
@@ -94,6 +110,11 @@ export async function messageResult<T>(messageParams: SendMessageArgs) {
 
 export async function messageResultParsed(messageParams: SendMessageArgs) {
   return JSON.parse(await messageResult<string>(messageParams))
+}
+
+export async function dryrunResult<T>(messageParams: DryrunInput) {
+  const messageId = await dryrun(messageParams)
+  return extractResult<T>(messageId)
 }
 
 /**

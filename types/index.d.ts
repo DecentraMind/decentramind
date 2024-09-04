@@ -216,7 +216,9 @@ export type Task = {
     inviterAddress?: string
   }>
 
-  submissions: SpaceSubmission[]
+  submissions: SpaceSubmission[],
+
+  inviteCode?: string
 }
 
 export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & {
@@ -255,6 +257,12 @@ export type InviteInfo = {
   inviteeAddress: string
   communityID: string
   inviterAddress?: string
+}
+
+export type TaskInviteInfo = {
+  taskPid: string
+  inviterAddress: string
+  inviteeAddresses: string[]
 }
 
 export type RelatedUserMap = {
