@@ -1,5 +1,8 @@
 Name = 'DecentraMind Community Manager'
-Variant = '0.2.13'
+Variant = '0.2.16'
+
+local json = require("json")
+local ao = require(".ao")
 
 ---@class Community
 ---@field uuid string
@@ -33,7 +36,7 @@ Communities = Communities or {}
 ---    [communityID: string]: InviteInfo
 ---  }
 -- }
-Invites = Invites or {}
+CommunityInvites = Invites or {}
 
 ---@class User
 ---@field name string
@@ -45,7 +48,6 @@ Users = Users or {}
 --- @type table<string, string[]> table of community's muted user addresses
 MutedUsers = MutedUsers or {}
 
-local json = require("json")
 
 local function deepCopy(orig)
   local orig_type = type(orig)
@@ -70,17 +72,6 @@ local function createUuid()
   end)
 end
 
----Reply with data
----@param data string|table
-local function replyData(request, data)
-  assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
-  if type(data) == 'string' then
-    ao.send({ Target = request.From, Data = data })
-  else
-    ao.send({ Target = request.From, Data = json.encode(data) })
-  end
-end
-
 local function replyError(request, errorMsg)
   local action = (request.Tags and request.Tags.Action) or request.Action or "Unknow-Action"
   action = action .. "-Error"
@@ -89,49 +80,83 @@ local function replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
+  print('Reply ' .. action .. ' ' .. errString)
   ao.send({ Target = request.From, Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
+---Reply with data
+---@param data string|table
+local function replyData(request, data)
+  assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
+  if type(data) == 'string' then
+    ao.send({ Target = request.From,  Data = data })
+  else
+    ao.send({ Target = request.From,  Data = json.encode(data) })
+  end
+end
 
-CommunityManager = {
-  CreateCommunity = function(msg)
-    local community = json.decode(msg.Data)
-    local address = msg.From
-    -- Check if a column with the same name already exists
-    if not Users[address] then
-      -- Create a new column with the msg.Id value as its name and assign it to an empty table
-      Users[address] = {}
-    end
 
-    local uuid = createUuid()
+Actions = {
+  Community = {
+    CreateCommunity = function(msg)
+      local community = json.decode(msg.Data)
+      local address = msg.From
+      -- Check if a column with the same name already exists
+      if not Users[address] then
+        -- Create a new column with the msg.Id value as its name and assign it to an empty table
+        Users[address] = {}
+      end
 
-    if Communities[uuid] then
-      return replyError(msg, 'uuid existed.')
-    end
+      local uuid = createUuid()
 
-    Communities[uuid] = community
-    Communities[uuid].uuid = uuid
-    Communities[uuid].creator = address
-    Communities[uuid]['timestamp'] = msg.Timestamp
-    Communities[uuid]['buildnum'] = 1
+      if Communities[uuid] then
+        return replyError(msg, 'uuid existed.')
+      end
 
-    if not Invites[address] then
-      Invites[address] = {}
-    end
-    if not Invites[address][uuid] then
-      Invites[address][uuid] = { time = msg.Timestamp }
-    end
+      Communities[uuid] = community
+      Communities[uuid].uuid = uuid
+      Communities[uuid].creator = address
+      Communities[uuid]['timestamp'] = msg.Timestamp
+      Communities[uuid]['buildnum'] = 1
 
-    local copy = deepCopy(Communities[uuid])
-    copy.isJoined = true
-    copy.joinTime = msg.Timestamp
-    replyData(msg, json.encode(copy))
-  end,
+      if not Invites[address] then
+        Invites[address] = {}
+      end
+      if not Invites[address][uuid] then
+        Invites[address][uuid] = { time = msg.Timestamp }
+      end
 
-  GetCommunities = function (msg)
-    local communities = {}
+      local copy = deepCopy(Communities[uuid])
+      copy.isJoined = true
+      copy.joinTime = msg.Timestamp
+      replyData(msg, json.encode(copy))
+    end,
 
-    for uuid,community in pairs(Communities) do
+    GetCommunities = function(msg)
+      local communities = {}
+
+      for uuid, community in pairs(Communities) do
+        local copy = deepCopy(community)
+        copy.isJoined = false
+
+        local address = msg.Tags.userAddress
+        if address and Invites[address] and Invites[address][uuid] then
+          copy.isJoined = true
+          copy.joinTime = Invites[address][uuid].time
+        end
+        table.insert(communities, copy)
+      end
+
+      replyData(msg, communities)
+    end,
+
+    GetCommunity = function(msg)
+      local community = deepCopy(Communities[msg.Tags.Uuid])
+      local uuid = msg.Tags.Uuid
+      if not community then
+        return replyError(msg, "Not found.")
+      end
+
       local copy = deepCopy(community)
       copy.isJoined = false
 
@@ -140,40 +165,20 @@ CommunityManager = {
         copy.isJoined = true
         copy.joinTime = Invites[address][uuid].time
       end
-      table.insert(communities, copy)
-    end
 
-    replyData(msg, communities)
-  end,
-
-  GetCommunity = function(msg)
-    local community = deepCopy(Communities[msg.Tags.Uuid])
-    local uuid = msg.Tags.Uuid
-    if not community then
-      return replyError(msg, "Not found.")
-    end
-
-    local copy = deepCopy(community)
-    copy.isJoined = false
-
-    local address = msg.Tags.userAddress
-    if address and Invites[address] and Invites[address][uuid] then
-      copy.isJoined = true
-      copy.joinTime = Invites[address][uuid].time
-    end
-
-    replyData(msg, copy)
-  end,
-
-  actions = { 'CreateCommunity', 'GetCommunities', 'GetCommunity' },
+      replyData(msg, copy)
+    end,
+  }
 }
 
-for _, action in pairs(CommunityManager.actions) do
-  Handlers.add(
-    action,
-    Handlers.utils.hasMatchingTag("Action", action),
-    function(msg) CommunityManager[action](msg) end
-  )
+for _, actions in pairs(Actions) do
+  for name, action in pairs(actions) do
+    Handlers.add(
+      name,
+      name,
+      function(msg) action(msg) end
+    )
+  end
 end
 
 -- TODO only update specific field, don't replace the whole Communities[uuid]
@@ -399,7 +404,7 @@ Handlers.add(
 Handlers.add(
   "GetUserByAddress",
   Handlers.utils.hasMatchingTag("Action", "GetUserByAddress"),
-  function (msg)
+  function(msg)
     local userInfo = Users[msg.Tags.Address]
     if not userInfo then
       return replyError(msg, "Not found.")
