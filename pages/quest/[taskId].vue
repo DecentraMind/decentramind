@@ -646,15 +646,8 @@ const onClickShareToTwitter = () => {
               <div class="text-justify text-md leading-8">
                 {{ task.intro }}
               </div>
-              <div class="flex items-center justify-between">
-                <TaskStatus size="lg" :task="task" :address="address" />
-                <UButton
-                  color="white"
-                  icon="heroicons:user-plus"
-                  label="Invite a Friend"
-                  @click="isInviteModalOpen = true"
-                />
-              </div>
+              
+              <TaskStatus size="lg" :task="task" :address="address" />
 
               <UDivider />
 
@@ -705,6 +698,13 @@ const onClickShareToTwitter = () => {
                   {{ task.rule }}
                 </p>
               </div>
+              <UButton
+                icon="heroicons:link"
+                variant="soft"
+                label="Your Quest Invitation Link"
+                class="w-fit h-10"
+                @click="isInviteModalOpen = true"
+              />
               <div
                 v-if="!isLoading && isIng && !isJoined"
                 class="flex justify-center"
@@ -894,17 +894,15 @@ const onClickShareToTwitter = () => {
     <UModal v-model="isInviteModalOpen">
       <UCard>
         <template #header>
-          <div class="flex items-center justify-between">
-            <h3
-              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-            >
-              {{ $t('Your Quest Invitation Link') }}
-            </h3>
-          </div>
+          <h3
+            class="text-center font-semibold"
+          >
+            {{ $t('Your Quest Invitation Link') }}
+          </h3>
         </template>
         <div class="flex-col-center w-full gap-y-4">
           <div class="w-full h-full pl-2 flex items-center bg-slate-50 rounded-md cursor-pointer" @click="onClickCopyInviteCode">
-            <p class="w-full text-gray-500 font-semibold">{{ inviteUrl }}</p>
+            <p class="w-full text-center text-gray-500 font-semibold">{{ inviteUrl }}</p>
             <UButton size="lg" icon="ri:checkbox-multiple-blank-line" variant="ghost" />
           </div>
           <UButton size="lg" label="Share to Twitter" icon="ri:twitter-fill" variant="soft" @click="onClickShareToTwitter" />
