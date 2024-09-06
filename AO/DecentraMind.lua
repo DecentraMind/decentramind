@@ -1,4 +1,4 @@
-Variant = '0.4.8'
+Variant = '0.4.9'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -285,9 +285,9 @@ Actions = {
       local copy = deepCopy(community)
       copy.isJoined = false
       local address = msg.From
-      if CommunityInvites[address] and CommunityInvites[address][uuid] then
+      if CommunityInvites[address] and CommunityInvites[address][setting.uuid] then
         copy.isJoined = true
-        copy.joinTime = CommunityInvites[address][uuid].time
+        copy.joinTime = CommunityInvites[address][setting.uuid].time
       end
       replyData(msg, json.encode(copy))
     end,
@@ -653,13 +653,10 @@ Actions = {
     -- TODO only update specific field, don't replace the whole Users[address]
     UpdateUser = function(msg)
       local address = msg.From
-      -- 检查是否已经存在相同名字的列
-      if not Users[address] then
-        -- 新建一个以 msg.Id 值为名字的列，并赋值为一个空表
-        Users[address] = {}
-      end
+      local user = json.decode(msg.Data)
+      -- TODO verify user fields
 
-      Users[address] = json.decode(msg.Data)
+      Users[address] = user
     end,
 
     -- invite info and related user info
