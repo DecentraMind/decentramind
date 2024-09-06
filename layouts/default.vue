@@ -20,7 +20,7 @@ onMounted(async () => {
       return
     }
 
-    Promise.all([loadCommunityList(address), getUser()])
+    await Promise.all([loadCommunityList(address), getUser()])
   } catch (error) {
     console.error('Error fetching data:', error)
   }

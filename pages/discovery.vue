@@ -3,20 +3,13 @@ import { getCommunityBannerUrl, defaultCommunityLogo, shortString } from '~/util
 
 const { address, doLogout, doLogin } = $(aoStore())
 
-const { communityList, vouch, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
+const { communityList, isCommunityListLoading, communityListError, vouch, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
 
 const { showError, showSuccess } = $(notificationStore())
 
 const router = useRouter()
 
 let vouchModalOpen = $ref(false)
-
-let communityLoading = $ref(true)
-watch(communityList, async () => {
-  if(communityList.length) {
-    communityLoading = false
-  }
-})
 
 const sortedCommunities = $computed(() => {
   // TODO if buildnum of a, b are equal, sort by create time (community.timestamp)
@@ -117,9 +110,20 @@ const checkVouch = async () => {
       </template>
     </UDashboardNavbar>
 
-    <div class="w-full overflow-y-auto h-[calc(100%-var(--header-height))] p-10 pb-20 bg-grid">
-      <div v-if="!communityList.length && communityLoading" class="absolute top-0 left-0 w-full h-screen flex justify-center items-center">
+    <div class="w-full overflow-y-auto h-[calc(100%-var(--header-height))] p-10 pb-20 bg-grid flex-col-center">
+      <div v-if="isCommunityListLoading">
         <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
+      </div>
+      <div v-else>
+        <UCard>
+          <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
+            <p v-if="!communityListError">Nothing here，please create the first community.</p>
+            <div v-else class="flex-col-center gap-y-4">
+              <p>Failed to load community list.</p>
+              <UButton variant="soft" class="block" @click="loadCommunityList(address)">Retry</UButton>
+            </div>
+          </div>
+        </UCard>
       </div>
 
       <div class=" mx-auto w-full">

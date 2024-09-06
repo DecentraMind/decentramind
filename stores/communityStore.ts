@@ -224,7 +224,7 @@ export const communityStore = defineStore('communityStore', () => {
     const res = await messageResultParsed({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'updateCommunity' },
+        { name: 'Action', value: 'UpdateCommunity' },
       ],
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
@@ -234,23 +234,35 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, res)
   }
 
+  let isCommunityListLoading = $ref(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let communityListError = $ref<string>()
   /**
    * Get community list method. This function will update communityList and joinedCommunityList cache.
    * */
   const loadCommunityList = async (address?: string) => {
+    isCommunityListLoading = true
+    communityListError = undefined
+
     const tags = [
       { name: 'Action', value: 'GetCommunities' }
     ]
     if (address) {
       tags.push({ name: 'userAddress', value: address })
     }
-    const result = await dryrun({
-      process: aoCommunityProcessID,
-      tags
-    })
-    const data = extractResult<string>(result)
-    communityList = JSON.parse(data) as Community[]
-    console.log('communityList refreshed', {communityList, address})
+    try {
+      const data = await dryrunResult<string>({
+        process: aoCommunityProcessID,
+        tags
+      })
+      communityList = JSON.parse(data) as Community[]
+      console.log('communityList refreshed', {communityList, address})
+    } catch (error) {
+      console.error('Failed to fetching community list:', error)
+      communityListError = error instanceof Error ? error.message : (typeof error === 'string' ? error : 'Unknown error')
+    } finally {
+      isCommunityListLoading = false
+    }
 
     return communityList
   }
@@ -339,7 +351,7 @@ export const communityStore = defineStore('communityStore', () => {
     const join = await message({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'join' },
+        { name: 'Action', value: 'Join' },
         { name: 'invite', value: inviterAddress },
       ],
       signer: createDataItemSigner(window.arweaveWallet),
@@ -632,6 +644,8 @@ Handlers.add(
     makeCommunityChat,
     getLocalCommunity,
     loadCommunityList,
+    isCommunityListLoading,
+    communityListError,
     addCommunity,
     updateCommunity,
     joinCommunity,
