@@ -150,11 +150,16 @@ watch(
           />
         </div>
         <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
-          <!--<UButton color="white" variant="link" label="Invite people" leading-icon="i-heroicons-plus" />-->
-          <UButton color="white" variant="ghost" icon="heroicons:user-plus" :class="classes.bottomButtons">Invite People</UButton>
+          <UButton
+            color="white"
+            variant="ghost"
+            icon="heroicons:link"
+            :class="classes.bottomButtons"
+          >
+            Invite People
+          </UButton>
           <template #panel>
             <div class="p-4 w-80">
-              <div>Invite URL:</div>
               <div class="flex items-center">
                 <p ref="textToCopy" class="break-all mr-2 text-xs">
                   https://decentramind.club/invite/{{ community.uuid }}&{{ address }}

@@ -1,4 +1,4 @@
-Variant = '0.4.10'
+Variant = '0.4.11'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -629,7 +629,7 @@ Actions = {
       local uuid = msg.Tags.CommunityUuid
       local communityUsers = {}
 
-      for address, inviteInfo in pairs(Invites) do
+      for address, inviteInfo in pairs(CommunityInvites) do
         if inviteInfo[uuid] then
           if not Users[address] then
             Users[address] = { name = '', avatar = '' }
