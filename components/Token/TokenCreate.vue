@@ -145,7 +145,7 @@ const emit = defineEmits(['close-modal'])
         </template>
         <UContainer class="w-full flex justify-around">
           <UButton
-            :to="`https://www.ao.link/#/entity/${tokenProcessID}?tab=source-code`"
+            :to="`https://www.ao.link/#/token/${tokenProcessID}`"
             active-class="text-primary"
             target="_blank"
             inactive-class="text-primary"

@@ -77,7 +77,7 @@ watch(
         <img :src="getCommunityBannerUrl(community.banner)" :alt="community.name" class="object-cover w-full h-52">
       </template>
 
-      <div>
+      <div class="pb-4">
         <div class="flex justify-between items-center h-[calc(var(--header-height))]">
           <div class="max-w-[70%] text-3xl break-all">{{ community.name }}</div>
           <div>

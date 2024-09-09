@@ -1,4 +1,4 @@
-Variant = '0.4.9'
+Variant = '0.4.10'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -659,12 +659,13 @@ Actions = {
       Users[address] = user
     end,
 
+    -- TODO remove CommunityInvites, only keep Invites
     -- invite info and related user info
     GetInvitesByInviter = function(msg)
       local invites = {}
       local relatedUsers = {}
 
-      for inviteeAddress, value in pairs(Invites) do
+      for inviteeAddress, value in pairs(CommunityInvites) do
         for communityID, inviteInfo in pairs(value) do
           if inviteInfo.invite == msg.Tags.Inviter then
             local temp = {
