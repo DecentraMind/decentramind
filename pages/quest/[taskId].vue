@@ -147,32 +147,33 @@ const columns = [{
 }, {
   key: 'address',
   label: t('Wallet'),
-  class: 'text-center',
+  class: 'text-left',
   rowClass: 'font-mono'
 }, {
   key: 'brandEffect',
   label: t('Brand'),
-  class: 'text-center',
-  rowClass: 'font-mono text-right'
+  class: 'text-left',
+  rowClass: 'font-mono text-left'
 }, {
   key: 'inviteCount',
   label: t('Friends'),
-  class: 'text-center',
-  rowClass: 'font-mono text-right'
+  class: 'text-left',
+  rowClass: 'font-mono text-left'
 }, {
   key: 'audience',
   label: t('Popularity'),
-  class: 'text-center',
-  rowClass: 'font-mono text-right'
+  class: 'text-left',
+  rowClass: 'font-mono text-left'
 }, {
   key: 'url',
-  class: 'text-center',
+  class: 'text-left',
+  rowClass: 'font-mono text-left',
   label: t('URL'),
 }, {
   key: 'score',
   label: t('Total Score'),
-  class: 'text-center',
-  rowClass: 'font-mono text-right'
+  class: 'text-left',
+  rowClass: 'font-mono text-left'
 }, {
   key: 'rewardHtml',
   label: t('Bounty'),
