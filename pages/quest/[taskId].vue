@@ -101,7 +101,7 @@ onMounted(async () => {
 
     submissions.forEach(s => {
       s.rewardHtml = calcRewardHtml(s.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
-      console.log('re', s.rewardHtml, s.calculatedBounties)
+      // console.log('rewardHtml', s.rewardHtml, s.calculatedBounties)
     })
     console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
@@ -128,7 +128,7 @@ onMounted(async () => {
       }
     }
 
-    console.log({ isSubmitted })
+    // console.log({ isSubmitted })
   } catch (e) {
     console.error(e)
     // TODO show a page size error overlay and reload button

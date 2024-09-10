@@ -30,7 +30,7 @@ async function join() {
   await joinTask(task.processID, code)
 
   showSuccess('join success')
-  await router.push({path: '/quest/' + task.processID})
+  await router.push({path: '/community/' + task.communityUuid})
 }
 
 let inviter = $ref<UserInfo>()
@@ -67,9 +67,9 @@ onMounted(async () => {
         <UIcon name="svg-spinners:3-dots-fade" size="xl" />
       </div>
 
-      <div v-if="!isLoading && community && inviter && inviteInfo && task" class="flex justify-between">
-        <p><span :title="inviteInfo.inviterAddress" class="font-bold">{{ inviter.name ? `${inviter.name} (${shortString(inviteInfo.inviterAddress)})` : shortString(inviteInfo.inviterAddress) }}</span> invited you to join a quest:</p>
-        <p class="font-bold">{{ task.name }}</p>
+      <div v-if="!isLoading && community && inviter && inviteInfo" class="flex justify-between">
+        <p><span :title="inviteInfo.inviterAddress" class="font-bold">{{ inviter.name ? `${inviter.name} (${shortString(inviteInfo.inviterAddress)})` : shortString(inviteInfo.inviterAddress) }}</span> invited you to join a community:</p>
+        <p class="font-bold">{{ community.name }}</p>
       </div>
 
       <template #footer>
