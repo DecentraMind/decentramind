@@ -33,6 +33,13 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'K8nurc9H0_ZQm17jbs3ryEs6MrlX-oIK_krpprWlQ-Q'
   },
+  USDC: {
+    ticker: 'USDC',
+    label: 'Ethereum-Wrapped USDC',
+    processID: '7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ',
+    denomination: 6,
+    logo: 'HZlLK9uWlNbhDbxXXe8aPaXZPqq9PKzpdH93ol-BKis'
+  },
   AO: {
     ticker: 'AO',
     label: 'AO',
@@ -47,19 +54,19 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
   },
-  LINUX: {
-    ticker: 'PNTS',
-    label: 'LINUX',
-    processID: 'Z-ZCfNLmkEdBrJpW44xNRVoFhEEOY4tmSrmLLd5L_8I',
+  LLAMA : {
+    ticker: 'LLAMA',
+    label: 'Llama Coin',
+    processID: 'pazXumQI-HPH7iFGfTC-4_7biSnqz_U67oFAGry5zUY',
     denomination: 12,
-    logo: 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
+    logo: '9FSEgmUsrug7kTdZJABDekwTGJy7YG7KaN5khcbwcX4'
   },
-  Arena: {
-    ticker: 'PNTS',
-    label: 'Arena',
-    processID: '-_8-spu6PyX-yYaPwf_1owaWc7Rakhbe8TaJ0Yschig',
-    denomination: 12,
-    logo: 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
+  tIO: {
+    ticker: 'tIO',
+    label: 'tIO',
+    processID: 'agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA',
+    denomination: 6,
+    logo: 'qUjrTmHdVjXX4D6rU6Fik02bUOzWkOR6oOqUg39g4-s'
   },
   BRKTST: {
     ticker: 'BRKTST',
@@ -88,31 +95,7 @@ export const tokens: Record<string, Token> = {
     processID: 'BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc',
     denomination: 12,
     logo: 'quMiswyIjELM0FZtjVSiUtg9_-pvQ8K25yfxrp1TgnQ'
-  },
-  EARTH: {
-    ticker: 'EARTH',
-    label: 'Earth',
-    processID: 'PBg5TSJPQp9xgXGfjN27GA28Mg5bQmNEdXH2TXY4t-A',
-    denomination: 12
-  },
-  FIRE: {
-    ticker: 'FIRE',
-    label: 'Fire',
-    processID: 'KmGmJieqSRJpbW6JJUFQrH3sQPEG9F6DQETlXNt4GpM',
-    denomination: 12
-  },
-  AIR: {
-    ticker: 'AIR',
-    label: 'Air',
-    processID: '2nfFJb8LIA69gwuLNcFQezSuw4CXPE4--U-j-7cxKOU',
-    denomination: 12
-  },
-  'FIRE-EARTH': {
-    ticker: 'FIRE-EARTH',
-    label: 'Lava',
-    processID: 'NkXX3uZ4oGkQ3DPAWtjLb2sTA-yxmZKdlOlEHqMfWLQ',
-    denomination: 12
-  },
+  }
 }
 
 export type TokenName = keyof typeof tokens
