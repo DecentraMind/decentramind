@@ -602,7 +602,7 @@ const inviteUrl = $computed(() => {
 const onClickShareToTwitter = () => {
   if (!inviteUrl || typeof window === 'undefined') return
 
-  window.open(`https://twitter.com/intent/tweet?text=Check%20out%20this%20Quest%20on%20DecentraMind!&url=${inviteUrl}`, '_blank')
+  window.open(`https://twitter.com/intent/tweet?text=Check%20out%20this%20community%20on%20DecentraMind!&url=${inviteUrl}`, '_blank')
 }
 </script>
 
@@ -644,7 +644,7 @@ const onClickShareToTwitter = () => {
         >
           <template #description>
             <div class="flex flex-col space-y-6">
-              <div class="text-justify text-md leading-8">
+              <div class="text-justify text-md leading-8 whitespace-pre-line">
                 {{ task.intro }}
               </div>
               
