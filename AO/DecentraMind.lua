@@ -1,4 +1,4 @@
-Variant = '0.4.15'
+Variant = '0.4.16'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -780,7 +780,7 @@ Actions = {
         return replyError(msg, 'Community not found.')
       end
 
-      if InviteCodesByInviterByCommunityUuid[address] then
+      if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
         return replyData(msg, InviteCodesByInviterByCommunityUuid[address][uuid])
       end
 
