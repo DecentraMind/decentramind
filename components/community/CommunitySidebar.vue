@@ -63,11 +63,9 @@ watch(
 )
 
 let inviteCode = $ref('')
-
-onMounted(async () => {
+watch(() =>community, async () => {
   if (!community) return
   inviteCode = await getCommunityInviteCode(community.uuid)
-  console.log({inviteCode})
 })
 </script>
 <template>

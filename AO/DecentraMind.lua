@@ -1,4 +1,4 @@
-Variant = '0.4.14'
+Variant = '0.4.15'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -796,6 +796,10 @@ Actions = {
         return replyError(msg, 'Invite code collision, please try again.')
       end
       Invites[code] = invite
+
+      if not InviteCodesByInviterByCommunityUuid[address] then
+        InviteCodesByInviterByCommunityUuid[address] = {}
+      end
       InviteCodesByInviterByCommunityUuid[address][uuid] = code
       replyData(msg, code)
     end,
