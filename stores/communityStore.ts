@@ -386,15 +386,15 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   const getCommunityInviteCode = async (communityUuid: string) => {
-    const result = await dryrun({
+    const code = await messageResult<string>({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'GetCommunityInviteCode' },
         { name: 'CommunityUuid', value: communityUuid }
       ],
+      signer: createDataItemSigner(window.arweaveWallet),
     })
-    const data = extractResult<string>(result)
-    return data
+    return code
   }
 
   //Modification of personal information

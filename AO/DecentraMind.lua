@@ -1,4 +1,4 @@
-Variant = '0.4.16'
+Variant = '0.4.17'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -776,6 +776,7 @@ Actions = {
     GetCommunityInviteCode = function(msg)
       local address = msg.From
       local uuid = msg.Tags.CommunityUuid
+
       if not Communities[uuid] then
         return replyError(msg, 'Community not found.')
       end
@@ -796,6 +797,7 @@ Actions = {
         return replyError(msg, 'Invite code collision, please try again.')
       end
       Invites[code] = invite
+      print('Return new community invite code: ' .. code)
 
       if not InviteCodesByInviterByCommunityUuid[address] then
         InviteCodesByInviterByCommunityUuid[address] = {}
