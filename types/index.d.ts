@@ -253,6 +253,7 @@ export type TaskForm = Omit<Task, 'createTime'|'ownerAddress'|'submittersCount'|
   bounties: TaskFormBounty[]
 }
 
+// TODO remove
 export type InviteInfo = {
   time: number
   inviteeAddress: string
@@ -265,7 +266,8 @@ export type InviteCodeInfo = {
   taskPid?: string
   communityUuid: string
   inviterAddress: string
-  invitees: Record<[inviteeAddress: string], { joinTime: number }>
+  /** invitee address to join time */
+  invitees: Record<string, { joinTime: number }>
 }
 
 export type RelatedUserMap = {
