@@ -86,7 +86,7 @@ onMounted(async () => {
       throw new Error('Failed to get task ' + taskPid)
     }
 
-    if (!task.inviteCode && address && now.value < task.endTime) {
+    if (!task.inviteCode && address) {
       task.inviteCode = await createTaskInviteCode(taskPid)
       console.log('create invite code ', task.inviteCode)
     }
@@ -706,6 +706,7 @@ const onClickShareToTwitter = () => {
                 </p>
               </div>
               <UButton
+                v-if="task.inviteCode"
                 icon="heroicons:link"
                 variant="soft"
                 label="Your Quest Invitation Link"

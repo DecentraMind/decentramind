@@ -1,4 +1,4 @@
-Variant = '0.4.18'
+Variant = '0.4.19'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -211,7 +211,9 @@ local function createInviteCode(type, address, pidOrCommunityUuid)
     if not InviteCodesByInviterByTaskPid[address] then
       InviteCodesByInviterByTaskPid[address] = {}
     end
-    assert(not InviteCodesByInviterByTaskPid[address][pidOrCommunityUuid], 'Invite code already exists.')
+    if InviteCodesByInviterByTaskPid[address][pidOrCommunityUuid] then
+      return InviteCodesByInviterByTaskPid[address][pidOrCommunityUuid]
+    end
 
     invite = {
       type = type,
@@ -229,7 +231,9 @@ local function createInviteCode(type, address, pidOrCommunityUuid)
     if not InviteCodesByInviterByCommunityUuid[address] then
       InviteCodesByInviterByCommunityUuid[address] = {}
     end
-    assert(not InviteCodesByInviterByCommunityUuid[address][pidOrCommunityUuid], 'Invite code already exists.')
+    if InviteCodesByInviterByCommunityUuid[address][pidOrCommunityUuid] then
+      return InviteCodesByInviterByCommunityUuid[address][pidOrCommunityUuid]
+    end
 
     invite = {
       type = type,
@@ -753,9 +757,9 @@ Actions = {
         return replyData(msg, code)
       end
 
-      if msg.Timestamp > Tasks[pid].endTime then
-        return replyError(msg, 'The task has already ended.')
-      end
+      -- if msg.Timestamp > Tasks[pid].endTime then
+      --   return replyError(msg, 'The task has already ended.')
+      -- end
       -- TODO check if address is a registered user
       local code = createInviteCode('task', address, pid)
 
