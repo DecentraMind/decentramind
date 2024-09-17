@@ -12,7 +12,8 @@ const props = defineProps<{
 const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
-const { exitCommunity, getCommunityInviteCode } = $(communityStore())
+const { exitCommunity } = $(communityStore())
+const { createCommunityInviteCode } = useTaskStore()
 const { showError, showSuccess } = $(notificationStore())
 
 const router = useRouter()
@@ -62,10 +63,9 @@ watch(
   }
 )
 
-let inviteCode = $ref('')
 watch(() =>community, async () => {
-  if (!community) return
-  inviteCode = await getCommunityInviteCode(community.uuid)
+  if (!community || community.inviteCode) return
+  community.inviteCode = await createCommunityInviteCode(community.uuid)
 })
 </script>
 <template>
@@ -156,7 +156,7 @@ watch(() =>community, async () => {
             @click="isSettingModalOpen = true"
           />
         </div>
-        <UPopover v-if="inviteCode" mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
+        <UPopover v-if="community.inviteCode" mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
           <UButton
             color="white"
             variant="ghost"
@@ -169,7 +169,7 @@ watch(() =>community, async () => {
             <div class="p-4 w-80">
               <div class="flex items-center">
                 <p ref="textToCopy" class="break-all mr-2 text-xs">
-                  https://decentramind.club/i/{{ inviteCode }}
+                  https://decentramind.club/i/{{ community.inviteCode }}
                 </p>
                 <UButton
                   icon="ri:checkbox-multiple-blank-line"

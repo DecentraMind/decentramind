@@ -1,4 +1,4 @@
-Variant = '0.4.17'
+Variant = '0.4.18'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -193,6 +193,58 @@ local function uid(length)
   return id
 end
 
+---@param type string 'task' | 'community'
+---@param address string
+---@param pidOrCommunityUuid string
+---@return string
+local function createInviteCode(type, address, pidOrCommunityUuid)
+  assert(type == 'task' or type == 'community', 'Invalid invite code type: ' .. type)
+  assert(pidOrCommunityUuid, 'Task pid or community uuid is required.')
+
+  local code = uid()
+  ---@type Invite
+  local invite
+
+  if type == 'task' then
+    assert(Tasks[pidOrCommunityUuid], 'Task not found.')
+
+    if not InviteCodesByInviterByTaskPid[address] then
+      InviteCodesByInviterByTaskPid[address] = {}
+    end
+    assert(not InviteCodesByInviterByTaskPid[address][pidOrCommunityUuid], 'Invite code already exists.')
+
+    invite = {
+      type = type,
+      inviterAddress = address,
+      taskPid = pidOrCommunityUuid,
+      communityUuid = Tasks[pidOrCommunityUuid].communityUuid,
+      invitees = {}
+    }
+
+    InviteCodesByInviterByTaskPid[address][pidOrCommunityUuid] = code
+
+  elseif type == 'community' then
+    assert(Communities[pidOrCommunityUuid], 'Community not found.')
+
+    if not InviteCodesByInviterByCommunityUuid[address] then
+      InviteCodesByInviterByCommunityUuid[address] = {}
+    end
+    assert(not InviteCodesByInviterByCommunityUuid[address][pidOrCommunityUuid], 'Invite code already exists.')
+
+    invite = {
+      type = type,
+      communityUuid = pidOrCommunityUuid,
+      inviterAddress = address,
+      invitees = {}
+    }
+
+    InviteCodesByInviterByCommunityUuid[address][pidOrCommunityUuid] = code
+  end
+
+  Invites[code] = invite
+
+  return code
+end
 
 Actions = {
   Community = {
@@ -331,6 +383,8 @@ Actions = {
         UserCommunities[address] = {}
       end
       UserCommunities[address][uuid] = userCommunity
+
+      createInviteCode('community', address, uuid)
     end,
 
     Exit = function(msg)
@@ -471,6 +525,10 @@ Actions = {
         end
       end
       Tasks[pid].builders[msg.From] = builder
+
+      -- create task invite code for the new builder
+      local code = createInviteCode('task', msg.From, pid)
+      replyData(msg, code)
     end,
 
     AddSubmission = function(msg)
@@ -689,27 +747,9 @@ Actions = {
       local pid = msg.Tags.TaskPid
       local uuid = msg.Tags.CommunityUuid
 
-      if not Tasks[pid] then
-        if not uuid then
-          return replyError(msg, 'Community uuid is required.')
-        end
-        if not Communities[uuid] then
-          return replyError(msg, 'Community not found.')
-        end
-
+      if not pid or not Tasks[pid] then
         -- create invite code for the community
-        local code = uid()
-        local invite = {
-          type = 'community',
-          communityUuid = uuid,
-          inviterAddress = address,
-          invitees = {}
-        }
-        Invites[code] = invite
-        if not InviteCodesByInviterByCommunityUuid[address] then
-          InviteCodesByInviterByCommunityUuid[address] = {}
-        end
-        InviteCodesByInviterByCommunityUuid[address][uuid] = code
+        local code = createInviteCode('community', address, uuid)
         return replyData(msg, code)
       end
 
@@ -717,26 +757,9 @@ Actions = {
         return replyError(msg, 'The task has already ended.')
       end
       -- TODO check if address is a registered user
+      local code = createInviteCode('task', address, pid)
 
-      if not InviteCodesByInviterByTaskPid[address] then
-        InviteCodesByInviterByTaskPid[address] = {}
-      end
-
-      if not InviteCodesByInviterByTaskPid[address][pid] then
-        local code = uid()
-        InviteCodesByInviterByTaskPid[address][pid] = code
-        local invite = {
-          type = 'task',
-          taskPid = pid,
-          communityUuid = Tasks[pid].communityUuid,
-          inviterAddress = address,
-          invitees = {}
-        }
-        Invites[code] = invite
-        InviteCodesByInviterByTaskPid[address][pid] = code
-      end
-
-      replyData(msg, InviteCodesByInviterByTaskPid[address][pid])
+      replyData(msg, code)
     end,
 
     GetInviteByCode = function(msg)
@@ -771,39 +794,6 @@ Actions = {
       end
 
       return replyError(msg, 'Invite type not supported.')
-    end,
-
-    GetCommunityInviteCode = function(msg)
-      local address = msg.From
-      local uuid = msg.Tags.CommunityUuid
-
-      if not Communities[uuid] then
-        return replyError(msg, 'Community not found.')
-      end
-
-      if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
-        return replyData(msg, InviteCodesByInviterByCommunityUuid[address][uuid])
-      end
-
-      -- create a community invite code for the user
-      local code = uid()
-      local invite = {
-        type = 'community',
-        communityUuid = uuid,
-        inviterAddress = address,
-        invitees = {}
-      }
-      if (Invites[code]) then
-        return replyError(msg, 'Invite code collision, please try again.')
-      end
-      Invites[code] = invite
-      print('Return new community invite code: ' .. code)
-
-      if not InviteCodesByInviterByCommunityUuid[address] then
-        InviteCodesByInviterByCommunityUuid[address] = {}
-      end
-      InviteCodesByInviterByCommunityUuid[address][uuid] = code
-      replyData(msg, code)
     end,
 
     GetInvitesByInviter = function(msg)

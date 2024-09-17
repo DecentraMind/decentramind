@@ -32,7 +32,7 @@ const {
   getTask,
   submitSpaceTask,
   joinTask,
-  createInviteCode
+  createTaskInviteCode
 } = useTaskStore()
 
 const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(communityStore())
@@ -87,7 +87,7 @@ onMounted(async () => {
     }
 
     if (!task.inviteCode && address && now.value < task.endTime) {
-      task.inviteCode = await createInviteCode(taskPid)
+      task.inviteCode = await createTaskInviteCode(taskPid)
       console.log('create invite code ', task.inviteCode)
     }
 

@@ -385,18 +385,6 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, 'isJoined', false)
   }
 
-  const getCommunityInviteCode = async (communityUuid: string) => {
-    const code = await messageResult<string>({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'GetCommunityInviteCode' },
-        { name: 'CommunityUuid', value: communityUuid }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-    return code
-  }
-
   //Modification of personal information
   const updateUser = async (userData: UserInfo) => {
     const jsonString = JSON.stringify(userData)
@@ -556,7 +544,6 @@ export const communityStore = defineStore('communityStore', () => {
     updateCommunity,
     joinCommunity,
     exitCommunity,
-    getCommunityInviteCode,
     updateUser,
     getUser,
     getUserByAddress,

@@ -108,6 +108,8 @@ export type Community = {
 
   isJoined: boolean
   joinTime?: number
+  
+  inviteCode?: string
 }
 
 /**
