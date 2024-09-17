@@ -12,7 +12,7 @@ const props = defineProps<{
 const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
-const { exitCommunity } = $(communityStore())
+const { exitCommunity, getCommunityInviteCode } = $(communityStore())
 const { showError, showSuccess } = $(notificationStore())
 
 const router = useRouter()
@@ -61,6 +61,14 @@ watch(
     currentHash.value = newHash || '#quests'
   }
 )
+
+let inviteCode = $ref('')
+
+onMounted(async () => {
+  if (!community) return
+  inviteCode = await getCommunityInviteCode(community.uuid)
+  console.log({inviteCode})
+})
 </script>
 <template>
   <UDashboardPanel :width="384" class="w-96" collapsible>
@@ -150,7 +158,7 @@ watch(
             @click="isSettingModalOpen = true"
           />
         </div>
-        <UPopover mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
+        <UPopover v-if="inviteCode" mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
           <UButton
             color="white"
             variant="ghost"
@@ -163,7 +171,7 @@ watch(
             <div class="p-4 w-80">
               <div class="flex items-center">
                 <p ref="textToCopy" class="break-all mr-2 text-xs">
-                  https://decentramind.club/invite/{{ community.uuid }}&{{ address }}
+                  https://decentramind.club/i/{{ inviteCode }}
                 </p>
                 <UButton
                   icon="ri:checkbox-multiple-blank-line"

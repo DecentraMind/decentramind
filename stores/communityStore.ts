@@ -385,6 +385,18 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, 'isJoined', false)
   }
 
+  const getCommunityInviteCode = async (communityUuid: string) => {
+    const result = await dryrun({
+      process: aoCommunityProcessID,
+      tags: [
+        { name: 'Action', value: 'GetCommunityInviteCode' },
+        { name: 'CommunityUuid', value: communityUuid }
+      ],
+    })
+    const data = extractResult<string>(result)
+    return data
+  }
+
   //Modification of personal information
   const updateUser = async (userData: UserInfo) => {
     const jsonString = JSON.stringify(userData)
@@ -544,6 +556,7 @@ export const communityStore = defineStore('communityStore', () => {
     updateCommunity,
     joinCommunity,
     exitCommunity,
+    getCommunityInviteCode,
     updateUser,
     getUser,
     getUserByAddress,
@@ -551,7 +564,7 @@ export const communityStore = defineStore('communityStore', () => {
     setCurrentCommunityUserMap,
     currentCommunityUserMap,
     getCommunity,
-    clearCommunityData
+    clearCommunityData,
   })
 })
 

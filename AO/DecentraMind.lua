@@ -1,4 +1,4 @@
-Variant = '0.4.12'
+Variant = '0.4.14'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -22,13 +22,6 @@ local json = require("json")
 
 --- @type table<string, Community> Communities indexed by community's uuid
 Communities = Communities or {}
-
----@class CommunityInviteInfo
----@field invite string|nil The inviter's address, who invited this user
----@field time number The timestamp when user join community.
-
----@type table<string, table<string, CommunityInviteInfo>> This is the OLD user-communities relation. community invite infos indexed by invitee's address and community's uuid
-CommunityInvites = CommunityInvites or {}
 
 ---@class User
 ---@field name string
@@ -262,6 +255,10 @@ Actions = {
       if address and UserCommunities[address] and UserCommunities[address][uuid] then
         copy.isJoined = true
         copy.joinTime = UserCommunities[address][uuid].joinTime
+
+        if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
+          copy.inviteCode = InviteCodesByInviterByCommunityUuid[address][uuid]
+        end
       end
 
       replyData(msg, copy)
@@ -312,7 +309,6 @@ Actions = {
         end
       end
 
-      --- TODO remove CommunityInvites related code
       if not UserCommunities[address] then
         UserCommunities[address] = {}
       end
@@ -404,14 +400,15 @@ Actions = {
       if not Tasks[pid] then
         return replyError(msg, 'Task not found.')
       end
+      local copy = deepCopy(Tasks[pid])
 
       local address = msg.From
       if address and InviteCodesByInviterByTaskPid[address] and InviteCodesByInviterByTaskPid[address][pid] then
-        Tasks[pid].inviteCode = InviteCodesByInviterByTaskPid[address][pid]
+        copy.inviteCode = InviteCodesByInviterByTaskPid[address][pid]
       end
 
       -- print('reply task: ' .. json.encode(Tasks[pid]))
-      replyData(msg, Tasks[pid])
+      replyData(msg, copy)
     end,
 
     GetTasksByCommunityUuid = function(msg)
@@ -653,7 +650,8 @@ Actions = {
       local uuid = msg.Tags.CommunityUuid
       local communityUsers = {}
 
-      for address, inviteInfo in pairs(CommunityInvites) do
+      -- TODO use Communities[uuid].builders
+      for address, inviteInfo in pairs(UserCommunities) do
         if inviteInfo[uuid] then
           if not Users[address] then
             Users[address] = { name = '', avatar = '' }
@@ -683,37 +681,6 @@ Actions = {
       Users[address] = user
     end,
 
-    -- TODO remove CommunityInvites, only keep Invites
-    -- invite info and related user info
-    GetInvitesByInviter = function(msg)
-      local invites = {}
-      local relatedUsers = {}
-
-      for inviteeAddress, value in pairs(CommunityInvites) do
-        for communityID, inviteInfo in pairs(value) do
-          if inviteInfo.invite == msg.Tags.Inviter then
-            local temp = {
-              inviterAddress = inviteInfo.invite,
-              communityID = communityID,
-              inviteeAddress = inviteeAddress,
-              time = inviteInfo.time,
-            }
-            table.insert(invites, temp)
-
-            if not relatedUsers[inviteeAddress] and Users[inviteeAddress] then
-              relatedUsers[inviteeAddress] = Users[inviteeAddress]
-            end
-          end
-        end
-      end
-
-      local data = {
-        invites = invites,
-        relatedUsers = relatedUsers
-      }
-
-      replyData(msg, data)
-    end
   },
 
   Invites = {
@@ -804,6 +771,33 @@ Actions = {
       end
 
       return replyError(msg, 'Invite type not supported.')
+    end,
+
+    GetCommunityInviteCode = function(msg)
+      local address = msg.From
+      local uuid = msg.Tags.CommunityUuid
+      if not Communities[uuid] then
+        return replyError(msg, 'Community not found.')
+      end
+
+      if InviteCodesByInviterByCommunityUuid[address] then
+        return replyData(msg, InviteCodesByInviterByCommunityUuid[address][uuid])
+      end
+
+      -- create a community invite code for the user
+      local code = uid()
+      local invite = {
+        type = 'community',
+        communityUuid = uuid,
+        inviterAddress = address,
+        invitees = {}
+      }
+      if (Invites[code]) then
+        return replyError(msg, 'Invite code collision, please try again.')
+      end
+      Invites[code] = invite
+      InviteCodesByInviterByCommunityUuid[address][uuid] = code
+      replyData(msg, code)
     end,
 
     GetInvitesByInviter = function(msg)

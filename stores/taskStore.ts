@@ -183,39 +183,6 @@ export const useTaskStore = defineStore('task', () => {
     return JSON.parse(resp) as Task[]
   }
 
-  // TODO remove this
-  // const getInvitesByInviter = async(address: string) => {
-  //   try{
-  //     const res = await dryrun({
-  //       process: aoCommunityProcessID,
-  //       signer: createDataItemSigner(window.arweaveWallet),
-  //       tags: [
-  //         { name: 'Action', value: 'GetInvitesByInviter' },
-  //         { name: 'Inviter', value: address }
-  //       ]
-  //     })
-  //     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
-  //       return { invites: [], relatedUsers: {} }
-  //     }
-
-  //     const resp = JSON.parse(res.Messages[0].Data) as {invites: InviteInfo[], relatedUsers: RelatedUserMap}
-  //     const invites = []
-
-  //     for (const invite of resp.invites) {
-  //       if (!invite.inviterAddress) {
-  //         continue
-  //       }
-
-  //       invites.push(invite)
-  //     }
-
-  //     return { invites, relatedUsers: resp.relatedUsers }
-  //   } catch (error) {
-  //     console.error(error)
-  //     throw Error('Get invite info failed:' + error)
-  //   }
-  // }
-
   const joinTask = async (taskPid: string, inviteCode?: string) => {
     return await messageResultCheck({
       process: taskManagerProcessID,
