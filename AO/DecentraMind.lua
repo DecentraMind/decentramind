@@ -1,4 +1,4 @@
-Variant = '0.4.11'
+Variant = '0.4.12'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -27,7 +27,7 @@ Communities = Communities or {}
 ---@field invite string|nil The inviter's address, who invited this user
 ---@field time number The timestamp when user join community.
 
----@type table<string, table<string, CommunityInviteInfo>> community invite infos indexed by invitee's address and community's uuid
+---@type table<string, table<string, CommunityInviteInfo>> This is the OLD user-communities relation. community invite infos indexed by invitee's address and community's uuid
 CommunityInvites = CommunityInvites or {}
 
 ---@class User
@@ -73,6 +73,7 @@ MutedUsers = MutedUsers or {}
 --- @class TaskBuilder
 --- @field address string @Builder's address (likely a wallet address)
 --- @field inviterAddress string|nil @Address of the inviter (optional)
+--- @field joinTime number @Timestamp when the builder joined the task
 
 --- @class Submission
 --- @field id number
@@ -110,14 +111,25 @@ TasksByCommunity = TasksByCommunity or {}
 BountySendHistory = BountySendHistory or {}
 
 ---@class Invite
----@field taskPid string
+---@field type string 'task' | 'community'
+---@field taskPid string | nil
+---@field communityUuid string
 ---@field inviterAddress string
----@field inviteeAddresses string[]
+---@field invitees table<string, {joinTime: number}>
 
 ---@type table<string, Invite> Invites by invite codes
 Invites = Invites or {}
----@type table<string, table<string, string>> Invite codes by inviter address and task pid
+---@type table<string, table<string, string>> Invite codes by inviter address and task pid. This index is used for quick lookup by inviter address and task pid.
 InviteCodesByInviterByTaskPid = InviteCodesByInviterByTaskPid or {}
+---@type table<string, table<string, string>> Invite codes by inviter address and community uuid. This index is used for quick lookup by inviter address and community uuid.
+InviteCodesByInviterByCommunityUuid = InviteCodesByInviterByCommunityUuid or {}
+
+---@class UserCommunity
+---@field joinTime number
+---@field inviteCode string|nil if the invitee is not invited by others, the inviteCode is nil
+
+---@type table<string, table<string, UserCommunity>> This is user-communities relation. Invite Codes by invitee address and community uuid. This index is used for querying user's joined communities.
+UserCommunities = UserCommunities or {}
 
 
 local function deepCopy(orig)
@@ -175,9 +187,10 @@ local function findIndex(array, predicate)
   return nil -- If no element satisfies the predicate
 end
 
----Generate a random 6 chars uid using [a-zA-Z0-9]
+---Generate a random uid using [a-zA-Z0-9]
 ---@return string
 local function uid(length)
+  length = length or 8
   local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   local id = ""
   for _ = 1, length do
@@ -208,15 +221,8 @@ Actions = {
       Communities[uuid] = community
       Communities[uuid].uuid = uuid
       Communities[uuid].creator = address
-      Communities[uuid]['timestamp'] = msg.Timestamp
-      Communities[uuid]['buildnum'] = 1
-
-      if not CommunityInvites[address] then
-        CommunityInvites[address] = {}
-      end
-      if not CommunityInvites[address][uuid] then
-        CommunityInvites[address][uuid] = { time = msg.Timestamp }
-      end
+      Communities[uuid].timestamp = msg.Timestamp
+      Communities[uuid].buildnum = 1
 
       local copy = deepCopy(Communities[uuid])
       copy.isJoined = true
@@ -232,9 +238,9 @@ Actions = {
         copy.isJoined = false
 
         local address = msg.Tags.userAddress
-        if address and CommunityInvites[address] and CommunityInvites[address][uuid] then
+        if address and UserCommunities[address] and UserCommunities[address][uuid] then
           copy.isJoined = true
-          copy.joinTime = CommunityInvites[address][uuid].time
+          copy.joinTime = UserCommunities[address][uuid].joinTime
         end
         table.insert(communities, copy)
       end
@@ -253,9 +259,9 @@ Actions = {
       copy.isJoined = false
 
       local address = msg.Tags.userAddress
-      if address and CommunityInvites[address] and CommunityInvites[address][uuid] then
+      if address and UserCommunities[address] and UserCommunities[address][uuid] then
         copy.isJoined = true
-        copy.joinTime = CommunityInvites[address][uuid].time
+        copy.joinTime = UserCommunities[address][uuid].joinTime
       end
 
       replyData(msg, copy)
@@ -285,16 +291,17 @@ Actions = {
       local copy = deepCopy(community)
       copy.isJoined = false
       local address = msg.From
-      if CommunityInvites[address] and CommunityInvites[address][setting.uuid] then
+      if UserCommunities[address] and UserCommunities[address][setting.uuid] then
         copy.isJoined = true
-        copy.joinTime = CommunityInvites[address][setting.uuid].time
+        copy.joinTime = UserCommunities[address][setting.uuid].joinTime
       end
       replyData(msg, json.encode(copy))
     end,
 
     Join = function(msg)
       local address = msg.From
-      local uuid = msg.Data
+      local uuid = msg.Tags.CommunityUuid
+      local inviteCode = msg.Tags.InviteCode
 
       local community = Communities[uuid]
       if community then
@@ -305,14 +312,29 @@ Actions = {
         end
       end
 
-      if not CommunityInvites[address] then
-        CommunityInvites[address] = {}
+      --- TODO remove CommunityInvites related code
+      if not UserCommunities[address] then
+        UserCommunities[address] = {}
       end
 
-      if not CommunityInvites[address][uuid] then
+      if not UserCommunities[address][uuid] then
         -- TOOD use msg.Timstamp
-        CommunityInvites[address][uuid] = { invite = msg.Tags.invite, time = msg.Timestamp }
+        UserCommunities[address][uuid] = { joinTime = msg.Timestamp }
       end
+
+      local userCommunity = { joinTime = msg.Timestamp }
+      if inviteCode then
+        if Invites[inviteCode] then
+          Invites[inviteCode].invitees[address] = { joinTime = msg.Timestamp }
+          userCommunity.inviteCode = inviteCode
+        end
+      end
+
+      -- no valid invite code, save user-community relation
+      if not UserCommunities[address] then
+        UserCommunities[address] = {}
+      end
+      UserCommunities[address][uuid] = userCommunity
     end,
 
     Exit = function(msg)
@@ -331,16 +353,11 @@ Actions = {
       if community.buildnum then
         community.buildnum = math.max(0, community.buildnum - 1)
       end
-
-      if not CommunityInvites[address] then
-        return replyError(msg, "No column named " .. address .. " in Invites")
+      if not UserCommunities[address] or not UserCommunities[address][uuid] then
+        return replyError(msg, "Not found related user-community info in UserCommunities[" .. address .. "]")
       end
 
-      if not CommunityInvites[address][uuid] then
-        return replyError(msg, "Not found related invite info in Invites[" .. address .. "]")
-      end
-
-      CommunityInvites[address][uuid] = nil
+      UserCommunities[address][uuid] = nil
     end,
   },
 
@@ -439,15 +456,22 @@ Actions = {
       end
 
       local builder = {
-        address = msg.From
+        address = msg.From,
+        joinTime = msg.Timestamp
       }
       if (msg.Tags.InviteCode) then
         local invite = Invites[msg.Tags.InviteCode]
         if not invite then
           return replyError(msg, 'Invite code not found.')
         end
+
         builder.inviterAddress = invite.inviterAddress
-        table.insert(invite.inviteeAddresses, msg.From)
+        if not invite.invitees then
+          invite.invitees = {}
+        end
+        if not invite.invitees[msg.From] then
+          invite.invitees[msg.From] = { joinTime = msg.Timestamp }
+        end
       end
       Tasks[pid].builders[msg.From] = builder
     end,
@@ -692,13 +716,34 @@ Actions = {
     end
   },
 
-  TaskInvites = {
+  Invites = {
     CreateInviteCode = function(msg)
       local address = msg.From
       local pid = msg.Tags.TaskPid
+      local uuid = msg.Tags.CommunityUuid
 
       if not Tasks[pid] then
-        return replyError(msg, 'Task not found.')
+        if not uuid then
+          return replyError(msg, 'Community uuid is required.')
+        end
+        if not Communities[uuid] then
+          return replyError(msg, 'Community not found.')
+        end
+
+        -- create invite code for the community
+        local code = uid()
+        local invite = {
+          type = 'community',
+          communityUuid = uuid,
+          inviterAddress = address,
+          invitees = {}
+        }
+        Invites[code] = invite
+        if not InviteCodesByInviterByCommunityUuid[address] then
+          InviteCodesByInviterByCommunityUuid[address] = {}
+        end
+        InviteCodesByInviterByCommunityUuid[address][uuid] = code
+        return replyData(msg, code)
       end
 
       if msg.Timestamp > Tasks[pid].endTime then
@@ -711,14 +756,17 @@ Actions = {
       end
 
       if not InviteCodesByInviterByTaskPid[address][pid] then
-        local code = uid(8)
+        local code = uid()
         InviteCodesByInviterByTaskPid[address][pid] = code
         local invite = {
+          type = 'task',
           taskPid = pid,
+          communityUuid = Tasks[pid].communityUuid,
           inviterAddress = address,
-          inviteeAddresses = {}
+          invitees = {}
         }
         Invites[code] = invite
+        InviteCodesByInviterByTaskPid[address][pid] = code
       end
 
       replyData(msg, InviteCodesByInviterByTaskPid[address][pid])
@@ -731,21 +779,36 @@ Actions = {
       end
 
       local invite = Invites[code]
-      local task = Tasks[invite.taskPid]
 
-      if not task then
-        return replyError(msg, 'Task not found.')
+      if invite.type == 'task' then
+        local task = Tasks[invite.taskPid]
+        if not task then
+          return replyError(msg, 'Task not found.')
+        end
+        return replyData(msg, {
+          invite = invite,
+          task = task,
+        })
       end
 
-      replyData(msg, {
-        invite = invite,
-        task = task,
-      })
+      if invite.type == 'community' then
+        local community = Communities[invite.communityUuid]
+        if not community then
+          return replyError(msg, 'Community not found.')
+        end
+
+        return replyData(msg, {
+          invite = invite,
+          community = community,
+        })
+      end
+
+      return replyError(msg, 'Invite type not supported.')
     end,
 
     GetInvitesByInviter = function(msg)
       local address = msg.Tags.Inviter
-      if not InviteCodesByInviterByTaskPid[address] then
+      if not InviteCodesByInviterByTaskPid[address] and not InviteCodesByInviterByCommunityUuid[address] then
         return replyData(msg, '[]')
       end
 
@@ -754,8 +817,24 @@ Actions = {
         local invite = Invites[code]
         table.insert(invites, invite)
       end
+      for _, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
+        local invite = Invites[code]
+        table.insert(invites, invite)
+      end
 
-      replyData(msg, invites)
+      local relatedUsers = {}
+      for _, invite in pairs(invites) do
+        for _, inviteeAddress in pairs(invite.invitees) do
+          if not relatedUsers[inviteeAddress] and Users[inviteeAddress] then
+            relatedUsers[inviteeAddress] = Users[inviteeAddress]
+          end
+        end
+      end
+
+      replyData(msg, {
+        invites = invites,
+        relatedUsers = relatedUsers
+      })
     end,
 
   },
@@ -828,7 +907,7 @@ Actions = {
 for _, actions in pairs(Actions) do
   for name, action in pairs(actions) do
     Handlers.add(
-      name,
+      name, -- TODO action name should be unique, use _ .. '.' .. name as action name
       name,
       function(msg) action(msg) end
     )

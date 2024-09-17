@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Community, Task, TaskInviteInfo, UserInfo } from '~/types'
+import type { Community, Task, InviteCodeInfo, UserInfo } from '~/types'
 import { shortString } from '~/utils'
 
 definePageMeta({
@@ -26,15 +26,19 @@ async function join() {
 
   await doLogin()
 
-  await joinCommunity(task.communityUuid, inviteInfo.inviterAddress)
-  await joinTask(task.processID, code)
+  if (inviteInfo.type === 'community') {
+    await joinCommunity(task.communityUuid, code)
+  } else if (inviteInfo.type === 'task') {
+    await joinCommunity(task.communityUuid, code)
+    await joinTask(task.processID, code)
+  }
 
   showSuccess('join success')
   await router.push({path: '/community/' + task.communityUuid})
 }
 
 let inviter = $ref<UserInfo>()
-let inviteInfo = $ref<TaskInviteInfo>()
+let inviteInfo = $ref<InviteCodeInfo>()
 let task = $ref<Task>()
 let community = $ref<Community>()
 let isLoading = $ref(true)

@@ -5,9 +5,8 @@ import {
   dryrun, spawn
 } from '@permaweb/aoconnect'
 
-import type { PermissionType } from 'arconnect'
 import { defineStore } from 'pinia'
-import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, TaskInviteInfo } from '~/types'
+import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID, MU } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
@@ -184,38 +183,38 @@ export const useTaskStore = defineStore('task', () => {
     return JSON.parse(resp) as Task[]
   }
 
-  // TODO move this to communityStore
-  const getInvitesByInviter = async(address: string) => {
-    try{
-      const res = await dryrun({
-        process: aoCommunityProcessID,
-        signer: createDataItemSigner(window.arweaveWallet),
-        tags: [
-          { name: 'Action', value: 'GetInvitesByInviter' },
-          { name: 'Inviter', value: address }
-        ]
-      })
-      if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
-        return { invites: [], relatedUsers: {} }
-      }
+  // TODO remove this
+  // const getInvitesByInviter = async(address: string) => {
+  //   try{
+  //     const res = await dryrun({
+  //       process: aoCommunityProcessID,
+  //       signer: createDataItemSigner(window.arweaveWallet),
+  //       tags: [
+  //         { name: 'Action', value: 'GetInvitesByInviter' },
+  //         { name: 'Inviter', value: address }
+  //       ]
+  //     })
+  //     if (!res.Messages.length || res.Messages[0]?.Data === 'null') {
+  //       return { invites: [], relatedUsers: {} }
+  //     }
 
-      const resp = JSON.parse(res.Messages[0].Data) as {invites: InviteInfo[], relatedUsers: RelatedUserMap}
-      const invites = []
+  //     const resp = JSON.parse(res.Messages[0].Data) as {invites: InviteInfo[], relatedUsers: RelatedUserMap}
+  //     const invites = []
 
-      for (const invite of resp.invites) {
-        if (!invite.inviterAddress) {
-          continue
-        }
+  //     for (const invite of resp.invites) {
+  //       if (!invite.inviterAddress) {
+  //         continue
+  //       }
 
-        invites.push(invite)
-      }
+  //       invites.push(invite)
+  //     }
 
-      return { invites, relatedUsers: resp.relatedUsers }
-    } catch (error) {
-      console.error(error)
-      throw Error('Get invite info failed:' + error)
-    }
-  }
+  //     return { invites, relatedUsers: resp.relatedUsers }
+  //   } catch (error) {
+  //     console.error(error)
+  //     throw Error('Get invite info failed:' + error)
+  //   }
+  // }
 
   const joinTask = async (taskPid: string, inviteCode?: string) => {
     return await messageResultCheck({
@@ -375,7 +374,19 @@ export const useTaskStore = defineStore('task', () => {
       ]
     })
     
-    return JSON.parse(data) as { invite: TaskInviteInfo, task: Task }
+    return JSON.parse(data) as { invite: InviteCodeInfo, task: Task }
+  }
+
+  const getInvitesByInviter = async (inviter: string) => {
+    const data = await dryrunResult<string>({
+      process: taskManagerProcessID,
+      tags: [
+        { name: 'Action', value: 'GetInvitesByInviter' },
+        { name: 'Inviter', value: inviter }
+      ]
+    })
+
+    return JSON.parse(data) as InviteCodeInfo[]
   }
 
   return {
@@ -391,8 +402,8 @@ export const useTaskStore = defineStore('task', () => {
     joinTask,
 
     // TODO move this to communityStore
-    getInvitesByInviter,
-    createInviteCode, getInviteByCode
+    // getInvitesByInviter,
+    createInviteCode, getInviteByCode, getInvitesByInviter
   }
 })
 

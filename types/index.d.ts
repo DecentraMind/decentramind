@@ -213,7 +213,8 @@ export type Task = {
 
   builders: Record<[address: string], {
     address: string,
-    inviterAddress?: string
+    inviterAddress?: string,
+    joinTime?: number
   }>
 
   submissions: SpaceSubmission[],
@@ -259,10 +260,12 @@ export type InviteInfo = {
   inviterAddress?: string
 }
 
-export type TaskInviteInfo = {
-  taskPid: string
+export type InviteCodeInfo = {
+  type: 'task'|'community'
+  taskPid?: string
+  communityUuid: string
   inviterAddress: string
-  inviteeAddresses: string[]
+  invitees: Record<[inviteeAddress: string], { joinTime: number }>
 }
 
 export type RelatedUserMap = {

@@ -68,8 +68,9 @@ watch(
       v-if="community"
       class="pb-2"
       :ui="{
-        container: 'py-0',
+        container: 'py-0 gap-y-0',
         header: 'px-0',
+        body: 'pb-2',
         footer: 'flex-col-center pb-2 gap-y-2 flex-shrink-0'
       }"
     >
@@ -78,7 +79,7 @@ watch(
       </template>
 
       <div class="pb-4">
-        <div class="flex justify-between items-center h-[calc(var(--header-height))]">
+        <div class="flex justify-between items-center py-2">
           <div class="max-w-[70%] text-3xl break-all">{{ community.name }}</div>
           <div>
             <UButton
