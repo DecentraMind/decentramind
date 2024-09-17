@@ -55,7 +55,7 @@ onMounted(async () => {
   console.log('invite info', invite, task)
 
   inviter = await getUserByAddress(invite.inviterAddress)
-  community = await getCommunity(task.communityUuid)
+  community = await getCommunity(invite.communityUuid)
   isLoading = false
 })
 </script>

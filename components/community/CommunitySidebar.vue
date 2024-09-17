@@ -63,6 +63,9 @@ watch(
   }
 )
 
+const inviteUrl = $computed(() => {
+  return typeof window !== 'undefined' ? `${window.location.origin}/i/${community?.inviteCode}` : ''
+})
 watch(() =>community, async () => {
   if (!community || community.inviteCode) return
   community.inviteCode = await createCommunityInviteCode(community.uuid)
@@ -169,7 +172,7 @@ watch(() =>community, async () => {
             <div class="p-4 w-80">
               <div class="flex items-center">
                 <p ref="textToCopy" class="break-all mr-2 text-xs">
-                  https://decentramind.club/i/{{ community.inviteCode }}
+                  {{ inviteUrl }}
                 </p>
                 <UButton
                   icon="ri:checkbox-multiple-blank-line"
