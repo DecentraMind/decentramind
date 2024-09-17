@@ -8,7 +8,7 @@ import {
 import { defineStore } from 'pinia'
 import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
-import { aoCommunityProcessID, taskManagerProcessID, moduleID, schedulerID, MU } from '~/utils/processID'
+import { taskManagerProcessID, moduleID, schedulerID, MU } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 
 export const useTaskStore = defineStore('task', () => {
@@ -386,7 +386,7 @@ export const useTaskStore = defineStore('task', () => {
       ]
     })
 
-    return JSON.parse(data) as InviteCodeInfo[]
+    return JSON.parse(data) as {invites: InviteCodeInfo[], relatedUsers: RelatedUserMap}
   }
 
   return {

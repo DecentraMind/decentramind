@@ -348,14 +348,17 @@ export const communityStore = defineStore('communityStore', () => {
     return communityUserMap
   }
 
-  const joinCommunity = async (communityUuid: string, inviteCode: string) => {
+  const joinCommunity = async (communityUuid: string, inviteCode?: string) => {
+    const tags = [
+      { name: 'Action', value: 'Join' },
+      { name: 'CommunityUuid', value: communityUuid },
+    ]
+    if (inviteCode) {
+      tags.push({ name: 'InviteCode', value: inviteCode })
+    }
     const join = await message({
       process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'Join' },
-        { name: 'CommunityUuid', value: communityUuid },
-        { name: 'InviteCode', value: inviteCode },
-      ],
+      tags,
       signer: createDataItemSigner(window.arweaveWallet)
     })
     updateLocalCommunity(communityUuid, 'isJoined', true)

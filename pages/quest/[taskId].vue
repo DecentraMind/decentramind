@@ -5,12 +5,12 @@ import { compareImages } from '~/utils/image'
 import { calcBounties, formatToLocale, fractionalPart, shortString } from '~/utils'
 import type {
   SpaceSubmission,
-  InviteInfo,
   Task,
   TwitterSpaceInfo,
   Bounty,
   SpaceSubmissionWithCalculatedBounties,
   BountySendHistory,
+  InviteCodeInfo,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
@@ -70,7 +70,7 @@ const submittedBuilderCount = $computed(() => {
 
 let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-let invites: InviteInfo[]
+let invites: InviteCodeInfo[]
 
 const submissions = $computed(() => task?.submissions as SpaceSubmissionWithCalculatedBounties[])
 
@@ -301,11 +301,17 @@ async function onClickSubmit() {
     const inviteCount = invites.filter(inviteInfo => {
       return (
         inviteInfo.inviterAddress === address &&
-        inviteInfo.communityID === task!.communityUuid &&
-        inviteInfo.time < spaceEndedAt &&
-        inviteInfo.time > validJoinStartAt
+        inviteInfo.communityUuid === task!.communityUuid
       )
-    }).length
+    }).reduce((total, inviteInfo) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const validInvitees = Object.entries<{ joinTime: number }>(inviteInfo.invitees).filter(([_, invitee]) => {
+        const { joinTime } = invitee
+        return joinTime < spaceEndedAt && joinTime > validJoinStartAt
+      })
+      total += validInvitees.length
+      return total
+    }, 0)
 
     const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'> = {
       taskPid,

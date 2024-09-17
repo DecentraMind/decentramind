@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTaskStore } from '~/stores/taskStore'
-import type { InviteInfo, RelatedUserMap } from '~/types'
+import type { InviteCodeInfo, RelatedUserMap } from '~/types'
 import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils'
 
@@ -19,11 +19,11 @@ const communities = $ref<{
 
 let isDetailModalOpen = $ref(false)
 /** invites data of a community for detail modal */
-let inviteDetails = $ref<InviteInfo[]>([])
+let inviteDetails = $ref<InviteCodeInfo[]>([])
 
-const invitedByMe  = $ref<Record<string, InviteInfo[]>>({})
+const invitedByMe  = $ref<Record<string, InviteCodeInfo[]>>({})
 
-let invites = $ref<InviteInfo[]>([])
+let invites = $ref<InviteCodeInfo[]>([])
 let users = $ref<RelatedUserMap>()
 onMounted( async () => {
   try {
@@ -39,15 +39,21 @@ onMounted( async () => {
 
   const communityIDs = []
   for (const inviteInfo of invites) {
-    if(inviteInfo.inviterAddress !== address || inviteInfo.inviteeAddress === address){
+    if(inviteInfo.inviterAddress !== address){
       continue
     }
-    const { communityID } = inviteInfo
-    if(!invitedByMe[communityID]){
-      invitedByMe[communityID] = []
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [invitee, _] of Object.entries<{ joinTime: number }>(inviteInfo.invitees)) {
+      if(invitee === address){
+        continue
+      }
+      const { communityUuid } = inviteInfo
+      if(!invitedByMe[communityUuid]){
+        invitedByMe[communityUuid] = []
+      }
+      invitedByMe[communityUuid].push(inviteInfo)
+      communityIDs.push(communityUuid)
     }
-    invitedByMe[communityID].push(inviteInfo)
-    communityIDs.push(communityID)
   }
   console.log({invitedByMe})
 
@@ -72,7 +78,7 @@ const findInvitedByCommunityID = (communityID: string) => {
   inviteDetails = []
   console.log('search for community ' + communityID)
   for (const inviteInfo of invites) {
-    if(inviteInfo.inviterAddress === address && inviteInfo.communityID === communityID){
+    if(inviteInfo.inviterAddress === address && inviteInfo.communityUuid === communityID){
       console.log('found user invited by me:', inviteInfo)
       inviteDetails.push(inviteInfo)
     }
@@ -103,7 +109,9 @@ const findInvitedByCommunityID = (communityID: string) => {
           <div class="flex">
             <UAvatarGroup v-if="users" size="sm" :max="2" class="ml-10">
               <div v-for="(invite, index) in invitedByMe[community.uuid]" :key="index">
-                <ArAvatar v-if="users[invite.inviteeAddress]" :src="users[invite.inviteeAddress].avatar || defaultUserAvatar" :alt="users[invite.inviteeAddress].name || invite.inviteeAddress" />
+                <div v-for="(_, inviteeAddress) in invite.invitees" :key="inviteeAddress">
+                  <ArAvatar v-if="users[inviteeAddress]" :src="users[inviteeAddress].avatar || defaultUserAvatar" :alt="users[inviteeAddress].name || inviteeAddress" />
+                </div>
               </div>
             </UAvatarGroup>
             <UButton color="white" class="ml-4" @click="findInvitedByCommunityID(community.uuid)">{{ $t('setting.invite.check') }}</UButton>
@@ -116,9 +124,11 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div class="flex justify-center min-h-[300px] pt-10 px-6">
         <div v-if="users" class="border h-full px-2 py-2 mb-2">
           <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
-            <UAvatar :hash="users[invite.inviteeAddress]?.avatar || defaultUserAvatar" alt="user avatar" />
-            <div class="w-fit">{{ users[invite.inviteeAddress]?.name || shortString(invite.inviteeAddress) }}</div>
-            <div class="w-90">{{ invite.inviteeAddress }}</div>
+            <div v-for="(_, inviteeAddress) in invite.invitees" :key="inviteeAddress">
+              <UAvatar :hash="users[inviteeAddress]?.avatar || defaultUserAvatar" alt="user avatar" />
+              <div class="w-fit">{{ users[inviteeAddress]?.name || shortString(inviteeAddress) }}</div>
+              <div class="w-90">{{ inviteeAddress }}</div>
+            </div>
           </div>
         </div>
       </div>

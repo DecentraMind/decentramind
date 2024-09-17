@@ -59,8 +59,7 @@ const joinToCommunity = async(uuid: string, name: string) => {
   }
   joinLoading = true
   try {
-    const invite = 'none'
-    await joinCommunity(uuid, invite)
+    await joinCommunity(uuid)
     showSuccess(`Joined ${name}!`)
     await loadCommunityList(address)
     router.push('/community/' + uuid)
