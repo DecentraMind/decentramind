@@ -363,7 +363,12 @@ export const useTaskStore = defineStore('task', () => {
       ]
     })
 
-    return JSON.parse(data) as {invites: InviteCodeInfo[], relatedUsers: RelatedUserMap}
+    return JSON.parse(data) as {
+      invites: InviteCodeInfo[],
+      relatedUsers: RelatedUserMap,
+      relatedTasks: Record<string, Task>,
+      relatedCommunities: Record<string, Community>
+    }
   }
 
   return {

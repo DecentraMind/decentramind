@@ -6,7 +6,7 @@ definePageMeta({
   layout: 'landing',
 })
 
-const { joinCommunity, getCommunity, getUserByAddress } = $(communityStore())
+const { joinCommunity, getUserByAddress } = $(communityStore())
 const { getInviteByCode, joinTask } = useTaskStore()
 
 const { doLogin } = $(aoStore())
@@ -19,22 +19,22 @@ const router = useRouter()
 const code = route.params.code as string
 
 async function join() {
-  if(!task?.communityUuid || !inviteInfo?.inviterAddress) {
+  if((!task?.communityUuid && !community?.uuid) || !inviteInfo?.inviterAddress) {
     showError('Failed to load related data, please try refresh this page.')
     return
   }
 
   await doLogin()
 
-  if (inviteInfo.type === 'community') {
-    await joinCommunity(task.communityUuid, code)
-  } else if (inviteInfo.type === 'task') {
+  if (inviteInfo.type === 'community' && community) {
+    await joinCommunity(community.uuid, code)
+  } else if (inviteInfo.type === 'task' && task) {
     await joinCommunity(task.communityUuid, code)
     await joinTask(task.processID, code)
   }
 
   showSuccess('join success')
-  await router.push({path: '/community/' + task.communityUuid})
+  await router.push({path: '/community/' + inviteInfo.communityUuid})
 }
 
 let inviter = $ref<UserInfo>()
@@ -49,13 +49,13 @@ onMounted(async () => {
     return
   }
 
-  const { invite, task: taskInfo } = await getInviteByCode(code)
+  const { invite, task: taskInfo, community: communityInfo } = await getInviteByCode(code)
   inviteInfo = invite
   task = taskInfo
+  community = communityInfo
   console.log('invite info', invite, task)
 
   inviter = await getUserByAddress(invite.inviterAddress)
-  community = await getCommunity(invite.communityUuid)
   isLoading = false
 })
 </script>

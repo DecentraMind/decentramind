@@ -1,35 +1,48 @@
 <script setup lang="ts">
 import { useTaskStore } from '~/stores/taskStore'
-import type { InviteCodeInfo, RelatedUserMap } from '~/types'
+import type { InviteCodeInfo, RelatedUserMap, Task } from '~/types'
 import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils'
 
-const { getLocalCommunity } = $(communityStore())
 const { getInvitesByInviter } = useTaskStore()
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
 let loading = $ref(true)
 
-const communities = $ref<{
+let communities = $ref<Record<string, {
   uuid: string
   logo: string
   name: string
-}[]>([])
+}>>({})
 
 let isDetailModalOpen = $ref(false)
+
+type InviteDetail = InviteCodeInfo & {joinTime: number; inviteeAddress: string}
+
 /** invites data of a community for detail modal */
-let inviteDetails = $ref<InviteCodeInfo[]>([])
+let inviteDetails = $ref<InviteDetail[]>([])
 
 const invitedByMe  = $ref<Record<string, InviteCodeInfo[]>>({})
 
 let invites = $ref<InviteCodeInfo[]>([])
 let users = $ref<RelatedUserMap>()
+let tasks = $ref<Record<string, Task>>({})
+
+const tableColumns = $ref([
+  { key: 'invitees', label: 'Invited User' },
+  { key: 'community', label: 'Community' },
+  { key: 'task', label: 'Task' },
+  { key: 'joinTime', label: 'Join Time' }
+])
 onMounted( async () => {
   try {
-    const {invites: allInviteInfo, relatedUsers} = await getInvitesByInviter(address)
+    const { invites: allInviteInfo, relatedUsers, relatedCommunities, relatedTasks } = await getInvitesByInviter(address)
     invites = allInviteInfo
     users = relatedUsers
+    communities = relatedCommunities
+    tasks = relatedTasks
+    console.log({invites, users, communities, tasks})
   } catch (error) {
     const message = error instanceof Error ? error.message : error
     showError('Error fetching data:' + message)
@@ -59,30 +72,26 @@ onMounted( async () => {
 
   console.log('communityIDs = ', communityIDs)
 
-  for (const communityID of communityIDs) {
-    const community = await getLocalCommunity(communityID)
-    if(community){
-      communities.push({
-        uuid: community.uuid,
-        logo: community.logo,
-        name: community.name
-      })
-    }
-  }
-  console.log({communities})
   loading = false
 })
 
 const findInvitedByCommunityID = (communityID: string) => {
-  isDetailModalOpen = true
   inviteDetails = []
   console.log('search for community ' + communityID)
   for (const inviteInfo of invites) {
-    if(inviteInfo.inviterAddress === address && inviteInfo.communityUuid === communityID){
-      console.log('found user invited by me:', inviteInfo)
-      inviteDetails.push(inviteInfo)
+    if (inviteInfo.communityUuid !== communityID) continue
+
+    console.log('found user invited by me:', inviteInfo)
+
+    for (const [inviteeAddress, {joinTime}] of Object.entries<{ joinTime: number }>(inviteInfo.invitees)) {
+      inviteDetails.push({
+        ...inviteInfo,
+        joinTime,
+        inviteeAddress
+      })
     }
   }
+  isDetailModalOpen = true
   console.log({ communityID, invites: inviteDetails })
 }
 
@@ -95,11 +104,11 @@ const findInvitedByCommunityID = (communityID: string) => {
         <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
       </div>
 
-      <div v-if="!loading && !communities.length" class="flex">
+      <div v-if="!loading && !Object.keys(communities).length" class="flex">
         No user invited by me.
       </div>
 
-      <div v-for="community in communities" :key="community.uuid">
+      <div v-for="community in Object.values(communities)" :key="community.uuid">
         <div v-if="invitedByMe[community.uuid] && community.name" class="flex items-center justify-start mt-5">
           <div class="flex items-center">
             <img :src="arUrl(community.logo) || arUrl(defaultCommunityLogo)" class="h-[70px] w-[70px] rounded-lg border">
@@ -121,17 +130,23 @@ const findInvitedByCommunityID = (communityID: string) => {
     </UCard>
 
     <UModal v-model="isDetailModalOpen">
-      <div class="flex justify-center min-h-[300px] pt-10 px-6">
-        <div v-if="users" class="border h-full px-2 py-2 mb-2">
-          <div v-for="(invite, index) in inviteDetails" :key="index" class="flex items-center space-x-3">
-            <div v-for="(_, inviteeAddress) in invite.invitees" :key="inviteeAddress">
-              <UAvatar :hash="users[inviteeAddress]?.avatar || defaultUserAvatar" alt="user avatar" />
-              <div class="w-fit">{{ users[inviteeAddress]?.name || shortString(inviteeAddress) }}</div>
-              <div class="w-90">{{ inviteeAddress }}</div>
-            </div>
+      <UTable v-if="users" :rows="inviteDetails" :columns="tableColumns">
+        <template #invitees-data="{ row }: {row: InviteDetail}">
+          <div v-for="(_, inviteeAddress) in row.invitees" :key="inviteeAddress" class="flex items-center space-x-3">
+            <UAvatar :hash="users[inviteeAddress]?.avatar || defaultUserAvatar" alt="user avatar" />
+            <div class="w-fit" :title="inviteeAddress">{{ users[inviteeAddress]?.name || shortString(inviteeAddress) }}</div>
           </div>
-        </div>
-      </div>
+        </template>
+        <template #community-data="{ row }: {row: InviteDetail}">
+          <div class="w-fit">{{ communities[row.communityUuid]?.name }}</div>
+        </template>
+        <template #task-data="{ row }: {row: InviteDetail}">
+          <div class="w-fit">{{ row.taskPid ? tasks[row.taskPid]?.name : '/' }}</div>
+        </template>
+        <template #joinTime-data="{ row }: {row: InviteDetail}">
+          <div class="w-fit">{{ new Date(row.joinTime).toLocaleString() }}</div>
+        </template>
+      </UTable>
     </UModal>
   </UDashboardPanelContent>
 </template>

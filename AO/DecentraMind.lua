@@ -1,4 +1,4 @@
-Variant = '0.4.23'
+Variant = '0.4.26'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -736,26 +736,43 @@ Actions = {
     GetInvitesByInviter = function(msg)
       local address = msg.Tags.Inviter
       if not InviteCodesByInviterByTaskPid[address] and not InviteCodesByInviterByCommunityUuid[address] then
-        return u.replyData(msg, {invites = {}, relatedUsers = {}, relatedTasks = {}})
+        return u.replyData(msg, {invites = {}, relatedUsers = {}, relatedTasks = {}, relatedCommunities = {}})
       end
 
+      ---@type Invite[]
       local invites = {}
-      for _, code in pairs(InviteCodesByInviterByTaskPid[address]) do
+      local relatedTasks = {}
+      local relatedCommunities = {}
+      for pid, code in pairs(InviteCodesByInviterByTaskPid[address]) do
         local invite = Invites[code]
         if u.tableLen(invite.invitees) > 0 then
           table.insert(invites, invite)
+          relatedTasks[pid] = Tasks[pid]
+
+          local community = Communities[invite.communityUuid]
+          relatedCommunities[invite.communityUuid] = {
+            uuid = invite.communityUuid,
+            name = community.name,
+            logo = community.logo,
+          }
         end
       end
-      for _, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
+      for uuid, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
         local invite = Invites[code]
         if u.tableLen(invite.invitees) > 0 then
           table.insert(invites, invite)
+          local community = Communities[uuid]
+          relatedCommunities[uuid] = {
+            uuid = uuid,
+            name = community.name,
+            logo = community.logo,
+          }
         end
       end
 
       local relatedUsers = {}
       for _, invite in pairs(invites) do
-        for _, inviteeAddress in pairs(invite.invitees) do
+        for inviteeAddress, _ in pairs(invite.invitees) do
           if not relatedUsers[inviteeAddress] and Users[inviteeAddress] then
             relatedUsers[inviteeAddress] = Users[inviteeAddress]
           end
@@ -764,7 +781,9 @@ Actions = {
 
       u.replyData(msg, {
         invites = invites,
-        relatedUsers = relatedUsers
+        relatedUsers = relatedUsers,
+        relatedTasks = relatedTasks,
+        relatedCommunities = relatedCommunities
       })
     end,
 
