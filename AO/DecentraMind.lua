@@ -1,4 +1,4 @@
-Variant = '0.4.22'
+Variant = '0.4.23'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -742,13 +742,15 @@ Actions = {
       local invites = {}
       for _, code in pairs(InviteCodesByInviterByTaskPid[address]) do
         local invite = Invites[code]
-        if u.tableLen(invite.invitees) > 1 then
+        if u.tableLen(invite.invitees) > 0 then
           table.insert(invites, invite)
         end
       end
       for _, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
         local invite = Invites[code]
-        table.insert(invites, invite)
+        if u.tableLen(invite.invitees) > 0 then
+          table.insert(invites, invite)
+        end
       end
 
       local relatedUsers = {}
