@@ -1,4 +1,4 @@
-Variant = '0.4.19'
+Variant = '0.4.20'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -803,7 +803,7 @@ Actions = {
     GetInvitesByInviter = function(msg)
       local address = msg.Tags.Inviter
       if not InviteCodesByInviterByTaskPid[address] and not InviteCodesByInviterByCommunityUuid[address] then
-        return replyData(msg, '[]')
+        return replyData(msg, {invites = {}, relatedUsers = {}})
       end
 
       local invites = {}

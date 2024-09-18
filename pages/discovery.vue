@@ -109,89 +109,86 @@ const checkVouch = async () => {
       </template>
     </UDashboardNavbar>
 
-    <div class="w-full overflow-y-auto h-[calc(100%-var(--header-height))] p-10 pb-20 bg-grid flex-col-center">
-      <div v-if="isCommunityListLoading">
-        <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
+    <div class="w-full overflow-y-auto h-[calc(100vh-var(--header-height))] pt-5 pb-20 px-10 bg-grid">
+      <div v-if="sortedCommunities.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-8">
+        <UBlogPost
+          v-for="community in sortedCommunities"
+          :key="community.uuid"
+          :image="getCommunityBannerUrl(community.banner)"
+          class="mb-2"
+          :ui="{
+            wrapper: 'bg-white gap-y-0 ring-1 ring-gray-100 hover:ring-gray-200 rounded-lg overflow-hidden cursor-pointer',
+            container: 'group-hover:bg-dot pt-4',
+            inner: 'flex-1 px-4 overflow-hidden',
+            image: {
+              wrapper: 'ring-0 rounded-none',
+              base: 'ease-in-out'
+            }
+          }"
+          @click="community.isJoined && $router.push('/community/' + community.uuid)"
+        >
+          <template #title>
+            <div class="flex items-center">
+              <ArAvatar
+                :src="community.logo || defaultCommunityLogo"
+                :alt="community.name"
+              />
+              <div class="mx-3 text-xl">
+                {{ community.name }}
+              </div>
+            </div>
+          </template>
+          <template #description>
+            <div class="flex flex-col space-y-2 pb-4">
+              <div class="flex flex-col min-h-[50px]">
+                <div class="text-lg font-semibold">
+                  builder: {{ community.buildnum }}
+                </div>
+                <div class="text-base overflow-hidden whitespace-nowrap overflow-ellipsis">
+                  {{ community.desc }}
+                </div>
+              </div>
+              <div class="self-end">
+                <UButton
+                  v-if="community.isJoined"
+                  class="w-[65px] text-slate-400"
+                  size="md"
+                  color="white"
+                  variant="ghost"
+                >
+                  {{ $t('community.list.isjoin') }}
+                </UButton>
+                <!-- Show UButton Component -->
+                <UButton
+                  v-else
+                  class="self-end right-0 w-[65px] ring-gray-200 hover:ring-gray-400"
+                  block
+                  :ui="{ font: 'font-medium' }"
+                  color="white"
+                  size="md"
+                  variant="outline"
+                  @click="() => joinToCommunity(community.uuid, community.name)"
+                >
+                  {{ $t('community.list.join') }}
+                </UButton>
+              </div>
+            </div>
+          </template>
+        </UBlogPost>
       </div>
-      <div v-else>
-        <UCard>
+      <div v-else class="flex-col-center h-full">
+        <div v-if="isCommunityListLoading">
+          <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
+        </div>
+        <UCard v-else>
           <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
-            <p v-if="!communityListError">Nothing here，please create the first community.</p>
-            <div v-else class="flex-col-center gap-y-4">
+            <div v-if="communityListError" class="flex-col-center gap-y-4">
               <p>Failed to load community list.</p>
               <UButton variant="soft" class="block" @click="loadCommunityList(address)">Retry</UButton>
             </div>
+            <p v-else>Nothing here，please create the first community.</p>
           </div>
         </UCard>
-      </div>
-
-      <div class=" mx-auto w-full">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-8">
-          <UBlogPost
-            v-for="community in sortedCommunities"
-            :key="community.uuid"
-            :image="getCommunityBannerUrl(community.banner)"
-            class="mb-2"
-            :ui="{
-              wrapper: 'bg-white gap-y-0 ring-1 ring-gray-100 hover:ring-gray-200 rounded-lg overflow-hidden cursor-pointer',
-              container: 'group-hover:bg-dot pt-4',
-              inner: 'flex-1 px-4 overflow-hidden',
-              image: {
-                wrapper: 'ring-0 rounded-none',
-                base: 'ease-in-out'
-              }
-            }"
-            @click="community.isJoined && $router.push('/community/' + community.uuid)"
-          >
-            <template #title>
-              <div class="flex items-center">
-                <ArAvatar
-                  :src="community.logo || defaultCommunityLogo"
-                  :alt="community.name"
-                />
-                <div class="mx-3 text-xl">
-                  {{ community.name }}
-                </div>
-              </div>
-            </template>
-            <template #description>
-              <div class="flex flex-col space-y-2 pb-4">
-                <div class="flex flex-col min-h-[50px]">
-                  <div class="text-lg font-semibold">
-                    builder: {{ community.buildnum }}
-                  </div>
-                  <div class="text-base overflow-hidden whitespace-nowrap overflow-ellipsis">
-                    {{ community.desc }}
-                  </div>
-                </div>
-                <div class="self-end">
-                  <UButton
-                    v-if="community.isJoined"
-                    class="w-[65px] text-slate-400"
-                    size="md"
-                    color="white"
-                    variant="ghost"
-                  >
-                    {{ $t('community.list.isjoin') }}
-                  </UButton>
-                  <!-- Show UButton Component -->
-                  <UButton
-                    v-else
-                    class="self-end right-0 w-[65px] ring-gray-200 hover:ring-gray-400"
-                    block
-                    :ui="{ font: 'font-medium' }"
-                    color="white"
-                    size="md"
-                    variant="outline"
-                    @click="() => joinToCommunity(community.uuid, community.name)"
-                  >
-                    {{ $t('community.list.join') }}
-                  </UButton>
-                </div>
-              </div>
-            </template>
-          </UBlogPost>
-        </div>
       </div>
     </div>
     <UModal v-model="vouchModalOpen">

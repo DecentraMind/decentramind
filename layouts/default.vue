@@ -11,7 +11,7 @@ const { address, checkIsActiveWallet } = $(aoStore())
 const { joinedCommunities, currentUuid, userInfo, getUser, loadCommunityList } = $(communityStore())
 
 const isCreateModalOpen = $ref(false)
-
+let isLoading = $ref(true)
 onMounted(async () => {
   console.log({router})
   try {
@@ -21,6 +21,7 @@ onMounted(async () => {
     }
 
     await Promise.all([loadCommunityList(address), getUser()])
+    isLoading = false
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -160,7 +161,10 @@ onMounted(async () => {
       </UDashboardSidebar>
     </UDashboardPanel>
 
-    <slot />
+    <div v-if="isLoading" class="flex-center w-full h-full">
+      <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
+    </div>
+    <slot v-else />
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
       <div v-if="selectModal === 0" class="flex justify-between gap-8 p-4">
