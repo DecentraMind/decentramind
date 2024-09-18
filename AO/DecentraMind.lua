@@ -1,4 +1,4 @@
-Variant = '0.4.26'
+Variant = '0.4.27'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -715,6 +715,7 @@ Actions = {
         return u.replyData(msg, {
           invite = invite,
           task = task,
+          community = Communities[task.communityUuid]
         })
       end
 

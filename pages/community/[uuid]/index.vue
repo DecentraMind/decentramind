@@ -9,6 +9,7 @@ import Chatroom from '~/components/community/Chatroom.vue'
 import CommunitySidebar from '~/components/community/CommunitySidebar.vue'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { useTaskStore } from '~/stores/taskStore'
+import { validateTaskForm } from '~/utils/schemas'
 
 const { t } = useI18n()
 const taskStore = useTaskStore()
@@ -82,6 +83,8 @@ let isCreateTaskModalOpen = $ref(false)
 type RangeValue = [Dayjs, Dayjs]
 const taskDateRange = $ref<RangeValue>()
 
+const form = ref()
+
 function handleDateChange(
   value: [string, string] | [Dayjs, Dayjs],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,6 +92,7 @@ function handleDateChange(
 ) {
   taskForm.startTime = new Date(value[0].toString()).getTime()
   taskForm.endTime = new Date(value[1].toString()).getTime()
+  form.value.validate('time')
 }
 
 const taskForm = $ref<TaskForm>({
@@ -374,6 +378,7 @@ watch(() => route.hash, newHash => {
               </div>
             </template>
             <UForm
+              ref="form"
               :state="taskForm"
               :schema="taskSchema"
               class="space-y-6 flex flex-col justify-center"
