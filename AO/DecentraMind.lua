@@ -1,7 +1,8 @@
-Variant = '0.4.20'
+Variant = '0.4.22'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
+local u = require("u")
 
 ---@class Community
 ---@field uuid string
@@ -125,74 +126,6 @@ InviteCodesByInviterByCommunityUuid = InviteCodesByInviterByCommunityUuid or {}
 UserCommunities = UserCommunities or {}
 
 
-local function deepCopy(orig)
-  local orig_type = type(orig)
-  local copy
-  if orig_type == 'table' then
-    copy = {}
-    for orig_key, orig_value in next, orig, nil do
-      copy[deepCopy(orig_key)] = deepCopy(orig_value)
-    end
-    setmetatable(copy, deepCopy(getmetatable(orig)))
-  else -- number, string, boolean, etc
-    copy = orig
-  end
-  return copy
-end
-
-local function createUuid()
-  local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-  return string.gsub(template, '[xy]', function(c)
-    local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
-    return string.format('%x', v)
-  end)
-end
-
-local function replyError(request, errorMsg)
-  local action = (request.Tags and request.Tags.Action) or request.Action or "Unknow-Action"
-  action = action .. "-Error"
-  local errString = errorMsg
-  if type(errorMsg) ~= "string" then
-    errString = json.encode(errorMsg)
-  end
-
-  print('Reply ' .. action .. ' ' .. errString)
-  request.reply({ Action = action, ["Message-Id"] = request.Id, Error = errString })
-end
-
----Reply with data
----@param data string|table
-local function replyData(request, data)
-  assert(type(data) == 'table' or type(data) == 'string', 'Invalid reply data type.')
-  if type(data) == 'string' then
-    request.reply({ Data = data })
-  else
-    request.reply({ Data = json.encode(data) })
-  end
-end
-
-local function findIndex(array, predicate)
-  for index, value in ipairs(array) do
-    if predicate(value) then
-      return index
-    end
-  end
-  return nil -- If no element satisfies the predicate
-end
-
----Generate a random uid using [a-zA-Z0-9]
----@return string
-local function uid(length)
-  length = length or 8
-  local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-  local id = ""
-  for _ = 1, length do
-    local index = math.random(1, #chars)
-    id = id .. chars:sub(index, index)
-  end
-  return id
-end
-
 ---@param type string 'task' | 'community'
 ---@param address string
 ---@param pidOrCommunityUuid string
@@ -201,7 +134,7 @@ local function createInviteCode(type, address, pidOrCommunityUuid)
   assert(type == 'task' or type == 'community', 'Invalid invite code type: ' .. type)
   assert(pidOrCommunityUuid, 'Task pid or community uuid is required.')
 
-  local code = uid()
+  local code = u.uid()
   ---@type Invite
   local invite
 
@@ -261,10 +194,10 @@ Actions = {
         Users[address] = {}
       end
 
-      local uuid = createUuid()
+      local uuid = u.createUuid()
 
       if Communities[uuid] then
-        return replyError(msg, 'uuid existed.')
+        return u.replyError(msg, 'uuid existed.')
       end
 
       Communities[uuid] = community
@@ -273,17 +206,17 @@ Actions = {
       Communities[uuid].timestamp = msg.Timestamp
       Communities[uuid].buildnum = 1
 
-      local copy = deepCopy(Communities[uuid])
+      local copy = u.deepCopy(Communities[uuid])
       copy.isJoined = true
       copy.joinTime = msg.Timestamp
-      replyData(msg, json.encode(copy))
+      u.replyData(msg, json.encode(copy))
     end,
 
     GetCommunities = function(msg)
       local communities = {}
 
       for uuid, community in pairs(Communities) do
-        local copy = deepCopy(community)
+        local copy = u.deepCopy(community)
         copy.isJoined = false
 
         local address = msg.Tags.userAddress
@@ -294,17 +227,17 @@ Actions = {
         table.insert(communities, copy)
       end
 
-      replyData(msg, communities)
+      u.replyData(msg, communities)
     end,
 
     GetCommunity = function(msg)
-      local community = deepCopy(Communities[msg.Tags.Uuid])
+      local community = u.deepCopy(Communities[msg.Tags.Uuid])
       local uuid = msg.Tags.Uuid
       if not community then
-        return replyError(msg, "Not found.")
+        return u.replyError(msg, "Not found.")
       end
 
-      local copy = deepCopy(community)
+      local copy = u.deepCopy(community)
       copy.isJoined = false
 
       local address = msg.Tags.userAddress
@@ -317,7 +250,7 @@ Actions = {
         end
       end
 
-      replyData(msg, copy)
+      u.replyData(msg, copy)
     end,
 
     -- TODO only update specific field, don't replace the whole Communities[uuid]
@@ -326,29 +259,29 @@ Actions = {
       local setting = json.decode(msg.Data)
 
       if not setting.uuid then
-        return replyError(msg, 'uuid is required.')
+        return u.replyError(msg, 'uuid is required.')
       end
 
       local community = Communities[setting.uuid]
       if not community then
-        return replyError(msg, 'community not found.')
+        return u.replyError(msg, 'community not found.')
       end
       if msg.From ~= community.owner then
-        return replyError(msg, 'You are not the owner')
+        return u.replyError(msg, 'You are not the owner')
       end
 
       for field, value in pairs(setting) do
         community[field] = value
       end
 
-      local copy = deepCopy(community)
+      local copy = u.deepCopy(community)
       copy.isJoined = false
       local address = msg.From
       if UserCommunities[address] and UserCommunities[address][setting.uuid] then
         copy.isJoined = true
         copy.joinTime = UserCommunities[address][setting.uuid].joinTime
       end
-      replyData(msg, json.encode(copy))
+      u.replyData(msg, json.encode(copy))
     end,
 
     Join = function(msg)
@@ -397,18 +330,18 @@ Actions = {
 
       local community = Communities[uuid]
       if not community then
-        return replyError(msg, 'Community not found.')
+        return u.replyError(msg, 'Community not found.')
       end
 
       if community.owner == address then
-        return replyError(msg, 'You can not exit since you are the owner.')
+        return u.replyError(msg, 'You can not exit since you are the owner.')
       end
 
       if community.buildnum then
         community.buildnum = math.max(0, community.buildnum - 1)
       end
       if not UserCommunities[address] or not UserCommunities[address][uuid] then
-        return replyError(msg, "Not found related user-community info in UserCommunities[" .. address .. "]")
+        return u.replyError(msg, "Not found related user-community info in UserCommunities[" .. address .. "]")
       end
 
       UserCommunities[address][uuid] = nil
@@ -423,7 +356,7 @@ Actions = {
       local pid = task.processID
 
       if Tasks[pid] then
-        return replyError(msg, 'Task existed.')
+        return u.replyError(msg, 'Task existed.')
       end
 
       -- TODO validate task fields
@@ -441,11 +374,11 @@ Actions = {
       end
       table.insert(TasksByCommunity[cid], pid)
 
-      replyData(msg, Tasks[pid])
+      u.replyData(msg, Tasks[pid])
     end,
 
     DumpAll = function(msg)
-      replyData(msg, {
+      u.replyData(msg, {
         Tasks = json.encode(Tasks),
         TasksByCommunity = json.encode(TasksByCommunity),
         BountySendHistory = json.encode(BountySendHistory),
@@ -456,9 +389,9 @@ Actions = {
       local pid = msg.Tags.ProcessID
 
       if not Tasks[pid] then
-        return replyError(msg, 'Task not found.')
+        return u.replyError(msg, 'Task not found.')
       end
-      local copy = deepCopy(Tasks[pid])
+      local copy = u.deepCopy(Tasks[pid])
 
       local address = msg.From
       if address and InviteCodesByInviterByTaskPid[address] and InviteCodesByInviterByTaskPid[address][pid] then
@@ -466,13 +399,13 @@ Actions = {
       end
 
       -- print('reply task: ' .. json.encode(Tasks[pid]))
-      replyData(msg, copy)
+      u.replyData(msg, copy)
     end,
 
     GetTasksByCommunityUuid = function(msg)
       local cid = msg.Tags.CommunityUuid
       if not TasksByCommunity[cid] then
-        replyData(msg, '[]')
+        u.replyData(msg, '[]')
         return
       end
 
@@ -483,7 +416,7 @@ Actions = {
         end
       end
 
-      replyData(msg, tasks)
+      u.replyData(msg, tasks)
     end,
 
     GetTasksByOwner = function(msg)
@@ -495,19 +428,19 @@ Actions = {
         end
       end
 
-      replyData(msg, tasks)
+      u.replyData(msg, tasks)
     end,
 
     JoinTask = function(msg)
       local pid = msg.Tags.TaskPid
       if not Tasks[pid] then
-        return replyError(msg, 'Task not found.')
+        return u.replyError(msg, 'Task not found.')
       end
 
       assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
 
       if Tasks[pid].builders[msg.From] then
-        return replyError(msg, 'You have joined this task.')
+        return u.replyError(msg, 'You have joined this task.')
       end
 
       local builder = {
@@ -517,7 +450,7 @@ Actions = {
       if (msg.Tags.InviteCode) then
         local invite = Invites[msg.Tags.InviteCode]
         if not invite then
-          return replyError(msg, 'Invite code not found.')
+          return u.replyError(msg, 'Invite code not found.')
         end
 
         builder.inviterAddress = invite.inviterAddress
@@ -532,7 +465,7 @@ Actions = {
 
       -- create task invite code for the new builder
       local code = createInviteCode('task', msg.From, pid)
-      replyData(msg, code)
+      u.replyData(msg, code)
     end,
 
     AddSubmission = function(msg)
@@ -542,7 +475,7 @@ Actions = {
       local pid = submission.taskPid
 
       if not Tasks[pid] then
-        return replyError(msg, 'Task not found.')
+        return u.replyError(msg, 'Task not found.')
       end
 
       assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
@@ -560,23 +493,23 @@ Actions = {
 
       --- update Tasks[pid].submittersCount
       --- if submission.address is not seen in Tasks[pid].submissions, add it
-      local find = findIndex(Tasks[pid].submissions, function(submit)
+      local find = u.findIndex(Tasks[pid].submissions, function(submit)
         return submit.address == msg.From
       end)
       if not find then
         Tasks[pid].submittersCount = Tasks[pid].submittersCount + 1
       end
 
-      replyData(msg, tostring(submission.id))
+      u.replyData(msg, tostring(submission.id))
     end,
 
     StoreBountySendHistory = function(msg)
       local pid = msg.Tags.TaskPid
       if not Tasks[pid] then
-        return replyError(msg, 'Task not found.')
+        return u.replyError(msg, 'Task not found.')
       end
       if Tasks[pid].ownerAddress ~= msg.From then
-        return replyError(msg, 'You are not the owner of this task.')
+        return u.replyError(msg, 'You are not the owner of this task.')
       end
 
       assert(not Tasks[pid].isSettled, 'This task is already settled.')
@@ -599,14 +532,14 @@ Actions = {
       for _, bounty in pairs(BountySendHistory) do
         table.insert(bounties, bounty)
       end
-      replyData(msg, bounties)
+      u.replyData(msg, bounties)
     end,
 
     GetBountiesByCommuintyID = function(msg)
       local uuid = msg.Tags.CommunityUuid
 
       if not TasksByCommunity[uuid] then
-        return replyData(msg, '[]')
+        return u.replyData(msg, '[]')
       end
 
       local result = {}
@@ -618,7 +551,7 @@ Actions = {
         end
       end
 
-      replyData(msg, result)
+      u.replyData(msg, result)
     end,
 
     GetBountiesByAddress = function(msg)
@@ -641,18 +574,18 @@ Actions = {
           end
         end
       end
-      replyData(msg, bounties)
+      u.replyData(msg, bounties)
     end,
 
     UpdateTaskScores = function(msg)
       local pid = msg.Tags.TaskPid
 
       if not Tasks[pid] then
-        return replyError(msg, 'Task not found.')
+        return u.replyError(msg, 'Task not found.')
       end
 
       if Tasks[pid].ownerAddress ~= msg.From then
-        return replyError(msg, 'You are not the owner of this task.')
+        return u.replyError(msg, 'You are not the owner of this task.')
       end
 
       assert(not Tasks[pid].isSettled, 'The task is already settled.')
@@ -672,11 +605,11 @@ Actions = {
       local pid = msg.Tags.TaskPid
 
       if not Tasks[pid] then
-        return replyError(msg, 'Task not found.')
+        return u.replyError(msg, 'Task not found.')
       end
 
       if Tasks[pid].ownerAddress ~= msg.From then
-        return replyError(msg, 'You are not the owner of this task.')
+        return u.replyError(msg, 'You are not the owner of this task.')
       end
 
       Tasks[pid].submissions = json.decode(msg.Data)
@@ -696,16 +629,16 @@ Actions = {
         Users[address] = user
       end
 
-      replyData(msg, Users[address])
+      u.replyData(msg, Users[address])
     end,
 
     GetUserByAddress = function(msg)
       local userInfo = Users[msg.Tags.Address]
       if not userInfo then
-        return replyError(msg, "Not found.")
+        return u.replyError(msg, "Not found.")
       end
 
-      replyData(msg, userInfo)
+      u.replyData(msg, userInfo)
     end,
 
     GetUsersByCommunityUUID = function(msg)
@@ -731,7 +664,7 @@ Actions = {
         end
       end
 
-      replyData(msg, communityUsers)
+      u.replyData(msg, communityUsers)
     end,
 
     -- TODO only update specific field, don't replace the whole Users[address]
@@ -754,22 +687,22 @@ Actions = {
       if not pid or not Tasks[pid] then
         -- create invite code for the community
         local code = createInviteCode('community', address, uuid)
-        return replyData(msg, code)
+        return u.replyData(msg, code)
       end
 
       -- if msg.Timestamp > Tasks[pid].endTime then
-      --   return replyError(msg, 'The task has already ended.')
+      --   return Util.replyError(msg, 'The task has already ended.')
       -- end
       -- TODO check if address is a registered user
       local code = createInviteCode('task', address, pid)
 
-      replyData(msg, code)
+      u.replyData(msg, code)
     end,
 
     GetInviteByCode = function(msg)
       local code = msg.Tags.Code
       if not Invites[code] then
-        return replyError(msg, 'Invite not found.')
+        return u.replyError(msg, 'Invite not found.')
       end
 
       local invite = Invites[code]
@@ -777,9 +710,9 @@ Actions = {
       if invite.type == 'task' then
         local task = Tasks[invite.taskPid]
         if not task then
-          return replyError(msg, 'Task not found.')
+          return u.replyError(msg, 'Task not found.')
         end
-        return replyData(msg, {
+        return u.replyData(msg, {
           invite = invite,
           task = task,
         })
@@ -788,28 +721,30 @@ Actions = {
       if invite.type == 'community' then
         local community = Communities[invite.communityUuid]
         if not community then
-          return replyError(msg, 'Community not found.')
+          return u.replyError(msg, 'Community not found.')
         end
 
-        return replyData(msg, {
+        return u.replyData(msg, {
           invite = invite,
           community = community,
         })
       end
 
-      return replyError(msg, 'Invite type not supported.')
+      return u.replyError(msg, 'Invite type not supported.')
     end,
 
     GetInvitesByInviter = function(msg)
       local address = msg.Tags.Inviter
       if not InviteCodesByInviterByTaskPid[address] and not InviteCodesByInviterByCommunityUuid[address] then
-        return replyData(msg, {invites = {}, relatedUsers = {}})
+        return u.replyData(msg, {invites = {}, relatedUsers = {}, relatedTasks = {}})
       end
 
       local invites = {}
       for _, code in pairs(InviteCodesByInviterByTaskPid[address]) do
         local invite = Invites[code]
-        table.insert(invites, invite)
+        if u.tableLen(invite.invitees) > 1 then
+          table.insert(invites, invite)
+        end
       end
       for _, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
         local invite = Invites[code]
@@ -825,7 +760,7 @@ Actions = {
         end
       end
 
-      replyData(msg, {
+      u.replyData(msg, {
         invites = invites,
         relatedUsers = relatedUsers
       })
@@ -839,16 +774,16 @@ Actions = {
       local cid = msg.Tags.CommunityUuid
       local community = Communities[cid]
       if not community then
-        return replyError(msg, 'Community not found.')
+        return u.replyError(msg, 'Community not found.')
       end
 
       if msg.From ~= community.owner then
-        return replyError(msg, 'You are not the owner.')
+        return u.replyError(msg, 'You are not the owner.')
       end
 
       local userAddress = msg.Tags.User
       if userAddress == community.owner then
-        return replyError(msg, 'You can not mute the owner.')
+        return u.replyError(msg, 'You can not mute the owner.')
       end
 
       MutedUsers[cid] = MutedUsers[cid] or {}
@@ -870,11 +805,11 @@ Actions = {
       local cid = msg.Tags.CommunityUuid
       local community = Communities[cid]
       if not community then
-        return replyError(msg, 'Community not found.')
+        return u.replyError(msg, 'Community not found.')
       end
 
       if msg.From ~= community.owner then
-        return replyError(msg, 'You are not the owner.')
+        return u.replyError(msg, 'You are not the owner.')
       end
       local userAddress = msg.Tags.User
 
@@ -891,9 +826,9 @@ Actions = {
     GetMutedUsers = function(msg)
       local uuid = msg.Tags.CommunityUuid
       if not MutedUsers[uuid] then
-        return replyData(msg, '[]')
+        return u.replyData(msg, '[]')
       end
-      replyData(msg, MutedUsers[uuid])
+      u.replyData(msg, MutedUsers[uuid])
     end
   },
 }
