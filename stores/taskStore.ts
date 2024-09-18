@@ -6,7 +6,7 @@ import {
 } from '@permaweb/aoconnect'
 
 import { defineStore } from 'pinia'
-import type { Bounty, InviteInfo, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo } from '~/types'
+import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { taskManagerProcessID, moduleID, schedulerID, MU } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
@@ -351,7 +351,7 @@ export const useTaskStore = defineStore('task', () => {
       ]
     })
     
-    return JSON.parse(data) as { invite: InviteCodeInfo, task: Task }
+    return JSON.parse(data) as { invite: InviteCodeInfo, task?: Task, community?: Community }
   }
 
   const getInvitesByInviter = async (inviter: string) => {
