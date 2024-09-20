@@ -37,8 +37,8 @@ const tableColumns = $ref([
 ])
 onMounted( async () => {
   try {
-    const { invites: allInviteInfo, relatedUsers, relatedCommunities, relatedTasks } = await getInvitesByInviter(address)
-    invites = allInviteInfo
+    const { invites: myInviteCodeInfos, relatedUsers, relatedCommunities, relatedTasks } = await getInvitesByInviter(address)
+    invites = myInviteCodeInfos
     users = relatedUsers
     communities = relatedCommunities
     tasks = relatedTasks
@@ -87,7 +87,7 @@ const findInvitedByCommunityID = (communityID: string) => {
       inviteDetails.push({
         ...inviteInfo,
         joinTime,
-        inviteeAddress
+        inviteeAddress,
       })
     }
   }
