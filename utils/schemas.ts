@@ -128,6 +128,8 @@ export function validateTaskForm(state: Task): FormError[] {
   const errors = []
   const { bounties, startTime, endTime } = state
 
+  const tokenProcessIDs = new Set()
+
   for (const [index, bounty] of bounties.entries()) {
     if (index === 0 && !bounty.tokenProcessID) {
       errors.push({
@@ -136,7 +138,14 @@ export function validateTaskForm(state: Task): FormError[] {
       })
     }
 
-    // TODO add error if token process id is duplicated
+    if (tokenProcessIDs.has(bounty.tokenProcessID)) {
+      errors.push({
+        path: `bounties[${index}]`,
+        message: 'Duplicate bounty token.',
+      })
+    } else {
+      tokenProcessIDs.add(bounty.tokenProcessID)
+    }
 
     if (bounty.tokenProcessID) {
       try {

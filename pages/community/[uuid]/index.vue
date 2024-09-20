@@ -90,6 +90,7 @@ function handleDateChange(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _: [string, string],
 ) {
+  // TODO get tiemstamp based on timezone
   taskForm.startTime = new Date(value[0].toString()).getTime()
   taskForm.endTime = new Date(value[1].toString()).getTime()
   form.value.validate('time')
@@ -381,7 +382,7 @@ watch(() => route.hash, newHash => {
               ref="form"
               :state="taskForm"
               :schema="taskSchema"
-              class="space-y-6 flex flex-col justify-center"
+              class="space-y-7 flex flex-col justify-center"
               :validate="validateTaskForm"
               @submit="onSubmitTaskForm"
             >
@@ -449,7 +450,7 @@ watch(() => route.hash, newHash => {
                   v-model="taskForm.bounties[index]"
                   :name="`bounties[${index}]`"
                   :label="index === 0 ? $t('Bounty') : ''"
-                  :ui="{ error: 'hidden' }"
+                  :ui="{ error: index === 0 ? 'hidden' : 'absolute' }"
                 >
                   <div class="flex justify-between items-center gap-x-1 mb-1">
                     <UInput
