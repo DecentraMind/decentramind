@@ -49,12 +49,14 @@ local utils = {
      Initialize State
    ]]
 --
-Variant = "0.0.3"
+Variant = "0.0.4"
 
 
 -- token should be idempotent and not change previous state updates
 Denomination = Denomination or tonumber("${denomination}")
 Balances = Balances or { [Owner] = utils.toBalanceValue("${totalSupplyStr}") }
+-- TODO init-transfer
+-- Balances = Balances or { [ao.id] = utils.toBalanceValue("${totalSupplyStr}") }
 TotalSupply = TotalSupply or utils.toBalanceValue("${totalSupplyStr}")
 Name = Name or "${name}"
 Ticker = Ticker or "${ticker}"
@@ -109,6 +111,51 @@ end)
 --
 Handlers.add('balances', "Balances",
   function(msg) msg.reply({ Data = json.encode(Balances) }) end)
+
+--[[
+     TODO Init-Transfer
+   ]]
+--
+-- Handlers.add('initTransfer', "Init-Transfer", function(msg)
+--   if msg.From == ao.id or msg.From == Owner then
+--     --@class Transfer
+--     --@field recipient string
+--     --@field quantity string
+
+--     --@type table<string, Transfer>
+--     local data = json.decode(msg.Data)
+--     for _, transfer in ipairs(data) do
+--       assert(bint.__lt(0, bint(transfer.quantity)), 'Quantity must be greater than 0')
+--       if bint(transfer.quantity) <= bint(Balances[ao.id]) then
+--         Balances[ao.id] = utils.subtract(Balances[ao.id], transfer.quantity)
+--         Balances[transfer.recipient] = utils.add(Balances[transfer.recipient], transfer.quantity)
+--         local creditNotice = {
+--           Target = Owner,
+--           Action = 'Credit-Notice',
+--           Sender = ao.id,
+--           Quantity = transfer.quantity,
+--           Data = Colors.gray ..
+--               "You received " ..
+--               Colors.blue .. transfer.quantity .. Colors.gray .. " from " .. Colors.green .. ao.id .. Colors.reset
+--         }
+--         Send(creditNotice)
+--       else
+--         msg.reply({
+--           Action = 'Transfer-Error',
+--           ['Message-Id'] = msg.Id,
+--           Error = 'Insufficient Balance!'
+--         })
+--       end
+--     end
+
+--   else
+--     msg.reply({
+--       Action = 'Transfer-Error',
+--       ['Message-Id'] = msg.Id,
+--       Error = 'Only the Process Id or Owner can do initial transfer of ' .. Ticker .. ' tokens!'
+--     })
+--   end
+-- end)
 
 --[[
      Transfer
@@ -195,7 +242,7 @@ Handlers.add('mint', "Mint", function(msg)
     msg.reply({
       Action = 'Mint-Error',
       ['Message-Id'] = msg.Id,
-      Error = 'Only the Process Id can mint new ' .. Ticker .. ' tokens!'
+      Error = 'Only the Process Id or Owner can mint new ' .. Ticker .. ' tokens!'
     })
   end
 end)
