@@ -41,8 +41,7 @@
     "token.release": "Token是否已发行",
     "token.trade": "Token是否可以交易",
     "twitter": "推特",
-    "typereward": "奖励发放类型",
-    "typereward.label": "USDT PSN 多填",
+    "type of bounty": "奖励发放类型",
     "website": "官网"
   },
   "End": "已结束",

@@ -340,7 +340,7 @@ onMounted(async () => {
       </UFormGroup>
 
       <div class="grid md:grid-cols-2 grid-cols-1 gap-7">
-        <UFormGroup required name="typeReward" :label="$t('community.typereward')">
+        <UFormGroup required name="bountyTokenNames" :label="$t('community.type of bounty')">
           <USelectMenu v-model="formState.bountyTokenNames" class="w-52 max-w-full mr-10" :options="tokenNames" multiple placeholder="Select Token" />
         </UFormGroup>
 

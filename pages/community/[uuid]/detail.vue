@@ -234,7 +234,7 @@ onBeforeUnmount(() => {
 
               <BaseField :name="$t('community.token.platforms')" :values="community.support as unknown as Record<string, string>[]" />
 
-              <BaseField :name="$t('community.typereward')" :values="community.bounty as unknown as Record<string, string>[]" />
+              <BaseField :name="$t('community.type of bounty')" :values="community.bounty as unknown as Record<string, string>[]" />
             </ULandingCard>
 
             <ULandingCard

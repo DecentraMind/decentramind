@@ -16,8 +16,12 @@ export const communitySettingSchema = z.object({
   bountyTokenNames: z
     .enum(tokenNames as [string, ...string[]])
     .array()
-    .min(1)
-    .max(4),
+    .refine((value) => {
+      return value.length <= 4
+    }, { message: 'Maximum of 4 bounty tokens.' })
+    .refine((value) => {
+      return value.length >= 1
+    }, { message: 'Minimum of 1 bounty token.' }),
 
   tradePlatforms: z
     .enum(tradePlatforms as [string, ...string[]])
@@ -54,7 +58,7 @@ export const validateCommunitySetting = (
   for (const rewardToken of state.bountyTokenNames) {
     if (!tokenNames.includes(rewardToken)) {
       errors.push({
-        path: 'typeReward',
+        path: 'bountyTokenNames',
         message: `${rewardToken} is not supported`,
       })
     }

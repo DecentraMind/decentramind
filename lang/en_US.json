@@ -45,8 +45,7 @@
       "release": "Have Token?",
       "trade": "Can be Traded?"
     },
-    "typereward": "Type of Bounty",
-    "typereward.label": "USDT PSN Multi-fill"
+    "type of bounty": "Type of Bounty"
   },
   "End": "End",
   "Friends": "Friends",
