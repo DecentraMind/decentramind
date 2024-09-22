@@ -351,7 +351,7 @@ export const useTaskStore = defineStore('task', () => {
       ]
     })
     
-    return JSON.parse(data) as { invite: InviteCodeInfo, task?: Task, community?: Community }
+    return JSON.parse(data) as { invite: InviteCodeInfo, task?: Task, community: Community }
   }
 
   const getInvitesByInviter = async (inviter: string) => {
