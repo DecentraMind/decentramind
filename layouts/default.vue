@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { arUrl, defaultCommunityLogo, defaultUserAvatar } from '~/utils/arAssets'
+import { arUrl, defaultCommunityLogo, defaultUserAvatar, exploreLogo } from '~/utils/arAssets'
 import { cn } from '~/utils/util'
 import CommunityForm from '~/components/community/CommunityForm.vue'
 
@@ -59,10 +59,10 @@ onMounted(async () => {
           >
             <UButton
               to="/discovery"
-              variant="outline"
-              class="w-16 h-16 p-0 bg-white hover:bg-white border-0 rounded-full text-white transition duration-300 ease-in-out transform"
+              variant="ghost"
+              class="w-16 h-16 p-0 hover:bg-transparent border-0 rounded-full text-white transition duration-300 ease-in-out transform"
             >
-              <img :src="arUrl(decentraMindLogo)" class="h-full w-full">
+              <img :src="arUrl(exploreLogo)" class="h-full w-full">
             </UButton>
             <template #panel>
               <div class="flex-center px-2 py-1">

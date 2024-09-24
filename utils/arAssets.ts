@@ -17,15 +17,18 @@ export const gateways = {
 
 export const decentraMindLogo = 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
 
-// export const defaultUserAvatar = 'UUyXJRLZHxJKxRERx-ZpdV-lRHqg-HzVuDRnN3J0N9c'
-export const defaultUserAvatar = '-UaLJIpKx-2rECSBaagaJpyjpcyi3_iojodOQ-sNHwA'
+export const exploreLogo = '1jb3PLQc7GxOgFGXQ2sD9P1-IrDGwET7BIKe7EFogPU'
 
-export const defaultCommunityLogo = 'OrzPJKbouDnEk_7sVEvRY28Cqf0o6R-dz_ARn0p9v3s'
+export const defaultUserAvatar = 'gAh_m4pAU-PCAvDfDkv-6MPKp46E7MpaGlfwvZV-cgw'
+
+// OrzPJKbouDnEk_7sVEvRY28Cqf0o6R-dz_ARn0p9v3s
+export const defaultCommunityLogo = 'V7DDhvTiMzyxRkaQLwaouVT4020G-k01tUiWGj4G4PA'
 
 export const defaultTokenLogo = 'rZbcNfx8UumPfzZJxXHlwXt7f_kxbO1_dcFbL_i0obg'
 
 export const taskBanners = [
-  'EqcbCxROKza6XqaicsV7Szy1lOF7OXtO4pabfoZd8bI',
+  // space
+  '1h4wvyBDxnUr7OlMFVc_E0D9XklFTVugjnvGqtii4u4',
   'QBfwr8Tt57GMkpEhsVB_862otMrUKC96PkPa0Y9pE1o',
   'GmaXCpnYI5gHAaQTCgczjnYaNTXbAHH93eNrOQCEWiw',
   'EXwjxvamy5QNQc6oM-kHjpP_jAGFiJ6h0VF20XyJtBs',

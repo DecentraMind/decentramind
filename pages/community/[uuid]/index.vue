@@ -50,7 +50,7 @@ const taskTypes = [
       click: alertNotReady,
     },
     {
-      label: 'Thread Quest',
+      label: 'Be a Bird For Us',
       click: alertNotReady,
     },
     {
@@ -315,7 +315,7 @@ watch(() => route.hash, newHash => {
                   inner: 'flex-1 px-4 overflow-hidden',
                   image: {
                     wrapper: 'ring-0 rounded-none',
-                    base: 'ease-in-out',
+                    base: 'ease-in-out object-fill',
                   },
                 }"
               >
