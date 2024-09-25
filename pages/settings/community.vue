@@ -30,7 +30,7 @@ onMounted(async () => {
       <div class="flex flex-wrap">
         <div v-for="(community, index) in joinedCommunities" :key="index" class="w-1/2 pl-5">
           <NuxtLink :to="`/community/${community.uuid}`" class="flex items-center mb-5 gap-2">
-            <UColorModeImage :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)" class="h-[64px] w-[64px] rounded-lg border" />
+            <img :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)" class="h-[64px] w-[64px] rounded-lg border">
 
             <div class="text-xl max-w-40 max-h-14 break-all overflow-hidden" :title="community.name">
               {{ community.name }}

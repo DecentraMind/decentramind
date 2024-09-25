@@ -4,6 +4,7 @@ import { getCommunityBannerUrl, defaultCommunityLogo, shortString } from '~/util
 const { address, doLogout, doLogin } = $(aoStore())
 
 const { communityList, isCommunityListLoading, communityListError, vouch, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
+const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 const { showError, showSuccess } = $(notificationStore())
 
@@ -76,6 +77,10 @@ const checkVouch = async () => {
     vouchModalOpen = true
   }
 }
+
+const refetch = async () => {
+  await Promise.race([loadCommunityList(address), refetchUserInfo()])
+}
 </script>
 
 <template>
@@ -90,7 +95,7 @@ const checkVouch = async () => {
           |
           <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
             <UButton variant="ghost" color="white" block>
-              {{ shortString(address) }}
+              {{ userInfo?.name || shortString(address) }}
             </UButton>
             <template #panel>
               <UButton color="red" @click="Logout">
@@ -102,7 +107,7 @@ const checkVouch = async () => {
             Connect Wallet
           </UButton>
         </UBadge>
-        <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }">
+        <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }" class="hidden">
           <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
         </UDropdown>
         <!--<UColorModeButton />-->
@@ -177,14 +182,14 @@ const checkVouch = async () => {
         </UBlogPost>
       </div>
       <div v-else class="flex-col-center h-full">
-        <div v-if="isCommunityListLoading">
+        <div v-if="isCommunityListLoading || isUserInfoLoading">
           <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
         </div>
         <UCard v-else>
           <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
-            <div v-if="communityListError" class="flex-col-center gap-y-4">
-              <p>Failed to load community list.</p>
-              <UButton variant="soft" class="block" @click="loadCommunityList(address)">Retry</UButton>
+            <div v-if="communityListError || userInfoError" class="flex-col-center gap-y-4">
+              <p>Failed to load data.</p>
+              <UButton variant="soft" class="block" @click="refetch()">Retry</UButton>
             </div>
             <p v-else>Nothing here，please create the first community.</p>
           </div>

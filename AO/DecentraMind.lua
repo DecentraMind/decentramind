@@ -1,4 +1,4 @@
-Variant = '0.4.27'
+Variant = '0.4.28'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -535,7 +535,7 @@ Actions = {
       u.replyData(msg, bounties)
     end,
 
-    GetBountiesByCommuintyID = function(msg)
+    GetBountiesByCommunityID = function(msg)
       local uuid = msg.Tags.CommunityUuid
 
       if not TasksByCommunity[uuid] then

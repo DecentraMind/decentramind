@@ -8,7 +8,8 @@ const router = useRouter()
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet } = $(aoStore())
-const { joinedCommunities, currentUuid, userInfo, getUser, loadCommunityList } = $(communityStore())
+const { joinedCommunities, currentUuid, loadCommunityList, communityListError } = $(communityStore())
+const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 const isCreateModalOpen = $ref(false)
 let isLoading = $ref(true)
@@ -20,12 +21,27 @@ onMounted(async () => {
       return
     }
 
-    await Promise.all([loadCommunityList(address), getUser()])
-    isLoading = false
+    await loadCommunityList(address)
   } catch (error) {
     console.error('Error fetching data:', error)
+  } finally {
+    isLoading = false
   }
 })
+
+const refetch = async () => {
+  isLoading = true
+  try {
+    await Promise.race([
+      loadCommunityList(address),
+      refetchUserInfo()
+    ])
+  } catch (error) {
+    console.error('Error refetching data:', error)
+  } finally {
+    isLoading = false
+  }
+}
 </script>
 
 <template>
@@ -62,7 +78,7 @@ onMounted(async () => {
               variant="ghost"
               class="w-16 h-16 p-0 hover:bg-transparent border-0 rounded-full text-white transition duration-300 ease-in-out transform"
             >
-              <img :src="arUrl(exploreLogo)" class="h-full w-full">
+              <img :src="arUrl(exploreLogo)" class="h-full w-full scale-110">
             </UButton>
             <template #panel>
               <div class="flex-center px-2 py-1">
@@ -161,8 +177,18 @@ onMounted(async () => {
       </UDashboardSidebar>
     </UDashboardPanel>
 
-    <div v-if="isLoading" class="flex-center w-full h-full">
+    <div v-if="isLoading || isUserInfoLoading" class="flex-center w-full h-full">
       <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
+    </div>
+    <div v-else-if="communityListError || userInfoError" class="flex-col-center h-full w-full">
+      <UCard>
+        <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
+          <div class="flex-col-center gap-y-4">
+            <p>Failed to load data.</p>
+            <UButton variant="soft" class="block" @click="refetch()">Retry</UButton>
+          </div>
+        </div>
+      </UCard>
     </div>
     <slot v-else />
 
