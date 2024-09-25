@@ -22,7 +22,7 @@ export const exploreLogo = '1jb3PLQc7GxOgFGXQ2sD9P1-IrDGwET7BIKe7EFogPU'
 export const defaultUserAvatar = 'gAh_m4pAU-PCAvDfDkv-6MPKp46E7MpaGlfwvZV-cgw'
 
 // OrzPJKbouDnEk_7sVEvRY28Cqf0o6R-dz_ARn0p9v3s
-export const defaultCommunityLogo = 'V7DDhvTiMzyxRkaQLwaouVT4020G-k01tUiWGj4G4PA'
+export const defaultCommunityLogo = 'SofH1iK6Az431hGKqkEv5hx1yO0o5X0SzrE8S-1VsL4'
 
 export const defaultTokenLogo = 'rZbcNfx8UumPfzZJxXHlwXt7f_kxbO1_dcFbL_i0obg'
 

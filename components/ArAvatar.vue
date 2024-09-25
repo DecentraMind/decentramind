@@ -13,7 +13,7 @@ const props = defineProps<Avatar & {
       v-bind="props"
       :src="src && ARWEAVE_ID_REGEXP.test(src) ? arUrl(src) : src"
       :ui="{
-        wrapper: 'ring-.5 ring-gray-300 dark:ring-gray-700',
+        wrapper: 'ring-.5 ring-gray-300 dark:ring-gray-700 bg-background',
         rounded: 'rounded-full object-cover'
       }"
     />
