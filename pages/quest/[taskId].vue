@@ -658,14 +658,14 @@ const onClickShareToTwitter = () => {
 
               <UDivider />
 
-              <div class="flex">
+              <!-- <div class="flex">
                 <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Time Zone') }}</div>
                 </div>
                 <div>
                   {{ task.timezone }}
                 </div>
-              </div>
+              </div> -->
               <div class="flex">
                 <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Time') }}</div>

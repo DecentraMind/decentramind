@@ -26,7 +26,7 @@ import {onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 
 const toast = useToast()
-const {userInfo, getUser, updateUser} = $(communityStore())
+const {userInfo, getUser, updateUser} = $(useUserInfo())
 const Sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }

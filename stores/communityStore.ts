@@ -19,8 +19,6 @@ export const communityStore = defineStore('communityStore', () => {
   let twitterVouched = $ref(true)
   let twitterVouchedIDs = $ref<string[]>([])
   let communityList = $ref<Community[]>([])
-  /** current user info */
-  let userInfo = $ref<UserInfo>()
   let mutedUsers = $ref<string[]>([])
   let currentUuid = $ref<string>()
 
@@ -398,16 +396,7 @@ export const communityStore = defineStore('communityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
     })
 
-    if (messageId) {
-      userInfo = userData
-    }
     return messageId
-  }
-
-  const getUser = async () => {
-    userInfo = await getUserByAddress(address)
-
-    return userInfo
   }
 
   const getUserByAddress = async (address: string) => {
@@ -522,7 +511,6 @@ export const communityStore = defineStore('communityStore', () => {
 
 
   return $$({
-    userInfo,
     communityList,
     joinedCommunities,
     currentUuid,
@@ -545,7 +533,6 @@ export const communityStore = defineStore('communityStore', () => {
     joinCommunity,
     exitCommunity,
     updateUser,
-    getUser,
     getUserByAddress,
     getCommunityUser,
     setCurrentCommunityUserMap,

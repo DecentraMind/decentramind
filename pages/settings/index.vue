@@ -5,8 +5,10 @@ import { userSchema } from '~/utils/schemas'
 import { useUpload } from '~/composables/useUpload'
 
 const { address } = $(aoStore())
-const { userInfo, updateUser } = $(communityStore())
+const { updateUser } = $(communityStore())
 const { showSuccess, showError } = $(notificationStore())
+
+const { userInfo, isLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let isSaving = $ref(false)
@@ -17,8 +19,8 @@ const saveInfo = async () => {
       name: userForm.name,
       avatar: userForm.avatar,
     })
-    // userInfo = [{...userForm}]
     showSuccess('Profile updated')
+    await refetchUserInfo()
   } catch (e) {
     showError('Failed to save profile.', e as Error)
   }
@@ -26,7 +28,6 @@ const saveInfo = async () => {
 }
 
 const router = useRouter()
-const isLoading = $computed(() => !userInfo)
 
 let userForm = $ref<UserInfo & {address: string}>({
   name: userInfo?.name || '',
@@ -34,7 +35,7 @@ let userForm = $ref<UserInfo & {address: string}>({
   address: address || '',
 })
 
-watch(() => userInfo, (userInfo) => {
+watch(() => userInfo, () => {
   console.log('userInfo changed:', userInfo)
   if (userInfo && address) {
     userForm = {...userInfo, address}
@@ -86,6 +87,16 @@ async function upload2AR() {
 
     <div v-if="isLoading" class="w-full h-52 flex justify-center items-center">
       <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" />
+    </div>
+    <div v-else-if="userInfoError" class="w-full h-52 flex justify-center items-center">
+      <UCard>
+        <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
+          <div class="flex-col-center gap-y-4">
+            <p>Failed to load data.</p>
+            <UButton variant="soft" class="block" @click="refetchUserInfo()">Retry</UButton>
+          </div>
+        </div>
+      </UCard>
     </div>
 
     <UForm v-if="!isLoading" :schema="userSchema" :state="userForm">
