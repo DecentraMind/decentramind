@@ -170,10 +170,11 @@ export const timezones: Timezone[] = [
 export const decentraMindReceiver = 'C0Q61xdmhFnpi5bksiGH88N7Kisz_vjTeBSgpNQ1gdo'
 export const DM_BOUNTY_CHARGE_PERCENT:number = 5
 
-export const allowedImageType = ['image/jpeg', 'image/png']
+export const allowedImageType = ['image/jpeg', 'image/png', 'image/webp']
 
 export const uploadPath = {
   communityLogo: '/c',
+  communityBanner: '/c',
   tokenLogo: '/t',
   userAvatar: '/u'
 }
@@ -194,4 +195,9 @@ export const ARWEAVE_ID_REGEXP = /^[a-zA-Z0-9-_]{43}$/
 export const maxCommunityLogoDimension = {
   width: 400,
   height: 400
+}
+
+export const maxCommunityBannerDimension = {
+  width: 1280,
+  height: 720
 }

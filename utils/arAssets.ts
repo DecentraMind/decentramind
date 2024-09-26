@@ -28,15 +28,6 @@ export const defaultCommunityLogo = 'SofH1iK6Az431hGKqkEv5hx1yO0o5X0SzrE8S-1VsL4
 
 export const defaultTokenLogo = 'rZbcNfx8UumPfzZJxXHlwXt7f_kxbO1_dcFbL_i0obg'
 
-export const taskBanners = [
-  // space
-  'iVTYARnF4MFibt2QEF9jrlqhvXFoL5LDojvuddzFC6E',
-  'QBfwr8Tt57GMkpEhsVB_862otMrUKC96PkPa0Y9pE1o',
-  'GmaXCpnYI5gHAaQTCgczjnYaNTXbAHH93eNrOQCEWiw',
-  'EXwjxvamy5QNQc6oM-kHjpP_jAGFiJ6h0VF20XyJtBs',
-  'swlpzETV8ahXyNlDskY9nuIm1tbExAKJMKOVj0XD2ZI'
-]
-
 export const taskBannersMap: Record<Task['type'], string[]> = {
   space: [
     'iVTYARnF4MFibt2QEF9jrlqhvXFoL5LDojvuddzFC6E',
@@ -59,30 +50,12 @@ export function arUrl(tx: string, gateWay = gateways.everland) {
 }
 
 export function getCommunityBannerUrl(banner: string, banners: string[] = communityBanners) {
+  if (ARWEAVE_ID_REGEXP.test(banner)) {
+    return arUrl(banner)
+  }
+
   const matched = banner.match(/\d+$/)
   const bannerIndex = matched ? parseInt(matched[0]) - 6 : 0
 
   return arUrl(banners[bannerIndex])
-}
-
-export function getTaskBannerUrl(bannerName: string) {
-  const legacyBannerNames = [
-    'banner1',
-    'banner2',
-    'banner3',
-    'banner4',
-    'banner5',
-  ]
-
-  if (legacyBannerNames.includes(bannerName)) {
-    const matched = bannerName.match(/\d+$/)
-    const bannerIndex = matched ? parseInt(matched[0]) - 1 : 0
-
-    if (taskBanners[bannerIndex]) {
-      return arUrl(taskBanners[bannerIndex])
-    }
-    return `/task/${bannerName}.jpg`
-  }
-
-  return arUrl(bannerName)
 }

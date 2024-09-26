@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
-import { tradePlatforms, tokenNames, maxCommunityLogoDimension } from '~/utils/constants'
+import { tradePlatforms, tokenNames, maxCommunityLogoDimension, maxCommunityBannerDimension } from '~/utils/constants'
 import type { Community, CommunitySetting } from '~/types/index'
 import { communitySettingSchema, validateCommunitySetting, type CommunitySettingSchema } from '~/utils/schemas'
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
@@ -19,15 +19,16 @@ const { address } = $(aoStore())
 
 const { updateCommunity, addCommunity, makeCommunityChat } = $(communityStore())
 
-const { upload, isUploading, uploadError, uploadResponse } = $(useUpload())
+const { upload: uploadLogo, isUploading: isUploadingLogo, uploadError: uploadLogoError, uploadResponse: uploadLogoResponse } = $(useUpload())
+const { upload: uploadBanner, isUploading: isUploadingBanner, uploadError: uploadBannerError, uploadResponse: uploadBannerResponse } = $(useUpload())
 
 const { showSuccess, showError } = $(notificationStore())
 
-const uploadInput = $ref<HTMLInputElement>()
-async function upload2AR() {
-  const file = uploadInput?.files?.[0]
+const uploadLogoInput = $ref<HTMLInputElement>()
+async function uploadLogo2AR() {
+  const file = uploadLogoInput?.files?.[0]
 
-  await upload({
+  await uploadLogo({
     fileName: (props.initState?.uuid || createUuid()).slice(-4),
     pathName: 'communityLogo',
     file,
@@ -35,16 +36,40 @@ async function upload2AR() {
     maxHeight: maxCommunityLogoDimension.height
   })
 
-  if (uploadError || !uploadResponse) {
-    showError('Failed to upload image.', uploadError)
+  if (uploadLogoError || !uploadLogoResponse) {
+    showError('Failed to upload image.', uploadLogoError)
     // clear file input
-    if (uploadInput) {
-      uploadInput.value = ''
+    if (uploadLogoInput) {
+      uploadLogoInput.value = ''
     }
     return
   }
 
-  formState.logo = uploadResponse.ARHash!
+  formState.logo = uploadLogoResponse.ARHash!
+}
+
+const uploadBannerInput = $ref<HTMLInputElement>()
+async function uploadBanner2AR() {
+  const file = uploadBannerInput?.files?.[0]
+
+  await uploadBanner({
+    fileName: (props.initState?.uuid || createUuid()).slice(-4),
+    pathName: 'communityBanner',
+    file,
+    maxWidth: maxCommunityBannerDimension.width,
+    maxHeight: maxCommunityBannerDimension.height
+  })
+
+  if (uploadBannerError || !uploadBannerResponse) {
+    showError('Failed to upload image.', uploadBannerError)
+    // clear file input
+    if (uploadBannerInput) {
+      uploadBannerInput.value = ''
+    }
+    return
+  }
+
+  formState.banner = uploadBannerResponse.ARHash!
 }
 
 let createdCommunityID = $ref('')
@@ -269,7 +294,7 @@ onMounted(async () => {
       @submit="onFormSubmit"
     >
       <UFormGroup required name="logo" :label="$t('Logo')">
-        <div class="relative flex-center w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadInput && !isUploading && uploadInput.click()">
+        <div class="relative flex-center w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadLogoInput && !isUploadingLogo && uploadLogoInput.click()">
           <img
             v-if="formState.logo"
             :src="arUrl(formState.logo)"
@@ -286,49 +311,76 @@ onMounted(async () => {
             class="flex justify-center w-16 h-16"
           />
           <input
-            ref="uploadInput"
+            ref="uploadLogoInput"
             type="file"
             class="opacity-0 w-0 h-0"
-            accept="image/x-png,image/jpeg"
-            @change="upload2AR"
+            accept="image/x-png,image/jpeg,image/webp"
+            @change="uploadLogo2AR"
           >
 
-          <div v-if="isUploading" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
+          <div v-if="isUploadingLogo" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 w-16 h-16"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
         </div>
       </UFormGroup>
 
       <UFormGroup required name="banner" :label="$t('community.banner')">
-        <UCarousel
-          v-model="currentIndex"
-          :items="bannerItems"
-          :ui="{
-            item: 'basis-full',
-            container: 'rounded-lg',
-            indicators: {
-              wrapper: 'relative bottom-0 mt-4'
-            }
-          }"
-          indicators
-          class="w-64"
-        >
-          <template #default="{ item }">
-            <img :src="getCommunityBannerUrl(item)" class="w-full" draggable="false">
-          </template>
+        <div class="relative w-fit cursor-pointer ring-1 ring-gray-300 dark:ring-gray-700" @click="uploadBannerInput && !isUploadingBanner && uploadBannerInput.click()">
+          <img
+            v-if="formState.banner"
+            :src="getCommunityBannerUrl(formState.banner)"
+            class="w-64 h-36"
+            alt="banner"
+          >
+          <UButton
+            v-if="!formState.banner"
+            label="BANNER"
+            size="xl"
+            square
+            variant="outline"
+            class="absolute w-64 h-36"
+          />
+          <input
+            ref="uploadBannerInput"
+            type="file"
+            class="hidden"
+            accept="image/x-png,image/jpeg,image/webp"
+            @change="uploadBanner2AR"
+          >
 
-          <template #indicator="{ onClick, page, active }">
-            <UButton
-              :label="String(page)"
-              :variant="active ? 'solid' : 'outline'"
-              size="2xs"
-              class="rounded-full min-w-6 justify-center"
-              @click="() => {
-                currentIndex = page
-                updateBanner(page)
-                onClick(page)
-              }"
-            />
-          </template>
-        </UCarousel>
+          <div v-if="isUploadingBanner" class="absolute left-0 top-0 flex-center bg-primary-200 bg-opacity-50 w-64 h-36"><UIcon name="svg-spinners:gooey-balls-2" class="w-8 h-8 text-white" /></div>
+
+          <UCarousel
+            v-model="currentIndex"
+            :items="bannerItems"
+            :ui="{
+              wrapper: 'hidden',
+              item: 'basis-full',
+              container: 'rounded-lg ',
+              indicators: {
+                wrapper: 'relative bottom-0 mt-4'
+              }
+            }"
+            indicators
+            class="w-64"
+          >
+            <template #default="{ item }">
+              <img :src="getCommunityBannerUrl(item)" class="w-full" draggable="false">
+            </template>
+
+            <template #indicator="{ onClick, page, active }">
+              <UButton
+                :label="String(page)"
+                :variant="active ? 'solid' : 'outline'"
+                size="2xs"
+                class="rounded-full min-w-6 justify-center"
+                @click="() => {
+                  currentIndex = page
+                  updateBanner(page)
+                  onClick(page)
+                }"
+              />
+            </template>
+          </UCarousel>
+        </div>
       </UFormGroup>
 
       <UFormGroup required name="name" :label="$t('community.name')">
@@ -475,7 +527,7 @@ onMounted(async () => {
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
               {{ props.isSettingMode ? $t("community.setting") : $t("community.create") }}
             </h3>
-            <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
+          <!--<UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isCreated = false" />-->
           </div>
         </template>
         <UContainer v-if="showSpinner" class="w-full flex justify-around">

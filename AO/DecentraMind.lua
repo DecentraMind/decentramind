@@ -1,4 +1,4 @@
-Variant = '0.4.28'
+Variant = '0.4.29'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -205,6 +205,11 @@ Actions = {
       Communities[uuid].creator = address
       Communities[uuid].timestamp = msg.Timestamp
       Communities[uuid].buildnum = 1
+
+      if not UserCommunities[address] then
+        UserCommunities[address] = {}
+      end
+      UserCommunities[address][uuid] = { joinTime = msg.Timestamp }
 
       local copy = u.deepCopy(Communities[uuid])
       copy.isJoined = true

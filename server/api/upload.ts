@@ -48,7 +48,7 @@ export default defineEventHandler(async (event: H3Event<EventHandlerRequest>): P
 
     // TODO compress image before uploading if needed
 
-    const key = path + '/' + fileName + '@' + toBase62(new Date().getTime())
+    const key = `${path}/${fileName}${pathName === 'communityBanner' ? '_b' : ''}@${toBase62(new Date().getTime())}`
     const params = {
       Bucket: bucketName,
       Key: key,
