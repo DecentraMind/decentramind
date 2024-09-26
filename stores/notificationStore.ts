@@ -15,7 +15,7 @@ export const notificationStore = defineStore('notificationStore', () => {
   }
 
   const showMessage = (message: string) => {
-    toast.add({ title: message, icon: 'i-heroicons-check-circle' })
+    toast.add({ title: message, icon: 'heroicons:information-circle' })
   }
 
   const alertMessage = (description: string) => {

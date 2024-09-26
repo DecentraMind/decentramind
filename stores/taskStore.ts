@@ -56,7 +56,7 @@ export const useTaskStore = defineStore('task', () => {
         return await evalTaskProcess(taskProcessID)
       },
       maxAttempts: 3,
-      interval: 2000
+      interval: 5000
     })
 
     // send bounty tokens to task process

@@ -26,6 +26,21 @@ export function formatToLocale(isoString: string|number, locale: string = 'en-US
   return new Intl.DateTimeFormat(locale, options).format(date).replace(/\sat\s/, ' ')
 }
 
+export function formatDate(timestamp: number): string {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+
+  return date.toLocaleString('sv-SE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
+}
+
 export function getLocalTimezone() {
   const offset = Math.min(Math.max((new Date().getTimezoneOffset()) / 60, -11))
   const sign = offset > 0 ? '-' : '+'

@@ -1,3 +1,5 @@
+import type { Task } from '~/types'
+
 /**
  * 4Everland's arweave dedicated gateway
  * @caution 4everland's arweave gateway is at beta version,
@@ -28,12 +30,21 @@ export const defaultTokenLogo = 'rZbcNfx8UumPfzZJxXHlwXt7f_kxbO1_dcFbL_i0obg'
 
 export const taskBanners = [
   // space
-  '1h4wvyBDxnUr7OlMFVc_E0D9XklFTVugjnvGqtii4u4',
+  'iVTYARnF4MFibt2QEF9jrlqhvXFoL5LDojvuddzFC6E',
   'QBfwr8Tt57GMkpEhsVB_862otMrUKC96PkPa0Y9pE1o',
   'GmaXCpnYI5gHAaQTCgczjnYaNTXbAHH93eNrOQCEWiw',
   'EXwjxvamy5QNQc6oM-kHjpP_jAGFiJ6h0VF20XyJtBs',
   'swlpzETV8ahXyNlDskY9nuIm1tbExAKJMKOVj0XD2ZI'
 ]
+
+export const taskBannersMap: Record<Task['type'], string[]> = {
+  space: [
+    'iVTYARnF4MFibt2QEF9jrlqhvXFoL5LDojvuddzFC6E',
+    'reiNxSXMV1YnSSJahTgLo1KvL9m7D5sZcnTnq7q1muE',
+    'cjvbyCN9djO12OaVkjn80U5cddk46LMMBordWW-Y6dA',
+    '3NHrjNZH_cICGR15qxO3t2nbCPq0cgnWSW644oRqIEQ'
+  ]
+}
 
 export const communityBanners = [
   'D26l_0y5eFivSMzL5bFT6TpQxTs7Z1L2LKMtuZFvfzw',
