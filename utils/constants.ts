@@ -35,7 +35,7 @@ export const tokens: Record<string, Token> = {
   },
   USDC: {
     ticker: 'USDC',
-    label: 'Ethereum-Wrapped USDC',
+    label: 'USDC(Ethereum-Wrapped)',
     processID: '7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ',
     denomination: 6,
     logo: 'HZlLK9uWlNbhDbxXXe8aPaXZPqq9PKzpdH93ol-BKis'
