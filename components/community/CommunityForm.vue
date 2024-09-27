@@ -13,6 +13,7 @@ const reloadCommunity = inject<Function>('reloadCommunity')
 const props = defineProps<{
   isSettingMode?: boolean
   initState?: Community
+  class?: string
 }>()
 
 const { address } = $(aoStore())
@@ -275,7 +276,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="overflow-y-auto pt-10 pb-6 px-6 md:px-16 w-fit">
+  <div :class="cn('overflow-y-auto pt-10 pb-6 px-6 md:px-16 w-fit', props.class)">
     <UAlert
       icon="heroicons:user-group"
       :title="!props.isSettingMode ? $t('community.create') : $t('community.setting')"
