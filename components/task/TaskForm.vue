@@ -247,7 +247,7 @@ onMounted(() => {
                 :alt="`logo of ${tokens[name].label}`"
                 class="w-8 h-8 rounded-full border border-gray-200"
               >
-              <span class="truncate">{{ tokens[name].label }}</span>
+              <span class="truncate" :title="tokens[name].label">{{ tokens[name].label }}</span>
             </template>
           </USelectMenu>
 
