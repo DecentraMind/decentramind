@@ -233,7 +233,7 @@ async function onClickSubmit() {
     const spaceId = matched[2]
 
     const { data, error } = await useFetch(
-      '/api/twitter?' + new URLSearchParams({ spaceId }),
+      '/api/getTwitterSpace?' + new URLSearchParams({ spaceId }),
     ).json<TwitterSpaceInfo>()
     const spaceInfo = unref(data)
 
