@@ -94,7 +94,7 @@ const communityNameWidth = $computed(() => community ? getTextRenderWidth(commun
           <div
             :class="cn('max-w-[70%]', {
               'text-base font-bold': communityNameWidth > 300,
-              'text-xl font-bold': communityNameWidth > 200 && communityNameWidth <= 300,
+              'text-xl': communityNameWidth > 200 && communityNameWidth <= 300,
               'text-3xl': communityNameWidth <= 200
             })"
           >
