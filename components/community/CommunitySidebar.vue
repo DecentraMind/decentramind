@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
 import type { Community } from '~/types/index'
-import { getDomain, getHandle } from '~/utils'
+import { getDomain, getHandle, getTextRenderWidth, cn } from '~/utils'
 import CommunityForm from '~/components/community/CommunityForm.vue'
 import BaseField from '~/components/fields/BaseField.vue'
 
@@ -70,6 +70,8 @@ watch(() =>community, async () => {
   if (!community || community.inviteCode) return
   community.inviteCode = await createCommunityInviteCode(community.uuid)
 })
+
+const communityNameWidth = $computed(() => community ? getTextRenderWidth(community.name, 30) : 0)
 </script>
 <template>
   <UDashboardPanel :width="384" class="w-96" collapsible>
@@ -89,7 +91,15 @@ watch(() =>community, async () => {
 
       <div class="pb-4">
         <div class="flex justify-between items-center py-2">
-          <div class="max-w-[70%] text-3xl break-all">{{ community.name }}</div>
+          <div
+            :class="cn('max-w-[70%]', {
+              'text-base font-bold': communityNameWidth > 300,
+              'text-xl': communityNameWidth > 200 && communityNameWidth <= 300,
+              'text-3xl': communityNameWidth <= 200
+            })"
+          >
+            {{ community.name }}
+          </div>
           <div>
             <UButton
               color="primary"

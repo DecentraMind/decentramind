@@ -74,3 +74,35 @@ export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, pre
     return carry
   }, [] as string[])
 }
+
+/**
+ * Calculate the rendered width of a text string
+ * @param text The text to measure
+ * @param fontSize The font size in pixels
+ * @param fontFamily The font family (optional, defaults to 'Arial')
+ * @returns The width of the rendered text in pixels
+ */
+export function getTextRenderWidth(text: string, fontSize: number, fontFamily: string = 'Arial'): number {
+  // Create a temporary span element
+  const span = document.createElement('span')
+  
+  // Set the text and style properties
+  span.innerText = text
+  span.style.fontSize = `${fontSize}px`
+  span.style.fontFamily = fontFamily
+  span.style.position = 'absolute'
+  span.style.visibility = 'hidden'
+  span.style.whiteSpace = 'nowrap'
+  
+  // Append the span to the body
+  document.body.appendChild(span)
+  
+  // Get the width
+  const width = span.offsetWidth
+  
+  // Remove the span from the DOM
+  document.body.removeChild(span)
+  
+  return width
+}
+
