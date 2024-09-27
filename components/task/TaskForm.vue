@@ -161,7 +161,7 @@ onMounted(() => {
         :items="taskBannersUrl"
         :ui="{
           item: 'basis-full min-h-36',
-          container: 'rounded-lg overflow-hidden w-64 border-0',
+          container: 'rounded-lg gap-2',
           indicators: {
             wrapper: 'relative bottom-0 mt-4',
           },
