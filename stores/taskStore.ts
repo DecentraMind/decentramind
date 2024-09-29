@@ -304,7 +304,7 @@ export const useTaskStore = defineStore('task', () => {
       }]
     })
     const data = extractResult<string>(res)
-    return JSON.parse(data) as Bounty[]
+    return JSON.parse(data) as (Bounty & {recipientName: string})[]
   }
 
   const getBountiesByAddress = async (address: string) => {

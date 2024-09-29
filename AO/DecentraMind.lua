@@ -1,4 +1,4 @@
-Variant = '0.4.37'
+Variant = '0.4.38'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -602,7 +602,9 @@ Actions = {
       for _, taskPid in pairs(TasksByCommunity[uuid]) do
         if BountySendHistory[taskPid] then
           for _, bounty in pairs(BountySendHistory[taskPid]) do
-            table.insert(result, bounty)
+            local copy = u.deepCopy(bounty)
+            copy.recipientName = Users[copy.recipient].name
+            table.insert(result, copy)
           end
         end
       end

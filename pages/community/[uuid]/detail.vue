@@ -4,6 +4,7 @@ import { shortString, getDomain, getHandle } from '~/utils'
 import type { Community } from '~/types/index'
 import { useTaskStore } from '~/stores/taskStore'
 import BaseField from '~/components/fields/BaseField.vue'
+import { baseFieldClasses } from '~/components/fields'
 import * as echarts from 'echarts'
 
 const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
@@ -29,6 +30,7 @@ let community = $ref<Community>()
 type Rank = {
   receiver: string
   bountyCount: number
+  recipientName: string
 }
 
 let rankings = $ref<Rank[]>()
@@ -44,7 +46,7 @@ const loadRanks = async () => {
       if (index >= 0) {
         ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
       } else {
-        ranks.push({receiver: bounty.recipient, bountyCount: 1})
+        ranks.push({receiver: bounty.recipient, bountyCount: 1, recipientName: bounty.recipientName})
       }
       return ranks
     }, [] as Rank[]).sort((a, b) => {
@@ -234,21 +236,45 @@ onBeforeUnmount(() => {
 
               <BaseField :name="$t('community.token.platforms')" :values="community.support as unknown as Record<string, string>[]" />
 
-              <BaseField :name="$t('community.type of bounty')" :values="community.bounty as unknown as Record<string, string>[]" />
+              <BaseField :name="$t('community.type of bounty')" :values="community.bounty as unknown as Record<string, string>[]">
+                <template #values="{ values }">
+                  <div class="flex space-x-3 cursor-default">
+                    <UPopover
+                      v-for="(v, index) in values"
+                      :key="index"
+                      mode="hover"
+                      :popper="{ placement: 'top-end' }"
+                    >
+                      <span
+                        :class="cn(baseFieldClasses.tag, 'cursor-default')"
+                      >{{ v }}</span>
+                      <template #panel>
+                        <div v-if="values && values.length > 2" class="flex-center px-2 gap-x-1.5">
+                          {{ tokens[v as unknown as TokenName].processID }}
+                        </div>
+                      </template>
+                    </UPopover>
+                  </div>
+                </template>
+              </BaseField>
             </ULandingCard>
 
             <ULandingCard
               class="col-span-5 row-span-4"
               :title="$t('community.detail.contributeRank')"
-              :ui="{title: 'text-lg', body: {
-                base: 'gap-y-0'
-              }}"
+              :ui="{
+                title: 'text-lg',
+                //@ts-ignore
+                body: {
+                  base: 'gap-y-0',
+                }
+              }"
             >
               <UTable :columns="columns" :rows="rankings" :loading="isLoadingRankings">
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
                     <!-- <ArAvatar :src="row.avatar || defaultUserAvatar" :alt="row.receiver" size="xs" /> -->
-                    <span class="text-gray-900 dark:text-white font-medium">{{ shortString(row.receiver, 20) }}</span>
+                    <span class="text-gray-900 dark:text-white font-medium" :title="row.receiver">{{ row.recipientName ? `${row.recipientName} (${shortString(row.receiver, 14)})` : shortString(row.receiver, 20) }}</span>
                   </div>
                 </template>
                 <template #loading-state>
