@@ -25,7 +25,7 @@ export default defineAppConfig({
       icon: {
         base: 'w-6 h-7',
       },
-      title: 'text-xl font-semibold mb-2',
+      title: 'text-xl font-semibold mb-0',
       description: 'mt-1 text-sm leading-6 text-gray-600 text-justify',
     },
     formGroup: {

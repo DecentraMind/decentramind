@@ -39,6 +39,10 @@
     "name": "Name",
     "project": "Details",
     "setting": "Community Settings",
+    "admins": {
+      "title": "Community Admins",
+      "modalDescription": "Add/remove admins of your community.{lineBreak}Admins will be able to manage quests and mute users."
+    },
     "token": {
       "all": "Total Supply",
       "platforms": "Trading Support",

@@ -110,6 +110,8 @@ export type Community = {
   joinTime?: number
   
   inviteCode?: string
+
+  admins: string[]
 }
 
 /**

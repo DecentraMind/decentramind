@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber } from '~/utils'
+import { ARWEAVE_ID_REGEXP, maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber } from '~/utils'
 import type { FormError } from '#ui/types'
 import type { CommunitySetting, Task } from '~/types'
 
@@ -94,6 +94,41 @@ export const validateCommunitySetting = (
   })
 
   console.log('validate', state, errors)
+  return errors
+}
+
+export const communityAdminSchema = z.object({
+  admins: z.array(
+    z.object({
+      address: z.string().refine((value) => {
+        console.log('validate admin: ', value)
+        return ARWEAVE_ID_REGEXP.test(value)
+      }, { message: 'Must be a valid address' }),
+      name: z.string().min(2).max(28),
+      avatar: z.string(),
+    })
+  )
+})
+
+export type CommunityAdminSchema = z.infer<typeof communityAdminSchema>
+
+export const validateCommunityAdmin = (state: CommunityAdminSchema): FormError[] => {
+  const errors: FormError[] = []
+  const filteredAddresses = state.admins.filter(v => v.address).map(v => v.address)
+  console.log('valid admins length: ', filteredAddresses.length, new Set(filteredAddresses).size)
+  const duplicateAddresseIndexes = filteredAddresses.reduce((acc, address, index) => {
+    if (filteredAddresses.indexOf(address) !== index) {
+      acc.push(index)
+    }
+    return acc
+  }, [] as number[])
+
+  duplicateAddresseIndexes.forEach(index => {
+    errors.push({
+      path: `admins[${index}]`,
+      message: 'Duplicate admin address.',
+    })
+  })
   return errors
 }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { arUrl, defaultCommunityLogo, defaultUserAvatar, exploreLogo } from '~/utils/arAssets'
 import { cn } from '~/utils/util'
-import CommunityForm from '~/components/community/CommunityForm.vue'
+import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 
 const router = useRouter()
 
@@ -197,7 +197,7 @@ const refetch = async () => {
         <UButton color="white" @click="selectModal=1">Create Community</UButton>
         <UButton color="white" @click="selectModal=2">Create Token</UButton>
       </div>
-      <CommunityForm
+      <CommunitySettingForm
         v-if="selectModal === 1"
         @saved="loadCommunityList(address)"
         @close-modal="isCreateModalOpen = false"

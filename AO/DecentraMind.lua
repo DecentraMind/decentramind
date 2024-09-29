@@ -1,4 +1,4 @@
-Variant = '0.4.29'
+Variant = '0.4.30'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -20,6 +20,7 @@ local u = require("u")
 ---@field ispublished boolean
 ---@field name string
 ---@field desc string introduction
+---@field admins string[]
 
 --- @type table<string, Community> Communities indexed by community's uuid
 Communities = Communities or {}
@@ -205,6 +206,7 @@ Actions = {
       Communities[uuid].creator = address
       Communities[uuid].timestamp = msg.Timestamp
       Communities[uuid].buildnum = 1
+      Communities[uuid].admins = {}
 
       if not UserCommunities[address] then
         UserCommunities[address] = {}
@@ -289,6 +291,34 @@ Actions = {
       u.replyData(msg, json.encode(copy))
     end,
 
+    UpdateCommunityAdmins = function(msg)
+      local admins = json.decode(msg.Data)
+      local uuid = msg.Tags.Uuid
+
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      if msg.From ~= community.owner then
+        return u.replyError(msg, 'You are not the owner.')
+      end
+
+      for _, admin in pairs(admins) do
+        if not community.admins then
+          community.admins = {}
+        end
+        if u.findIndex(community.admins, function(existingAdmin)
+          return existingAdmin == admin
+        end) then
+          break
+        end
+        table.insert(community.admins, admin)
+      end
+
+      u.replyData(msg, 'ok')
+    end,
+
     Join = function(msg)
       local address = msg.From
       local uuid = msg.Tags.CommunityUuid
@@ -362,6 +392,26 @@ Actions = {
 
       if Tasks[pid] then
         return u.replyError(msg, 'Task existed.')
+      end
+
+      -- only allow owner or admins to create task
+      local community = Communities[cid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      local isPermitted = msg.From == community.owner
+      if not isPermitted then
+        for _, admin in pairs(community.admins) do
+          if admin == msg.From then
+            isPermitted = true
+            break
+          end
+        end
+      end
+
+      if not isPermitted then
+        return u.replyError(msg, 'Only owner or admins can create task.')
       end
 
       -- TODO validate task fields
@@ -804,8 +854,17 @@ Actions = {
         return u.replyError(msg, 'Community not found.')
       end
 
-      if msg.From ~= community.owner then
-        return u.replyError(msg, 'You are not the owner.')
+      local isPermitted = msg.From == community.owner
+      if not isPermitted then
+        for _, admin in pairs(community.admins) do
+          if admin == msg.From then
+            isPermitted = true
+            break
+          end
+        end
+      end
+      if not isPermitted then
+        return u.replyError(msg, 'Only owner or admins can mute.')
       end
 
       local userAddress = msg.Tags.User

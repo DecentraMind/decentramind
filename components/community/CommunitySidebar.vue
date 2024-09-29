@@ -2,7 +2,7 @@
 import { toRefs } from 'vue'
 import type { Community } from '~/types/index'
 import { getDomain, getHandle, getTextRenderWidth, cn } from '~/utils'
-import CommunityForm from '~/components/community/CommunityForm.vue'
+import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 import BaseField from '~/components/fields/BaseField.vue'
 
 const props = defineProps<{
@@ -15,6 +15,17 @@ const isCommunityOwner = $computed(() => community && address ? community.owner 
 const { exitCommunity } = $(communityStore())
 const { createCommunityInviteCode } = useTaskStore()
 const { showError, showSuccess } = $(notificationStore())
+
+const communitySettingTabs = [
+  {
+    label: 'Basic Info',
+    slot: 'basic-info'
+  },
+  {
+    label: 'Administration',
+    slot: 'administration'
+  }
+]
 
 const router = useRouter()
 
@@ -221,11 +232,19 @@ const communityNameWidth = $computed(() => community ? getTextRenderWidth(commun
       v-model="isSettingModalOpen"
       :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }"
     >
-      <CommunityForm
-        :is-setting-mode="true"
-        :init-state="community"
-        @close-modal="isSettingModalOpen = false"
-      />
+      <UTabs name="Setting" :items="communitySettingTabs" class="px-6 md:px-16">
+        <template #basic-info>
+          <CommunitySettingForm
+            :is-setting-mode="true"
+            :init-state="community"
+            class="px-0 md:px-px"
+            @close-modal="isSettingModalOpen = false"
+          />
+        </template>
+        <template #administration>
+          <CommunityAdminForm v-if="community" :uuid="community.uuid" :init-state="community.admins" class="px-0 md:px-0.5" />
+        </template>
+      </UTabs>
     </UModal>
   </UDashboardPanel>
 </template>

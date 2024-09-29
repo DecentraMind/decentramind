@@ -233,6 +233,19 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, res)
   }
 
+  const updateCommunityAdmins = async (uuid: string, admins: CommunityAdminSchema['admins']) => {
+    const jsonString = JSON.stringify(admins)
+    await messageResultParsed({
+      process: aoCommunityProcessID,
+      tags: [
+        { name: 'Action', value: 'UpdateCommunityAdmins' },
+        { name: 'Uuid', value: uuid }
+      ],
+      signer: createDataItemSigner(window.arweaveWallet),
+      data: jsonString,
+    })
+  }
+
   let isCommunityListLoading = $ref(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let communityListError = $ref<string>()
@@ -530,6 +543,7 @@ export const communityStore = defineStore('communityStore', () => {
     communityListError,
     addCommunity,
     updateCommunity,
+    updateCommunityAdmins,
     joinCommunity,
     exitCommunity,
     updateUser,

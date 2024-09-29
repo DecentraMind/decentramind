@@ -452,8 +452,8 @@ onMounted(async () => {
         <UFormGroup :label="`Token ${index+1}`" :ui="{label: {base: 'font-medium'}, error: 'hidden'}">
           <div class="flex flex-row items-center gap-x-3">
             <USelect v-model="formGroup.tokenName" :options="tokenNames" />
-            <UButton icon="material-symbols:close-rounded" variant="outline" @click="removeFormGroup(index)" />
-            <UButton v-if="formState.isPublished && communityTokens.length<=1" variant="outline" icon="material-symbols:add" @click="addCommunityTokenForm" />
+            <UButton icon="heroicons:x-mark-solid" variant="outline" @click="removeFormGroup(index)" />
+            <UButton v-if="formState.isPublished && communityTokens.length<=1" variant="outline" icon="heroicons:plus" @click="addCommunityTokenForm" />
           </div>
         </UFormGroup>
       </div>
@@ -506,9 +506,9 @@ onMounted(async () => {
                 placeholder="%"
                 class="w-20"
               />
-              <UButton v-if="formState.tokenAllocations.length > 1" icon="material-symbols:close-rounded" variant="outline" @click="removeSupplyGroup(index)" />
+              <UButton v-if="formState.tokenAllocations.length > 1" icon="heroicons:x-mark-solid" variant="outline" @click="removeSupplyGroup(index)" />
 
-              <UButton v-if="index === formState.tokenAllocations.length - 1" variant="outline" icon="material-symbols:add" @click="addSupplyGroup" />
+              <UButton v-if="index === formState.tokenAllocations.length - 1" variant="outline" icon="heroicons:plus" @click="addSupplyGroup" />
             </div>
           </UFormGroup>
         </UFormGroup>

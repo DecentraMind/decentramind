@@ -29,6 +29,10 @@
       "isjoin": "已加入",
       "join": "点击加入"
     },
+    "admins": {
+      "title": "社区管理员",
+      "modalDescription": "添加/删除社区管理员。{lineBreak}管理员可以管理任务和禁言用户。"
+    },
     "logo": "Logo",
     "look": "查看社区",
     "modalDescription": "在 DecentraMind 上启动您的社区。{lineBreak}轻松部署任务合同并向构建者发送赏金。",
