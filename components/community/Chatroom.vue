@@ -13,8 +13,10 @@ const { getCommunityUser, mute, unmute, getMutedUsers, setCurrentCommunityUuid, 
 const { stateArr: mails } = $(inboxStore())
 const { showSuccess, showError } = $(notificationStore())
 
-const selectedTab = $ref(0)
+const isAdminOrOwner = $computed(() => community && address ? community.owner === address || community.admins.includes(address) : false)
 
+
+const selectedTab = $ref(0)
 
 // Filter mails based on the selected tab
 const filteredMails = $computed(() => {
@@ -110,7 +112,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
             </div>
 
             <Confirm
-              v-if="community.owner === address && user.address !== community.owner"
+              v-if="isAdminOrOwner && user.address !== community.owner"
               :confirm-btn-text="user.muted ? 'Unmute' : 'Mute'"
               :title="`${user.muted ? 'Unmute' : 'Mute'} User`"
               :body="`Are you sure want to ${user.muted ? 'unmute' : 'mute'} ${user.name || shortString(user.address)}?`"

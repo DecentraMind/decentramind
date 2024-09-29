@@ -45,8 +45,6 @@ const taskPid = $computed(() => route.params.taskId) as string
 
 let task = $ref<Task>()
 
-const isOwner = $computed(() => runtimeConfig.public.debug || task?.ownerAddress === address)
-
 const isSubmitted = $computed(() => submissions.findIndex(submission => submission.address === address) > -1)
 const isJoined = $computed(() => {
   // console.log('task', task)
@@ -69,6 +67,9 @@ const submittedBuilderCount = $computed(() => {
 })
 
 let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
+
+const isAdminOrOwner = $computed(() => runtimeConfig.public.debug || task?.ownerAddress === address || communityInfo.admins.includes(address))
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let invites: InviteCodeInfo[]
 
@@ -114,7 +115,7 @@ onMounted(async () => {
       task.submissions = calcScore(submissions)
       console.log('score calculated submissions ', submissions)
 
-      if (isOwner) {
+      if (isAdminOrOwner) {
         // save submission scores and set task.isScoreCalculated
         const scores = task.submissions.map(s => {
           return {
@@ -743,19 +744,19 @@ const onClickShareToTwitter = () => {
                 </ULink>
               </div>
 
-              <div v-if="isJoined || isOwner || runtimeConfig.public.debug">
+              <div v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug">
                 <UTable
                   v-model="selectedSubmissions"
                   :rows="pageRows"
                   :columns="columns"
                   :loading="isLoading"
-                  :ui="{checkbox: {padding: task.isSettled || !isOwner ? 'hidden' : ''}}"
+                  :ui="{checkbox: {padding: task.isSettled || !isAdminOrOwner ? 'hidden' : ''}}"
                 >
                   <template #id-data="{ row }">
                     {{ row.id }}
                   </template>
                   <template #address-data="{ row }">
-                    {{ isOwner ? row.address : shortString(row.address, 4) }}
+                    {{ isAdminOrOwner ? row.address : shortString(row.address, 4) }}
                   </template>
                   <template #url-data="{ row }">
                     {{ row.url.replace(/^https?:\/\//, '').replace(/\/peek$/, '') }}
@@ -792,7 +793,7 @@ const onClickShareToTwitter = () => {
               </div>
             </div>
 
-            <div v-if="!isLoading && isOwner && !task.isSettled && now >= task.endTime" class="flex-center">
+            <div v-if="!isLoading && isAdminOrOwner && !task.isSettled && now >= task.endTime" class="flex-center">
               <UButton
                 color="white"
                 :label="sendBountyBtnLabel()"

@@ -87,7 +87,7 @@ async function onTaskCreated() {
 console.log('get community info of ', uuid)
 let community = $ref<Community>()
 
-const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
+const isAdminOrOwner = $computed(() => community && address ? community.owner === address || community.admins.includes(address) : false)
 
 let isLoading = $ref(true)
 onMounted(async () => {
@@ -146,7 +146,7 @@ watch(() => route.hash, newHash => {
               @change="onTaskVisibleTabChange"
             />
             <UDropdown
-              v-if="community && isCommunityOwner"
+              v-if="community && isAdminOrOwner"
               :items="taskTypes"
               :popper="{ placement: 'bottom-start' }"
               :ui="{ wrapper: 'h-8' }"
@@ -169,7 +169,7 @@ watch(() => route.hash, newHash => {
               >
                 <div class="text-xl">
                   {{
-                    isCommunityOwner
+                    isAdminOrOwner
                       ? $t('No quest.')
                       : 'Nothing here, \nquests will coming soon.'
                   }}
@@ -177,7 +177,7 @@ watch(() => route.hash, newHash => {
               </div>
               <div class="flex-center mt-10">
                 <div
-                  v-if="community && isCommunityOwner"
+                  v-if="community && isAdminOrOwner"
                   class="flex justify-center items-center"
                 >
                   <UDropdown
