@@ -190,7 +190,7 @@ const communityNameWidth = $computed(() => community ? getTextRenderWidth(commun
             Invite People
           </UButton>
           <template #panel>
-            <div class="p-4 w-80">
+            <div class="p-4 w-fit">
               <div class="flex items-center">
                 <p ref="textToCopy" class="break-all mr-2 text-xs">
                   {{ inviteUrl }}

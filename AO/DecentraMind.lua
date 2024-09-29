@@ -1,4 +1,4 @@
-Variant = '0.4.36'
+Variant = '0.4.37'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -316,6 +316,13 @@ Actions = {
       local inviteCode = msg.Tags.InviteCode
 
       local community = Communities[uuid]
+      assert(community, 'Community not found.')
+
+      --- if user has already joined the community, return
+      if UserCommunities[address] and UserCommunities[address][uuid] then
+        return
+      end
+
       if community then
         if community.buildnum then
           community.buildnum = community.buildnum + 1
@@ -487,6 +494,9 @@ Actions = {
 
       if Tasks[pid].builders[msg.From] then
         return u.replyError(msg, 'You have joined this task.')
+      end
+      if UserCommunities[msg.From] and UserCommunities[msg.From][Tasks[pid].communityUuid] then
+        return u.replyError(msg, 'You have joined this community.')
       end
 
       local builder = {
