@@ -354,13 +354,14 @@ export const useTaskStore = defineStore('task', () => {
     return JSON.parse(data) as { invite: InviteCodeInfo, task?: Task, community: Community }
   }
 
-  const getInvitesByInviter = async (inviter: string) => {
+  const getInvitesByInviter = async (inviter: string, type?: 'task' | 'community') => {
+    const tags = [{ name: 'Action', value: 'GetInvitesByInviter' }, { name: 'Inviter', value: inviter }]
+    if (type) {
+      tags.push({ name: 'InviteType', value: type })
+    }
     const data = await dryrunResult<string>({
       process: taskManagerProcessID,
-      tags: [
-        { name: 'Action', value: 'GetInvitesByInviter' },
-        { name: 'Inviter', value: inviter }
-      ]
+      tags
     })
 
     return JSON.parse(data) as {

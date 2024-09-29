@@ -95,7 +95,7 @@ onMounted(async () => {
     console.log({ isIng, isSettle: task.isSettled, isCal: task.isScoreCalculated })
 
     // TOOD invited number should calculated at AO
-    invites = (await getInvitesByInviter(address)).invites
+    invites = (await getInvitesByInviter(address, 'task')).invites
 
     communityInfo = await getLocalCommunity(task.communityUuid)
     setCurrentCommunityUuid(communityInfo.uuid)
@@ -244,6 +244,14 @@ async function onClickSubmit() {
     }
 
     console.log('data from twitter = ', spaceInfo)
+    type SpaceInfoError = {
+      detail: string
+      type: string
+    }
+    if ((spaceInfo as unknown as {errors: SpaceInfoError[]} ).errors.length) {
+      const error = (spaceInfo as unknown as {errors: SpaceInfoError[]}).errors[0]
+      throw new Error('Failed to validate space URL: ' + error.detail)
+    }
 
     const {
       started_at,

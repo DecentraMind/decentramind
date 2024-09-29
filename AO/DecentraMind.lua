@@ -1,4 +1,4 @@
-Variant = '0.4.33'
+Variant = '0.4.36'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -782,6 +782,7 @@ Actions = {
 
     GetInvitesByInviter = function(msg)
       local address = msg.Tags.Inviter
+      local type = msg.Tags.InviteType
       if not InviteCodesByInviterByTaskPid[address] and not InviteCodesByInviterByCommunityUuid[address] then
         return u.replyData(msg, {invites = {}, relatedUsers = {}, relatedTasks = {}, relatedCommunities = {}})
       end
@@ -792,6 +793,9 @@ Actions = {
       local relatedCommunities = {}
       for pid, code in pairs(InviteCodesByInviterByTaskPid[address]) do
         local invite = Invites[code]
+        if type and type ~= 'task' and invite.type == 'task' then
+          goto continue
+        end
         if u.tableLen(invite.invitees) > 0 then
           table.insert(invites, invite)
           relatedTasks[pid] = Tasks[pid]
@@ -803,9 +807,13 @@ Actions = {
             logo = community.logo,
           }
         end
+        ::continue::
       end
       for uuid, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
         local invite = Invites[code]
+        if type and type ~= 'community' and invite.type == 'community' then
+          goto nextCode
+        end
         if u.tableLen(invite.invitees) > 0 then
           table.insert(invites, invite)
           local community = Communities[uuid]
@@ -815,6 +823,7 @@ Actions = {
             logo = community.logo,
           }
         end
+        ::nextCode::
       end
 
       local relatedUsers = {}
