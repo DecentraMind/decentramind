@@ -233,9 +233,9 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, res)
   }
 
-  const updateCommunityAdmins = async (uuid: string, admins: CommunityAdminSchema['admins']) => {
-    const jsonString = JSON.stringify(admins.map(admin => admin.address))
-    await messageResultParsed({
+  const updateCommunityAdmins = async (uuid: string, admins: string[]) => {
+    const jsonString = JSON.stringify(admins)
+    const res = await messageResultParsed({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'UpdateCommunityAdmins' },
@@ -244,6 +244,11 @@ export const communityStore = defineStore('communityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
       data: jsonString,
     })
+    console.log({ communityUpdateRes: res })
+
+    updateLocalCommunity(uuid, 'admins', admins)
+
+    return res
   }
 
   let isCommunityListLoading = $ref(false)

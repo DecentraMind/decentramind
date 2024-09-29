@@ -101,7 +101,6 @@ export const communityAdminSchema = z.object({
   admins: z.array(
     z.object({
       address: z.string().refine((value) => {
-        console.log('validate admin: ', value)
         return ARWEAVE_ID_REGEXP.test(value)
       }, { message: 'Must be a valid address' }),
       name: z.string().min(2).max(28),
@@ -129,6 +128,7 @@ export const validateCommunityAdmin = (state: CommunityAdminSchema): FormError[]
       message: 'Duplicate admin address.',
     })
   })
+  console.log('validate admin: ', state, errors)
   return errors
 }
 
