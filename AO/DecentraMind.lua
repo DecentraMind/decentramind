@@ -1,4 +1,4 @@
-Variant = '0.4.30'
+Variant = '0.4.33'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -292,6 +292,7 @@ Actions = {
     end,
 
     UpdateCommunityAdmins = function(msg)
+      ---@type string[]
       local admins = json.decode(msg.Data)
       local uuid = msg.Tags.Uuid
 
@@ -304,19 +305,9 @@ Actions = {
         return u.replyError(msg, 'You are not the owner.')
       end
 
-      for _, admin in pairs(admins) do
-        if not community.admins then
-          community.admins = {}
-        end
-        if u.findIndex(community.admins, function(existingAdmin)
-          return existingAdmin == admin
-        end) then
-          break
-        end
-        table.insert(community.admins, admin)
-      end
+      community.admins = admins
 
-      u.replyData(msg, 'ok')
+      u.replyData(msg, community.admins)
     end,
 
     Join = function(msg)

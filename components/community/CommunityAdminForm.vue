@@ -32,9 +32,9 @@ async function onFormSubmit(event: FormSubmitEvent<CommunityAdminSchema>) {
   console.log('onCommunityAdminFormSubmit: ', event.data)
   try {
     isSaving = true
-    const filteredUniqAdmins = [...new Set(event.data.admins)]
-    console.log('filteredUniqAdmins: ', filteredUniqAdmins)
-    await updateCommunityAdmins(props.uuid, filteredUniqAdmins)
+    const filteredUniqAdminAddresses = [...new Set(event.data.admins.filter(admin => admin.address).map(admin => admin.address))]
+    console.log('filteredUniqAdminAddresses: ', filteredUniqAdminAddresses)
+    await updateCommunityAdmins(props.uuid, filteredUniqAdminAddresses)
     showSuccess('Successfully updated community admins.')
   } catch (error) {
     console.error('Error updating community admins:', error)
@@ -54,12 +54,13 @@ async function search(query: string) {
 
 let communityUsers = $ref<UserInfoWithAddress[]>([])
 onMounted(async () => {
-  console.log('formState.admins: ', formState.admins)
   communityUsers = Object.entries(await getCommunityUser(props.uuid)).map(([address, user]) => ({
     ...user,
     name: user.name || address,
     address,
   }))
+
+  console.log('props.initState: ', props.initState)
   if (props.initState.length > 0) {
     formState.admins = props.initState.map(adminAddress => {
       const user = communityUsers.find(user => user.address === adminAddress)
@@ -69,6 +70,7 @@ onMounted(async () => {
       }
       return { ...user, address: adminAddress, avatar: user.avatar || '' }
     })
+    console.log('formState.admins: ', formState.admins)
   } else {
     addEmptyAdmin()
   }
@@ -89,7 +91,6 @@ onMounted(async () => {
     </UAlert>
 
     <UForm
-      :schema="communityAdminSchema"
       :validate="validateCommunityAdmin"
       :state="formState"
       class="flex flex-col items-center space-y-7 pt-10"
@@ -132,6 +133,7 @@ onMounted(async () => {
             <template #label>
               <div class="flex items-center space-x-2">
                 <ArAvatar
+                  v-if="formState.admins[index].avatar"
                   :src="formState.admins[index].avatar"
                   :alt="formState.admins[index].name"
                   class="w-6 h-6"

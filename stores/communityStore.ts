@@ -234,7 +234,7 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   const updateCommunityAdmins = async (uuid: string, admins: CommunityAdminSchema['admins']) => {
-    const jsonString = JSON.stringify(admins)
+    const jsonString = JSON.stringify(admins.map(admin => admin.address))
     await messageResultParsed({
       process: aoCommunityProcessID,
       tags: [
