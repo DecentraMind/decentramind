@@ -1,4 +1,4 @@
-Variant = '0.4.38'
+Variant = '0.4.39'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -375,6 +375,15 @@ Actions = {
       end
       if not UserCommunities[address] or not UserCommunities[address][uuid] then
         return u.replyError(msg, "Not found related user-community info in UserCommunities[" .. address .. "]")
+      end
+
+      --- delete related invitee of invite code
+      if UserCommunities[address][uuid].inviteCode then
+        ---@type Invite
+        local invite = Invites[UserCommunities[address][uuid].inviteCode]
+        if invite then
+          invite.invitees[address] = nil
+        end
       end
 
       UserCommunities[address][uuid] = nil
