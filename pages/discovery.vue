@@ -27,7 +27,9 @@ onMounted(async () => {
   setCurrentCommunityUuid(undefined)
 
   try {
-    await checkVouch()
+    if (!twitterVouched) {
+      vouchModalOpen = true
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : error
     showError('Error fetching data:' + message)
@@ -73,9 +75,7 @@ const joinToCommunity = async(uuid: string, name: string) => {
 }
 const checkVouch = async () => {
   const twitterIDs = await vouch()
-  if (!twitterIDs.length) {
-    vouchModalOpen = true
-  }
+  return !!twitterIDs.length
 }
 
 const refetch = async () => {

@@ -1,8 +1,9 @@
-Variant = '0.4.39'
+Variant = '0.4.42'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
 local u = require("u")
+VouchProcessId = 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
 
 ---@class Community
 ---@field uuid string
@@ -314,6 +315,13 @@ Actions = {
       local address = msg.From
       local uuid = msg.Tags.CommunityUuid
       local inviteCode = msg.Tags.InviteCode
+
+      --- TODO check vouch data
+      -- local vouchData = u.isVouch(address)
+      -- print("Join community: vouchData of " .. address .. ": " .. vouchData)
+      -- if not vouchData then
+      --   return u.replyError(msg, 'No vouch data of ' .. address .. '.')
+      -- end
 
       local community = Communities[uuid]
       assert(community, 'Community not found.')

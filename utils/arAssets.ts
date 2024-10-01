@@ -46,6 +46,9 @@ export const communityBanners = [
 ]
 
 export function arUrl(tx: string, gateWay = gateways.everland) {
+  if (!ARWEAVE_ID_REGEXP.test(tx)) {
+    throw new Error('Invalid arweave id')
+  }
   return gateWay + tx
 }
 

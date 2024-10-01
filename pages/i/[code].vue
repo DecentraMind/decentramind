@@ -6,7 +6,7 @@ definePageMeta({
   layout: 'landing',
 })
 
-const { joinCommunity, getUserByAddress } = $(communityStore())
+const { joinCommunity, getUserByAddress, vouch } = $(communityStore())
 const { getInviteByCode, joinTask } = useTaskStore()
 
 const { doLogin } = $(aoStore())
@@ -18,13 +18,25 @@ const router = useRouter()
 
 const code = route.params.code as string
 
+let vouchModalOpen = $ref(false)
+
+let isJoinLoading = $ref(false)
 async function join() {
+  isJoinLoading = true
+
   if((!task?.communityUuid && !community?.uuid) || !inviteInfo?.inviterAddress) {
     showError('Failed to load related data, please try refresh this page.')
+    isJoinLoading = false
     return
   }
 
   await doLogin()
+  const isVouched = await checkVouch()
+  if (!isVouched) {
+    vouchModalOpen = true
+    isJoinLoading = false
+    return
+  }
 
   if (inviteInfo.type === 'community' && community) {
     await joinCommunity(community.uuid, code)
@@ -33,6 +45,7 @@ async function join() {
     await joinTask(task.processID, code)
   }
 
+  isJoinLoading = false
   showSuccess('join success')
   await router.push({path: '/community/' + inviteInfo.communityUuid})
 }
@@ -58,6 +71,11 @@ onMounted(async () => {
   inviter = await getUserByAddress(invite.inviterAddress)
   isLoading = false
 })
+
+const checkVouch = async () => {
+  const twitterIDs = await vouch()
+  return !!twitterIDs.length
+}
 </script>
 
 <template>
@@ -78,9 +96,19 @@ onMounted(async () => {
 
       <template #footer>
         <div class="flex justify-center">
-          <UButton color="white" label="Join" @click="join" />
+          <UButton color="white" label="Join" :loading="isJoinLoading" :disabled="isJoinLoading" @click="join" />
         </div>
       </template>
     </UCard>
+    <UModal v-model="vouchModalOpen">
+      <div class="h-[200px] flex flex-col items-center justify-center">
+        <span class="text-xl">Not Vouched</span>
+        <div>
+          <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank">
+            <UButton color="white" class="mt-10">Get Vouched</UButton>
+          </NuxtLink>
+        </div>
+      </div>
+    </UModal>
   </UMain>
 </template>

@@ -16,7 +16,7 @@ import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
 
 export const communityStore = defineStore('communityStore', () => {
   const { address } = $(aoStore())
-  let twitterVouched = $ref(true)
+  let twitterVouched = $ref(false)
   let twitterVouchedIDs = $ref<string[]>([])
   let communityList = $ref<Community[]>([])
   let mutedUsers = $ref<string[]>([])

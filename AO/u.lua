@@ -1,5 +1,5 @@
 -- u is a utility library for DecentraMind
-local u = { _version = "0.0.1" }
+local u = { _version = "0.0.3" }
 
 local json = require("json")
 
@@ -77,6 +77,19 @@ function u.uid(length)
     id = id .. chars:sub(index, index)
   end
   return id
+end
+
+function u.isVouch(address)
+  Send({
+    Target = VouchProcessId,
+    Action = 'Get-Vouches',
+    ID = address
+  })
+  --- FIXME: when Vouch process error(the address is not vouched)
+  local vouchData = Receive({Action = 'VouchDAO.Vouches'}).Data
+  print("vouchData of " .. address .. ": " .. vouchData)
+
+  return vouchData
 end
 
 return u

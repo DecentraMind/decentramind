@@ -122,7 +122,7 @@ const findInvitedByCommunityID = (communityID: string) => {
       <div v-for="community in Object.values(communities)" :key="community.uuid">
         <div v-if="invitedByMe[community.uuid] && community.name" class="flex items-center justify-start mt-5">
           <div class="flex items-center">
-            <img :src="arUrl(community.logo) || arUrl(defaultCommunityLogo)" class="h-[70px] w-[70px] rounded-lg border">
+            <img :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)" class="h-[70px] w-[70px] rounded-lg border">
             <div class="ml-10 text-xl w-[160px] overflow-hidden">{{ community.name }}</div>
             <div class="ml-10 text-xl w-[200px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
           </div>

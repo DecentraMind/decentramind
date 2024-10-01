@@ -46,16 +46,17 @@ export const aoStore = defineStore('aoStore', () => {
 
   async function _login(wallet: typeof window.arweaveWallet) {
     address = await wallet.getActiveAddress()
-    const messageID = await message({
+    const res = await messageResultCheck({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'RegisterUserOrLogin' },
+        { name: 'Action', value: 'Login' },
         { name: 'UserName', value: address.slice(-4) },
         { name: 'Avatar', value: defaultUserAvatar },
       ],
       signer: createDataItemSigner(wallet),
     })
-    console.log('register/login result', messageID, address)
+
+    console.log('register/login result', res, address)
 
     const onSwitch = async (e) => {
       if (e.detail.address !== address) {
@@ -66,7 +67,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
     globalThis.addEventListener('walletSwitch', onSwitch)
 
-    return messageID
+    return res
   }
 
   /** ArConnect browser extension login */
