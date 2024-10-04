@@ -175,22 +175,20 @@ watch(() => route.hash, newHash => {
                   }}
                 </div>
               </div>
-              <div class="flex-center mt-10">
-                <div
-                  v-if="community && isAdminOrOwner"
-                  class="flex justify-center items-center"
+              <div
+                v-if="community && isAdminOrOwner"
+                class="flex-center mt-10"
+              >
+                <UDropdown
+                  :items="taskTypes"
+                  :popper="{ placement: 'bottom-start' }"
                 >
-                  <UDropdown
-                    :items="taskTypes"
-                    :popper="{ placement: 'bottom-start' }"
-                  >
-                    <UButton
-                      color="white"
-                      :label="$t('Start a Public Quest')"
-                      trailing-icon="i-heroicons-chevron-down-20-solid"
-                    />
-                  </UDropdown>
-                </div>
+                  <UButton
+                    color="white"
+                    :label="$t('Start a Public Quest')"
+                    trailing-icon="i-heroicons-chevron-down-20-solid"
+                  />
+                </UDropdown>
               </div>
             </UCard>
           </div>

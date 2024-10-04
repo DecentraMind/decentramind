@@ -73,10 +73,6 @@ const joinToCommunity = async(uuid: string, name: string) => {
   }
 
 }
-const checkVouch = async () => {
-  const twitterIDs = await vouch()
-  return !!twitterIDs.length
-}
 
 const refetch = async () => {
   await Promise.race([loadCommunityList(address), refetchUserInfo()])

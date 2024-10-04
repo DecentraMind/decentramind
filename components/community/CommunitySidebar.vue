@@ -13,7 +13,6 @@ const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
 const { exitCommunity } = $(communityStore())
-const { createCommunityInviteCode } = useTaskStore()
 const { showError, showSuccess } = $(notificationStore())
 
 const communitySettingTabs = [
@@ -76,10 +75,6 @@ watch(
 
 const inviteUrl = $computed(() => {
   return typeof window !== 'undefined' ? `${window.location.origin}/i/${community?.inviteCode}` : ''
-})
-watch(() =>community, async () => {
-  if (!community || community.inviteCode) return
-  community.inviteCode = await createCommunityInviteCode(community.uuid)
 })
 
 const communityNameWidth = $computed(() => community ? getTextRenderWidth(community.name, 30) : 0)

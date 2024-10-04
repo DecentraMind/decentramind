@@ -8,7 +8,7 @@ const router = useRouter()
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet } = $(aoStore())
-const { joinedCommunities, currentUuid, loadCommunityList, communityListError } = $(communityStore())
+const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 const isCreateModalOpen = $ref(false)
@@ -21,6 +21,7 @@ onMounted(async () => {
       return
     }
 
+    await vouch()
     await loadCommunityList(address)
   } catch (error) {
     console.error('Error fetching data:', error)

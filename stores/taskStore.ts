@@ -332,16 +332,6 @@ export const useTaskStore = defineStore('task', () => {
     return code
   }
 
-  const createCommunityInviteCode  = async (communityUuid: string) => {
-    const code = await messageResult<string>({
-      process: taskManagerProcessID,
-      signer: createDataItemSigner(window.arweaveWallet),
-      tags: [{ name: 'Action', value: 'CreateInviteCode' }, { name: 'CommunityUuid', value: communityUuid }],
-    })
-    return code
-  }
-
-
   const getInviteByCode = async (code: string) => {
     const data = await dryrunResult<string>({
       process: taskManagerProcessID,
@@ -386,7 +376,7 @@ export const useTaskStore = defineStore('task', () => {
 
     // TODO move this to communityStore
     // getInvitesByInviter,
-    createTaskInviteCode, createCommunityInviteCode, getInviteByCode, getInvitesByInviter
+    createTaskInviteCode, getInviteByCode, getInvitesByInviter
   }
 })
 

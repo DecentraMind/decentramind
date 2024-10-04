@@ -1,4 +1,4 @@
-Variant = '0.4.42'
+Variant = '0.4.44'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -317,9 +317,9 @@ Actions = {
       local inviteCode = msg.Tags.InviteCode
 
       --- TODO check vouch data
-      -- local vouchData = u.isVouch(address)
-      -- print("Join community: vouchData of " .. address .. ": " .. vouchData)
-      -- if not vouchData then
+      --- FIXME user will not be able to join community if check vouch data here
+      -- local isVouched = u.isVouch(address)
+      -- if not isVouched then
       --   return u.replyError(msg, 'No vouch data of ' .. address .. '.')
       -- end
 
