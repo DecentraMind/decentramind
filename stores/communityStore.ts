@@ -372,7 +372,7 @@ export const communityStore = defineStore('communityStore', () => {
     if (inviteCode) {
       tags.push({ name: 'InviteCode', value: inviteCode })
     }
-    const join = await message({
+    const join = await messageResultCheck({
       process: aoCommunityProcessID,
       tags,
       signer: createDataItemSigner(window.arweaveWallet)
@@ -429,6 +429,13 @@ export const communityStore = defineStore('communityStore', () => {
     if (!user.Messages || !user.Messages.length) {
       console.error('get user error:', user.Error, address)
       throw new Error('Get user info failed.')
+    }
+
+    if (!user.Messages[0].Data) {
+      return {
+        name: '',
+        avatar: ''
+      }
     }
 
     const userInfo = JSON.parse(user.Messages[0].Data) as UserInfo
