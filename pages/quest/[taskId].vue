@@ -129,7 +129,7 @@ onMounted(async () => {
       }
     }
 
-    // console.log({ isSubmitted })
+    console.log({ isSubmitted })
   } catch (e) {
     console.error(e)
     // TODO show a page size error overlay and reload button
@@ -216,16 +216,15 @@ async function onClickSubmit() {
         'Data loading does not completed. Please wait or try refresh.',
       )
     }
-    // TODO enable this
-    // if (!twitterVouchedIDs.length) {
-    //   throw new Error('You are not vouched.')
-    // }
+    
+    if (!twitterVouchedIDs.length) {
+      throw new Error('You are not vouched.')
+    }
+    
+    if (isSubmitted) {
+      throw new Error('You have submitted this quest.')
+    }
 
-    // for (let i = 0;i < spaceTaskSubmitInfo.length;i++) {
-    //   if (spaceTaskSubmitInfo[i].address === address) {
-    //     throw new Error('You have submitted this quest.')
-    //   }
-    // }
     const matched = spaceUrl.trim().match(/(x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
 
     if (!matched || !matched[2]) {
@@ -265,18 +264,18 @@ async function onClickSubmit() {
     ).getTime()
 
     const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
-    // TODO enable this
-    // if (minuteDifference < 15) {
-    //   throw Error('Space lasts less than 15 minutes')
-    // }
+    
+    if (minuteDifference < 15) {
+      throw Error('Space lasts less than 15 minutes')
+    }
 
     const hostID = spaceInfo.data.creator_id
     const host = spaceInfo.includes.users.find(user => user.id === hostID)
     const hostHandle = host?.username
-    // TODO enable this
-    // if (!host || !twitterVouchedIDs.find(id => id === hostHandle)) {
-    //   throw new Error('You are not the space host.')
-    // }
+    
+    if (!host || !twitterVouchedIDs.find(id => id === hostHandle)) {
+      throw new Error('You are not the space host.')
+    }
 
     // space参与人数
     // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
@@ -791,8 +790,7 @@ const onClickShareToTwitter = () => {
               v-if="!isLoading && isJoined"
               class="flex justify-center my-8"
             >
-              <!-- TODO v-if="isIng && !isSubmitted" -->
-              <div v-if="isIng" class="mx-4">
+              <div v-if="isIng && !isSubmitted" class="mx-4">
                 <UButton
                   color="white"
                   :label="$t('Submit Quest')"
