@@ -1,4 +1,4 @@
-Variant = '0.4.44'
+Variant = '0.4.45'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -363,6 +363,7 @@ Actions = {
       UserCommunities[address][uuid] = userCommunity
 
       createInviteCode('community', address, uuid)
+      u.replyData(msg, uuid)
     end,
 
     Exit = function(msg)
@@ -512,15 +513,12 @@ Actions = {
       if Tasks[pid].builders[msg.From] then
         return u.replyError(msg, 'You have joined this task.')
       end
-      if UserCommunities[msg.From] and UserCommunities[msg.From][Tasks[pid].communityUuid] then
-        return u.replyError(msg, 'You have joined this community.')
-      end
 
       local builder = {
         address = msg.From,
         joinTime = msg.Timestamp
       }
-      if (msg.Tags.InviteCode) then
+      if msg.Tags.InviteCode then
         local invite = Invites[msg.Tags.InviteCode]
         if not invite then
           return u.replyError(msg, 'Invite code not found.')
@@ -534,6 +532,7 @@ Actions = {
           invite.invitees[msg.From] = { joinTime = msg.Timestamp }
         end
       end
+
       Tasks[pid].builders[msg.From] = builder
 
       -- create task invite code for the new builder
@@ -574,6 +573,17 @@ Actions = {
       end
 
       u.replyData(msg, tostring(submission.id))
+    end,
+
+    UpdateSubmission = function(msg)
+      local pid = msg.Tags.TaskPid
+      local id = msg.Tags.SubmissionID
+      local submission = json.decode(msg.Data)
+
+      assert(msg.From == Tasks[pid].ownerAddress, 'You are not the owner of this task.')
+      assert(Tasks[pid].submissions[id], 'Submission not found.')
+
+      Tasks[pid].submissions[id] = submission
     end,
 
     StoreBountySendHistory = function(msg)
