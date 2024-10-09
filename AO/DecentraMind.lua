@@ -1,4 +1,4 @@
-Variant = '0.4.45'
+Variant = '0.4.48'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -231,6 +231,10 @@ Actions = {
         if address and UserCommunities[address] and UserCommunities[address][uuid] then
           copy.isJoined = true
           copy.joinTime = UserCommunities[address][uuid].joinTime
+
+          if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
+            copy.inviteCode = InviteCodesByInviterByCommunityUuid[address][uuid]
+          end
         end
         table.insert(communities, copy)
       end
@@ -770,6 +774,9 @@ Actions = {
       local uuid = msg.Tags.CommunityUuid
 
       if not pid or not Tasks[pid] then
+        if not uuid or not Communities[uuid] then
+          return u.replyError(msg, 'Community not found.')
+        end
         -- create invite code for the community
         local code = createInviteCode('community', address, uuid)
         return u.replyData(msg, code)

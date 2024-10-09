@@ -12,7 +12,7 @@ const props = defineProps<{
 const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
-const { exitCommunity } = $(communityStore())
+const { exitCommunity, createCommunityInviteCode } = $(communityStore())
 const { showError, showSuccess } = $(notificationStore())
 
 const communitySettingTabs = [
@@ -72,12 +72,21 @@ watch(
     currentHash.value = newHash || '#quests'
   }
 )
+const communityNameWidth = $computed(() => community ? getTextRenderWidth(community.name, 30) : 0)
 
-const inviteUrl = $computed(() => {
-  return typeof window !== 'undefined' ? `${window.location.origin}/i/${community?.inviteCode}` : ''
+const inviteCode = $computed(() => {
+  if (!community) return ''
+  if (community.inviteCode) return community.inviteCode
+  createCommunityInviteCode(community.uuid).then((code) => {
+    community.inviteCode = code
+  })
+  return ''
 })
 
-const communityNameWidth = $computed(() => community ? getTextRenderWidth(community.name, 30) : 0)
+const inviteUrl = $computed(() => {
+  return typeof window !== 'undefined' ? `${window.location.origin}/i/${inviteCode}` : ''
+})
+
 </script>
 <template>
   <UDashboardPanel :width="384" class="w-96" collapsible>
@@ -175,7 +184,7 @@ const communityNameWidth = $computed(() => community ? getTextRenderWidth(commun
             @click="isSettingModalOpen = true"
           />
         </div>
-        <UPopover v-if="community.inviteCode" mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
+        <UPopover v-if="inviteCode" mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
           <UButton
             color="white"
             variant="ghost"

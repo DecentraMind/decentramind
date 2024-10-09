@@ -364,6 +364,18 @@ export const communityStore = defineStore('communityStore', () => {
     return communityUserMap
   }
 
+  const createCommunityInviteCode  = async (communityUuid: string) => {
+    const code = await messageResult<string>({
+      process: aoCommunityProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [
+        { name: 'Action', value: 'CreateInviteCode' },
+        { name: 'CommunityUuid', value: communityUuid }
+      ],
+    })
+    return code
+  }
+
   const joinCommunity = async (communityUuid: string, inviteCode?: string) => {
     const tags = [
       { name: 'Action', value: 'Join' },
@@ -556,6 +568,7 @@ export const communityStore = defineStore('communityStore', () => {
     addCommunity,
     updateCommunity,
     updateCommunityAdmins,
+    createCommunityInviteCode,
     joinCommunity,
     exitCommunity,
     updateUser,
