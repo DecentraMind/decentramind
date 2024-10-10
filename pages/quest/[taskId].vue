@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTaskStore } from '~/stores/taskStore'
-import { calcBounties, formatToLocale, fractionalPart, shortString, saveSpaceTaskSubmitInfo } from '~/utils'
+import { calcBounties, formatToLocale, fractionalPart, shortString } from '~/utils'
 import type {
   Task,
   Bounty,
@@ -26,7 +26,8 @@ const {
   updateTaskScores,
   getTask,
   joinTask,
-  createTaskInviteCode
+  createTaskInviteCode,
+  saveSpaceTaskSubmitInfo
 } = useTaskStore()
 
 const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(communityStore())
@@ -101,7 +102,7 @@ onMounted(async () => {
     // console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
     if (
-      // !task.isScoreCalculated &&
+      !task.isScoreCalculated &&
       now.value >= task.endTime &&
       !task.isSettled &&
       isAdminOrOwner
