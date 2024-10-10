@@ -207,6 +207,25 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
+  /**
+   * update specific submission
+   * @param spaceSubmission 
+   * @returns 
+   */
+  const updateSubmission = async (spaceSubmission: Pick<SpaceSubmission, 'id'> & Partial<Omit<SpaceSubmission, 'id' | 'createTime'>>, taskPid: string) => {
+    console.log('update submission', spaceSubmission)
+    return await messageResultCheck({
+      process: taskManagerProcessID,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [
+        { name: 'Action', value: 'UpdateSubmission' },
+        { name: 'TaskPid', value: taskPid },
+        { name: 'SubmissionID', value: spaceSubmission.id.toString() }
+      ],
+      data: JSON.stringify(spaceSubmission)
+    })
+  }
+
   const updateTaskScores = async (taskPid: string, scores: Scores) => {
     console.log('update task calculation scores', scores)
 
@@ -368,7 +387,7 @@ export const useTaskStore = defineStore('task', () => {
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
-    submitSpaceTask,
+    submitSpaceTask, updateSubmission,
 
     updateTaskSubmissions, updateTaskScores,
 

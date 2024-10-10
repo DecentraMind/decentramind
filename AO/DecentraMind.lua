@@ -1,4 +1,4 @@
-Variant = '0.4.48'
+Variant = '0.4.50'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -581,13 +581,17 @@ Actions = {
 
     UpdateSubmission = function(msg)
       local pid = msg.Tags.TaskPid
-      local id = msg.Tags.SubmissionID
+      local id = tonumber(msg.Tags.SubmissionID)
       local submission = json.decode(msg.Data)
 
       assert(msg.From == Tasks[pid].ownerAddress, 'You are not the owner of this task.')
-      assert(Tasks[pid].submissions[id], 'Submission not found.')
+      assert(Tasks[pid].submissions[id], 'Submission not found. pid: ' .. pid .. ', submission id: ' .. id)
 
-      Tasks[pid].submissions[id] = submission
+      for key, value in pairs(submission) do
+        if key ~= 'id' and key ~= 'createTime' then
+          Tasks[pid].submissions[id][key] = value
+        end
+      end
     end,
 
     StoreBountySendHistory = function(msg)

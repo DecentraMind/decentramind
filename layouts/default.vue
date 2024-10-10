@@ -14,7 +14,7 @@ const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUse
 const isCreateModalOpen = $ref(false)
 let isLoading = $ref(true)
 onMounted(async () => {
-  console.log({router})
+  // console.log({router})
   try {
     if (!address || !await checkIsActiveWallet()) {
       router.push('/')
