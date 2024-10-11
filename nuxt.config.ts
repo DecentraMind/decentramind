@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     // public environment variable, accessible in any file
     public: {
       chatroomFetchInterval: parseInt(process.env.NUXT_PUBLIC_CHATROOM_FETCH_INTERVAL || '5000'),
-      debug: process.env.NUXT_PUBLIC_DEBUG
+      debug: process.env.NUXT_PUBLIC_DEBUG,
+      processID: process.env.NUXT_PUBLIC_PROCESS_ID
     },
   },
 

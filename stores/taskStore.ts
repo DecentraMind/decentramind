@@ -8,14 +8,17 @@ import {
 import { defineStore } from 'pinia'
 import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
-import { taskManagerProcessID, moduleID, schedulerID, MU } from '~/utils/processID'
+import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 import { useFetch } from '@vueuse/core'
 import { unref } from 'vue'
 import { compareImages } from '~/utils/image'
 import { gateways, arUrl } from '~/utils/arAssets'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 
+
 export const useTaskStore = defineStore('task', () => {
+  const taskManagerProcessID = DM_PROCESS_ID
+
   const allTasks = $ref([])
 
   const createTask = async (data: TaskForm, communityName: string) => {
@@ -388,7 +391,6 @@ export const useTaskStore = defineStore('task', () => {
   const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, taskPid, communityInfo, invites, mode, submissionId}: {submitterAddress: string, spaceUrl: string, taskPid: string, communityInfo: Community, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number}) {
     const runtimeConfig = useRuntimeConfig()
     const { twitterVouchedIDs } = $(communityStore())
-    const { submitSpaceTask, updateSubmission } = useTaskStore()
   
     const matched = spaceUrl.trim().match(/(x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
   

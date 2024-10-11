@@ -8,13 +8,15 @@ import {
 import type { Community, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, messageResultCheck, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
-import { aoCommunityProcessID, moduleID, schedulerID, extractResult } from '~/utils'
+import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
 
 // Read the Lua file
 //const luaCode = fs.readFileSync('./AO/chat.lua', 'utf8')
 
 export const communityStore = defineStore('communityStore', () => {
+  const aoCommunityProcessID = DM_PROCESS_ID
+
   const { address } = $(aoStore())
   let twitterVouched = $ref(false)
   let twitterVouchedIDs = $ref<string[]>([])

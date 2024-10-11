@@ -5,11 +5,11 @@ import {
   dryrun,
 } from '@permaweb/aoconnect'
 import { Community } from '~/types'
-import { aoCommunityProcessID } from '~/utils/processID'
-import { extractResult, retry, toBase62 } from '~/utils'
+import { DM_PROCESS_ID, extractResult, retry, toBase62 } from '~/utils'
 import { S3 } from '@aws-sdk/client-s3'
 import { uploadPath } from '~/utils/constants'
 
+export const aoCommunityProcessID = DM_PROCESS_ID
 const {
   EVERLAND_API_ENDPOINT: endpoint,
   EVERLAND_API_KEY: apiKey,

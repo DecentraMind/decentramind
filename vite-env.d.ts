@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly EVERLAND_API_SECRET: string
   readonly NUXT_PUBLIC_CHATROOM_FETCH_INTERVAL: string
   readonly NUXT_PUBLIC_DEBUG: boolean
+  readonly VITE_PUBLIC_PROCESS_ID: string
 }
 
 interface ImportMeta {

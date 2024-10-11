@@ -1,5 +1,4 @@
 import { tokenProcessIDs } from '~/utils/constants'
-import { aoCommunityProcessID } from '~/utils/processID'
 import { defaultUserAvatar } from '~/utils/arAssets'
 import {
   createDataItemSigner,
@@ -11,6 +10,9 @@ import {
   // unmonitor,
   dryrun
 } from '@permaweb/aoconnect'
+import { DM_PROCESS_ID } from '~/utils/processID'
+
+const aoCommunityProcessID = DM_PROCESS_ID
 
 import type { PermissionType } from 'arconnect'
 
@@ -49,7 +51,7 @@ export const aoStore = defineStore('aoStore', () => {
     const res = await messageResultCheck({
       process: aoCommunityProcessID,
       tags: [
-        { name: 'Action', value: 'Login' },
+        { name: 'Action', value: 'RegisterUserOrLogin' },
         { name: 'UserName', value: address.slice(-4) },
         { name: 'Avatar', value: defaultUserAvatar },
       ],

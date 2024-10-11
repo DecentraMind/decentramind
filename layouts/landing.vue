@@ -4,12 +4,12 @@ const { showError } = $(notificationStore())
 
 const router = useRouter()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-let isLoading = $ref(false)
-let loginLoading = $ref(false)
+let arconnectLogining = $ref(false)
+let othentLogining = $ref(false)
 
 const onClickArConnect = async () => {
-  isLoading = true
-  loginLoading = true
+  arconnectLogining = true
+  othentLogining = true
   try {
     const result = await doLogin()
     if (result) {
@@ -21,13 +21,13 @@ const onClickArConnect = async () => {
     console.error('Error during login operation', error)
     showError('Failed to login.', error as Error)
   } finally {
-    loginLoading = false
-    isLoading = false
+    othentLogining = false
+    arconnectLogining = false
   }
 }
 
 const onClickOthent = async () => {
-  loginLoading = true
+  othentLogining = true
   try {
     const result = await othentLogin()
     if (result) {
@@ -37,8 +37,9 @@ const onClickOthent = async () => {
     }
   } catch (error) {
     console.error(error)
+  } finally {
+    othentLogining = false
   }
-  loginLoading = false
 }
 </script>
 
@@ -50,8 +51,8 @@ const onClickOthent = async () => {
 
     <UModal v-model="isLoginModalOpen">
       <UCard class="h-[200px] flex items-center justify-center">
-        <div v-if="!loginLoading" class="flex justify-center space-x-3">
-          <UButton color="white" class="w-[120px]" @click="onClickArConnect">
+        <div v-if="!othentLogining && !arconnectLogining" class="flex justify-center space-x-3">
+          <UButton :loading="arconnectLogining" color="white" class="w-[120px]" @click="onClickArConnect">
             <template #leading>
               <UAvatar
                 src="wallet/arconnect.svg"
@@ -61,11 +62,11 @@ const onClickOthent = async () => {
             ArConnect
           </UButton>
           <ClientOnly fallback-tag="span" fallback="Loading...">
-            <UButton color="white" class="w-[120px]" @click="onClickOthent">
+            <UButton :loading="othentLogining" color="white" class="w-[120px]" @click="onClickOthent">
               <template #leading>
-                <UIcon
-                  name="logos:google-icon"
-                  class="w-[25px] h-[23px]"
+                <UAvatar
+                  src="wallet/google.svg"
+                  size="2xs"
                 />
               </template>
               Google
