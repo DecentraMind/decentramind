@@ -191,7 +191,7 @@ const inviteUrl = $computed(() => {
             icon="heroicons:link"
             :class="classes.bottomButtons"
           >
-            Invite People
+            Invite Friends
           </UButton>
           <template #panel>
             <div class="p-4 w-fit">
