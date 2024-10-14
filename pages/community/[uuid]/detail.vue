@@ -16,9 +16,11 @@ const router = useRouter()
 
 const columns = [{
   key: 'name',
-  class: 'text-xl'
+  label: 'Contributor'
 }, {
   key: 'bountyCount',
+  rowClass: 'font-mono text-right',
+  label: 'Bounty Count'
 }]
 
 
@@ -50,7 +52,7 @@ const loadRanks = async () => {
       }
       return ranks
     }, [] as Rank[]).sort((a, b) => {
-      return a.receiver > b.receiver ? 1 : -1
+      return a.bountyCount > b.bountyCount ? -1 : 1
     })
   } catch {
     console.error('Failed to load ranks.')
@@ -275,11 +277,6 @@ onBeforeUnmount(() => {
                   <div class="flex items-center gap-3">
                     <!-- <ArAvatar :src="row.avatar || defaultUserAvatar" :alt="row.receiver" size="xs" /> -->
                     <span class="text-gray-900 dark:text-white font-medium" :title="row.receiver">{{ row.recipientName ? `${row.recipientName} (${shortString(row.receiver, 14)})` : shortString(row.receiver, 20) }}</span>
-                  </div>
-                </template>
-                <template #loading-state>
-                  <div class="flex items-center justify-center h-32">
-                    <i class="loader --6" />
                   </div>
                 </template>
               </UTable>
