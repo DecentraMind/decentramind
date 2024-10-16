@@ -1,4 +1,4 @@
-Variant = '0.4.50'
+Variant = '0.4.52'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -944,10 +944,23 @@ Actions = {
         return u.replyError(msg, 'Community not found.')
       end
 
-      if msg.From ~= community.owner then
-        return u.replyError(msg, 'You are not the owner.')
+      local isPermitted = msg.From == community.owner
+      if not isPermitted then
+        for _, admin in pairs(community.admins) do
+          if admin == msg.From then
+            isPermitted = true
+            break
+          end
+        end
       end
+      if not isPermitted then
+        return u.replyError(msg, 'Only owner or admins can unmute.')
+      end
+
       local userAddress = msg.Tags.User
+      if userAddress == community.owner then
+        return u.replyError(msg, 'You can not unmute the owner.')
+      end
 
       if MutedUsers[cid] then
         for i, user in ipairs(MutedUsers[cid]) do
