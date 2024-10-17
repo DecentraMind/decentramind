@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type TokenSupply } from '~/utils/constants'
+import { tokens, type TokenSupply, type TokenName } from '~/utils/constants'
 import { shortString, getDomain, getHandle } from '~/utils'
 import type { Community } from '~/types/index'
 import { useTaskStore } from '~/stores/taskStore'
@@ -251,7 +251,7 @@ onBeforeUnmount(() => {
                         :class="cn(baseFieldClasses.tag, 'cursor-default')"
                       >{{ v }}</span>
                       <template #panel>
-                        <div v-if="values && values.length > 2" class="flex-center px-2 gap-x-1.5">
+                        <div class="flex-center px-2 gap-x-1.5">
                           {{ tokens[v as unknown as TokenName].processID }}
                         </div>
                       </template>
