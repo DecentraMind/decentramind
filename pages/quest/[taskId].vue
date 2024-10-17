@@ -112,6 +112,7 @@ onMounted(async () => {
           submitterAddress: s.address,
           spaceUrl: s.url,
           taskPid: s.taskPid,
+          taskCreateTime: task!.createTime,
           communityInfo,
           invites,
           mode: 'update',
@@ -222,7 +223,7 @@ async function onClickSubmit() {
       )
     }
     
-    if (!twitterVouchedIDs.length) {
+    if (!twitterVouchedIDs.length && !runtimeConfig.public.debug) {
       throw new Error('You are not vouched.')
     }
     
@@ -230,7 +231,7 @@ async function onClickSubmit() {
       throw new Error('You have submitted this quest.')
     }
 
-    await saveSpaceTaskSubmitInfo({submitterAddress: address, spaceUrl, taskPid, communityInfo, invites, mode: 'add'})
+    await saveSpaceTaskSubmitInfo({submitterAddress: address, spaceUrl, taskPid, taskCreateTime: task.createTime, communityInfo, invites, mode: 'add'})
 
     task = await getTask(taskPid)
 

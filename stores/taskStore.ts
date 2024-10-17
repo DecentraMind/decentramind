@@ -388,7 +388,7 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, taskPid, communityInfo, invites, mode, submissionId}: {submitterAddress: string, spaceUrl: string, taskPid: string, communityInfo: Community, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number}) {
+  const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, taskPid, taskCreateTime, communityInfo, invites, mode, submissionId}: {submitterAddress: string, spaceUrl: string, taskPid: string, taskCreateTime: number, communityInfo: Community, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number}) {
     const runtimeConfig = useRuntimeConfig()
     const { twitterVouchedIDs } = $(communityStore())
   
@@ -429,11 +429,15 @@ export const useTaskStore = defineStore('task', () => {
     const validJoinStartAt = new Date(
       spaceEndedAt - 24 * 60 * 60 * 1000,
     ).getTime()
+
+    if (spaceStartAt < taskCreateTime) {
+      throw new Error('Invalid space URL: space starts before task is created.')
+    }
   
     const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
     
     if (minuteDifference < 15 && !runtimeConfig.public.debug) {
-      throw Error('Space lasts less than 15 minutes')
+      throw Error('Invalid space URL: space lasts less than 15 minutes')
     }
   
     const hostID = spaceInfo.data.creator_id
@@ -441,33 +445,17 @@ export const useTaskStore = defineStore('task', () => {
     const hostHandle = host?.username
     
     if (!runtimeConfig.public.debug && (!host || !twitterVouchedIDs.find(id => id === hostHandle))) {
-      throw new Error('You are not the space host.')
+      throw new Error('Invalid space URL: you are not the space host.')
     }
   
-    // space参与人数
-    // space创办人的头像 用于和社区头像做比较，如果base64编码不同，不计算品牌效应成绩
-    // const la = host.profile_image_url
-    // const resp = la.split('_')
-    // let url = ''
-    // for (let i = 0;i < resp.length - 1;++i) {
-    //   url = url + resp[i]
-    //   if (i != resp.length - 2) {
-    //     url += '_'
-    //   }
-    // }
-    // url = url + '.png'
+    // avatar of space host
     const userAvatar = host?.profile_image_url.replace(/_(normal|bigger|mini).jpg$/, '.jpg')
-    // space创办人账号的创建时间 如果距离提交任务不足一个月不计算score
-    // const userCreatedAt = data._rawValue.includes.users[0].created_at
-  
-    // const userAvatarBase64 = await url2Base64(userAvatar)
-    // TODO use https://dms.4everland.store/... as communityLogo
+    
     const ssim = userAvatar
       ? await compareImages(arUrl(communityInfo.logo, gateways.ario), userAvatar)
       : 0
     // console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
     
-    // TODO brandEffect, inviteCount, audience should be calculated again under task owner's login session
     // 品牌效应
     const brandEffect = ssim && ssim >= 0.8 ? 10 : 0
     // 听众
