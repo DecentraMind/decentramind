@@ -99,8 +99,7 @@ function bubbleClasses(message: MailCache) {
         </div>
       </div>
     </div>
-    <div v-show="isLoading" class="flex py-10 items-center justify-center">
-      <Loading class="h-8 w-8" />
-    </div>
+    
+    <Loading v-show="isLoading" class="flex py-10 items-center justify-center" icon-class="h-4 w-4" />
   </div>
 </template>
