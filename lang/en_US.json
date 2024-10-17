@@ -146,5 +146,6 @@
   "wallet.Dashboard": "Dashboard",
   "wallet.token": "Token Application",
   "wallet.withdraw": "withdraw",
-  "yes": "yes"
+  "yes": "yes",
+  "Save": "Save"
 }

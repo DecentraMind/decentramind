@@ -13,7 +13,7 @@ const { getCommunityUser, mute, unmute, getMutedUsers, setCurrentCommunityUuid, 
 const { stateArr: mails } = $(inboxStore())
 const { showSuccess, showError } = $(notificationStore())
 
-const isAdminOrOwner = $computed(() => community && address ? community.owner === address || community.admins.includes(address) : false)
+const isAdminOrOwner = (address: string) => community && address ? community.owner === address || community.admins.includes(address) : false
 
 
 const selectedTab = $ref(0)
@@ -90,7 +90,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
         <UDivider orientation="vertical" />
       </div>
       <div v-if="community.isJoined" class="hidden sm:block bg-gray-50">
-        <UDashboardNavbar title="Users" :ui="{ badge: { size: 'lg'}}" :badge="users.length">
+        <UDashboardNavbar title="Users" :badge="users.length">
           <template #title>
             <span class="text-2xl mr-2">Users</span>
           </template>
@@ -112,7 +112,9 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
             </div>
 
             <Confirm
-              v-if="isAdminOrOwner && user.address !== community.owner"
+              v-if="isAdminOrOwner(address) && user.address !== address && (
+                user.muted || (!user.muted && !isAdminOrOwner(user.address))
+              )"
               :confirm-btn-text="user.muted ? 'Unmute' : 'Mute'"
               :title="`${user.muted ? 'Unmute' : 'Mute'} User`"
               :body="`Are you sure want to ${user.muted ? 'unmute' : 'mute'} ${user.name || shortString(user.address)}?`"
