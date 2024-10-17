@@ -124,10 +124,9 @@ const reloadCommunity = async () => {
 }
 provide('reloadCommunity', reloadCommunity)
 
-let currentRightPage = $ref<PageSymbol>(communityRightPages['#quests'])
-watch(() => route.hash, newHash => {
-  const page = Object.keys(communityRightPages).includes(newHash) ? newHash : '#quests'
-  currentRightPage = communityRightPages[page as keyof typeof communityRightPages] || communityRightPages['#quests']
+const currentRightPage = $computed<PageSymbol>(() => {
+  const page = Object.keys(communityRightPages).includes(route.hash) ? route.hash : '#quests'
+  return communityRightPages[page as keyof typeof communityRightPages] || communityRightPages['#quests']
 })
 </script>
 <template>
