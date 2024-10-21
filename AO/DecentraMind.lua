@@ -1,4 +1,4 @@
-Variant = '0.4.54'
+Variant = '0.4.56'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -58,6 +58,7 @@ MutedUsers = MutedUsers or {}
 --- @field builders table<string, TaskBuilder> @Table of builders associated with the task, index by builder's address
 --- @field submissions Submission[] @List of submission
 --- @field inviteCode string|nil
+--- @field link string|nil @Twitter link for promotion task, required for promotion task
 
 --- @class TaskBounty
 --- @field amount number @Human readable amount of the bounty
@@ -432,6 +433,10 @@ Actions = {
 
       if not isPermitted then
         return u.replyError(msg, 'Only owner or admins can create task.')
+      end
+
+      if task.type == 'promotion' and not task.link then
+        return u.replyError(msg, 'Link cannot be empty.')
       end
 
       -- TODO validate task fields
@@ -841,39 +846,44 @@ Actions = {
       local invites = {}
       local relatedTasks = {}
       local relatedCommunities = {}
-      for pid, code in pairs(InviteCodesByInviterByTaskPid[address]) do
-        local invite = Invites[code]
-        if type and type ~= 'task' and invite.type == 'task' then
-          goto continue
-        end
-        if u.tableLen(invite.invitees) > 0 then
-          table.insert(invites, invite)
-          relatedTasks[pid] = Tasks[pid]
+      if InviteCodesByInviterByTaskPid[address] then
+        for pid, code in pairs(InviteCodesByInviterByTaskPid[address]) do
+          local invite = Invites[code]
+          if type and type ~= 'task' and invite.type == 'task' then
+            goto continue
+          end
+          if u.tableLen(invite.invitees) > 0 then
+            table.insert(invites, invite)
+            relatedTasks[pid] = Tasks[pid]
 
-          local community = Communities[invite.communityUuid]
-          relatedCommunities[invite.communityUuid] = {
-            uuid = invite.communityUuid,
-            name = community.name,
-            logo = community.logo,
-          }
+            local community = Communities[invite.communityUuid]
+            relatedCommunities[invite.communityUuid] = {
+              uuid = invite.communityUuid,
+              name = community.name,
+              logo = community.logo,
+            }
+          end
+          ::continue::
         end
-        ::continue::
       end
-      for uuid, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
-        local invite = Invites[code]
-        if type and type ~= 'community' and invite.type == 'community' then
-          goto nextCode
+
+      if InviteCodesByInviterByCommunityUuid[address] then
+        for uuid, code in pairs(InviteCodesByInviterByCommunityUuid[address]) do
+          local invite = Invites[code]
+          if type and type ~= 'community' and invite.type == 'community' then
+            goto nextCode
+          end
+          if u.tableLen(invite.invitees) > 0 then
+            table.insert(invites, invite)
+            local community = Communities[uuid]
+            relatedCommunities[uuid] = {
+              uuid = uuid,
+              name = community.name,
+              logo = community.logo,
+            }
+          end
+          ::nextCode::
         end
-        if u.tableLen(invite.invitees) > 0 then
-          table.insert(invites, invite)
-          local community = Communities[uuid]
-          relatedCommunities[uuid] = {
-            uuid = uuid,
-            name = community.name,
-            logo = community.logo,
-          }
-        end
-        ::nextCode::
       end
 
       local relatedUsers = {}
