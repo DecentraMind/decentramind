@@ -5,6 +5,7 @@ import type {
 import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 
 /**
+ * TODO: replace with useTaskScoreCalculate
  * Calculate and modify submission.score based on submission's inviteCount, audience and brandEffect
  * @param submissions 
  * @returns 

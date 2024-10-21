@@ -79,7 +79,7 @@ export function useTaskValidation(task: Task, url: string) {
     const matched = url.trim().match(/(x|twitter)\.com\/.+\/status\/([^/]+)\/?/)
 
     if (!matched || !matched[2]) {
-      throw new Error('Invalid space URL.')
+      throw new Error('Invalid promotion URL.')
     }
     const id = matched[2]
     const { data, error } = await useFetch(
@@ -109,7 +109,7 @@ export function useTaskValidation(task: Task, url: string) {
     }
 
     const createdAt = new Date(tweetInfo.data[0].created_at).getTime()
-    if (createdAt < task.createTime) {
+    if (createdAt < task.createTime && !runtimeConfig.public.debug) {
       throw new Error('Invalid promotion URL: promotion tweet is created before task is created.')
     }
 

@@ -14,12 +14,15 @@ import type {
   InviteCodeInfo,
   PromotionTask,
   TwitterTweetInfo,
+  PromotionSubmissionWithCalculatedBounties,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
 import { useTaskValidation } from '~/composables/tasks/useTaskValidation'
+import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
+
 const runtimeConfig = useRuntimeConfig()
 
 let now: Ref<number>
@@ -93,7 +96,7 @@ const isAdminOrOwner = $computed(
 let invites: InviteCodeInfo[]
 
 const submissions = $computed(
-  () => task?.submissions as SpaceSubmissionWithCalculatedBounties[],
+  () => task?.submissions as SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[],
 )
 
 let isLoading = $ref(true)
@@ -139,21 +142,41 @@ onMounted(async () => {
       isAdminOrOwner
     ) {
       await Promise.all(
-        submissions.map(s => {
-          return saveSpaceTaskSubmitInfo({
-            submitterAddress: s.address,
-            spaceUrl: s.url,
-            taskPid: s.taskPid,
-            taskCreateTime: task!.createTime,
-            communityInfo,
-            invites,
-            mode: 'update',
-            submissionId: s.id,
-          })
+        submissions.map(async s => {
+          switch (task?.type) {
+            case 'space':
+              return saveSpaceTaskSubmitInfo({
+                submitterAddress: s.address,
+                spaceUrl: s.url,
+                taskPid: s.taskPid,
+                taskCreateTime: task!.createTime,
+                communityInfo,
+                invites,
+                mode: 'update',
+                submissionId: s.id,
+              })
+            case 'promotion': {
+              const { validateTaskData } = useTaskValidation(task, s.url)
+              const tweetInfo = await validateTaskData<TwitterTweetInfo>()
+              return savePromotionTaskSubmitInfo({
+                submitterAddress: address,
+                taskEndTime: task.endTime,
+                data: tweetInfo,
+                taskPid,
+                communityUuid: communityInfo.uuid,
+                invites,
+                mode: 'update',
+                url: s.url,
+                submissionId: s.id,
+              })
+            }
+            default:
+              throw new Error('Invalid task type.')
+          }
         }),
       )
 
-      task.submissions = calcScore(submissions)
+      task.submissions = useTaskScoreCalculate(task, submissions)
       console.log('score calculated submissions ', submissions)
 
       // save submission scores and set task.isScoreCalculated
@@ -931,7 +954,7 @@ const onClickShareToTwitter = () => {
             </div>
 
             <div v-if="!isLoading && isJoined" class="flex justify-center my-8">
-              <div v-if="isIng && !isSubmitted" class="mx-4">
+              <div v-if="isIng && (!isSubmitted || runtimeConfig.public.debug)" class="mx-4">
                 <UButton
                   color="white"
                   :label="$t('Submit Quest')"

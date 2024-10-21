@@ -230,7 +230,7 @@ export type Task = {
     joinTime?: number
   }>
 
-  submissions: SpaceSubmission[],
+  submissions: SpaceSubmission[] | PromotionSubmission[]
 
   inviteCode?: string
 }
@@ -242,6 +242,15 @@ export type PromotionTask = Task & {
 }
 
 export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & {
+  calculatedBounties: Task['bounties']
+  /**
+   * html representation of calculatedBounties 
+   * bounty is not included in process reply,
+   * this field is calculated at client, only for client display */
+  rewardHtml?: string
+}
+
+export type PromotionSubmissionWithCalculatedBounties = PromotionSubmission & {
   calculatedBounties: Task['bounties']
   /**
    * html representation of calculatedBounties 
