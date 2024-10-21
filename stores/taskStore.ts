@@ -6,7 +6,7 @@ import {
 } from '@permaweb/aoconnect'
 
 import { defineStore } from 'pinia'
-import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo } from '~/types'
+import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo, TwitterTweetInfo, PromotionSubmission } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 import { useFetch } from '@vueuse/core'
@@ -205,7 +205,7 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
-  const submitSpaceTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'>) => {
+  const submitSpaceTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'> | Omit<PromotionSubmission, 'id'|'createTime'>) => {
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -388,6 +388,59 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
+  const savePromotionTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, mode, submissionId} : {url: string, submitterAddress: string, taskEndTime: number, data: TwitterTweetInfo, invites: InviteCodeInfo[], taskPid: string, communityUuid: string, mode: 'add' | 'update', submissionId?: number}) {
+    console.log('save promotion task submit info')
+    const tweetInfo = data.data[0]
+    
+    const tweetCreateTime = new Date(tweetInfo.created_at).getTime()
+    const validJoinEndAt = Math.min(taskEndTime, tweetCreateTime + 48 * 60 * 60 * 1000)
+
+    const inviteCount = invites.filter(inviteInfo => {
+      return (
+        inviteInfo.inviterAddress === submitterAddress &&
+        inviteInfo.communityUuid === communityUuid
+      )
+    }).reduce((total, inviteInfo) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const validInvitees = Object.entries<{ joinTime: number }>(inviteInfo.invitees).filter(([_, invitee]) => {
+        const { joinTime } = invitee
+        return joinTime > tweetCreateTime && joinTime < validJoinEndAt
+      })
+      total += validInvitees.length
+      return total
+    }, 0)
+    
+    const tweetLength = wordCount(tweetInfo.note_tweet ? tweetInfo.note_tweet.text : tweetInfo.text)
+    const submission:Omit<PromotionSubmission, 'id'|'createTime'> = {
+      url,
+      taskPid,
+      address: submitterAddress,
+      buzz: tweetLength,
+      discuss: tweetInfo.public_metrics.reply_count,
+      identify: tweetInfo.public_metrics.quote_count + tweetInfo.public_metrics.retweet_count,
+      popular: tweetInfo.public_metrics.like_count,
+      spread: tweetInfo.public_metrics.impression_count,
+      friends: inviteCount,
+      // TODO calculate score at server side or at AO
+      score: 0
+    }
+    if (mode === 'add') {
+      await submitSpaceTask(submission)
+    } else if (mode === 'update') {
+      if (!submissionId) {
+        throw new Error('Submission ID is required')
+      }
+      
+      const updateSubmissionData: Omit<PromotionSubmission, 'createTime'> = {
+        id: submissionId!,
+        ...submission
+      }
+      await updateSubmission(updateSubmissionData, taskPid)
+    } else {
+      throw new Error('Invalid mode')
+    }
+  }
+
   const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, taskPid, taskCreateTime, communityInfo, invites, mode, submissionId}: {submitterAddress: string, spaceUrl: string, taskPid: string, taskCreateTime: number, communityInfo: Community, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number}) {
     const runtimeConfig = useRuntimeConfig()
     const { twitterVouchedIDs } = $(communityStore())
@@ -512,7 +565,7 @@ export const useTaskStore = defineStore('task', () => {
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
-    submitSpaceTask, updateSubmission, saveSpaceTaskSubmitInfo,
+    submitSpaceTask, updateSubmission, saveSpaceTaskSubmitInfo, savePromotionTaskSubmitInfo,
 
     updateTaskSubmissions, updateTaskScores,
 

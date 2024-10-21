@@ -176,6 +176,15 @@ interface SpaceSubmission extends Submission {
   audience: number
   url: string
 }
+interface PromotionSubmission extends Submission {
+  url: string
+  buzz: number // tweet text length
+  discuss: number // public_metrics.reply_count
+  identify: number // public_metrics.retweet_count
+  popular: number // public_metrics.like_count
+  spread: number // public_metrics.impression_count (times this post was seen)
+  friends: number // invite count
+}
 
 export type TaskFormBounty = {
   /** Human readable number of bounty amount. amount = quantity / Math.pow(10, token.denomination) */
@@ -189,7 +198,7 @@ export type Task = {
   /** process ID as unique primary key */
   processID: string
 
-  type: 'space'
+  type: 'space' | 'promotion'
   visible: 'public' | 'private'
   communityUuid: string
   name: string
@@ -226,6 +235,12 @@ export type Task = {
   inviteCode?: string
 }
 
+export type PromotionTask = Task & {
+  type: 'promotion'
+  /** the tweet url be be referenced by the promotion tweet */
+  link: string
+}
+
 export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & {
   calculatedBounties: Task['bounties']
   /**
@@ -255,6 +270,11 @@ export type BountySendHistory = Bounty & {
 
 export type TaskForm = Omit<Task, 'createTime'|'ownerAddress'|'submittersCount'|'isScoreCalculated'|'isSettled'|'builders'|'submissions'|'bounties'> & {
   bounties: TaskFormBounty[]
+}
+
+export type PromotionTaskForm = TaskForm & {
+  type: 'promotion'
+  link: string
 }
 
 // TODO remove
@@ -309,12 +329,53 @@ export type TwitterSpaceInfo = {
   includes: {
     users: Array<{
       created_at: string
-      username: string
+      id: string
+      name: string
       profile_image_url: string
       /** twitter handle */
-      name: string
-      id: string
+      username: string
     }>
+  }
+}
+
+export type TwitterTweetInfo = {
+  /**
+   * example data:
+   * 
+{"data":[{"referenced_tweets":[{"type":"quoted","id":"1846888057615929553"}],"created_at":"2024-10-20T13:29:19.000Z","public_metrics":{"retweet_count":26,"reply_count":11,"like_count":81,"quote_count":0,"bookmark_count":8,"impression_count":13241},"edit_history_tweet_ids":["1847993500572225638"],"author_id":"406218355","id":"1847993500572225638","text":"xxx…"includes":{"users":[{"profile_image_url":"https://pbs.twimg.com/profile_images/1713818863698341888/C7FqgbAv_normal.jpg","username":"lilyanna_btc","created_at":"2011-11-06T12:13:05.000Z","id":"406218355","name":"Lilyanna"}]}}
+  * */
+  data: {
+    author_id: string
+    created_at: string
+    id: string
+    /** infomation for Tweets longer than 280 characters */
+    note_tweet?: {
+      text: string
+    }
+    public_metrics: {
+      retweet_count: number
+      reply_count: number
+      like_count: number
+      quote_count: number
+      bookmark_count: number
+      impression_count: number
+    }
+    referenced_tweets?: {
+      type: string
+      id: string
+    }[]
+    /** tweet text */
+    text: string
+  }[]
+  includes: {
+    users: {
+      created_at: string
+      id: string
+      name: string
+      profile_image_url: string
+      /** twitter handle */
+      username: string
+    }[]
   }
 }
 

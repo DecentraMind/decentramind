@@ -1,17 +1,25 @@
 <script setup lang="ts">
 import { useTaskStore } from '~/stores/taskStore'
-import { calcBounties, formatToLocale, fractionalPart, shortString } from '~/utils'
+import {
+  calcBounties,
+  formatToLocale,
+  fractionalPart,
+  shortString,
+} from '~/utils'
 import type {
   Task,
   Bounty,
   SpaceSubmissionWithCalculatedBounties,
   BountySendHistory,
   InviteCodeInfo,
+  PromotionTask,
+  TwitterTweetInfo,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
+import { useTaskValidation } from '~/composables/tasks/useTaskValidation'
 const runtimeConfig = useRuntimeConfig()
 
 let now: Ref<number>
@@ -27,10 +35,14 @@ const {
   getTask,
   joinTask,
   createTaskInviteCode,
-  saveSpaceTaskSubmitInfo
+  saveSpaceTaskSubmitInfo,
+  savePromotionTaskSubmitInfo
 } = useTaskStore()
 
-const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(communityStore())
+
+const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(
+  communityStore(),
+)
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
@@ -40,10 +52,15 @@ const taskPid = $computed(() => route.params.taskId) as string
 
 let task = $ref<Task>()
 
-const isSubmitted = $computed(() => submissions.findIndex(submission => submission.address === address) > -1)
+const isSubmitted = $computed(
+  () =>
+    submissions.findIndex(submission => submission.address === address) > -1,
+)
 const isJoined = $computed(() => {
   // console.log('task', task)
-  return task && task.builders ? Object.keys(task.builders).findIndex(builder => builder === address) > -1 : false
+  return task && task.builders
+    ? Object.keys(task.builders).findIndex(builder => builder === address) > -1
+    : false
 })
 
 const isIng = $computed(() => {
@@ -51,24 +68,33 @@ const isIng = $computed(() => {
 })
 
 const taskRewardHtml = $computed(() => {
-  return task?.bounties ? calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;') : ''
+  return task?.bounties
+    ? calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;')
+    : ''
 })
 
 const submittedBuilderCount = $computed(() => {
-  return !task?.submissions ? '' : task.submissions.reduce((set, current) => {
-    set.add(current.address)
-    return set
-  }, new Set()).size
+  return !task?.submissions
+    ? ''
+    : task.submissions.reduce((set, current) => {
+        set.add(current.address)
+        return set
+      }, new Set()).size
 })
 
 let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 
-const isAdminOrOwner = $computed(() => task?.ownerAddress === address || communityInfo.admins.includes(address))
+const isAdminOrOwner = $computed(
+  () =>
+    task?.ownerAddress === address || communityInfo.admins.includes(address),
+)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let invites: InviteCodeInfo[]
 
-const submissions = $computed(() => task?.submissions as SpaceSubmissionWithCalculatedBounties[])
+const submissions = $computed(
+  () => task?.submissions as SpaceSubmissionWithCalculatedBounties[],
+)
 
 let isLoading = $ref(true)
 onMounted(async () => {
@@ -96,7 +122,12 @@ onMounted(async () => {
     setCurrentCommunityUuid(communityInfo.uuid)
 
     submissions.forEach(s => {
-      s.rewardHtml = calcRewardHtml(s.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
+      s.rewardHtml = calcRewardHtml(
+        s.calculatedBounties,
+        true,
+        precisions,
+        'font-semibold',
+      ).join('&nbsp;+&nbsp;')
       // console.log('rewardHtml', s.rewardHtml, s.calculatedBounties)
     })
     // console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
@@ -107,18 +138,20 @@ onMounted(async () => {
       !task.isSettled &&
       isAdminOrOwner
     ) {
-      await Promise.all(submissions.map(s => {
-        return saveSpaceTaskSubmitInfo({
-          submitterAddress: s.address,
-          spaceUrl: s.url,
-          taskPid: s.taskPid,
-          taskCreateTime: task!.createTime,
-          communityInfo,
-          invites,
-          mode: 'update',
-          submissionId: s.id
-        })
-      }))
+      await Promise.all(
+        submissions.map(s => {
+          return saveSpaceTaskSubmitInfo({
+            submitterAddress: s.address,
+            spaceUrl: s.url,
+            taskPid: s.taskPid,
+            taskCreateTime: task!.createTime,
+            communityInfo,
+            invites,
+            mode: 'update',
+            submissionId: s.id,
+          })
+        }),
+      )
 
       task.submissions = calcScore(submissions)
       console.log('score calculated submissions ', submissions)
@@ -127,7 +160,7 @@ onMounted(async () => {
       const scores = task.submissions.map(s => {
         return {
           id: s.id,
-          score: s.score
+          score: s.score,
         }
       })
       await updateTaskScores(taskPid, scores)
@@ -148,45 +181,117 @@ onMounted(async () => {
   }
 })
 
-const columns = [{
-  key: 'id',
-  label: 'ID',
-}, {
-  key: 'address',
-  label: t('Wallet'),
-  class: 'text-left',
-  rowClass: 'font-mono'
-}, {
-  key: 'brandEffect',
-  label: t('Brand'),
-  class: 'text-left',
-  rowClass: 'font-mono text-left'
-}, {
-  key: 'inviteCount',
-  label: t('Friends'),
-  class: 'text-left',
-  rowClass: 'font-mono text-left'
-}, {
-  key: 'audience',
-  label: t('Popularity'),
-  class: 'text-left',
-  rowClass: 'font-mono text-left'
-}, {
-  key: 'url',
-  class: 'text-left',
-  rowClass: 'font-mono text-left',
-  label: t('URL'),
-}, {
-  key: 'score',
-  label: t('Total Score'),
-  class: 'text-left',
-  rowClass: 'font-mono text-left'
-}, {
-  key: 'rewardHtml',
-  label: t('Bounty'),
-  class: 'text-left',
-  rowClass: 'font-mono pr-0'
-}]
+const columns = {
+  space: [
+    {
+      key: 'id',
+      label: 'ID',
+    },
+    {
+      key: 'address',
+      label: t('task.submission.fields.Wallet'),
+      class: 'text-left',
+      rowClass: 'font-mono',
+    },
+    {
+      key: 'brandEffect',
+      label: t('task.submission.fields.Brand'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'inviteCount',
+      label: t('task.submission.fields.Friends'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'audience',
+      label: t('task.submission.fields.Popularity'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'url',
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+      label: t('task.submission.fields.URL'),
+    },
+    {
+      key: 'score',
+      label: t('task.submission.fields.Total Score'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'rewardHtml',
+      label: t('task.submission.fields.Bounty'),
+      class: 'text-left',
+      rowClass: 'font-mono pr-0',
+    },
+  ],
+  promotion: [
+    {
+      key: 'id',
+      label: 'ID',
+    },
+    {
+      key: 'address',
+      label: t('task.submission.fields.Wallet'),
+      class: 'text-left',
+      rowClass: 'font-mono',
+    },
+    {
+      key: 'url',
+      label: t('task.submission.fields.URL'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    // Buzz, Discuss, Identify, Popular, Spread, Firends
+    {
+      key: 'buzz',
+      label: t('task.submission.fields.Buzz'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'discuss',
+      label: t('task.submission.fields.Discuss'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'identify',
+      label: t('task.submission.fields.Identify'),
+    },
+    {
+      key: 'popular',
+      label: t('task.submission.fields.Popular'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'spread',
+      label: t('task.submission.fields.Spread'),
+    },
+    {
+      key: 'friends',
+      label: t('task.submission.fields.Firends'),
+    },
+    {
+      key: 'score',
+      label: t('task.submission.fields.Total Score'),
+      class: 'text-left',
+      rowClass: 'font-mono text-left',
+    },
+    {
+      key: 'rewardHtml',
+      label: t('task.submission.fields.Bounty'),
+      class: 'text-left',
+      rowClass: 'font-mono pr-0',
+    },
+  ],
+}
 
 let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
@@ -210,28 +315,29 @@ async function onClickJoin() {
   isJoinLoading = false
 }
 
-const spaceUrl = $ref('')
-let submitLoading = $ref(false)
-
-async function onClickSubmit() {
-  submitLoading = true
-
+const promotionUrl = $ref('')
+let submitPromotionLoading = $ref(false)
+async function onSubmitPromotion() {
+  submitPromotionLoading = true
   try {
     if (!submissions || !invites || !communityInfo || !task) {
-      throw new Error(
-        'Data loading not completed. Please wait or try refresh.',
-      )
-    }
-    
-    if (!twitterVouchedIDs.length && !runtimeConfig.public.debug) {
-      throw new Error('You are not vouched.')
-    }
-    
-    if (isSubmitted) {
-      throw new Error('You have submitted this quest.')
+      throw new Error('Data loading not completed. Please wait or try refresh.')
     }
 
-    await saveSpaceTaskSubmitInfo({submitterAddress: address, spaceUrl, taskPid, taskCreateTime: task.createTime, communityInfo, invites, mode: 'add'})
+    const { validateTaskData } = useTaskValidation(task, promotionUrl)
+    const tweetInfo = await validateTaskData<TwitterTweetInfo>()
+    if (tweetInfo) {
+      await savePromotionTaskSubmitInfo({
+        submitterAddress: address,
+        taskEndTime: task.endTime,
+        data: tweetInfo,
+        taskPid,
+        communityUuid: communityInfo.uuid,
+        invites,
+        mode: 'add',
+        url: promotionUrl,
+      })
+    }
 
     task = await getTask(taskPid)
 
@@ -240,7 +346,47 @@ async function onClickSubmit() {
     console.error(e)
     showError('Submit failed.', e as Error)
   } finally {
-    submitLoading = false
+    submitPromotionLoading = false
+  }
+}
+
+const spaceUrl = $ref('')
+let submitSpaceUrlLoading = $ref(false)
+
+async function onSubmitSpaceUrl() {
+  submitSpaceUrlLoading = true
+
+  try {
+    if (!submissions || !invites || !communityInfo || !task) {
+      throw new Error('Data loading not completed. Please wait or try refresh.')
+    }
+
+    if (!twitterVouchedIDs.length && !runtimeConfig.public.debug) {
+      throw new Error('You are not vouched.')
+    }
+
+    if (isSubmitted) {
+      throw new Error('You have submitted this quest.')
+    }
+
+    await saveSpaceTaskSubmitInfo({
+      submitterAddress: address,
+      spaceUrl,
+      taskPid,
+      taskCreateTime: task.createTime,
+      communityInfo,
+      invites,
+      mode: 'add',
+    })
+
+    task = await getTask(taskPid)
+
+    isSubmitModalOpen = false
+  } catch (e) {
+    console.error(e)
+    showError('Submit failed.', e as Error)
+  } finally {
+    submitSpaceUrlLoading = false
   }
 }
 
@@ -260,7 +406,7 @@ async function onClickSendBounty() {
   }
 
   if (selectedSubmissions.length === 0 && task.submissions.length > 0) {
-    if(!confirm('Confirm skipping all submissions?')) {
+    if (!confirm('Confirm skipping all submissions?')) {
       return
     }
   }
@@ -271,28 +417,42 @@ async function onClickSendBounty() {
   const bountiesToSend: Bounty[] = []
   let sendBountyResult = false
   try {
-    const selectedTotalScore = selectedSubmissions.reduce((total, submission) => {
-      total += submission.score
-      return total
-    }, 0)
+    const selectedTotalScore = selectedSubmissions.reduce(
+      (total, submission) => {
+        total += submission.score
+        return total
+      },
+      0,
+    )
     console.group('Bounty calculating')
     console.log({ selected: selectedSubmissions })
-    submissions.map(s => {console.log(s.address); return s.calculatedBounties}).forEach(i => console.table(i))
+    submissions
+      .map(s => {
+        console.log(s.address)
+        return s.calculatedBounties
+      })
+      .forEach(i => console.table(i))
 
     selectedSubmissions.forEach(submission => {
-      const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
+      const calculated = calcBounties(
+        submission,
+        selectedTotalScore,
+        task!.bounties,
+      )
 
       submission.calculatedBounties = calculated as Task['bounties']
     })
 
     console.log('calculated bounties')
-    submissions.forEach(s => {console.log(s.address);console.table(s.calculatedBounties)})
+    submissions.forEach(s => {
+      console.log(s.address)
+      console.table(s.calculatedBounties)
+    })
     console.groupEnd()
 
     // save calculatedBounties
     // TODO save calculatedBounties of selected submissions only
     await updateTaskSubmissions(taskPid, submissions)
-
 
     /** bounties that should send back to the task owner */
     const refoundMap = {} as Record<string, Bounty>
@@ -306,7 +466,7 @@ async function onClickSendBounty() {
           recipient: task!.ownerAddress,
           tokenProcessID: pid,
           amount: 0,
-          quantity: BigInt(0)
+          quantity: BigInt(0),
         }
       }
       refoundMap[pid].amount += taskBounty.amount
@@ -316,32 +476,37 @@ async function onClickSendBounty() {
     const dmQuantityMap = {} as Record<string, bigint>
     for (const [pid, returnBounty] of Object.entries(refoundMap)) {
       if (!dmQuantityMap[pid]) {
-        dmQuantityMap[pid] = returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT) / BigInt(100)
+        dmQuantityMap[pid] =
+          (returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT)) /
+          BigInt(100)
       }
     }
 
     // add selected submission's bounty to bountiesToSend
-    const selectedSubmitters = selectedSubmissions.map(submission => submission.address)
-    submissions.filter(submission => selectedSubmitters.includes(submission.address)).forEach(submission => {
-      submission.calculatedBounties.forEach(bounty => {
-        const pid = bounty.tokenProcessID
-        const bountyData = {
-          taskPid,
-          sender: task!.ownerAddress,
-          recipient: submission.address,
-          tokenProcessID: pid,
-          amount: bounty.amount,
-          quantity: bounty.quantity,
-        }
+    const selectedSubmitters = selectedSubmissions.map(
+      submission => submission.address,
+    )
+    submissions
+      .filter(submission => selectedSubmitters.includes(submission.address))
+      .forEach(submission => {
+        submission.calculatedBounties.forEach(bounty => {
+          const pid = bounty.tokenProcessID
+          const bountyData = {
+            taskPid,
+            sender: task!.ownerAddress,
+            recipient: submission.address,
+            tokenProcessID: pid,
+            amount: bounty.amount,
+            quantity: bounty.quantity,
+          }
 
-        // update refoundMap
-        refoundMap[pid].amount -= bounty.amount
-        refoundMap[pid].quantity -= BigInt(bounty.quantity)
+          // update refoundMap
+          refoundMap[pid].amount -= bounty.amount
+          refoundMap[pid].quantity -= BigInt(bounty.quantity)
 
-        bountiesToSend.push(bountyData)
+          bountiesToSend.push(bountyData)
+        })
       })
-
-    })
 
     for (const [pid, returnBounty] of Object.entries(refoundMap)) {
       // add DecentraMind bounty service charges if submissions.length > 0
@@ -349,7 +514,8 @@ async function onClickSendBounty() {
         const quantity = dmQuantityMap[pid]
 
         // to avoid total quantity greater than available number, you have to correct the quantity
-        const correctQuantity = quantity > returnBounty.quantity ? returnBounty.quantity : quantity
+        const correctQuantity =
+          quantity > returnBounty.quantity ? returnBounty.quantity : quantity
         const denomination = tokensByProcessID[pid].denomination
         const correctAmount = bigInt2Float(correctQuantity, denomination)
         bountiesToSend.push({
@@ -368,16 +534,21 @@ async function onClickSendBounty() {
       }
     }
 
-    console.log('bounties to send:', {bounties: bountiesToSend, submissions, refoundMap})
+    console.log('bounties to send:', {
+      bounties: bountiesToSend,
+      submissions,
+      refoundMap,
+    })
 
     sendBountyResult = await sendBounty(task.processID, bountiesToSend)
 
     if (!selectedSubmissions.length) {
       showSuccess('The bounty has been returned!')
     } else {
-      showSuccess('Your bounties have been sent. You can view them in the Transaction Book.')
+      showSuccess(
+        'Your bounties have been sent. You can view them in the Transaction Book.',
+      )
     }
-    
   } catch (e) {
     console.error(e)
     showError('Send bounty failed.', e as Error)
@@ -393,13 +564,13 @@ async function onClickSendBounty() {
 
   try {
     const sentBounties: BountySendHistory[] = []
-    for (const bounty of (bountiesToSend as BountySendHistory[])) {
+    for (const bounty of bountiesToSend as BountySendHistory[]) {
       const sent = {
         ...bounty,
         tokenName: bounty.tokenName,
         communityUuid: communityInfo.uuid,
         communityName: communityInfo.name,
-        taskName: task.name
+        taskName: task.name,
       }
       sentBounties.push(sent)
     }
@@ -408,7 +579,7 @@ async function onClickSendBounty() {
       fn: async () => {
         return await storeBounty(task!.processID, sentBounties)
       },
-      maxAttempts: 3
+      maxAttempts: 3,
     })
   } catch (e) {
     console.error('Failed to set task status to settled.')
@@ -431,11 +602,15 @@ const page = $ref(1)
 let pageSize = $ref<number>(maxTotalChances)
 let pageRows = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
 
-const precisions = $computed(() => task?.bounties.reduce((carry, bounty) => {
+const precisions = $computed(() =>
+  task?.bounties.reduce((carry, bounty) => {
     const fractionalLength = fractionalPart(bounty.amount).length
-    carry.set(bounty.tokenProcessID, bounty.amount < 1 ? fractionalLength + 2 : 2)
+    carry.set(
+      bounty.tokenProcessID,
+      bounty.amount < 1 ? fractionalLength + 2 : 2,
+    )
     return carry
-  }, new Map<string, number>())
+  }, new Map<string, number>()),
 )
 
 watch(
@@ -443,65 +618,100 @@ watch(
   () => {
     // console.log('page rows should change')
 
-    filteredRows = searchKeyword ? submissions : submissions.filter(info => {
-      return Object.values(info).some(value => {
-        return String(value).toLowerCase().includes(searchKeyword.toLowerCase())
-      })
-    })
+    filteredRows = searchKeyword
+      ? submissions
+      : submissions.filter(info => {
+          return Object.values(info).some(value => {
+            return String(value)
+              .toLowerCase()
+              .includes(searchKeyword.toLowerCase())
+          })
+        })
 
     pageSize = task
-      ? task.totalChances >= submissions.length ? submissions.length : Math.max(task.totalChances, 10)
+      ? task.totalChances >= submissions.length
+        ? submissions.length
+        : Math.max(task.totalChances, 10)
       : maxTotalChances
 
-    pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize).map(submission => {
-      if (!task?.isSettled)
-        submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
-      return submission
-    })
+    pageRows = filteredRows
+      .slice((page - 1) * pageSize, page * pageSize)
+      .map(submission => {
+        if (!task?.isSettled)
+          submission.rewardHtml = calcRewardHtml(
+            submission.calculatedBounties,
+            true,
+            precisions,
+            'font-semibold',
+          ).join('&nbsp;+&nbsp;')
+        return submission
+      })
     // console.log('new pageRows', pageRows)
   },
 )
 
-watch(() => selectedSubmissions.length, () => {
-  // console.log('selection watch', selectedSubmissions)
-  if (!task) {
-    showMessage('Task data not ready, please try again later, or refresh this page.')
-    return
-  }
+watch(
+  () => selectedSubmissions.length,
+  () => {
+    // console.log('selection watch', selectedSubmissions)
+    if (!task) {
+      showMessage(
+        'Task data not ready, please try again later, or refresh this page.',
+      )
+      return
+    }
 
-  const maxSelection = task ? task.totalChances : 1
-  if (selectedSubmissions.length > maxSelection) {
-    showMessage(`Selected items exceed ${maxSelection}!`)
-    // 如果选择的数量超过最大值，取消超出的选择项
-    selectedSubmissions = selectedSubmissions.slice(0, maxSelection)
-  }
+    const maxSelection = task ? task.totalChances : 1
+    if (selectedSubmissions.length > maxSelection) {
+      showMessage(`Selected items exceed ${maxSelection}!`)
+      // 如果选择的数量超过最大值，取消超出的选择项
+      selectedSubmissions = selectedSubmissions.slice(0, maxSelection)
+    }
 
-  const selectedTotalScore = selectedSubmissions.reduce((total, submission) => {
-    total += submission.score
-    return total
-  }, 0)
-  console.log({selectedTotalScore})
-  if (!selectedTotalScore) return
+    const selectedTotalScore = selectedSubmissions.reduce(
+      (total, submission) => {
+        total += submission.score
+        return total
+      },
+      0,
+    )
+    console.log({ selectedTotalScore })
+    if (!selectedTotalScore) return
 
-  // clear all submission.calcuclatedBounties
-  submissions.forEach(submission => {
-    submission.calculatedBounties = []
-  })
-  
-  selectedSubmissions.forEach(submission => {
-    const calculated = calcBounties(submission, selectedTotalScore, task!.bounties)
+    // clear all submission.calcuclatedBounties
+    submissions.forEach(submission => {
+      submission.calculatedBounties = []
+    })
 
-    submission.calculatedBounties = calculated as Task['bounties']
-    submission.rewardHtml = calcRewardHtml(submission.calculatedBounties, true, precisions, 'font-semibold').join('&nbsp;+&nbsp;')
-  })
-  console.log('calculated bounties')
-  submissions.forEach(s => {console.log(s.address);console.table(s.calculatedBounties)})
-})
+    selectedSubmissions.forEach(submission => {
+      const calculated = calcBounties(
+        submission,
+        selectedTotalScore,
+        task!.bounties,
+      )
+
+      submission.calculatedBounties = calculated as Task['bounties']
+      submission.rewardHtml = calcRewardHtml(
+        submission.calculatedBounties,
+        true,
+        precisions,
+        'font-semibold',
+      ).join('&nbsp;+&nbsp;')
+    })
+    console.log('calculated bounties')
+    submissions.forEach(s => {
+      console.log(s.address)
+      console.table(s.calculatedBounties)
+    })
+  },
+)
 
 const onClickCopyInviteCode = async () => {
   try {
     if (!task) return
-    await navigator.clipboard.writeText(location.origin + '/i/' + task.inviteCode!)
+    await navigator.clipboard.writeText(
+      location.origin + '/i/' + task.inviteCode!,
+    )
     showSuccess('Copied!')
   } catch (err) {
     showError('Copy failed.')
@@ -510,13 +720,18 @@ const onClickCopyInviteCode = async () => {
 
 const isInviteModalOpen = $ref(false)
 const inviteUrl = $computed(() => {
-  return typeof window !== 'undefined' ? `${window.location.origin}/i/${task?.inviteCode}` : ''
+  return typeof window !== 'undefined'
+    ? `${window.location.origin}/i/${task?.inviteCode}`
+    : ''
 })
 
 const onClickShareToTwitter = () => {
   if (!inviteUrl || typeof window === 'undefined') return
 
-  window.open(`https://twitter.com/intent/tweet?text=Check%20out%20this%20community%20on%20DecentraMind!&url=${inviteUrl}`, '_blank')
+  window.open(
+    `https://twitter.com/intent/tweet?text=Check%20out%20this%20community%20on%20DecentraMind!&url=${inviteUrl}`,
+    '_blank',
+  )
 }
 </script>
 
@@ -554,14 +769,14 @@ const onClickShareToTwitter = () => {
           :title="task.name"
           :description="task.intro"
           class="px-10 pt-0 pb-10"
-          :ui="{title: 'text-3xl mb-6 text-clip'}"
+          :ui="{ title: 'text-3xl mb-6 text-clip' }"
         >
           <template #description>
             <div class="flex flex-col space-y-6">
               <div class="text-justify text-md leading-8 whitespace-pre-line">
                 {{ task.intro }}
               </div>
-              
+
               <TaskStatus size="lg" :task="task" :address="address" />
 
               <UDivider />
@@ -597,6 +812,16 @@ const onClickShareToTwitter = () => {
                   {{ task.totalChances }}
                 </div>
               </div>
+
+              <div v-if="task.type === 'promotion'" class="flex justify-start">
+                <div class="font-semibold w-44 shrink-0">
+                  <div>{{ $t('task.fields.Promotion Tweet') }}</div>
+                </div>
+                <div>
+                  {{ (task as PromotionTask).link }}
+                </div>
+              </div>
+
               <div class="flex justify-start">
                 <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('builders now') }}</div>
@@ -651,28 +876,47 @@ const onClickShareToTwitter = () => {
                 </ULink>
               </div>
 
-              <div v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug">
+              <div
+                v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug"
+              >
                 <UTable
                   v-model="selectedSubmissions"
                   :rows="pageRows"
-                  :columns="columns"
+                  :columns="columns[task.type]"
                   :loading="isLoading"
-                  :ui="{checkbox: {padding: task.isSettled || !isAdminOrOwner ? 'hidden' : ''}}"
+                  :ui="{
+                    checkbox: {
+                      padding:
+                        task.isSettled || !isAdminOrOwner ? 'hidden' : '',
+                    },
+                  }"
                 >
                   <template #id-data="{ row }">
                     {{ row.id }}
                   </template>
                   <template #address-data="{ row }">
-                    {{ isAdminOrOwner ? row.address : shortString(row.address, 4) }}
+                    {{
+                      isAdminOrOwner ? row.address : shortString(row.address, 4)
+                    }}
                   </template>
                   <template #url-data="{ row }">
-                    {{ row.url.replace(/^https?:\/\//, '').replace(/\/peek$/, '') }}
+                    {{
+                      row.url.replace(/^https?:\/\//, '').replace(/\/peek$/, '')
+                    }}
                   </template>
                   <template #score-data="{ row }">
                     {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
                   </template>
                   <template #rewardHtml-data="{ row }">
-                    <p class="flex justify-start items-center" v-html="task.isSettled || selectedSubmissions.find(s => s.id === row.id) ? row.rewardHtml : '/'" />
+                    <p
+                      class="flex justify-start items-center"
+                      v-html="
+                        task.isSettled ||
+                          selectedSubmissions.find(s => s.id === row.id)
+                          ? row.rewardHtml
+                          : '/'
+                      "
+                    />
                   </template>
                 </UTable>
 
@@ -686,10 +930,7 @@ const onClickShareToTwitter = () => {
               </div>
             </div>
 
-            <div
-              v-if="!isLoading && isJoined"
-              class="flex justify-center my-8"
-            >
+            <div v-if="!isLoading && isJoined" class="flex justify-center my-8">
               <div v-if="isIng && !isSubmitted" class="mx-4">
                 <UButton
                   color="white"
@@ -699,7 +940,15 @@ const onClickShareToTwitter = () => {
               </div>
             </div>
 
-            <div v-if="!isLoading && isAdminOrOwner && !task.isSettled && now >= task.endTime" class="flex-center">
+            <div
+              v-if="
+                !isLoading &&
+                  isAdminOrOwner &&
+                  !task.isSettled &&
+                  now >= task.endTime
+              "
+              class="flex-center"
+            >
               <UButton
                 color="white"
                 :label="sendBountyBtnLabel()"
@@ -715,10 +964,11 @@ const onClickShareToTwitter = () => {
                 1 Total score is 100 including Brand 10%, Friends 40%,
                 Popularity 50%.
                 <br>
-                2 Brand is decided by your avatar, change it you'll get 10,
-                not change get 0.
+                2 Brand is decided by your avatar, change it you'll get 10, not
+                change get 0.
                 <br>
-                3 Friends is decided by the number of users invited through your quest invitation.
+                3 Friends is decided by the number of users invited through your
+                quest invitation.
                 <br>
                 4 Popularity is decided by the amount of audience in your
                 Twitter Space.
@@ -726,15 +976,15 @@ const onClickShareToTwitter = () => {
                 5 The person with the highest data gets the maximum scores
                 including Brand, Friends and Popularity.
                 <br>
-                6 Everyone will have a total score, it decide the amount of
-                your bounty.
+                6 Everyone will have a total score, it decide the amount of your
+                bounty.
                 <br>
-                7 If the total chances are 20 but you are in 21st, sorry you
-                can get nothing.
+                7 If the total chances are 20 but you are in 21st, sorry you can
+                get nothing.
                 <br>8 You only have 1 chance for this quest.
                 <br>
-                9 If no one meets the bounty, the bounty will be returned to
-                the bounty owner's wallet.
+                9 If no one meets the bounty, the bounty will be returned to the
+                bounty owner's wallet.
               </p>
             </div>
           </template>
@@ -786,18 +1036,36 @@ const onClickShareToTwitter = () => {
         <div>
           <div class="my-8">
             <UInput
+              v-if="task?.type === 'space'"
               v-model="spaceUrl"
               :model-modifiers="{ trim: true }"
               color="primary"
               variant="outline"
-              :placeholder="$t('Space Url')"
+              :placeholder="$t(`task.form.space.placeholder`)"
+            />
+            <UInput
+              v-if="task?.type === 'promotion'"
+              v-model="promotionUrl"
+              :model-modifiers="{ trim: true }"
+              color="primary"
+              variant="outline"
+              :placeholder="$t(`task.form.promotion.placeholder`)"
             />
           </div>
           <div class="flex justify-center my-8">
             <UButton
-              :loading="submitLoading"
-              :disabled="submitLoading"
-              @click="onClickSubmit"
+              v-if="task?.type === 'space'"
+              :loading="submitSpaceUrlLoading"
+              :disabled="submitSpaceUrlLoading"
+              @click="onSubmitSpaceUrl"
+            >
+              {{ $t('Submit Quest') }}
+            </UButton>
+            <UButton
+              v-if="task?.type === 'promotion'"
+              :loading="submitPromotionLoading"
+              :disabled="submitPromotionLoading"
+              @click="onSubmitPromotion"
             >
               {{ $t('Submit Quest') }}
             </UButton>
@@ -809,18 +1077,31 @@ const onClickShareToTwitter = () => {
     <UModal v-model="isInviteModalOpen">
       <UCard>
         <template #header>
-          <h3
-            class="text-center font-semibold"
-          >
+          <h3 class="text-center font-semibold">
             {{ $t('Your Quest Invitation Link') }}
           </h3>
         </template>
         <div class="flex-col-center w-full gap-y-4">
-          <div class="w-full h-full pl-2 flex items-center bg-slate-50 rounded-md cursor-pointer" @click="onClickCopyInviteCode">
-            <p class="w-full text-center text-gray-500 font-semibold">{{ inviteUrl }}</p>
-            <UButton size="lg" icon="ri:checkbox-multiple-blank-line" variant="ghost" />
+          <div
+            class="w-full h-full pl-2 flex items-center bg-slate-50 rounded-md cursor-pointer"
+            @click="onClickCopyInviteCode"
+          >
+            <p class="w-full text-center text-gray-500 font-semibold">
+              {{ inviteUrl }}
+            </p>
+            <UButton
+              size="lg"
+              icon="ri:checkbox-multiple-blank-line"
+              variant="ghost"
+            />
           </div>
-          <UButton size="lg" label="Share to Twitter" icon="ri:twitter-fill" variant="soft" @click="onClickShareToTwitter" />
+          <UButton
+            size="lg"
+            label="Share to Twitter"
+            icon="ri:twitter-fill"
+            variant="soft"
+            @click="onClickShareToTwitter"
+          />
         </div>
       </UCard>
     </UModal>

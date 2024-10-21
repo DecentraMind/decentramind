@@ -27,17 +27,24 @@ let tasks = $ref<Task[]>([])
 function alertNotReady() {
   showMessage('Being Cooked')
 }
+
+let createTaskType = $ref<'space' | 'promotion'>('space')
+
 const taskTypes = [
   [
     {
       label: 'Twitter Space Quest',
       click: () => {
+        createTaskType = 'space'
         isCreateTaskModalOpen = true
       },
     },
     {
       label: 'Promotion Quest',
-      click: alertNotReady,
+      click: () => {
+        createTaskType = 'promotion'
+        isCreateTaskModalOpen = true
+      },
     },
     {
       label: 'Invitation Quest',
@@ -273,7 +280,7 @@ const currentRightPage = $computed<PageSymbol>(() => {
                 <h3
                   class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
                 >
-                  {{ $t('Start a Public Quest') }}
+                  {{ $t(`task.start.${createTaskType}`) }}
                 </h3>
                 <UButton
                   color="gray"
@@ -287,6 +294,7 @@ const currentRightPage = $computed<PageSymbol>(() => {
             <TaskForm
               v-if="community"
               :community="community"
+              :task-type="createTaskType"
               @created="onTaskCreated"
             />
           </UCard>

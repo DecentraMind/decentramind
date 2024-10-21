@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ARWEAVE_ID_REGEXP, maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber } from '~/utils'
 import type { FormError } from '#ui/types'
-import type { CommunitySetting, Task } from '~/types'
+import type { CommunitySetting, PromotionTaskForm, Task } from '~/types'
 
 export const communitySettingSchema = z.object({
   // banner: z.enum(['banner6', 'banner7', 'banner8', 'banner9', 'banner10']),
@@ -240,6 +240,21 @@ export function validateTaskForm(state: Task): FormError[] {
       path: 'time',
       message: 'Quest end time cannot be earlier than start time.'
     })
+  }
+
+  if (state.type === 'promotion') {
+    if (!(state as unknown as PromotionTaskForm).link) {
+      errors.push({
+        path: 'link',
+        message: 'Link cannot be empty.'
+      })
+    }
+    if (!/https:\/\/(twitter|x)\.com\/.+\/status\/\d+/.test((state as unknown as PromotionTaskForm).link)) {
+      errors.push({
+        path: 'link',
+        message: 'Link must be a valid Twitter URL.'
+      })
+    }
   }
 
   console.log('validate task form:', errors, state)

@@ -34,6 +34,12 @@ export const taskBannersMap: Record<Task['type'], string[]> = {
     'reiNxSXMV1YnSSJahTgLo1KvL9m7D5sZcnTnq7q1muE',
     'cjvbyCN9djO12OaVkjn80U5cddk46LMMBordWW-Y6dA',
     '3NHrjNZH_cICGR15qxO3t2nbCPq0cgnWSW644oRqIEQ'
+  ],
+  promotion: [
+    'iVTYARnF4MFibt2QEF9jrlqhvXFoL5LDojvuddzFC6E',
+    'reiNxSXMV1YnSSJahTgLo1KvL9m7D5sZcnTnq7q1muE',
+    'cjvbyCN9djO12OaVkjn80U5cddk46LMMBordWW-Y6dA',
+    '3NHrjNZH_cICGR15qxO3t2nbCPq0cgnWSW644oRqIEQ'
   ]
 }
 

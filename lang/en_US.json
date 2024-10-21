@@ -96,13 +96,45 @@
   "Settled": "Settled",
   "show": "Show",
   "showall": "All Show",
-  "Space Url": "Space URL",
   "Start a Public Quest": "Start a Public Quest",
   "Submit": "Submit",
   "Submit Quest": "Submit",
   "myQuest": "My Quests",
   "Task Introduction": "Introduction",
   "task": {
+    "start": {
+      "space": "Start a Twitter Space Quest",
+      "promotion": "Start a Twitter Promotion Quest"
+    },
+    "rules": {
+      "space": "1 You will help the community to do a Twitter space by using your Twitter account.\n2 Please use the community’s logo as your avatar of linked account before you start your space and keep it until 15 mins after you return back your space’s URL.\n3 Please pin your invitation link of this quest when you doing it.",
+      "promotion": "1 Please quote the link with your comment。\n2 Please put the URL of your quote twitter after that."
+    },
+    "form": {
+      "space": {
+        "placeholder": "Your Space URL"
+      },
+      "promotion": {
+        "placeholder": "Your Qoute URL"
+      }
+    },
+    "fields": {
+      "Promotion Tweet": "Promotion Tweet"
+    },
+    "submission": {
+      "fields": {
+        "Wallet": "Wallet",
+        "URL": "URL",
+        "Discuss": "Discuss",
+        "Buzz": "Buzz",
+        "Identify": "Identify", 
+        "Popular": "Popular",
+        "Spread": "Spread",
+        "Firends": "Firends",
+        "Total Score": "Total Score",
+        "Bounty": "Bounty"
+      }
+    },
     "from": "From Community",
     "submitted": "Did",
     "name": "Name",
@@ -136,10 +168,8 @@
   "Twitter Space Quest": "Twitter Space Quest",
   "twitter.link": "Link my X",
   "Unsettled": "Unsettled",
-  "URL": "URL",
   "View Details": "View Details",
   "view.token": "View Token",
-  "Wallet": "Wallet",
   "wallet": "My Wallet",
   "wallet.all": "Total Assets",
   "wallet.balance": "Balance",

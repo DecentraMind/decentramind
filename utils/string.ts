@@ -106,3 +106,11 @@ export function getTextRenderWidth(text: string, fontSize: number, fontFamily: s
   return width
 }
 
+/**
+ * Count the number of words in a string, for CJK characters, it counts each character as a word
+ * @param text - The string to count the words in
+ * @returns The number of words in the string
+ */
+export function wordCount(text: string) {
+  return text.match(/[\u00ff-\uffff]|\S+/g)?.length || 0
+}
