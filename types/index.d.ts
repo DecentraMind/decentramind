@@ -181,7 +181,7 @@ interface PromotionSubmission extends Submission {
   buzz: number // tweet text length
   discuss: number // public_metrics.reply_count
   identify: number // public_metrics.retweet_count
-  popular: number // public_metrics.like_count
+  popularity: number // public_metrics.like_count
   spread: number // public_metrics.impression_count (times this post was seen)
   friends: number // invite count
 }

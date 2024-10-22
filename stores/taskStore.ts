@@ -417,7 +417,7 @@ export const useTaskStore = defineStore('task', () => {
       buzz: tweetLength,
       discuss: tweetInfo.public_metrics.reply_count,
       identify: tweetInfo.public_metrics.quote_count + tweetInfo.public_metrics.retweet_count,
-      popular: tweetInfo.public_metrics.like_count,
+      popularity: tweetInfo.public_metrics.like_count,
       spread: tweetInfo.public_metrics.impression_count,
       friends: inviteCount,
       // TODO calculate score at server side or at AO
