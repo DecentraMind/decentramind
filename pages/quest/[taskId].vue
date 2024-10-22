@@ -122,9 +122,9 @@ onMounted(async () => {
     invites = (await getInvitesByInviter(address, 'task')).invites
 
     communityInfo = await getLocalCommunity(task.communityUuid)
-    setCurrentCommunityUuid(communityInfo.uuid)
+    setCurrentCommunityUuid(communityInfo.uuid);
 
-    submissions.forEach(s => {
+    (task.submissions as SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]).forEach(s => {
       s.rewardHtml = calcRewardHtml(
         s.calculatedBounties,
         true,

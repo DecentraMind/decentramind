@@ -76,7 +76,7 @@ export function useTaskValidation(task: Task, url: string) {
   }
 
   const validatePromotionUrl = async (url: string) => {
-    const matched = url.trim().match(/(x|twitter)\.com\/.+\/status\/([^/]+)\/?/)
+    const matched = url.trim().match(/(x|twitter)\.com\/.+\/status\/(\d+)\/?/)
 
     if (!matched || !matched[2]) {
       throw new Error('Invalid promotion URL.')
