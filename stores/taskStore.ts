@@ -393,7 +393,6 @@ export const useTaskStore = defineStore('task', () => {
     const tweetInfo = data.data[0]
     
     const tweetCreateTime = new Date(tweetInfo.created_at).getTime()
-    const validJoinEndAt = Math.min(taskEndTime, tweetCreateTime + 48 * 60 * 60 * 1000)
 
     const inviteCount = invites.filter(inviteInfo => {
       return (
@@ -404,7 +403,7 @@ export const useTaskStore = defineStore('task', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const validInvitees = Object.entries<{ joinTime: number }>(inviteInfo.invitees).filter(([_, invitee]) => {
         const { joinTime } = invitee
-        return joinTime > tweetCreateTime && joinTime < validJoinEndAt
+        return joinTime > tweetCreateTime && joinTime < taskEndTime
       })
       total += validInvitees.length
       return total

@@ -89,7 +89,7 @@ export function useTaskValidation(task: Task, url: string) {
 
     if (error.value || !tweetInfo) {
       console.error('Error fetching data:', error)
-      throw new Error('Failed to validate space URL.')
+      throw new Error('Failed to validate promotion URL: fetch data failed.')
     }
 
     console.log('data from twitter = ', tweetInfo)
@@ -99,18 +99,13 @@ export function useTaskValidation(task: Task, url: string) {
     }
     if ((tweetInfo as unknown as {errors: TweetInfoError[]} ).errors?.length) {
       const error = (tweetInfo as unknown as {errors: TweetInfoError[]}).errors[0]
-      throw new Error('Failed to validate space URL: ' + error.detail)
+      throw new Error('Failed to validate promotion URL: ' + error.detail)
     }
 
     const tweetId = (task as PromotionTask).link.match(/https:\/\/(twitter|x)\.com\/.+\/status\/(\d+)/)?.[2]
     if (!tweetInfo.data[0].referenced_tweets?.find((tweet) => tweet.type == 'quoted' && tweet.id == tweetId)) {
       console.log({promotionTweetId: tweetId, referencedTweets: tweetInfo.data[0].referenced_tweets})
       throw new Error('Invalid promotion URL: referenced tweet is not the task promotion tweet.')
-    }
-
-    const createdAt = new Date(tweetInfo.data[0].created_at).getTime()
-    if (createdAt < task.createTime && !runtimeConfig.public.debug) {
-      throw new Error('Invalid promotion URL: promotion tweet is created before task is created.')
     }
 
     const author = tweetInfo.includes.users.find(user => user.id === tweetInfo.data[0].author_id)
