@@ -270,7 +270,6 @@ const columns = {
       class: 'text-left',
       rowClass: 'font-mono text-left',
     },
-    // Buzz, Discuss, Identify, Popular, Spread, Firends
     {
       key: 'buzz',
       label: t('task.submission.fields.Buzz'),
@@ -288,8 +287,8 @@ const columns = {
       label: t('task.submission.fields.Identify'),
     },
     {
-      key: 'popular',
-      label: t('task.submission.fields.Popular'),
+      key: 'popularity',
+      label: t('task.submission.fields.Popularity'),
       class: 'text-left',
       rowClass: 'font-mono text-left',
     },
@@ -299,7 +298,7 @@ const columns = {
     },
     {
       key: 'friends',
-      label: t('task.submission.fields.Firends'),
+      label: t('task.submission.fields.Friends'),
     },
     {
       key: 'score',
@@ -838,7 +837,7 @@ const onClickShareToTwitter = () => {
 
               <div v-if="task.type === 'promotion'" class="flex justify-start">
                 <div class="font-semibold w-44 shrink-0">
-                  <div>{{ $t('task.fields.Promotion Tweet') }}</div>
+                  <div>{{ $t('task.fields.Promotion Quest Link') }}</div>
                 </div>
                 <div>
                   {{ (task as PromotionTask).link }}
@@ -983,32 +982,10 @@ const onClickShareToTwitter = () => {
 
             <div class="mt-4">
               <h4 class="font-semibold mb-2">{{ $t('Rules of Judgment') }}</h4>
-              <p class="leading-6 text-gray-400 text-sm">
-                1 Total score is 100 including Brand 10%, Friends 40%,
-                Popularity 50%.
-                <br>
-                2 Brand is decided by your avatar, change it you'll get 10, not
-                change get 0.
-                <br>
-                3 Friends is decided by the number of users invited through your
-                quest invitation.
-                <br>
-                4 Popularity is decided by the amount of audience in your
-                Twitter Space.
-                <br>
-                5 The person with the highest data gets the maximum scores
-                including Brand, Friends and Popularity.
-                <br>
-                6 Everyone will have a total score, it decide the amount of your
-                bounty.
-                <br>
-                7 If the total chances are 20 but you are in 21st, sorry you can
-                get nothing.
-                <br>8 You only have 1 chance for this quest.
-                <br>
-                9 If no one meets the bounty, the bounty will be returned to the
-                bounty owner's wallet.
-              </p>
+              <p
+                class="leading-6 text-gray-400 text-sm"
+                v-html="$t(`task.judgment.${task.type}`).replace(/\n/g, '<br>')"
+              />
             </div>
           </template>
         </UBlogPost>

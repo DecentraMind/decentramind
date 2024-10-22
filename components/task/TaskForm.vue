@@ -215,7 +215,7 @@ onMounted(() => {
       <UTextarea
         v-model.trim="task.rule"
         disabled
-        :placeholder="$t('taskRule')"
+        :placeholder="$t(`task.rules.${task.type}`)"
       />
     </UFormGroup>
 
