@@ -203,8 +203,8 @@ onMounted(() => {
       <UInput v-model.trim="task.name" placeholder="name" />
     </UFormGroup>
 
-    <UFormGroup v-if="task.type === 'promotion'" name="link" :label="$t('Twitter Promotion Link')">
-      <UInput v-model.trim="(task as PromotionTaskForm).link" :placeholder="$t('Twitter Promotion Link')" />
+    <UFormGroup v-if="task.type === 'promotion'" name="link" :label="$t('task.fields.Promotion Quest Link')">
+      <UInput v-model.trim="(task as PromotionTaskForm).link" :placeholder="$t('task.fields.Promotion Quest Link')" />
     </UFormGroup>
 
     <UFormGroup name="intro" :label="$t('Task Introduction')">
