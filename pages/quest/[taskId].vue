@@ -145,6 +145,7 @@ onMounted(async () => {
         submissions.map(async s => {
           switch (task?.type) {
             case 'space':
+              // TODO only update space url if it's changed
               return saveSpaceTaskSubmitInfo({
                 submitterAddress: s.address,
                 spaceUrl: s.url,
@@ -158,8 +159,9 @@ onMounted(async () => {
             case 'promotion': {
               const { validateTaskData } = useTaskValidation(task, s.url)
               const tweetInfo = await validateTaskData<TwitterTweetInfo>()
+              // TODO only update tweet info if it's changed
               return savePromotionTaskSubmitInfo({
-                submitterAddress: address,
+                submitterAddress: s.address,
                 taskEndTime: task.endTime,
                 data: tweetInfo,
                 taskPid,
