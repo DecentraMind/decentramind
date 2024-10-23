@@ -7,6 +7,7 @@ export default eventHandler(async (event) => {
   const { TWITTER_BEARER_TOKEN: token } = import.meta.env
 
   try{
+    console.log('fetch from twitter api: ' + url)
     const data = await $fetch(url, {
       method: 'get',
       headers: {

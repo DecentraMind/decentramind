@@ -137,7 +137,7 @@ onMounted(async () => {
 
     if (
       // runtimeConfig.public.debug ||
-      (!task.isScoreCalculated &&
+      (//!task.isScoreCalculated &&
       now.value >= task.endTime &&
       !task.isSettled &&
       isAdminOrOwner)
