@@ -87,19 +87,16 @@ export const aoStore = defineStore('aoStore', () => {
   const othentLogin = async () => {
     if (typeof window !== 'undefined') {
       try {
-        const OthentModule = await import('@othent/kms')
-        await OthentModule.connect()
-        if (OthentModule) {
-          window.arweaveWallet = {
-            ...OthentModule,
-            connect: OthentModule.connect,
-            disconnect: OthentModule.disconnect,
-            getActiveAddress: OthentModule.getActiveAddress
-          }
-          // 使用 address 进行后续操作
-        } else {
-          console.error('Othent is not defined in the module')
-        }
+        const { Othent } = await import('@othent/kms')
+        const othent = new Othent({
+          appInfo: {
+            name: 'DecentraMind',
+            version: '1.0.0',
+            env: 'production',
+          },
+          inject: true
+        })
+        await othent.connect()
       } catch (error) {
         console.error(error)
         throw new Error('Failed to login through Othent.')
