@@ -136,10 +136,11 @@ onMounted(async () => {
     // console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
     if (
-      !task.isScoreCalculated &&
+      // runtimeConfig.public.debug ||
+      (!task.isScoreCalculated &&
       now.value >= task.endTime &&
       !task.isSettled &&
-      isAdminOrOwner
+      isAdminOrOwner)
     ) {
       await Promise.all(
         submissions.map(async s => {
@@ -178,17 +179,18 @@ onMounted(async () => {
         }),
       )
 
-      task.submissions = useTaskScoreCalculate(task, submissions)
+      const updatedSubmissions = useTaskScoreCalculate(task, submissions)
       console.log('score calculated submissions ', submissions)
 
       // save submission scores and set task.isScoreCalculated
-      const scores = task.submissions.map(s => {
+      const scores = updatedSubmissions.map(s => {
         return {
           id: s.id,
           score: s.score,
         }
       })
       await updateTaskScores(taskPid, scores)
+      task.submissions = updatedSubmissions
       // refetch task info
       task = await getTask(taskPid)
     }
@@ -621,10 +623,10 @@ function sendBountyBtnLabel() {
 
 const searchKeyword = $ref('')
 
-let filteredRows = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
+let filteredRows = $ref<SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]>([])
 const page = $ref(1)
 let pageSize = $ref<number>(maxTotalChances)
-let pageRows = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
+let pageRows = $ref<SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]>([])
 
 const precisions = $computed(() =>
   task?.bounties.reduce((carry, bounty) => {

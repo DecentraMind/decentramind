@@ -39,6 +39,9 @@ export function useTaskScoreCalculate<T extends SpaceSubmissionWithCalculatedBou
 
   function calcPromotionScore(submissions: PromotionSubmissionWithCalculatedBounties[]) {
     const clone = useCloneDeep(submissions)
+    clone.forEach(item => {
+      item.score = 0
+    })
 
     const portion: Record<keyof Pick<PromotionSubmission, 'buzz' | 'discuss' | 'identify' | 'popularity' | 'spread' | 'friends'>, number> = {
       buzz: 10,

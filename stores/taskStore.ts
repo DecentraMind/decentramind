@@ -6,7 +6,7 @@ import {
 } from '@permaweb/aoconnect'
 
 import { defineStore } from 'pinia'
-import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo, TwitterTweetInfo, PromotionSubmission } from '~/types'
+import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo, TwitterTweetInfo, PromotionSubmission, PromotionSubmissionWithCalculatedBounties } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 import { useFetch } from '@vueuse/core'
@@ -205,7 +205,7 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
-  const submitSpaceTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'> | Omit<PromotionSubmission, 'id'|'createTime'>) => {
+  const submitTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'> | Omit<PromotionSubmission, 'id'|'createTime'>) => {
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -247,7 +247,7 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[]) => {
+  const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]) => {
     console.log('update task submissions', submissions)
 
     return await messageResultCheck({
@@ -424,13 +424,13 @@ export const useTaskStore = defineStore('task', () => {
       score: 0
     }
     if (mode === 'add') {
-      await submitSpaceTask(submission)
+      await submitTask(submission)
     } else if (mode === 'update') {
       if (!submissionId) {
         throw new Error('Submission ID is required')
       }
       
-      const updateSubmissionData: Omit<PromotionSubmission, 'createTime'> = {
+      const updateSubmissionData: Omit<PromotionSubmission, 'createTime'|'address'> = {
         id: submissionId!,
         ...submission
       }
@@ -540,7 +540,7 @@ export const useTaskStore = defineStore('task', () => {
         // TODO calculate score at server side or at AO
         score: 0
       }
-      await submitSpaceTask(spaceSubmission)
+      await submitTask(spaceSubmission)
     } else if (mode === 'update') {
       if (!submissionId) {
         throw new Error('Submission ID is required')
@@ -564,7 +564,7 @@ export const useTaskStore = defineStore('task', () => {
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
-    submitSpaceTask, updateSubmission, saveSpaceTaskSubmitInfo, savePromotionTaskSubmitInfo,
+    submitTask, updateSubmission, saveSpaceTaskSubmitInfo, savePromotionTaskSubmitInfo,
 
     updateTaskSubmissions, updateTaskScores,
 
