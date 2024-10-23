@@ -1,5 +1,3 @@
-import { useFetch } from 'nuxt/app'
-
 export default eventHandler(async (event) => {
   console.log('get twitter tweets info')
   const { ids } = getQuery(event) as { ids?: string }
@@ -8,18 +6,18 @@ export default eventHandler(async (event) => {
   
   const { TWITTER_BEARER_TOKEN: token } = import.meta.env
 
-  const { data, error } = await useFetch(url, {
-    method: 'get',
-    headers: {
-      Authorization: 'Bearer ' + token
-    }
-  })
+  try{
+    const data = await $fetch(url, {
+      method: 'get',
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    })
 
-  if (error.value) {
-    console.error('get twitter tweets info error = ', error.value)
+    // console.log('get twitter tweets info = ', JSON.stringify(data))
+    return data
+  } catch (error) {
+    console.error('get twitter tweets info error = ', error)
     return null
   }
-
-  // console.log('get twitter tweets info = ', JSON.stringify(data))
-  return data
 })
