@@ -136,11 +136,10 @@ onMounted(async () => {
     // console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
     if (
-      // runtimeConfig.public.debug ||
-      (//!task.isScoreCalculated &&
+      (runtimeConfig.public.debug || !task.isScoreCalculated) &&
       now.value >= task.endTime &&
       !task.isSettled &&
-      isAdminOrOwner)
+      isAdminOrOwner
     ) {
       await Promise.all(
         submissions.map(async s => {
