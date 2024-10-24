@@ -330,7 +330,7 @@ export type TwitterSpaceInfo = {
     id: string
     state: string
     started_at: string
-    ended_at: string
+    ended_at?: string
     creator_id: string
     participant_count: number
     speaker_ids: string[]

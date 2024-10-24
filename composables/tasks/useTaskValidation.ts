@@ -1,9 +1,8 @@
 import type { PromotionTask, Task, TwitterSpaceInfo, TwitterTweetInfo } from '~/types'
 import { useFetch } from '@vueuse/core'
 
-export function useTaskValidation(task: Task, url: string) {
+export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update', twitterVouchedIDs?: string[]) {
   const runtimeConfig = useRuntimeConfig()
-  const { twitterVouchedIDs } = $(communityStore())
 
   const validateTaskData = async <T extends TwitterSpaceInfo | TwitterTweetInfo>(): Promise<T> => {
     switch (task.type) {
@@ -31,7 +30,7 @@ export function useTaskValidation(task: Task, url: string) {
   
     if (error.value || !spaceInfo) {
       console.error('Error fetching data:', error)
-      throw new Error('Failed to validate space URL.')
+      throw new Error('Failed to validate space URL: fetch data failed.')
     }
   
     console.log('data from twitter = ', spaceInfo)
@@ -47,13 +46,14 @@ export function useTaskValidation(task: Task, url: string) {
     const {
       started_at,
       ended_at,
-      participant_count: participantCount,
     } = spaceInfo.data
+
+    if (!ended_at || spaceInfo.data.state !== 'ended') {
+      throw new Error('Invalid space URL: space has not ended.')
+    }
+
     const spaceStartAt = new Date(started_at).getTime()
     const spaceEndedAt = new Date(ended_at).getTime()
-    const validJoinStartAt = new Date(
-      spaceEndedAt - 24 * 60 * 60 * 1000,
-    ).getTime()
 
     if (spaceStartAt < task.createTime) {
       throw new Error('Invalid space URL: space starts before task is created.')
@@ -61,16 +61,21 @@ export function useTaskValidation(task: Task, url: string) {
   
     const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
     
-    if (minuteDifference < 15 && !runtimeConfig.public.debug) {
+    if (minuteDifference < 15) {
       throw Error('Invalid space URL: space lasts less than 15 minutes')
     }
   
-    const hostID = spaceInfo.data.creator_id
-    const host = spaceInfo.includes.users.find(user => user.id === hostID)
-    const hostHandle = host?.username
-    
-    if (!runtimeConfig.public.debug && (!host || !twitterVouchedIDs.find(id => id === hostHandle))) {
-      throw new Error('Invalid space URL: you are not the space host.')
+    if (mode === 'add') {
+      if (!twitterVouchedIDs || !twitterVouchedIDs.length) {
+        throw new Error('Twitter vouched IDs are not provided.')
+      }
+      const hostID = spaceInfo.data.creator_id
+      const host = spaceInfo.includes.users.find(user => user.id === hostID)
+      const hostHandle = host?.username
+      
+      if (!runtimeConfig.public.debug && (!host || !twitterVouchedIDs.find(id => id === hostHandle))) {
+        throw new Error('Invalid space URL: you are not the space host.')
+      }
     }
     return spaceInfo
   }
@@ -108,10 +113,15 @@ export function useTaskValidation(task: Task, url: string) {
       throw new Error('Invalid promotion URL: referenced tweet is not the task promotion tweet.')
     }
 
-    const author = tweetInfo.includes.users.find(user => user.id === tweetInfo.data[0].author_id)
-    if (!runtimeConfig.public.debug && (!author || !twitterVouchedIDs.find(id => id === author.username))) {
-      console.log({author, twitterVouchedIDs})
-      throw new Error('Invalid promotion URL: you are not the promotion tweet author.')
+    if (mode === 'add') {
+      if (!twitterVouchedIDs || !twitterVouchedIDs.length) {
+        throw new Error('Twitter vouched IDs are not provided.')
+      }
+      const author = tweetInfo.includes.users.find(user => user.id === tweetInfo.data[0].author_id)
+      if (!runtimeConfig.public.debug && (!author || !twitterVouchedIDs.find(id => id === author.username))) {
+        console.log({author, twitterVouchedIDs})
+        throw new Error('Invalid promotion URL: you are not the promotion tweet author.')
+      }
     }
     
     return tweetInfo

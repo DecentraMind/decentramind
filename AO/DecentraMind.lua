@@ -1,4 +1,4 @@
-Variant = '0.4.56'
+Variant = '0.4.57'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -467,13 +467,13 @@ Actions = {
 
     GetTask = function(msg)
       local pid = msg.Tags.ProcessID
+      local address = msg.Tags.Address
 
       if not Tasks[pid] then
         return u.replyError(msg, 'Task not found.')
       end
       local copy = u.deepCopy(Tasks[pid])
 
-      local address = msg.From
       if address and InviteCodesByInviterByTaskPid[address] and InviteCodesByInviterByTaskPid[address][pid] then
         copy.inviteCode = InviteCodesByInviterByTaskPid[address][pid]
       end
@@ -589,6 +589,7 @@ Actions = {
       local id = tonumber(msg.Tags.SubmissionID)
       local submission = json.decode(msg.Data)
 
+      -- TODO allow community owner to update submission
       assert(msg.From == Tasks[pid].ownerAddress, 'You are not the owner of this task.')
       assert(Tasks[pid].submissions[id], 'Submission not found. pid: ' .. pid .. ', submission id: ' .. id)
 

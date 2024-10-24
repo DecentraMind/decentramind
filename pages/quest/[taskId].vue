@@ -15,6 +15,7 @@ import type {
   PromotionTask,
   TwitterTweetInfo,
   PromotionSubmissionWithCalculatedBounties,
+  TwitterSpaceInfo,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
@@ -87,6 +88,8 @@ const submittedBuilderCount = $computed(() => {
 
 let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 
+const isOwner = $computed(() => task?.ownerAddress === address || communityInfo?.owner === address)
+
 const isAdminOrOwner = $computed(
   () =>
     task?.ownerAddress === address || communityInfo.admins.includes(address),
@@ -104,7 +107,7 @@ onMounted(async () => {
   now = useClock(3000)
   isLoading = true
   try {
-    task = await getTask(taskPid)
+    task = await getTask(taskPid, address)
     console.log('getTask ', task)
 
     if (!task) {
@@ -139,25 +142,28 @@ onMounted(async () => {
       (runtimeConfig.public.debug || !task.isScoreCalculated) &&
       now.value >= task.endTime &&
       !task.isSettled &&
-      isAdminOrOwner
+      isOwner
     ) {
       await Promise.all(
         submissions.map(async s => {
+          const { validateTaskData } = useTaskValidation(task!, s.url, 'update')
           switch (task?.type) {
-            case 'space':
+            case 'space': {
+              const spaceInfo = await validateTaskData<TwitterSpaceInfo>()
+
               // TODO only update space url if it's changed
               return saveSpaceTaskSubmitInfo({
                 submitterAddress: s.address,
                 spaceUrl: s.url,
+                spaceInfo,
                 taskPid: s.taskPid,
-                taskCreateTime: task!.createTime,
                 communityInfo,
                 invites,
                 mode: 'update',
                 submissionId: s.id,
               })
+            }
             case 'promotion': {
-              const { validateTaskData } = useTaskValidation(task, s.url)
               const tweetInfo = await validateTaskData<TwitterTweetInfo>()
               // TODO only update tweet info if it's changed
               return savePromotionTaskSubmitInfo({
@@ -191,7 +197,7 @@ onMounted(async () => {
       await updateTaskScores(taskPid, scores)
       task.submissions = updatedSubmissions
       // refetch task info
-      task = await getTask(taskPid)
+      task = await getTask(taskPid, address)
     }
 
     // console.log({ isSubmitted })
@@ -335,7 +341,7 @@ let isJoinLoading = $ref(false)
 async function onClickJoin() {
   isJoinLoading = true
   await joinTask(taskPid)
-  task = await getTask(taskPid)
+  task = await getTask(taskPid, address)
   isJoinModalOpen = false
   isJoinLoading = false
 }
@@ -349,7 +355,15 @@ async function onSubmitPromotion() {
       throw new Error('Data loading not completed. Please wait or try refresh.')
     }
 
-    const { validateTaskData } = useTaskValidation(task, promotionUrl)
+    if (!twitterVouchedIDs.length && !runtimeConfig.public.debug) {
+      throw new Error('You are not vouched.')
+    }
+
+    if (isSubmitted && !runtimeConfig.public.debug) {
+      throw new Error('You have submitted this quest.')
+    }
+
+    const { validateTaskData } = useTaskValidation(task, promotionUrl, 'add', twitterVouchedIDs)
     const tweetInfo = await validateTaskData<TwitterTweetInfo>()
     if (tweetInfo) {
       await savePromotionTaskSubmitInfo({
@@ -364,7 +378,7 @@ async function onSubmitPromotion() {
       })
     }
 
-    task = await getTask(taskPid)
+    task = await getTask(taskPid, address)
 
     isSubmitModalOpen = false
   } catch (e) {
@@ -390,21 +404,24 @@ async function onSubmitSpaceUrl() {
       throw new Error('You are not vouched.')
     }
 
-    if (isSubmitted) {
+    if (isSubmitted && !runtimeConfig.public.debug) {
       throw new Error('You have submitted this quest.')
     }
 
+    const { validateTaskData } = useTaskValidation(task!, spaceUrl, 'add', twitterVouchedIDs)
+    const spaceInfo = await validateTaskData<TwitterSpaceInfo>()
+    
     await saveSpaceTaskSubmitInfo({
       submitterAddress: address,
       spaceUrl,
+      spaceInfo,
       taskPid,
-      taskCreateTime: task.createTime,
       communityInfo,
       invites,
       mode: 'add',
     })
 
-    task = await getTask(taskPid)
+    task = await getTask(taskPid, address)
 
     isSubmitModalOpen = false
   } catch (e) {
@@ -855,6 +872,7 @@ const onClickShareToTwitter = () => {
                   {{ isLoading ? '' : submittedBuilderCount }}
                 </div>
               </div>
+
               <div>
                 <p class="font-semibold mb-2">
                   {{ $t('Rules of the Quest') }}
@@ -863,6 +881,7 @@ const onClickShareToTwitter = () => {
                   {{ task.rule }}
                 </p>
               </div>
+
               <UButton
                 v-if="task.inviteCode"
                 icon="heroicons:link"
@@ -871,6 +890,7 @@ const onClickShareToTwitter = () => {
                 class="w-fit h-10"
                 @click="isInviteModalOpen = true"
               />
+
               <div
                 v-if="!isLoading && isIng && !isJoined"
                 class="flex justify-center"
@@ -912,7 +932,7 @@ const onClickShareToTwitter = () => {
                   :ui="{
                     checkbox: {
                       padding:
-                        task.isSettled || !isAdminOrOwner ? 'hidden' : '',
+                        task.isSettled || !isOwner ? 'hidden' : '',
                     },
                   }"
                 >
@@ -921,7 +941,7 @@ const onClickShareToTwitter = () => {
                   </template>
                   <template #address-data="{ row }">
                     {{
-                      isAdminOrOwner ? row.address : shortString(row.address, 4)
+                      isOwner ? row.address : shortString(row.address, 4)
                     }}
                   </template>
                   <template #url-data="{ row }">
@@ -968,7 +988,7 @@ const onClickShareToTwitter = () => {
             <div
               v-if="
                 !isLoading &&
-                  isAdminOrOwner &&
+                  isOwner &&
                   !task.isSettled &&
                   now >= task.endTime
               "
