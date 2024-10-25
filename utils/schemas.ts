@@ -163,6 +163,13 @@ export const taskSchema = z.object({
 
 export type TaskSchema = z.infer<typeof taskSchema>
 
+export const promotionUrlSchema = z.object({
+  url: z.string().url().refine((value) => {
+    return TWEET_URL_REGEXP.test(value)
+  }, { message: 'The URL must be a valid tweet URL like https://twitter.com/x/status/1234567890' })
+})
+export type PromotionUrlSchema = z.infer<typeof promotionUrlSchema>
+
 export function validateTaskForm(state: Task): FormError[] {
   const errors = []
   const { bounties, startTime, endTime } = state
@@ -249,10 +256,10 @@ export function validateTaskForm(state: Task): FormError[] {
         message: 'Link cannot be empty.'
       })
     }
-    if (!/https:\/\/(twitter|x)\.com\/.+\/status\/\d+/.test((state as unknown as PromotionTaskForm).link)) {
+    if (!TWEET_URL_REGEXP.test((state as unknown as PromotionTaskForm).link)) {
       errors.push({
         path: 'link',
-        message: 'Link must be a valid Twitter URL.'
+        message: 'Link must be a valid tweet URL.'
       })
     }
   }

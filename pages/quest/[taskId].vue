@@ -23,6 +23,7 @@ import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
 import { useTaskValidation } from '~/composables/tasks/useTaskValidation'
 import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
+import { promotionUrlSchema } from '~/utils/schemas'
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -346,7 +347,10 @@ async function onClickJoin() {
   isJoinLoading = false
 }
 
-const promotionUrl = $ref('')
+const promotionForm = $ref({
+  url: '',
+})
+
 let submitPromotionLoading = $ref(false)
 async function onSubmitPromotion() {
   submitPromotionLoading = true
@@ -363,7 +367,7 @@ async function onSubmitPromotion() {
       throw new Error('You have submitted this quest.')
     }
 
-    const { validateTaskData } = useTaskValidation(task, promotionUrl, 'add', twitterVouchedIDs)
+    const { validateTaskData } = useTaskValidation(task, promotionForm.url, 'add', twitterVouchedIDs)
     const tweetInfo = await validateTaskData<TwitterTweetInfo>()
     if (tweetInfo) {
       await savePromotionTaskSubmitInfo({
@@ -374,7 +378,7 @@ async function onSubmitPromotion() {
         communityUuid: communityInfo.uuid,
         invites,
         mode: 'add',
-        url: promotionUrl,
+        url: promotionForm.url,
       })
     }
 
@@ -383,7 +387,7 @@ async function onSubmitPromotion() {
     isSubmitModalOpen = false
   } catch (e) {
     console.error(e)
-    showError('Submit failed.', e as Error)
+    showError('Submit failed. ', e as Error)
   } finally {
     submitPromotionLoading = false
   }
@@ -748,6 +752,15 @@ watch(
   },
 )
 
+watch(() => promotionForm.url, (value) => {
+  try {
+    const url = new URL(value)
+    promotionForm.url = url.origin + url.pathname
+  } catch (e) {
+    console.error('Invalid URL.')
+  }
+})
+
 const onClickCopyInviteCode = async () => {
   try {
     if (!task) return
@@ -1038,7 +1051,7 @@ const onClickShareToTwitter = () => {
       </UCard>
     </UModal>
 
-    <UModal v-model="isSubmitModalOpen">
+    <UModal v-model="isSubmitModalOpen" :ui="{ width: 'w-full sm:max-w-xl' }">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
@@ -1066,16 +1079,23 @@ const onClickShareToTwitter = () => {
               variant="outline"
               :placeholder="$t(`task.form.space.placeholder`)"
             />
-            <UInput
+            <UForm
               v-if="task?.type === 'promotion'"
-              v-model="promotionUrl"
-              :model-modifiers="{ trim: true }"
-              color="primary"
-              variant="outline"
-              :placeholder="$t(`task.form.promotion.placeholder`)"
-            />
+              :schema="promotionUrlSchema"
+              :state="promotionForm"
+            >
+              <UFormGroup name="url">
+                <UInput
+                  v-model="promotionForm.url"
+                  :model-modifiers="{ trim: true }"
+                  color="primary"
+                  variant="outline"
+                  :placeholder="$t(`task.form.promotion.placeholder`)"
+                />
+              </UFormGroup>
+            </UForm>
           </div>
-          <div class="flex justify-center my-8">
+          <div class="flex justify-center mb-8 mt-12">
             <UButton
               v-if="task?.type === 'space'"
               :loading="submitSpaceUrlLoading"

@@ -17,12 +17,12 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
   }
 
   const validateSpaceUrl = async (url: string) => {
-    const matched = url.trim().match(/(x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
+    const matched = url.trim().match(/(?:x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
   
-    if (!matched || !matched[2]) {
-      throw new Error('Invalid space URL.')
+    if (!matched || !matched[1]) {
+      throw new Error('Invalid space URL: ' + url)
     }
-    const spaceId = matched[2]
+    const spaceId = matched[1]
   
     const { data, error } = await useFetch(
       '/api/getTwitterSpace?' + new URLSearchParams({ spaceId }),
@@ -85,7 +85,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     const matched = url.trim().match(TWEET_URL_REGEXP)
 
     if (!matched || !matched[1]) {
-      throw new Error('Invalid promotion URL:' + url)
+      throw new Error('Invalid promotion URL: ' + url)
     }
     const id = matched[1]
     const { data, error } = await useFetch(
