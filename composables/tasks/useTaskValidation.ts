@@ -1,5 +1,6 @@
 import type { PromotionTask, Task, TwitterSpaceInfo, TwitterTweetInfo } from '~/types'
 import { useFetch } from '@vueuse/core'
+import { TWEET_URL_REGEXP } from '~/utils/constants'
 
 export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update', twitterVouchedIDs?: string[]) {
   const runtimeConfig = useRuntimeConfig()
@@ -81,7 +82,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
   }
 
   const validatePromotionUrl = async (url: string) => {
-    const matched = url.trim().match(/(x|twitter)\.com\/.+\/status\/(\d+)\/?/)
+    const matched = url.trim().match(TWEET_URL_REGEXP)
 
     if (!matched || !matched[2]) {
       throw new Error('Invalid promotion URL.')
@@ -107,7 +108,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
       throw new Error('Failed to validate promotion URL: ' + error.detail)
     }
 
-    const tweetId = (task as PromotionTask).link.match(/https:\/\/(twitter|x)\.com\/.+\/status\/(\d+)/)?.[2]
+    const tweetId = (task as PromotionTask).link.match(TWEET_URL_REGEXP)?.[2]
     if (!tweetInfo.data[0].referenced_tweets?.find((tweet) => tweet.type == 'quoted' && tweet.id == tweetId)) {
       console.log({promotionTweetId: tweetId, referencedTweets: tweetInfo.data[0].referenced_tweets})
       throw new Error('Invalid promotion URL: referenced tweet is not the task promotion tweet.')
