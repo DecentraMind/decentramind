@@ -227,8 +227,8 @@ const currentRightPage = $computed<PageSymbol>(() => {
                   container: 'group-hover:bg-dot py-4',
                   inner: 'flex-1 px-4 overflow-hidden',
                   image: {
-                    wrapper: 'ring-0 rounded-none',
-                    base: 'ease-in-out object-fill',
+                    wrapper: 'ring-0 rounded-none aspect-[800/501]',
+                    base: 'ease-in-out',
                   },
                 }"
               >
