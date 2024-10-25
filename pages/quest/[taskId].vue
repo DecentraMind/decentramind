@@ -1020,7 +1020,7 @@ const onClickShareToTwitter = () => {
         <div class="space-y-2">
           <div class="flex flex-col justify-center">
             <div class="text-center">
-              <p v-html="$t('task.spaceJoinModal', { lineBreak: '<br>' })" />
+              <p v-if="task" v-html="$t(`task.joinModal.${task.type}`, { lineBreak: '<br>' })" />
             </div>
           </div>
 
