@@ -1,5 +1,15 @@
-import { dryrun, message, result } from '@permaweb/aoconnect'
+import { connect, createDataItemSigner } from '@permaweb/aoconnect'
 import type { z } from 'zod'
+
+const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect(
+  {
+    MU_URL: 'https://mu.ao-testnet.xyz',
+    CU_URL: 'https://cu90.ao-testnet.xyz',
+    GATEWAY_URL: 'https://arweave.net',
+  },
+)
+
+export { result, results, message, spawn, monitor, unmonitor, dryrun, createDataItemSigner }
 
 type SignerSchema = z.ZodFunction<z.ZodTuple<[z.ZodObject<{
   data: z.ZodAny;

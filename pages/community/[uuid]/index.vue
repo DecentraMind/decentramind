@@ -27,17 +27,24 @@ let tasks = $ref<Task[]>([])
 function alertNotReady() {
   showMessage('Being Cooked')
 }
+
+let createTaskType = $ref<'space' | 'promotion'>('space')
+
 const taskTypes = [
   [
     {
       label: 'Twitter Space Quest',
       click: () => {
+        createTaskType = 'space'
         isCreateTaskModalOpen = true
       },
     },
     {
       label: 'Promotion Quest',
-      click: alertNotReady,
+      click: () => {
+        createTaskType = 'promotion'
+        isCreateTaskModalOpen = true
+      },
     },
     {
       label: 'Invitation Quest',
@@ -124,10 +131,9 @@ const reloadCommunity = async () => {
 }
 provide('reloadCommunity', reloadCommunity)
 
-let currentRightPage = $ref<PageSymbol>(communityRightPages['#quests'])
-watch(() => route.hash, newHash => {
-  const page = Object.keys(communityRightPages).includes(newHash) ? newHash : '#quests'
-  currentRightPage = communityRightPages[page as keyof typeof communityRightPages] || communityRightPages['#quests']
+const currentRightPage = $computed<PageSymbol>(() => {
+  const page = Object.keys(communityRightPages).includes(route.hash) ? route.hash : '#quests'
+  return communityRightPages[page as keyof typeof communityRightPages] || communityRightPages['#quests']
 })
 </script>
 <template>
@@ -221,8 +227,8 @@ watch(() => route.hash, newHash => {
                   container: 'group-hover:bg-dot py-4',
                   inner: 'flex-1 px-4 overflow-hidden',
                   image: {
-                    wrapper: 'ring-0 rounded-none',
-                    base: 'ease-in-out object-fill',
+                    wrapper: 'ring-0 rounded-none aspect-[800/501]',
+                    base: 'ease-in-out',
                   },
                 }"
               >
@@ -274,7 +280,7 @@ watch(() => route.hash, newHash => {
                 <h3
                   class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
                 >
-                  {{ $t('Start a Public Quest') }}
+                  {{ $t(`task.start.${createTaskType}`) }}
                 </h3>
                 <UButton
                   color="gray"
@@ -288,6 +294,7 @@ watch(() => route.hash, newHash => {
             <TaskForm
               v-if="community"
               :community="community"
+              :task-type="createTaskType"
               @created="onTaskCreated"
             />
           </UCard>

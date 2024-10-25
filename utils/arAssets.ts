@@ -1,4 +1,5 @@
 import type { Task } from '~/types'
+import { ARWEAVE_ID_REGEXP } from './constants'
 
 /**
  * 4Everland's arweave dedicated gateway
@@ -34,6 +35,12 @@ export const taskBannersMap: Record<Task['type'], string[]> = {
     'reiNxSXMV1YnSSJahTgLo1KvL9m7D5sZcnTnq7q1muE',
     'cjvbyCN9djO12OaVkjn80U5cddk46LMMBordWW-Y6dA',
     '3NHrjNZH_cICGR15qxO3t2nbCPq0cgnWSW644oRqIEQ'
+  ],
+  promotion: [
+    '56lhvYDBHLtAsr-STGwVNsJx45-aDqMZRRWwZOJpjsQ',
+    'eCFBZ8fjB3KB7lkSgJfXJJxV1_Krg7BXSDNZhzaN2Us',
+    'M4tEQezugPozOg4-7C7D1wN3kKrXfYuxLmCnUp8huJE',
+    'forWSpQwViqXBBb4jcXaffGMOi8y6LqJDBkxf0Sjqx4'
   ]
 }
 

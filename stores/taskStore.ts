@@ -6,7 +6,7 @@ import {
 } from '@permaweb/aoconnect'
 
 import { defineStore } from 'pinia'
-import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo } from '~/types'
+import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo, TwitterTweetInfo, PromotionSubmission, PromotionSubmissionWithCalculatedBounties } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 import { useFetch } from '@vueuse/core'
@@ -121,17 +121,22 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const getTask = async (taskPid: string): Promise<Task> => {
+  const getTask = async (taskPid: string, address?: string): Promise<Task> => {
     if(!taskPid) {
       throw new Error('Task process ID is required to get task info.')
     }
 
+    const tags = [
+      { name: 'Action', value: 'GetTask' },
+      { name: 'ProcessID', value: taskPid }
+    ]
+    if (address) {
+      tags.push({ name: 'Address', value: address })
+    }
+
     const res = await dryrun({
       process: taskManagerProcessID,
-      tags: [
-        { name: 'Action', value: 'GetTask' },
-        { name: 'ProcessID', value: taskPid },
-      ],
+      tags
     })
 
     const resp = extractResult<string>(res)
@@ -140,7 +145,7 @@ export const useTaskStore = defineStore('task', () => {
     task.submissions = task.submissions.map(submission => {
       return {
         ...submission,
-        calculatedBounties: (submission as SpaceSubmissionWithCalculatedBounties).calculatedBounties || useCloneDeep(task.bounties.map(bounty => {
+        calculatedBounties: (submission as SpaceSubmissionWithCalculatedBounties | PromotionSubmissionWithCalculatedBounties).calculatedBounties || useCloneDeep(task.bounties.map(bounty => {
           const ret = useCloneDeep(bounty)
           ret.amount = 0
           ret.quantity = BigInt(0)
@@ -205,7 +210,7 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
-  const submitSpaceTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'>) => {
+  const submitTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'> | Omit<PromotionSubmission, 'id'|'createTime'>) => {
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
@@ -247,7 +252,7 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[]) => {
+  const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]) => {
     console.log('update task submissions', submissions)
 
     return await messageResultCheck({
@@ -388,68 +393,81 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, taskPid, taskCreateTime, communityInfo, invites, mode, submissionId}: {submitterAddress: string, spaceUrl: string, taskPid: string, taskCreateTime: number, communityInfo: Community, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number}) {
-    const runtimeConfig = useRuntimeConfig()
-    const { twitterVouchedIDs } = $(communityStore())
-  
-    const matched = spaceUrl.trim().match(/(x|twitter)\.com\/i\/spaces\/([^/]+)\/?/)
-  
-    if (!matched || !matched[2]) {
-      throw new Error('Invalid space URL.')
+  const savePromotionTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, mode, submissionId} : {url: string, submitterAddress: string, taskEndTime: number, data: TwitterTweetInfo, invites: InviteCodeInfo[], taskPid: string, communityUuid: string, mode: 'add' | 'update', submissionId?: number}) {
+    console.log('save promotion task submit info')
+    const tweetInfo = data.data[0]
+    
+    const tweetCreateTime = new Date(tweetInfo.created_at).getTime()
+
+    const inviteCount = invites.filter(inviteInfo => {
+      return (
+        inviteInfo.inviterAddress === submitterAddress &&
+        inviteInfo.communityUuid === communityUuid
+      )
+    }).reduce((total, inviteInfo) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const validInvitees = Object.entries<{ joinTime: number }>(inviteInfo.invitees).filter(([_, invitee]) => {
+        const { joinTime } = invitee
+        return joinTime > tweetCreateTime && joinTime < taskEndTime
+      })
+      total += validInvitees.length
+      return total
+    }, 0)
+    
+    const tweetLength = wordCount(tweetInfo.note_tweet ? tweetInfo.note_tweet.text : tweetInfo.text)
+    const submission:Omit<PromotionSubmission, 'id'|'createTime'> = {
+      url,
+      taskPid,
+      address: submitterAddress,
+      buzz: tweetLength,
+      discuss: tweetInfo.public_metrics.reply_count,
+      identify: tweetInfo.public_metrics.quote_count + tweetInfo.public_metrics.retweet_count,
+      popularity: tweetInfo.public_metrics.like_count,
+      spread: tweetInfo.public_metrics.impression_count,
+      friends: inviteCount,
+      // TODO calculate score at server side or at AO
+      score: 0
     }
-    const spaceId = matched[2]
-  
-    const { data, error } = await useFetch(
-      '/api/getTwitterSpace?' + new URLSearchParams({ spaceId }),
-    ).json<TwitterSpaceInfo>()
-    const spaceInfo = unref(data)
-  
-    if (error.value || !spaceInfo) {
-      console.error('Error fetching data:', error)
-      throw new Error('Failed to validate space URL.')
+    if (mode === 'add') {
+      await submitTask(submission)
+    } else if (mode === 'update') {
+      if (!submissionId) {
+        throw new Error('Submission ID is required')
+      }
+      
+      const updateSubmissionData: Omit<PromotionSubmission, 'createTime'|'address'> = {
+        id: submissionId!,
+        ...submission
+      }
+      await updateSubmission(updateSubmissionData, taskPid)
+    } else {
+      throw new Error('Invalid mode')
     }
-  
-    console.log('data from twitter = ', spaceInfo)
-    type SpaceInfoError = {
-      detail: string
-      type: string
-    }
-    if ((spaceInfo as unknown as {errors: SpaceInfoError[]} ).errors?.length) {
-      const error = (spaceInfo as unknown as {errors: SpaceInfoError[]}).errors[0]
-      throw new Error('Failed to validate space URL: ' + error.detail)
-    }
-  
+  }
+
+  const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, spaceInfo, taskPid, communityInfo, invites, mode, submissionId}: {submitterAddress: string, spaceUrl: string, spaceInfo: TwitterSpaceInfo, taskPid: string, communityInfo: Community, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number}) {
     const {
-      started_at,
       ended_at,
       participant_count: participantCount,
     } = spaceInfo.data
-    const spaceStartAt = new Date(started_at).getTime()
+
+    if (!ended_at) {
+      throw new Error('Invalid space URL: space has not ended.')
+    }
+
     const spaceEndedAt = new Date(ended_at).getTime()
     const validJoinStartAt = new Date(
       spaceEndedAt - 24 * 60 * 60 * 1000,
     ).getTime()
-
-    if (spaceStartAt < taskCreateTime) {
-      throw new Error('Invalid space URL: space starts before task is created.')
-    }
-  
-    const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
-    
-    if (minuteDifference < 15 && !runtimeConfig.public.debug) {
-      throw Error('Invalid space URL: space lasts less than 15 minutes')
-    }
   
     const hostID = spaceInfo.data.creator_id
     const host = spaceInfo.includes.users.find(user => user.id === hostID)
-    const hostHandle = host?.username
-    
-    if (!runtimeConfig.public.debug && (!host || !twitterVouchedIDs.find(id => id === hostHandle))) {
-      throw new Error('Invalid space URL: you are not the space host.')
+    if (!host) {
+      throw new Error('Failed to get space host avatar.')
     }
   
     // avatar of space host
-    const userAvatar = host?.profile_image_url.replace(/_(normal|bigger|mini).jpg$/, '.jpg')
+    const userAvatar = host.profile_image_url.replace(/_(normal|bigger|mini).jpg$/, '.jpg')
     
     const ssim = userAvatar
       ? await compareImages(arUrl(communityInfo.logo, gateways.ario), userAvatar)
@@ -488,7 +506,7 @@ export const useTaskStore = defineStore('task', () => {
         // TODO calculate score at server side or at AO
         score: 0
       }
-      await submitSpaceTask(spaceSubmission)
+      await submitTask(spaceSubmission)
     } else if (mode === 'update') {
       if (!submissionId) {
         throw new Error('Submission ID is required')
@@ -512,7 +530,7 @@ export const useTaskStore = defineStore('task', () => {
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
-    submitSpaceTask, updateSubmission, saveSpaceTaskSubmitInfo,
+    submitTask, updateSubmission, saveSpaceTaskSubmitInfo, savePromotionTaskSubmitInfo,
 
     updateTaskSubmissions, updateTaskScores,
 

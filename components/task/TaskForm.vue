@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Dayjs } from 'dayjs'
 import { timezones, tokens, tokenChains } from '~/utils/constants'
-import type { Community, TaskForm } from '~/types/index'
+import type { Community, PromotionTaskForm, TaskForm } from '~/types/index'
 import { arUrl, taskBannersMap, gateways } from '~/utils/arAssets'
 import { formatDate, taskSchema } from '~/utils'
 import { validateTaskForm } from '~/utils/schemas'
@@ -15,6 +15,7 @@ const { showError } = $(notificationStore())
 
 const props = defineProps<{
   taskForm?: TaskForm
+  taskType: 'space' | 'promotion'
   community: Community
 }>()
 
@@ -22,14 +23,14 @@ const emit = defineEmits<{
   (e: 'created'): void
 }>()
 
-const defaultTaskForm: TaskForm = {
+let defaultTaskForm: TaskForm | PromotionTaskForm = {
   processID: '',
-  type: 'space',
+  type: props.taskType,
   visible: 'public',
-  banner: taskBannersMap.space[0],
+  banner: taskBannersMap[props.taskType][0],
   name: '',
   intro: '',
-  rule: t('taskRule'),
+  rule: t(`task.rules.${props.taskType}`),
   bounties: [
     {
       tokenName: '',
@@ -49,6 +50,13 @@ const defaultTaskForm: TaskForm = {
   startTime: undefined as unknown as number,
   endTime: undefined as unknown as number,
   communityUuid: '',
+}
+
+if (props.taskType === 'promotion') {
+  defaultTaskForm = {
+    ...defaultTaskForm,
+    link: '',
+  } as PromotionTaskForm
 }
 
 let task = $ref<TaskForm>(defaultTaskForm)
@@ -195,6 +203,10 @@ onMounted(() => {
       <UInput v-model.trim="task.name" placeholder="name" />
     </UFormGroup>
 
+    <UFormGroup v-if="task.type === 'promotion'" name="link" :label="$t('task.fields.Promotion Quest Link')">
+      <UInput v-model.trim="(task as PromotionTaskForm).link" :placeholder="$t('task.fields.Promotion Quest Link')" />
+    </UFormGroup>
+
     <UFormGroup name="intro" :label="$t('Task Introduction')">
       <UTextarea v-model.trim="task.intro" />
     </UFormGroup>
@@ -203,7 +215,7 @@ onMounted(() => {
       <UTextarea
         v-model.trim="task.rule"
         disabled
-        :placeholder="$t('taskRule')"
+        :placeholder="$t(`task.rules.${task.type}`)"
       />
     </UFormGroup>
 
