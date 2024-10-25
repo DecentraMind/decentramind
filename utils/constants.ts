@@ -191,7 +191,7 @@ export const communityRightPages = {
 export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRightPages]
 
 export const ARWEAVE_ID_REGEXP = /^[a-zA-Z0-9-_]{43}$/
-export const TWEET_URL_REGEXP = /^https?:\/\/(twitter|x)\.com\/.+\/status\/(\d+)$/
+export const TWEET_URL_REGEXP = /^(?:https?:\/\/)?(?:twitter|x)\.com\/.+\/status\/(\d+)/
 
 export const maxCommunityLogoDimension = {
   width: 400,
