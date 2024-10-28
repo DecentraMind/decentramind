@@ -483,6 +483,7 @@ async function onClickSendBounty() {
       const calculated = calcBounties(
         submission,
         selectedTotalScore,
+        selectedSubmissions.length,
         task!.bounties,
       )
 
@@ -722,7 +723,6 @@ watch(
       0,
     )
     console.log({ selectedTotalScore })
-    if (!selectedTotalScore) return
 
     // clear all submission.calcuclatedBounties
     submissions.forEach(submission => {
@@ -733,6 +733,7 @@ watch(
       const calculated = calcBounties(
         submission,
         selectedTotalScore,
+        selectedSubmissions.length,
         task!.bounties,
       )
 

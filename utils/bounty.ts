@@ -1,4 +1,5 @@
 import type {
+  PromotionSubmissionWithCalculatedBounties,
   SpaceSubmissionWithCalculatedBounties,
   Task
 } from '~/types'
@@ -37,7 +38,7 @@ export function calcScore(submissions: SpaceSubmissionWithCalculatedBounties[]) 
   return clone
 }
 
-export function calcBounties(submission: SpaceSubmissionWithCalculatedBounties, selectedTotalScore: number, taskBounties: Task['bounties']) {
+export function calcBounties(submission: SpaceSubmissionWithCalculatedBounties | PromotionSubmissionWithCalculatedBounties, selectedTotalScore: number, selectedSubmissionsLength: number, taskBounties: Task['bounties']) {
   const { score, address } = submission
 
   if (score > selectedTotalScore) {
@@ -62,7 +63,13 @@ export function calcBounties(submission: SpaceSubmissionWithCalculatedBounties, 
 
     // don't use bountyToSend.toFixed here, otherwise the total amount will be rounded incorrectly
     // Instead, we multiply by 10000 to shift the decimal point, then floor to remove fractional part, and finally divide by 10000 to get the correct decimal value
-    const amountToSend = (score / selectedTotalScore * taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100))
+    let amountToSend = 0
+    if (selectedTotalScore > 0) {
+      amountToSend = (score / selectedTotalScore * taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100))
+    } else {
+      // if selectedTotalScore is 0, then split the bounty to all submissions equally
+      amountToSend = taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100) / selectedSubmissionsLength
+    }
     bounty.quantity = float2BigInt(Number(amountToSend.toFixed(denomination-1)), denomination)
     bounty.amount = amountToSend
 
