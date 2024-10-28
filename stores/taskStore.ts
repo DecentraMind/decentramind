@@ -511,10 +511,9 @@ export const useTaskStore = defineStore('task', () => {
       if (!submissionId) {
         throw new Error('Submission ID is required')
       }
-      const spaceSubmission:Omit<SpaceSubmission, 'createTime'|'brandEffect'|'score'|'taskPid'|'address'> = {
+      const spaceSubmission:Omit<SpaceSubmission, 'createTime'|'brandEffect'|'audience'|'score'|'taskPid'|'address'> = {
         id: submissionId!,
         inviteCount,
-        audience,
         url: spaceUrl
       }
       await updateSubmission(spaceSubmission, taskPid)
