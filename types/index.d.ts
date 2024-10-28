@@ -328,12 +328,12 @@ export type UploadResponse = {
 export type TwitterSpaceInfo = {
   data: {
     id: string
-    state: string
+    state: 'scheduled' | 'live' | 'ended'
     started_at: string
     ended_at?: string
     creator_id: string
     participant_count: number
-    speaker_ids: string[]
+    host_ids: string[]
   }
   includes: {
     users: Array<{
