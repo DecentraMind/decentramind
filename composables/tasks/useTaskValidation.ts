@@ -41,7 +41,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     }
     if ((spaceInfo as unknown as {errors: SpaceInfoError[]} ).errors?.length) {
       const error = (spaceInfo as unknown as {errors: SpaceInfoError[]}).errors[0]
-      throw new Error('Failed to validate space URL: ' + error.detail)
+      throw new Error(`Failed to validate space URL: ${error.detail}`)
     }
 
     const {
@@ -50,32 +50,33 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     } = spaceInfo.data
 
     if (!ended_at || spaceInfo.data.state !== 'ended') {
-      throw new Error('Invalid space URL: space has not ended.')
+      throw new Error(`Invalid space URL: space ${spaceId} has not ended.`)
     }
 
     const spaceStartAt = new Date(started_at).getTime()
     const spaceEndedAt = new Date(ended_at).getTime()
 
-    if (spaceStartAt < task.createTime) {
-      throw new Error('Invalid space URL: space starts before task is created.')
+    if (spaceStartAt < task.createTime && !runtimeConfig.public.debug) {
+      throw new Error(`Invalid space URL: space ${spaceId} starts before task is created.`)
     }
   
     const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
     
     if (minuteDifference < 15) {
-      throw Error('Invalid space URL: space lasts less than 15 minutes')
+      throw new Error(`Invalid space URL: space ${spaceId} lasts less than 15 minutes`)
     }
   
     if (mode === 'add') {
       if (!twitterVouchedIDs || !twitterVouchedIDs.length) {
         throw new Error('Twitter vouched IDs are not provided.')
       }
+      /** the primary host ID */
       const hostID = spaceInfo.data.creator_id
       const host = spaceInfo.includes.users.find(user => user.id === hostID)
       const hostHandle = host?.username
       
       if (!runtimeConfig.public.debug && (!host || !twitterVouchedIDs.find(id => id === hostHandle))) {
-        throw new Error('Invalid space URL: you are not the space host.')
+        throw new Error(`Invalid space URL: you are not the primary host of space ${spaceId}.`)
       }
     }
     return spaceInfo
