@@ -120,6 +120,16 @@ onMounted(async () => {
       // console.log('create invite code ', task.inviteCode)
     }
 
+    // if the task status(from not started to ing, or from ing to ended) changes with time, refresh current page
+    watch(() => now.value, (newVal, oldVal) => {
+      if (!task) return
+
+      if ((newVal >= task.startTime && oldVal < task.startTime) || (newVal >= task.endTime && oldVal < task.endTime)) {
+        // same as window.location.reload()
+        reloadNuxtApp()
+      }
+    })
+
     // console.log({ isIng, isSettle: task.isSettled, isCal: task.isScoreCalculated })
 
     // TOOD invited number should calculated at AO
