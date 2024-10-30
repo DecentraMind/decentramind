@@ -32,7 +32,7 @@ let community = $ref<Community>()
 type Rank = {
   receiver: string
   bountyCount: number
-  recipientName: string
+  recipientName?: string
 }
 
 let rankings = $ref<Rank[]>()
@@ -54,7 +54,8 @@ const loadRanks = async () => {
     }, [] as Rank[]).sort((a, b) => {
       return a.bountyCount > b.bountyCount ? -1 : 1
     })
-  } catch {
+  } catch (e) {
+    showError('Failed to load ranks.', e as Error)
     console.error('Failed to load ranks.')
   } finally {
     isLoadingRankings = false
