@@ -1,4 +1,4 @@
-Variant = '0.4.58'
+Variant = '0.4.59'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -29,6 +29,8 @@ Communities = Communities or {}
 ---@class User
 ---@field name string
 ---@field avatar string
+---@field createdAt? number @creation timestamp
+---@field canCreateCommunity? boolean @whether the user has created a community
 
 ---@type table<string, User>
 Users = Users or {}
@@ -191,11 +193,12 @@ Actions = {
     CreateCommunity = function(msg)
       local community = json.decode(msg.Data)
       local address = msg.From
-      -- Check if a column with the same name already exists
+
+      -- Check if user is allowed to create community
       if not Users[address] then
-        -- Create a new column with the msg.Id value as its name and assign it to an empty table
-        Users[address] = {}
+        return u.replyError(msg, 'User not found. Please login first.')
       end
+      assert(Users[address].canCreateCommunity, 'You are not allowed to create community.')
 
       local uuid = u.createUuid()
 
@@ -722,7 +725,9 @@ Actions = {
       local name = msg.Tags.UserName
       local user = {
         avatar = avatar,
-        name = name
+        name = name,
+        createdAt = msg.Timestamp,
+        canCreateCommunity = false
       }
       if not Users[address] then
         Users[address] = user
