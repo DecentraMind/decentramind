@@ -313,6 +313,8 @@ export type RelatedUserMap = {
 export type UserInfo = {
   name: string
   avatar: string
+  createdAt?: number
+  canCreateCommunity?: boolean
 }
 
 export type UserInfoWithMuted = UserInfo & { muted: boolean }

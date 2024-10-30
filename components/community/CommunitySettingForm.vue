@@ -8,7 +8,6 @@ import { createUuid } from '~/utils'
 import { useUpload } from '~/composables/useUpload'
 import { inject } from 'vue'
 
-const reloadCommunity = inject<Function>('reloadCommunity')
 
 const props = defineProps<{
   isSettingMode?: boolean
@@ -129,6 +128,8 @@ const setCommunity = async () => {
       address
     )
     emit('saved')
+
+    const reloadCommunity = inject<Function>('reloadCommunity')
     reloadCommunity && await reloadCommunity()
 
     showSuccess('Successfully updated community.')
