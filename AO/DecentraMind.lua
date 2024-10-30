@@ -1,4 +1,4 @@
-Variant = '0.4.57'
+Variant = '0.4.58'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -644,7 +644,7 @@ Actions = {
         if BountySendHistory[taskPid] then
           for _, bounty in pairs(BountySendHistory[taskPid]) do
             local copy = u.deepCopy(bounty)
-            copy.recipientName = Users[copy.recipient].name
+            copy.recipientName = Users[copy.recipient] and Users[copy.recipient].name or nil
             table.insert(result, copy)
           end
         end
