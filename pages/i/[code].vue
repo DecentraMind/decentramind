@@ -8,6 +8,7 @@ definePageMeta({
 
 const { joinCommunity, getUserByAddress, vouch } = $(communityStore())
 const { getInviteByCode, joinTask } = useTaskStore()
+const runtimeConfig = useRuntimeConfig()
 
 const { doLogin } = $(aoStore())
 
@@ -24,7 +25,7 @@ let isJoinLoading = $ref(false)
 async function join() {
   isJoinLoading = true
 
-  if((!task?.communityUuid && !community?.uuid) || !inviteInfo?.inviterAddress) {
+  if((!task?.communityUuid && !community?.uuid) || !inviteInfo?.inviterAddress || !community) {
     showError('Failed to load related data, please try refresh this page.')
     isJoinLoading = false
     return
@@ -32,7 +33,7 @@ async function join() {
 
   await doLogin()
   const isVouched = await checkVouch()
-  if (!isVouched) {
+  if (!isVouched && !runtimeConfig.public.debug) {
     vouchModalOpen = true
     isJoinLoading = false
     return
@@ -46,7 +47,7 @@ async function join() {
   }
 
   isJoinLoading = false
-  showSuccess('join success')
+  showSuccess(`Successfully joined ${community.name}!`)
   await router.push({path: '/community/' + inviteInfo.communityUuid})
 }
 
