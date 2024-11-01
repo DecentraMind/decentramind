@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     public: {
       chatroomFetchInterval: parseInt(process.env.NUXT_PUBLIC_CHATROOM_FETCH_INTERVAL || '5000'),
       debug: process.env.NUXT_PUBLIC_DEBUG,
-      processID: process.env.NUXT_PUBLIC_PROCESS_ID
+      processID: process.env.VITE_PUBLIC_PROCESS_ID
     },
   },
   modules: [
