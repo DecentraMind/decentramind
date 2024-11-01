@@ -89,8 +89,9 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'quMiswyIjELM0FZtjVSiUtg9_-pvQ8K25yfxrp1TgnQ'
   }
-}
-if (import.meta.env.NUXT_PUBLIC_DEBUG) {
+} as const
+
+if (import.meta.env.VITE_PUBLIC_TEST_TOKEN) {
   tokens['FIZI'] = {
     ticker: 'PNTS',
     label: 'FIZI',
