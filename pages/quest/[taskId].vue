@@ -5,17 +5,17 @@ import {
   formatToLocale,
   fractionalPart,
   shortString,
+  getTaskTableColumns
 } from '~/utils'
 import type {
   Task,
   Bounty,
-  SpaceSubmissionWithCalculatedBounties,
   BountySendHistory,
   InviteCodeInfo,
-  PromotionTask,
   TwitterTweetInfo,
-  PromotionSubmissionWithCalculatedBounties,
   TwitterSpaceInfo,
+  AllSubmissionWithCalculatedBounties,
+  TaskWithLink,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
@@ -23,7 +23,7 @@ import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
 import { useTaskValidation } from '~/composables/tasks/useTaskValidation'
 import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
-import { promotionUrlSchema } from '~/utils/schemas'
+import { tweetUrlSchema } from '~/utils/schemas'
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -41,7 +41,7 @@ const {
   joinTask,
   createTaskInviteCode,
   saveSpaceTaskSubmitInfo,
-  savePromotionTaskSubmitInfo
+  saveTweetTaskSubmitInfo
 } = useTaskStore()
 
 
@@ -100,7 +100,7 @@ const isAdminOrOwner = $computed(
 let invites: InviteCodeInfo[]
 
 const submissions = $computed(
-  () => task?.submissions as SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[],
+  () => task?.submissions as AllSubmissionWithCalculatedBounties[],
 )
 
 let isLoading = $ref(true)
@@ -138,7 +138,7 @@ onMounted(async () => {
     communityInfo = await getLocalCommunity(task.communityUuid)
     setCurrentCommunityUuid(communityInfo.uuid);
 
-    (task.submissions as SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]).forEach(s => {
+    (task.submissions as AllSubmissionWithCalculatedBounties[]).forEach(s => {
       s.rewardHtml = calcRewardHtml(
         s.calculatedBounties,
         true,
@@ -155,6 +155,7 @@ onMounted(async () => {
       !task.isSettled &&
       isOwner
     ) {
+      // TODO batch fetch space/tweet data
       await Promise.all(
         submissions.map(async s => {
           const { validateTaskData } = useTaskValidation(task!, s.url, 'update')
@@ -174,10 +175,12 @@ onMounted(async () => {
                 submissionId: s.id,
               })
             }
-            case 'promotion': {
+            case 'promotion':
+            case 'bird':
+            case 'article': {
               const tweetInfo = await validateTaskData<TwitterTweetInfo>()
               // TODO only update tweet info if it's changed
-              return savePromotionTaskSubmitInfo({
+              return saveTweetTaskSubmitInfo({
                 submitterAddress: s.address,
                 taskEndTime: task.endTime,
                 data: tweetInfo,
@@ -224,117 +227,6 @@ onMounted(async () => {
   }
 })
 
-const columns = {
-  space: [
-    {
-      key: 'id',
-      label: 'ID',
-    },
-    {
-      key: 'address',
-      label: t('task.submission.fields.Wallet'),
-      class: 'text-left',
-      rowClass: 'font-mono',
-    },
-    {
-      key: 'brandEffect',
-      label: t('task.submission.fields.Brand'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'inviteCount',
-      label: t('task.submission.fields.Friends'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'audience',
-      label: t('task.submission.fields.Popularity'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'url',
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-      label: t('task.submission.fields.URL'),
-    },
-    {
-      key: 'score',
-      label: t('task.submission.fields.Total Score'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'rewardHtml',
-      label: t('task.submission.fields.Bounty'),
-      class: 'text-left',
-      rowClass: 'font-mono pr-0',
-    },
-  ],
-  promotion: [
-    {
-      key: 'id',
-      label: 'ID',
-    },
-    {
-      key: 'address',
-      label: t('task.submission.fields.Wallet'),
-      class: 'text-left',
-      rowClass: 'font-mono',
-    },
-    {
-      key: 'url',
-      label: t('task.submission.fields.URL'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'buzz',
-      label: t('task.submission.fields.Buzz'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'discuss',
-      label: t('task.submission.fields.Discuss'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'identify',
-      label: t('task.submission.fields.Identify'),
-    },
-    {
-      key: 'popularity',
-      label: t('task.submission.fields.Popularity'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'spread',
-      label: t('task.submission.fields.Spread'),
-    },
-    {
-      key: 'friends',
-      label: t('task.submission.fields.Friends'),
-    },
-    {
-      key: 'score',
-      label: t('task.submission.fields.Total Score'),
-      class: 'text-left',
-      rowClass: 'font-mono text-left',
-    },
-    {
-      key: 'rewardHtml',
-      label: t('task.submission.fields.Bounty'),
-      class: 'text-left',
-      rowClass: 'font-mono pr-0',
-    },
-  ],
-}
-
 let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
 
@@ -357,13 +249,13 @@ async function onClickJoin() {
   isJoinLoading = false
 }
 
-const promotionForm = $ref({
+const tweetUrlForm = $ref({
   url: '',
 })
 
-let submitPromotionLoading = $ref(false)
-async function onSubmitPromotion() {
-  submitPromotionLoading = true
+let submitTweetUrlLoading = $ref(false)
+async function onSubmitTweetUrl() {
+  submitTweetUrlLoading = true
   try {
     if (!submissions || !invites || !communityInfo || !task) {
       throw new Error('Data loading not completed. Please wait or try refresh.')
@@ -377,10 +269,10 @@ async function onSubmitPromotion() {
       throw new Error('You have submitted this quest.')
     }
 
-    const { validateTaskData } = useTaskValidation(task, promotionForm.url, 'add', twitterVouchedIDs)
+    const { validateTaskData } = useTaskValidation(task, tweetUrlForm.url, 'add', twitterVouchedIDs)
     const tweetInfo = await validateTaskData<TwitterTweetInfo>()
     if (tweetInfo) {
-      await savePromotionTaskSubmitInfo({
+      await saveTweetTaskSubmitInfo({
         submitterAddress: address,
         taskEndTime: task.endTime,
         data: tweetInfo,
@@ -388,7 +280,7 @@ async function onSubmitPromotion() {
         communityUuid: communityInfo.uuid,
         invites,
         mode: 'add',
-        url: promotionForm.url,
+        url: tweetUrlForm.url,
       })
     }
 
@@ -399,7 +291,7 @@ async function onSubmitPromotion() {
     console.error(e)
     showError('Submit failed. ', e as Error)
   } finally {
-    submitPromotionLoading = false
+    submitTweetUrlLoading = false
   }
 }
 
@@ -446,7 +338,7 @@ async function onSubmitSpaceUrl() {
   }
 }
 
-let selectedSubmissions = $ref<SpaceSubmissionWithCalculatedBounties[]>([])
+let selectedSubmissions = $ref<AllSubmissionWithCalculatedBounties[]>([])
 
 let sendBountyLoading = $ref(false)
 async function onClickSendBounty() {
@@ -654,10 +546,10 @@ function sendBountyBtnLabel() {
 
 const searchKeyword = $ref('')
 
-let filteredRows = $ref<SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]>([])
+let filteredRows = $ref<AllSubmissionWithCalculatedBounties[]>([])
 const page = $ref(1)
 let pageSize = $ref<number>(maxTotalChances)
-let pageRows = $ref<SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]>([])
+let pageRows = $ref<AllSubmissionWithCalculatedBounties[]>([])
 
 const precisions = $computed(() =>
   task?.bounties.reduce((carry, bounty) => {
@@ -763,10 +655,10 @@ watch(
   },
 )
 
-watch(() => promotionForm.url, (value) => {
+watch(() => tweetUrlForm.url, (value) => {
   try {
     const url = new URL(value)
-    promotionForm.url = url.origin + url.pathname
+    tweetUrlForm.url = url.origin + url.pathname
   } catch (e) {
     console.error('Invalid URL.')
   }
@@ -884,7 +776,7 @@ const onClickShareToTwitter = () => {
                   <div>{{ $t('task.fields.Promotion Quest Link') }}</div>
                 </div>
                 <div>
-                  {{ (task as PromotionTask).link }}
+                  {{ (task as TaskWithLink).link }}
                 </div>
               </div>
 
@@ -951,7 +843,7 @@ const onClickShareToTwitter = () => {
                 <UTable
                   v-model="selectedSubmissions"
                   :rows="pageRows"
-                  :columns="columns[task.type]"
+                  :columns="getTaskTableColumns(task.type)"
                   :loading="isLoading"
                   :ui="{
                     checkbox: {
@@ -1063,7 +955,7 @@ const onClickShareToTwitter = () => {
     </UModal>
 
     <UModal v-model="isSubmitModalOpen" :ui="{ width: 'w-full sm:max-w-xl' }">
-      <UCard>
+      <UCard v-if="task">
         <template #header>
           <div class="flex items-center justify-between">
             <h3
@@ -1081,49 +973,51 @@ const onClickShareToTwitter = () => {
           </div>
         </template>
         <div>
-          <div class="my-8">
+          <div v-if="task?.type === 'space'">
             <UInput
-              v-if="task?.type === 'space'"
               v-model="spaceUrl"
               :model-modifiers="{ trim: true }"
               color="primary"
               variant="outline"
               :placeholder="$t(`task.form.space.placeholder`)"
             />
-            <UForm
-              v-if="task?.type === 'promotion'"
-              :schema="promotionUrlSchema"
-              :state="promotionForm"
-            >
-              <UFormGroup name="url">
-                <UInput
-                  v-model="promotionForm.url"
-                  :model-modifiers="{ trim: true }"
-                  color="primary"
-                  variant="outline"
-                  :placeholder="$t(`task.form.promotion.placeholder`)"
-                />
-              </UFormGroup>
-            </UForm>
+            <div class="flex justify-center mb-8 mt-12">
+              <UButton
+                :loading="submitSpaceUrlLoading"
+                :disabled="submitSpaceUrlLoading"
+                @click="onSubmitSpaceUrl"
+              >
+                {{ $t('Submit Quest') }}
+              </UButton>
+            </div>
           </div>
-          <div class="flex justify-center mb-8 mt-12">
-            <UButton
-              v-if="task?.type === 'space'"
-              :loading="submitSpaceUrlLoading"
-              :disabled="submitSpaceUrlLoading"
-              @click="onSubmitSpaceUrl"
-            >
-              {{ $t('Submit Quest') }}
-            </UButton>
-            <UButton
-              v-if="task?.type === 'promotion'"
-              :loading="submitPromotionLoading"
-              :disabled="submitPromotionLoading"
-              @click="onSubmitPromotion"
-            >
-              {{ $t('Submit Quest') }}
-            </UButton>
-          </div>
+
+          <UForm
+            v-if="task && ['promotion', 'bird', 'article'].includes(task?.type)"
+            :schema="tweetUrlSchema"
+            :state="tweetUrlForm"
+            class="mt-8"
+          >
+            <UFormGroup name="url">
+              <UInput
+                v-model="tweetUrlForm.url"
+                :model-modifiers="{ trim: true }"
+                color="primary"
+                variant="outline"
+                :placeholder="$t(`task.form.${task.type}.placeholder`)"
+              />
+            </UFormGroup>
+            <div class="flex justify-center mb-8 mt-12">
+              <UButton
+                v-if="['promotion', 'bird', 'article'].includes(task.type)"
+                :loading="submitTweetUrlLoading"
+                :disabled="submitTweetUrlLoading"
+                @click="onSubmitTweetUrl"
+              >
+                {{ $t('Submit Quest') }}
+              </UButton>
+            </div>
+          </UForm>
         </div>
       </UCard>
     </UModal>

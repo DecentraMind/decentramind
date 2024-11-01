@@ -1,4 +1,4 @@
-Variant = '0.4.59'
+Variant = '0.4.60'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -79,11 +79,12 @@ MutedUsers = MutedUsers or {}
 --- @field address string submitter's address
 --- @field taskPid string task process ID
 --- @field score number
---- @field createTime number
 --- @field brandEffect number|nil
 --- @field inviteCount number|nil
 --- @field audience number|nil
 --- @field url string|nil
+--- @field createTime number
+--- @field updateTime number
 
 --- @type table<string, Task> @Tasks table using task's processID as key
 Tasks = Tasks or {}
@@ -568,6 +569,7 @@ Actions = {
       submission.id = #Tasks[pid].submissions + 1
       submission.score = 0
       submission.createTime = msg.Timestamp
+      submission.updateTime = msg.Timestamp
       --- if task.type == 'space'
       --- submission.brandEffect = 0
       --- submission.inviteCount = 0
@@ -599,6 +601,7 @@ Actions = {
       for key, value in pairs(submission) do
         if key ~= 'id' and key ~= 'createTime' then
           Tasks[pid].submissions[id][key] = value
+          Tasks[pid].submissions[id].updateTime = msg.Timestamp
         end
       end
     end,

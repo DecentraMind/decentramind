@@ -51,6 +51,7 @@
     "@iconify-json/heroicons": "^1.1.23",
     "@iconify-json/ri": "^1.1.21",
     "@iconify-json/svg-spinners": "^1.1.2",
+    "@iconify-json/uil": "^1.2.1",
     "@nuxt/devtools": "^1.1.5",
     "@nuxt/eslint-config": "^0.2.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",

@@ -28,7 +28,7 @@ function alertNotReady() {
   showMessage('Being Cooked')
 }
 
-let createTaskType = $ref<'space' | 'promotion'>('space')
+let createTaskType = $ref<Task['type']>('space')
 
 const taskTypes = [
   [
@@ -56,11 +56,17 @@ const taskTypes = [
     },
     {
       label: 'Be a Bird For Us',
-      click: alertNotReady,
+      click: () => {
+        createTaskType = 'bird'
+        isCreateTaskModalOpen = true
+      },
     },
     {
       label: 'Twitter Article Quest',
-      click: alertNotReady,
+      click: () => {
+        createTaskType = 'article'
+        isCreateTaskModalOpen = true
+      },
     },
   ]
 ]
