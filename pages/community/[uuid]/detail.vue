@@ -19,6 +19,7 @@ const columns = [{
   label: 'Contributor'
 }, {
   key: 'bountyCount',
+  class: 'text-right',
   rowClass: 'font-mono text-right',
   label: 'Bounty Count'
 }]
@@ -273,7 +274,20 @@ onBeforeUnmount(() => {
                 }
               }"
             >
-              <UTable :columns="columns" :rows="rankings" :loading="isLoadingRankings">
+              <UTable
+                :columns="columns"
+                :rows="rankings"
+                :loading="isLoadingRankings"
+                :ui="{
+                  wrapper: 'mt-4',
+                  th: {
+                    padding: 'px-0',
+                  },
+                  td: {
+                    padding: 'px-0',
+                  },
+                }"
+              >
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
                     <!-- <ArAvatar :src="row.avatar || defaultUserAvatar" :alt="row.receiver" size="xs" /> -->
