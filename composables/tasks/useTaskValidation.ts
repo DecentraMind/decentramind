@@ -1,4 +1,4 @@
-import type { PromotionTask, Task, TwitterSpaceInfo, TwitterTweetInfo } from '~/types'
+import type { Task, TaskWithLink, TwitterSpaceInfo, TwitterTweetInfo } from '~/types'
 import { useFetch } from '@vueuse/core'
 import { TWEET_URL_REGEXP } from '~/utils/constants'
 
@@ -10,7 +10,11 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
       case 'space':
         return await validateSpaceUrl(url) as T
       case 'promotion':
-        return await validatePromotionUrl(url) as T
+        return await validateTweetPromotionUrl(url) as T
+      case 'bird':
+        return await validateTweetBirdUrl(url) as T
+      case 'article':
+        return await validateTweetArticleUrl(url) as T
       default:
         throw new Error('Invalid task type.')
     }
@@ -82,7 +86,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     return spaceInfo
   }
 
-  const validatePromotionUrl = async (url: string) => {
+  const validateTweetUrl = async (url: string) => {
     const matched = url.trim().match(TWEET_URL_REGEXP)
 
     if (!matched || !matched[1]) {
@@ -109,12 +113,6 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
       throw new Error('Failed to validate promotion URL: ' + error.detail)
     }
 
-    const tweetId = (task as PromotionTask).link.match(TWEET_URL_REGEXP)?.[1]
-    if (!tweetInfo.data[0].referenced_tweets?.find((tweet) => tweet.type == 'quoted' && tweet.id == tweetId)) {
-      console.log({promotionTweetId: tweetId, referencedTweets: tweetInfo.data[0].referenced_tweets})
-      throw new Error('Invalid promotion URL: referenced tweet is not the task promotion tweet.')
-    }
-
     if (mode === 'add') {
       if (!twitterVouchedIDs || !twitterVouchedIDs.length) {
         throw new Error('Twitter vouched IDs are not provided.')
@@ -124,6 +122,38 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
         console.log({author, twitterVouchedIDs})
         throw new Error('Invalid promotion URL: you are not the promotion tweet author.')
       }
+    }
+
+    return tweetInfo
+  }
+
+  const validateTweetPromotionUrl = async (url: string) => {
+    const tweetInfo = await validateTweetUrl(url)
+
+    const tweetId = (task as TaskWithLink).link.match(TWEET_URL_REGEXP)?.[1]
+    if (!tweetInfo.data[0].referenced_tweets?.find((tweet) => tweet.type == 'quoted' && tweet.id == tweetId)) {
+      console.log({promotionTweetId: tweetId, referencedTweets: tweetInfo.data[0].referenced_tweets})
+      throw new Error('Invalid promotion URL: referenced tweet is not the task promotion tweet.')
+    }
+    
+    return tweetInfo
+  }
+
+  const validateTweetBirdUrl = async (url: string) => {
+    const tweetInfo = await validateTweetUrl(url)
+
+    if (new Date(tweetInfo.data[0].created_at).getTime() < task.startTime) {
+      throw new Error('Invalid tweet URL: tweet is created before task start time.')
+    }
+    
+    return tweetInfo
+  }
+
+  const validateTweetArticleUrl = async (url: string) => {
+    const tweetInfo = await validateTweetUrl(url)
+
+    if (new Date(tweetInfo.data[0].created_at).getTime() < task.startTime) {
+      throw new Error('Invalid tweet URL: article is created before task start time.')
     }
     
     return tweetInfo

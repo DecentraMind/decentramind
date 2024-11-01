@@ -6,11 +6,9 @@ import {
 } from '@permaweb/aoconnect'
 
 import { defineStore } from 'pinia'
-import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, SpaceSubmissionWithCalculatedBounties, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo, TwitterTweetInfo, PromotionSubmission, PromotionSubmissionWithCalculatedBounties } from '~/types'
+import type { Bounty, RelatedUserMap, Task, SpaceSubmission, TaskForm, Scores, BountySendHistory, InviteCodeInfo, Community, TwitterSpaceInfo, TwitterTweetInfo, TweetSubmission, AllSubmission, AllSubmissionWithCalculatedBounties } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
-import { useFetch } from '@vueuse/core'
-import { unref } from 'vue'
 import { compareImages } from '~/utils/image'
 import { gateways, arUrl } from '~/utils/arAssets'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
@@ -140,12 +138,12 @@ export const useTaskStore = defineStore('task', () => {
     })
 
     const resp = extractResult<string>(res)
-    const task = JSON.parse(resp) as Task
+    const task = JSON.parse(resp) as Task & { submissions: AllSubmissionWithCalculatedBounties[] }
     
     task.submissions = task.submissions.map(submission => {
       return {
         ...submission,
-        calculatedBounties: (submission as SpaceSubmissionWithCalculatedBounties | PromotionSubmissionWithCalculatedBounties).calculatedBounties || useCloneDeep(task.bounties.map(bounty => {
+        calculatedBounties: (submission as AllSubmissionWithCalculatedBounties).calculatedBounties || useCloneDeep(task.bounties.map(bounty => {
           const ret = useCloneDeep(bounty)
           ret.amount = 0
           ret.quantity = BigInt(0)
@@ -210,31 +208,31 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   // TODO calc brandEffect, inviteCount(getPerson), audience before task owner send bounty
-  const submitTask = async (spaceSubmission: Omit<SpaceSubmission, 'id'|'createTime'> | Omit<PromotionSubmission, 'id'|'createTime'>) => {
+  const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTime'|'updateTime'>) => {
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: 'AddSubmission' }],
-      data: JSON.stringify(spaceSubmission)
+      data: JSON.stringify(submission)
     })
   }
 
   /**
    * update specific submission
-   * @param spaceSubmission 
+   * @param submission 
    * @returns 
    */
-  const updateSubmission = async (spaceSubmission: Pick<SpaceSubmission, 'id'> & Partial<Omit<SpaceSubmission, 'id' | 'createTime'>>, taskPid: string) => {
-    console.log('update submission', spaceSubmission)
+  const updateSubmission = async (submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime'>>, taskPid: string) => {
+    console.log('update submission', submission)
     return await messageResultCheck({
       process: taskManagerProcessID,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [
         { name: 'Action', value: 'UpdateSubmission' },
         { name: 'TaskPid', value: taskPid },
-        { name: 'SubmissionID', value: spaceSubmission.id.toString() }
+        { name: 'SubmissionID', value: submission.id.toString() }
       ],
-      data: JSON.stringify(spaceSubmission)
+      data: JSON.stringify(submission)
     })
   }
 
@@ -252,7 +250,7 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const updateTaskSubmissions = async (taskPid: string, submissions: SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]) => {
+  const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[]) => {
     console.log('update task submissions', submissions)
 
     return await messageResultCheck({
@@ -393,7 +391,7 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  const savePromotionTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, mode, submissionId} : {url: string, submitterAddress: string, taskEndTime: number, data: TwitterTweetInfo, invites: InviteCodeInfo[], taskPid: string, communityUuid: string, mode: 'add' | 'update', submissionId?: number}) {
+  const saveTweetTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, mode, submissionId} : {url: string, submitterAddress: string, taskEndTime: number, data: TwitterTweetInfo, invites: InviteCodeInfo[], taskPid: string, communityUuid: string, mode: 'add' | 'update', submissionId?: number}) {
     console.log('save promotion task submit info')
     const tweetInfo = data.data[0]
     
@@ -415,7 +413,7 @@ export const useTaskStore = defineStore('task', () => {
     }, 0)
     
     const tweetLength = wordCount(tweetInfo.note_tweet ? tweetInfo.note_tweet.text : tweetInfo.text)
-    const submission:Omit<PromotionSubmission, 'id'|'createTime'> = {
+    const submission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'> = {
       url,
       taskPid,
       address: submitterAddress,
@@ -435,7 +433,7 @@ export const useTaskStore = defineStore('task', () => {
         throw new Error('Submission ID is required')
       }
       
-      const updateSubmissionData: Omit<PromotionSubmission, 'createTime'|'address'> = {
+      const updateSubmissionData: Omit<TweetSubmission, 'createTime'|'address'|'updateTime'> = {
         id: submissionId!,
         ...submission
       }
@@ -496,7 +494,7 @@ export const useTaskStore = defineStore('task', () => {
   
   
     if (mode === 'add') {
-      const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'> = {
+      const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'|'updateTime'> = {
         taskPid,
         address: submitterAddress,
         inviteCount,
@@ -511,7 +509,7 @@ export const useTaskStore = defineStore('task', () => {
       if (!submissionId) {
         throw new Error('Submission ID is required')
       }
-      const spaceSubmission:Omit<SpaceSubmission, 'createTime'|'brandEffect'|'audience'|'score'|'taskPid'|'address'> = {
+      const spaceSubmission:Omit<SpaceSubmission, 'createTime'|'brandEffect'|'audience'|'score'|'taskPid'|'address'|'updateTime'> = {
         id: submissionId!,
         inviteCount,
         url: spaceUrl
@@ -529,7 +527,7 @@ export const useTaskStore = defineStore('task', () => {
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
-    submitTask, updateSubmission, saveSpaceTaskSubmitInfo, savePromotionTaskSubmitInfo,
+    submitTask, updateSubmission, saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo,
 
     updateTaskSubmissions, updateTaskScores,
 
