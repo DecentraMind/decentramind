@@ -47,13 +47,6 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE'
   },
-  FIZI: {
-    ticker: 'PNTS',
-    label: 'FIZI',
-    processID: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
-    denomination: 12,
-    logo: 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
-  },
   LLAMA : {
     ticker: 'LLAMA',
     label: 'Llama Coin',
@@ -95,6 +88,15 @@ export const tokens: Record<string, Token> = {
     processID: 'BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc',
     denomination: 12,
     logo: 'quMiswyIjELM0FZtjVSiUtg9_-pvQ8K25yfxrp1TgnQ'
+  }
+}
+if (import.meta.env.NUXT_PUBLIC_DEBUG) {
+  tokens['FIZI'] = {
+    ticker: 'PNTS',
+    label: 'FIZI',
+    processID: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
+    denomination: 12,
+    logo: 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
   }
 }
 
