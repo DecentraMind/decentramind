@@ -80,7 +80,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
       const hostHandle = host?.username
       
       if (!runtimeConfig.public.debug && (!host || !twitterVouchedIDs.find(id => id === hostHandle))) {
-        throw new Error(`Invalid space URL: you are not the primary host of space ${spaceId}.`)
+        throw new Error(`Invalid space URL: the submitter is not the primary host of space ${spaceId}.`)
       }
     }
     return spaceInfo
@@ -90,7 +90,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     const matched = url.trim().match(TWEET_URL_REGEXP)
 
     if (!matched || !matched[1]) {
-      throw new Error('Invalid promotion URL: ' + url)
+      throw new Error('Invalid tweet URL: ' + url)
     }
     const id = matched[1]
     const { data, error } = await useFetch(
@@ -100,7 +100,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
 
     if (error.value || !tweetInfo) {
       console.error('Error fetching data:', error)
-      throw new Error('Failed to validate promotion URL: fetch data failed.')
+      throw new Error('Failed to validate tweet URL: fetch data failed.')
     }
 
     console.log('data from twitter = ', tweetInfo)
@@ -110,7 +110,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     }
     if ((tweetInfo as unknown as {errors: TweetInfoError[]} ).errors?.length) {
       const error = (tweetInfo as unknown as {errors: TweetInfoError[]}).errors[0]
-      throw new Error('Failed to validate promotion URL: ' + error.detail)
+      throw new Error('Failed to validate tweet URL: ' + error.detail)
     }
 
     if (mode === 'add') {
@@ -120,7 +120,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
       const author = tweetInfo.includes.users.find(user => user.id === tweetInfo.data[0].author_id)
       if (!runtimeConfig.public.debug && (!author || !twitterVouchedIDs.find(id => id === author.username))) {
         console.log({author, twitterVouchedIDs})
-        throw new Error('Invalid promotion URL: you are not the promotion tweet author.')
+        throw new Error('Invalid tweet URL: the submitter is not the tweet author.')
       }
     }
 
