@@ -22,7 +22,8 @@ export default defineNuxtConfig({
     'nuxt-lodash',
     'nuxt-gtag',
     '@pinia/nuxt',
-    '@ant-design-vue/nuxt'
+    '@ant-design-vue/nuxt',
+    '@nuxt/test-utils/module'
   ],
 
   nitro: {
