@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useTaskValidation } from './useTaskValidation'
-import type { Task, TaskWithLink, TwitterSpaceInfo, TwitterTweetInfo } from '@/types'
-
+import type { Task, TaskWithLink, TwitterSpaceInfo, TwitterTweetInfo, ValidatedSpaceInfo, ValidatedTweetInfo } from '@/types'
+import { minSpaceLiveLength, minBirdTweetTextLength, minArticleTextLength } from '@/utils/constants'
 
 const mockJsonResponse = vi.fn()
 
@@ -41,7 +41,7 @@ const mockSpaceTask: Task = {
   type: 'space'
 }
 
-const mockSpaceInfo: TwitterSpaceInfo = {
+const mockSpaceInfo: ValidatedSpaceInfo = {
   data: {
     id: '1234',
     state: 'ended',
@@ -62,25 +62,52 @@ const mockSpaceInfo: TwitterSpaceInfo = {
   }
 }
 
-const createMockSpaceInfoNotEnded = (): TwitterSpaceInfo => ({
+const mockImcompleteSpaceInfo: TwitterSpaceInfo = {
+  data: mockSpaceInfo.data,
+  errors: [{
+    detail: 'Could not find user with creator_id: [1234].',
+    title: 'Not Found Error',
+    type: 'https://api.twitter.com/2/problems/resource-not-found'
+  }]
+}
+
+const mockSpaceInfoWithTwitterApiError: TwitterSpaceInfo = {
+  ...mockSpaceInfo,
+  errors: [{
+    detail: 'Could not find user with creator_id: [1234].',
+    title: 'Not Found Error',
+    type: 'https://api.twitter.com/2/problems/resource-not-found'
+  }]
+}
+
+const mockSpaceInfoNotEnded: ValidatedSpaceInfo = {
   ...mockSpaceInfo,
   data: {
     ...mockSpaceInfo.data,
     state: 'live'
   }
-})
+}
+
+const mockSpaceInfoLastsLessThanMinSpaceLiveLength: ValidatedSpaceInfo = {
+  ...mockSpaceInfo,
+  data: {
+    ...mockSpaceInfo.data,
+    started_at: '2024-01-01T10:00:00Z',
+    ended_at: '2024-01-01T10:05:00Z'
+  }
+}
 
 const mockBaseTweetTask: TaskWithLink = {
   ...baseTask,
   type: 'bird',
   link: 'https://twitter.com/user_handle/status/9876'
 }
-const mockBaseTweetInfo: TwitterTweetInfo = {
+const mockBaseTweetInfo: ValidatedTweetInfo = {
   data: [{
     id: '1234',
     author_id: '123456',
     created_at: '2024-01-01T10:00:00Z',
-    text: 'test',
+    text: 'test text text text long long long long long long long long long long long long long long long enough',
     public_metrics: {
       retweet_count: 10,
       reply_count: 10,
@@ -100,11 +127,38 @@ const mockBaseTweetInfo: TwitterTweetInfo = {
     }]
   }
 }
-const mockBaseTweetInfoCreatedBeforeTaskStartTime: TwitterTweetInfo = {
+
+const mockImcompleteTweetInfo: TwitterTweetInfo = {
+  data: mockBaseTweetInfo.data,
+  errors: [{
+    detail: 'Could not find user with creator_id: [1234].',
+    title: 'Not Found Error',
+    type: 'https://api.twitter.com/2/problems/resource-not-found'
+  }]
+}
+
+const mockBaseTweetInfoWithTwitterApiError: TwitterTweetInfo = {
+  ...mockBaseTweetInfo,
+  errors: [{
+    detail: 'Could not find user with creator_id: [1234].',
+    title: 'Not Found Error',
+    type: 'https://api.twitter.com/2/problems/resource-not-found'
+  }]
+}
+
+const mockBaseTweetInfoCreatedBeforeTaskStartTime: ValidatedTweetInfo = {
+  ...mockBaseTweetInfo,
+  data: [{
+    ...mockBaseTweetInfo.data![0],
+    created_at: '2017-01-01T09:00:00Z'
+  }]
+}
+
+const mockBaseTweetInfoWithShortText: ValidatedTweetInfo = {
   ...mockBaseTweetInfo,
   data: [{
     ...mockBaseTweetInfo.data[0],
-    created_at: '2017-01-01T09:00:00Z'
+    text: 'short'
   }]
 }
 
@@ -113,7 +167,7 @@ const mockPromotionTask: TaskWithLink = {
   type: 'promotion',
   link: 'https://twitter.com/user_handle/status/9876'
 }
-const mockPromotionTweetInfo: TwitterTweetInfo = {
+const mockPromotionTweetInfo: ValidatedTweetInfo = {
   ...mockBaseTweetInfo,
   data: [{
     ...mockBaseTweetInfo.data[0],
@@ -123,7 +177,7 @@ const mockPromotionTweetInfo: TwitterTweetInfo = {
     }]
   }]
 }
-const mockPromotionWrongReferencedTweetInfo: TwitterTweetInfo = {
+const mockPromotionWrongReferencedTweetInfo: ValidatedTweetInfo = {
   ...mockBaseTweetInfo,
   data: [{
     ...mockBaseTweetInfo.data[0],
@@ -139,29 +193,34 @@ const mockArticleTask: TaskWithLink = {
   type: 'article',
   link: 'https://x.com/testuser/status/1852369896291946531'
 }
-const mockArticleTweetInfo: TwitterTweetInfo = {
+const mockArticleTweetInfo: ValidatedTweetInfo = {
   ...mockBaseTweetInfo,
   data: [{
-    ...mockBaseTweetInfo.data[0],
+    ...mockBaseTweetInfo.data![0],
     note_tweet: {
-      text: 'long long long test'
+      text: '[摘要]：本文提出了一种完全通过点对点技术实现的电子现金系统，它使得在线支付能够直接由一方发起并支付给另外一方，中间不需要通过任何的金融机构。\n\n1⃣简介\n\n互联网上的贸易，几乎都需要借助金融机构作为可资信赖的第三方来处理电子支付信息。虽然这类系统在绝大多数情况下都运作良好，但是这类系统仍然内生性地受制于“基于信用的模式”的弱点。'
     }
   }]
 }
-const mockArticleTweetInfoCreatedBeforeTaskStartTime: TwitterTweetInfo = {
+const mockArticleTweetInfoCreatedBeforeTaskStartTime: ValidatedTweetInfo = {
   ...mockArticleTweetInfo,
   data: [{
-    ...mockArticleTweetInfo.data[0],
+    ...mockArticleTweetInfo.data![0],
     created_at: '2017-01-01T09:00:00Z'
   }]
 }
 
+const mockArticleTweetInfoWithShortText: ValidatedTweetInfo = {
+  ...mockArticleTweetInfo,
+  data: [{
+    ...mockArticleTweetInfo.data[0],
+    note_tweet: { text: 'short' }
+  }]
+}
 
 describe('useTaskValidation', () => {
-  let mockSpaceInfoNotEnded: TwitterSpaceInfo
   beforeEach(() => {
     vi.clearAllMocks()
-    mockSpaceInfoNotEnded = createMockSpaceInfoNotEnded()
   })
 
   describe('validateSpaceUrl', () => {
@@ -200,7 +259,18 @@ describe('useTaskValidation', () => {
       expect(result).toEqual(mockSpaceInfo)
     })
 
-    it('should reject if twitter api returns error', async () => {
+    it('should reject invalid space URL', async () => {
+      const { validateTaskData } = useTaskValidation(
+        mockSpaceTask,
+        'https://twitter.com/invalid/url',
+        'add',
+        ['testuser']
+      )
+
+      await expect(validateTaskData()).rejects.toThrow('Invalid space URL')
+    })
+
+    it('should reject if fetch error', async () => {
       mockJsonResponse.mockResolvedValueOnce({
         data: null,
         error: { value: 'error' }
@@ -213,6 +283,52 @@ describe('useTaskValidation', () => {
         ['testuser']
       )
       await expect(validateTaskData()).rejects.toThrow('fetch data failed.')
+    })
+
+    it('should reject if the space info is incomplete', async () => {
+      mockJsonResponse.mockResolvedValueOnce({
+        data: mockImcompleteSpaceInfo,
+        error: { value: null }
+      })
+
+      const { validateTaskData } = useTaskValidation(
+        mockSpaceTask,
+        'https://twitter.com/i/spaces/1234',
+        'add',
+        ['testuser']
+      )
+      await expect(validateTaskData()).rejects.toThrow('fetch data failed.')
+    })
+
+    it('should reject if twitter api returns error', async () => {
+      mockJsonResponse.mockResolvedValueOnce({
+        data: mockSpaceInfoWithTwitterApiError,
+        error: { value: null }
+      })
+
+      const { validateTaskData } = useTaskValidation(
+        mockSpaceTask,
+        'https://twitter.com/i/spaces/1234',
+        'add',
+        ['testuser']
+      )
+      await expect(validateTaskData()).rejects.toThrow('twitter api error')
+    })
+
+    it('should reject space that has not ended', async () => {
+      mockJsonResponse.mockResolvedValueOnce({
+        data: mockSpaceInfoNotEnded,
+        error: { value: null }
+      })
+
+      const { validateTaskData } = useTaskValidation(
+        mockSpaceTask,
+        'https://twitter.com/i/spaces/1234',
+        'add',
+        ['testuser']
+      )
+
+      await expect(validateTaskData()).rejects.toThrow('has not ended')
     })
 
     it('should reject if vouched IDs are not provided in add mode', async () => {
@@ -254,31 +370,18 @@ describe('useTaskValidation', () => {
       await expect(validateTaskData()).rejects.toThrow('not the primary host of space 1234.')
     })
 
-    it('should reject invalid space URL', async () => {
-      const { validateTaskData } = useTaskValidation(
-        mockSpaceTask,
-        'https://twitter.com/invalid/url',
-        'add',
-        ['testuser']
-      )
-
-      await expect(validateTaskData()).rejects.toThrow('Invalid space URL')
-    })
-
-    it('should reject space that has not ended', async () => {
+    it(`should reject if the space lasts less than ${minSpaceLiveLength} minutes`, async () => {
       mockJsonResponse.mockResolvedValueOnce({
-        data: mockSpaceInfoNotEnded,
+        data: mockSpaceInfoLastsLessThanMinSpaceLiveLength,
         error: { value: null }
       })
-
       const { validateTaskData } = useTaskValidation(
         mockSpaceTask,
         'https://twitter.com/i/spaces/1234',
         'add',
         ['testuser']
       )
-
-      await expect(validateTaskData()).rejects.toThrow('has not ended')
+      await expect(validateTaskData()).rejects.toThrow(`lasts less than ${minSpaceLiveLength} minutes`)
     })
   })
 
@@ -317,7 +420,7 @@ describe('useTaskValidation', () => {
       expect(result).toEqual(mockBaseTweetInfo)
     })
 
-    it('should reject if twitter api returns error', async () => {
+    it('should reject if fetch error', async () => {
       mockJsonResponse.mockResolvedValueOnce({
         data: null,
         error: { value: 'error' }
@@ -330,6 +433,36 @@ describe('useTaskValidation', () => {
         ['testuser']
       )
       await expect(validateTaskData()).rejects.toThrow('fetch data failed.')
+    })
+
+    it('should reject if the space info is incomplete', async () => {
+      mockJsonResponse.mockResolvedValueOnce({
+        data: mockImcompleteTweetInfo,
+        error: { value: null }
+      })
+
+      const { validateTaskData } = useTaskValidation(
+        mockBaseTweetTask,
+        'https://twitter.com/user/status/1234',
+        'add',
+        ['testuser']
+      )
+      await expect(validateTaskData()).rejects.toThrow('fetch data failed.')
+    })
+
+    it('should reject if twitter api returns error', async () => {
+      mockJsonResponse.mockResolvedValueOnce({
+        data: mockBaseTweetInfoWithTwitterApiError,
+        error: { value: null }
+      })
+
+      const { validateTaskData } = useTaskValidation(
+        mockBaseTweetTask,
+        'https://twitter.com/a/status/1234',
+        'add',
+        ['testuser']
+      )
+      await expect(validateTaskData()).rejects.toThrow('twitter api error')
     })
 
     it('should reject if vouched IDs are not provided in add mode', async () => {
@@ -397,6 +530,23 @@ describe('useTaskValidation', () => {
       await expect(validateTaskData()).rejects.toThrow('created before task start time')
     })
 
+    describe('validateBirdTweetUrl', () => {
+      it(`should reject if the tweet text length is less than ${minBirdTweetTextLength}`, async () => {
+        mockJsonResponse.mockResolvedValueOnce({
+          data: mockBaseTweetInfoWithShortText,
+          error: { value: null }
+        })
+
+        const { validateTaskData } = useTaskValidation(
+          mockBaseTweetTask,
+          'https://x.com/testuser/status/1852369896291946531',
+          'add',
+          ['testuser']
+        )
+        await expect(validateTaskData()).rejects.toThrow(`tweet text length is less than ${minBirdTweetTextLength}`)
+      })
+    })
+
     describe('validateTweetPromotionUrl', () => {
       it('should validate a correct promotion tweet URL', async () => {
         mockJsonResponse.mockResolvedValueOnce({
@@ -462,6 +612,21 @@ describe('useTaskValidation', () => {
           ['testuser']
         )
         await expect(validateTaskData()).rejects.toThrow('created before task start time')
+      })
+
+      it(`should reject if the article text length is less than ${minArticleTextLength}`, async () => {
+        mockJsonResponse.mockResolvedValueOnce({
+          data: mockArticleTweetInfoWithShortText,
+          error: { value: null }
+        })
+
+        const { validateTaskData } = useTaskValidation(
+          mockArticleTask,
+          'https://x.com/testuser/status/1852369896291946531',
+          'add',
+          ['testuser']
+        )
+        await expect(validateTaskData()).rejects.toThrow(`article text length is less than ${minArticleTextLength}`)
       })
     })
   })

@@ -330,7 +330,7 @@ export type UploadResponse = {
 }
 
 export type TwitterSpaceInfo = {
-  data: {
+  data?: {
     id: string
     state: 'scheduled' | 'live' | 'ended'
     started_at: string
@@ -339,7 +339,7 @@ export type TwitterSpaceInfo = {
     participant_count: number
     host_ids: string[]
   }
-  includes: {
+  includes?: {
     users: Array<{
       created_at: string
       id: string
@@ -349,15 +349,19 @@ export type TwitterSpaceInfo = {
       username: string
     }>
   }
+  errors?: {
+    detail: string
+    title: string
+    type: string
+  }[]
+}
+export type ValidatedSpaceInfo = {
+  data: NonNullable<TwitterSpaceInfo['data']>,
+  includes: NonNullable<TwitterSpaceInfo['includes']>
 }
 
 export type TwitterTweetInfo = {
-  /**
-   * example data:
-   * 
-{"data":[{"referenced_tweets":[{"type":"quoted","id":"1846888057615929553"}],"created_at":"2024-10-20T13:29:19.000Z","public_metrics":{"retweet_count":26,"reply_count":11,"like_count":81,"quote_count":0,"bookmark_count":8,"impression_count":13241},"edit_history_tweet_ids":["1847993500572225638"],"author_id":"406218355","id":"1847993500572225638","text":"xxx…"includes":{"users":[{"profile_image_url":"https://pbs.twimg.com/profile_images/1713818863698341888/C7FqgbAv_normal.jpg","username":"lilyanna_btc","created_at":"2011-11-06T12:13:05.000Z","id":"406218355","name":"Lilyanna"}]}}
-  * */
-  data: {
+  data?: {
     author_id: string
     created_at: string
     id: string
@@ -380,7 +384,7 @@ export type TwitterTweetInfo = {
     /** tweet text */
     text: string
   }[]
-  includes: {
+  includes?: {
     users: {
       created_at: string
       id: string
@@ -390,6 +394,16 @@ export type TwitterTweetInfo = {
       username: string
     }[]
   }
+  errors?: {
+    detail: string
+    title: string
+    type: string
+  }[]
+}
+
+export type ValidatedTweetInfo = {
+  data: NonNullable<TwitterTweetInfo['data']>,
+  includes: NonNullable<TwitterTweetInfo['includes']>
 }
 
 /**

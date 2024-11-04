@@ -205,3 +205,7 @@ export const maxCommunityBannerDimension = {
   width: 1280,
   height: 720
 }
+
+export const minArticleTextLength = 100
+export const minBirdTweetTextLength = 20
+export const minSpaceLiveLength = 15
