@@ -197,6 +197,10 @@ const mockArticleTweetInfo: ValidatedTweetInfo = {
   ...mockBaseTweetInfo,
   data: [{
     ...mockBaseTweetInfo.data![0],
+    article: {
+      title: 'test title'
+    },
+    text: 'https://t.co/yweEIZcMrA',
     note_tweet: {
       text: '[摘要]：本文提出了一种完全通过点对点技术实现的电子现金系统，它使得在线支付能够直接由一方发起并支付给另外一方，中间不需要通过任何的金融机构。\n\n1⃣简介\n\n互联网上的贸易，几乎都需要借助金融机构作为可资信赖的第三方来处理电子支付信息。虽然这类系统在绝大多数情况下都运作良好，但是这类系统仍然内生性地受制于“基于信用的模式”的弱点。'
     }
@@ -545,6 +549,20 @@ describe('useTaskValidation', () => {
         )
         await expect(validateTaskData()).rejects.toThrow(`tweet text length is less than ${minBirdTweetTextLength}`)
       })
+
+      it('should reject if the tweet is an article', async () => {
+        mockJsonResponse.mockResolvedValueOnce({
+          data: mockArticleTweetInfo,
+          error: { value: null }
+        })
+        const { validateTaskData } = useTaskValidation(
+          mockBaseTweetTask,
+          'https://x.com/testuser/status/1852369896291946531',
+          'add',
+          ['testuser']
+        )
+        await expect(validateTaskData()).rejects.toThrow('article is not supported for bird quest.')
+      })
     })
 
     describe('validateTweetPromotionUrl', () => {
@@ -597,6 +615,20 @@ describe('useTaskValidation', () => {
 
         const result = await validateTaskData()
         expect(result).toEqual(mockArticleTweetInfo)
+      })
+
+      it('should reject if the tweet is not an article', async () => {
+        mockJsonResponse.mockResolvedValueOnce({
+          data: mockBaseTweetInfo,
+          error: { value: null }
+        })
+        const { validateTaskData } = useTaskValidation(
+          mockArticleTask,
+          'https://x.com/testuser/status/1852369896291946531',
+          'add',
+          ['testuser']
+        )
+        await expect(validateTaskData()).rejects.toThrow('not an article.')
       })
 
       it('should reject if the tweet is created before task start time', async () => {

@@ -134,6 +134,10 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
   const validateTweetBirdUrl = async (url: string) => {
     const tweetInfo = await validateTweetUrl(url)
 
+    if (tweetInfo.data[0].article) {
+      throw new Error('Invalid tweet URL: article is not supported for bird quest.')
+    }
+
     if (new Date(tweetInfo.data[0].created_at).getTime() < task.startTime) {
       throw new Error('Invalid tweet URL: tweet is created before task start time.')
     }
@@ -147,6 +151,10 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
 
   const validateTweetArticleUrl = async (url: string) => {
     const tweetInfo = await validateTweetUrl(url)
+
+    if (!tweetInfo.data[0].article) {
+      throw new Error('Invalid tweet URL: not an article.')
+    }
 
     if (new Date(tweetInfo.data[0].created_at).getTime() < task.startTime) {
       throw new Error('Invalid tweet URL: article is created before task start time.')
