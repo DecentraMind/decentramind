@@ -104,7 +104,7 @@ export const aoStore = defineStore('aoStore', () => {
       console.log('Running on server side, connect() is not available')
     }
 
-    return await _login(window.arweaveWallet, true)
+    return await _login(window.arweaveWallet)
   }
 
   const doLogout = async () => {
