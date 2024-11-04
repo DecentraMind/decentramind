@@ -112,5 +112,51 @@ export function getTextRenderWidth(text: string, fontSize: number, fontFamily: s
  * @returns The number of words in the string
  */
 export function wordCount(text: string) {
-  return text.match(/[\u00ff-\uffff]|\S+/g)?.length || 0
+  if (!text) return 0
+
+  // First, normalize the text to handle composed characters
+  const normalized = text.normalize('NFC')
+
+  // Pre-process crypto addresses before other processing
+  const withProcessedAddresses = normalized.replace(
+    // Ethereum-like addresses (0x...)
+    /\b0x[a-fA-F0-9]{40}\b/g, 'word'
+  ).replace(
+    // Base58 addresses (Bitcoin, Binance, etc.) and Base64
+    /\b[1-9A-HJ-NP-Za-km-z]{26,44}(_[A-Za-z0-9-_]{6,})?\b/g, 'word'
+  ).replace(
+    // arweave addresses
+    /\b[a-zA-Z0-9-_]{43}\b/g, 'word'
+  )
+
+  // Pre-process number+suffix combinations
+  const withProcessedNumbers = withProcessedAddresses.replace(/\b\d+(st|nd|rd|th)\b/g, 'word')
+
+  // Replace emoji sequences with a single placeholder
+  const withProcessedEmoji = withProcessedNumbers
+    // Handle emoji with variation selectors (like ❤️)
+    .replace(/[\p{Emoji}\u{FE0F}]+/gu, '📍')
+    // Handle ZWJ sequences (like 👨‍👩‍👧‍👦)
+    .replace(/[\p{Emoji}](\u200D[\p{Emoji}])+/gu, '📍')
+    // Handle flag emoji (like 🇺🇸)
+    .replace(/\p{Regional_Indicator}{2}/gu, '📍')
+
+  // Add spaces around emoji placeholder when adjacent to text or numbers
+  const withSpaces = withProcessedEmoji.replace(/📍([^\s])|([^\s])📍/g, '📍 $1$2')
+    // Add spaces around CJK characters when they're adjacent to non-CJK text
+    .replace(/([^\s\u4E00-\u9FFF])([\u4E00-\u9FFF])|(?<!\s)([\u4E00-\u9FFF])([^\s\u4E00-\u9FFF])/g, '$1 $2$3 $4')
+    .trim()
+
+  // Handle CJK characters separately
+  const cjkCount = (withSpaces.match(/[\u4E00-\u9FFF]/g) || []).length
+
+  // Count regular words (including emoji as single units)
+  const words = withSpaces
+    .replace(/[\u4E00-\u9FFF]/g, '') // Remove CJK characters (already counted)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length
+
+  return cjkCount + words
 }

@@ -1,6 +1,6 @@
-import type { Task, TaskWithLink, TwitterSpaceInfo, TwitterTweetInfo } from '~/types'
+import type { Task, TaskWithLink, TwitterSpaceInfo, TwitterTweetInfo, ValidatedSpaceInfo, ValidatedTweetInfo } from '~/types'
 import { useFetch } from '@vueuse/core'
-import { TWEET_URL_REGEXP } from '~/utils/constants'
+import { minSpaceLiveLength, minBirdTweetTextLength, minArticleTextLength, TWEET_URL_REGEXP } from '~/utils/constants'
 
 export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update', twitterVouchedIDs?: string[]) {
   const runtimeConfig = useRuntimeConfig()
@@ -33,19 +33,15 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     ).json<TwitterSpaceInfo>()
     const spaceInfo = unref(data)
   
-    if (error.value || !spaceInfo) {
+    if (error.value || !spaceInfo || !spaceInfo.data || !spaceInfo.includes) {
       console.error('Error fetching data:', error)
       throw new Error('Failed to validate space URL: fetch data failed.')
     }
   
-    console.log('data from twitter = ', spaceInfo)
-    type SpaceInfoError = {
-      detail: string
-      type: string
-    }
-    if ((spaceInfo as unknown as {errors: SpaceInfoError[]} ).errors?.length) {
-      const error = (spaceInfo as unknown as {errors: SpaceInfoError[]}).errors[0]
-      throw new Error(`Failed to validate space URL: ${error.detail}`)
+    // console.log('data from twitter = ', spaceInfo)
+    if (spaceInfo.errors?.length) {
+      const error = spaceInfo.errors[0]
+      throw new Error(`Failed to validate space URL, twitter api error: ${error.detail}`)
     }
 
     const {
@@ -66,8 +62,8 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
   
     const minuteDifference = (spaceEndedAt - spaceStartAt) / (1000 * 60)
     
-    if (minuteDifference < 15) {
-      throw new Error(`Invalid space URL: space ${spaceId} lasts less than 15 minutes`)
+    if (minuteDifference < minSpaceLiveLength) {
+      throw new Error(`Invalid space URL: space ${spaceId} lasts less than ${minSpaceLiveLength} minutes`)
     }
   
     if (mode === 'add') {
@@ -83,7 +79,7 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
         throw new Error(`Invalid space URL: the submitter is not the primary host of space ${spaceId}.`)
       }
     }
-    return spaceInfo
+    return spaceInfo as ValidatedSpaceInfo
   }
 
   const validateTweetUrl = async (url: string) => {
@@ -98,41 +94,37 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     ).json<TwitterTweetInfo>()
     const tweetInfo = unref(data)
 
-    if (error.value || !tweetInfo) {
+    if (error.value || !tweetInfo || !tweetInfo.data || !tweetInfo.data.length || !tweetInfo.includes) {
       console.error('Error fetching data:', error)
       throw new Error('Failed to validate tweet URL: fetch data failed.')
     }
 
-    console.log('data from twitter = ', tweetInfo)
-    type TweetInfoError = {
-      detail: string
-      type: string
-    }
-    if ((tweetInfo as unknown as {errors: TweetInfoError[]} ).errors?.length) {
-      const error = (tweetInfo as unknown as {errors: TweetInfoError[]}).errors[0]
-      throw new Error('Failed to validate tweet URL: ' + error.detail)
+    // console.log('data from twitter = ', tweetInfo)
+    if (tweetInfo.errors?.length) {
+      const error = tweetInfo.errors[0]
+      throw new Error(`Failed to validate tweet URL, twitter api error: ${error.detail}`)
     }
 
     if (mode === 'add') {
       if (!twitterVouchedIDs || !twitterVouchedIDs.length) {
         throw new Error('Twitter vouched IDs are not provided.')
       }
-      const author = tweetInfo.includes.users.find(user => user.id === tweetInfo.data[0].author_id)
+      const author = tweetInfo.includes.users.find(user => user.id === tweetInfo.data![0].author_id)
       if (!runtimeConfig.public.debug && (!author || !twitterVouchedIDs.find(id => id === author.username))) {
-        console.log({author, twitterVouchedIDs})
+        // console.log({author, twitterVouchedIDs})
         throw new Error('Invalid tweet URL: the submitter is not the tweet author.')
       }
     }
 
-    return tweetInfo
+    return tweetInfo as ValidatedTweetInfo
   }
 
   const validateTweetPromotionUrl = async (url: string) => {
     const tweetInfo = await validateTweetUrl(url)
 
     const tweetId = (task as TaskWithLink).link.match(TWEET_URL_REGEXP)?.[1]
-    if (!tweetInfo.data[0].referenced_tweets?.find((tweet) => tweet.type == 'quoted' && tweet.id == tweetId)) {
-      console.log({promotionTweetId: tweetId, referencedTweets: tweetInfo.data[0].referenced_tweets})
+    if (!tweetInfo.data![0].referenced_tweets?.find((tweet) => tweet.type == 'quoted' && tweet.id == tweetId)) {
+      // console.log({promotionTweetId: tweetId, referencedTweets: tweetInfo.data[0].referenced_tweets})
       throw new Error('Invalid promotion URL: referenced tweet is not the task promotion tweet.')
     }
     
@@ -145,6 +137,10 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
     if (new Date(tweetInfo.data[0].created_at).getTime() < task.startTime) {
       throw new Error('Invalid tweet URL: tweet is created before task start time.')
     }
+
+    if (wordCount(tweetInfo.data[0].text) < minBirdTweetTextLength) {
+      throw new Error(`Invalid tweet URL: tweet text length is less than ${minBirdTweetTextLength}.`)
+    }
     
     return tweetInfo
   }
@@ -154,6 +150,10 @@ export function useTaskValidation(task: Task, url: string, mode: 'add' | 'update
 
     if (new Date(tweetInfo.data[0].created_at).getTime() < task.startTime) {
       throw new Error('Invalid tweet URL: article is created before task start time.')
+    }
+
+    if (wordCount(tweetInfo.data[0].note_tweet?.text ?? '') < minArticleTextLength) {
+      throw new Error(`Invalid tweet URL: article text length is less than ${minArticleTextLength}.`)
     }
     
     return tweetInfo
