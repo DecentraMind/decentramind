@@ -62,7 +62,7 @@ const taskTypes = [
       },
     },
     {
-      label: 'Twitter Article Quest',
+      label: 'Good Read Quest',
       click: () => {
         createTaskType = 'article'
         isCreateTaskModalOpen = true

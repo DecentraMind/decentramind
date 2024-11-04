@@ -105,7 +105,7 @@
       "space": "Start a Twitter Space Quest",
       "promotion": "Start a Twitter Promotion Quest",
       "bird": "Start a Twitter Bird Quest",
-      "article": "Start a Twitter Article Quest",
+      "article": "Start a Good Read Quest",
       "invite": "Start a Invite Quest"
     },
     "rules": {
@@ -190,9 +190,6 @@
   "Total Chances": "Total Chances",
   "Total Score": "Total Score",
   "Trading Support": "Trading Support",
-  "Try Our Product Quest": "Try Our Product Quest",
-  "Twitter Article Quest": "Twitter Article Quest",
-  "Twitter Space Quest": "Twitter Space Quest",
   "twitter.link": "Link my X",
   "Unsettled": "Unsettled",
   "View Details": "View Details",
