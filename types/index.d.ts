@@ -369,6 +369,10 @@ export type TwitterTweetInfo = {
     note_tweet?: {
       text: string
     }
+    /** infomation for article */
+    article?: {
+      title: string
+    }
     public_metrics: {
       retweet_count: number
       reply_count: number
@@ -381,7 +385,7 @@ export type TwitterTweetInfo = {
       type: string
       id: string
     }[]
-    /** tweet text */
+    /** tweet text. If it's an article, it's the url of the article page */
     text: string
   }[]
   includes?: {
