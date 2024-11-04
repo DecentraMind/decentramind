@@ -93,10 +93,9 @@ export const aoStore = defineStore('aoStore', () => {
             name: 'DecentraMind',
             version: '1.0.0',
             env: 'production',
-          },
-          inject: true
+          }
         })
-        await othent.connect()
+        await othent.connect(undefined)
       } catch (error) {
         console.error(error)
         throw new Error('Failed to login through Othent.')
