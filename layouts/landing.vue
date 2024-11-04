@@ -62,7 +62,7 @@ const onClickOthent = async () => {
             ArConnect
           </UButton>
           <ClientOnly fallback-tag="span" fallback="Loading...">
-            <UButton :loading="othentLogining" color="white" class="w-[120px]" @click="onClickOthent">
+            <UButton :loading="othentLogining" color="white" class="w-[120px] hidden" @click="onClickOthent">
               <template #leading>
                 <UAvatar
                   src="wallet/google.svg"
