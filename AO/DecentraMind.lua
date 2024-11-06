@@ -1,4 +1,4 @@
-Variant = '0.4.60'
+Variant = '0.4.61'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -340,12 +340,10 @@ Actions = {
         return
       end
 
-      if community then
-        if community.buildnum then
-          community.buildnum = community.buildnum + 1
-        else
-          community.buildnum = 1
-        end
+      if community.buildnum then
+        community.buildnum = community.buildnum + 1
+      else
+        community.buildnum = 1
       end
 
       if not UserCommunities[address] then
