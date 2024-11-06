@@ -60,7 +60,7 @@ export const aoStore = defineStore('aoStore', () => {
 
     console.log('register/login result', res, address)
 
-    const onSwitch = async (e) => {
+    const onSwitch = async (e: any) => {
       if (e.detail.address !== address) {
         console.log('Wallet switched, logout.', e.detail.address, address)
         await doLogout()
@@ -104,7 +104,7 @@ export const aoStore = defineStore('aoStore', () => {
       console.log('Running on server side, connect() is not available')
     }
 
-    return await _login(window.arweaveWallet, true)
+    return await _login(window.arweaveWallet)
   }
 
   const doLogout = async () => {
