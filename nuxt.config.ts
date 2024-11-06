@@ -10,6 +10,11 @@ export default defineNuxtConfig({
       processID: process.env.VITE_PUBLIC_PROCESS_ID
     },
   },
+  icon: {
+    serverBundle: {
+      remote: 'jsdelivr', // 'unpkg' or 'github-raw', or a custom function
+    }
+  },
   modules: [
     '@nuxtjs/i18n',
     '@nuxt/content',
