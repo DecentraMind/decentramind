@@ -1,21 +1,29 @@
+import { maxFetchTweetIds } from '~/utils'
+import { getTweets } from '~/utils/twitter/twitter.server'
+
 export default eventHandler(async (event) => {
-  console.log('get twitter tweets info')
   const { ids } = getQuery(event) as { ids?: string }
-  console.log('tweetId in twtitter.ts = ' + ids)
-  const url = 'https://api.twitter.com/2/tweets?ids=' + ids + '&tweet.fields=referenced_tweets,created_at,public_metrics,note_tweet&expansions=author_id&user.fields=created_at,profile_image_url' //
+  console.log('get twitter tweets info, ids = ' + ids)
   
   const { TWITTER_BEARER_TOKEN: token } = import.meta.env
 
   try{
-    console.log('fetch from twitter api: ' + url)
-    const data = await $fetch(url, {
-      method: 'get',
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    })
+    if (!ids) {
+      throw new Error('ids is required')
+    }
 
-    // console.log('get twitter tweets info = ', JSON.stringify(data))
+    // limit to maxFetchTweetIds, otherwise the url will be too long
+    const idsArray = ids.split(',')
+    if (idsArray.length > maxFetchTweetIds) {
+      throw new Error(`ids should not be more than ${maxFetchTweetIds}`)
+    }
+
+    if (!token) {
+      throw new Error('TWITTER_BEARER_TOKEN is not set')
+    }
+
+    const data = await getTweets(ids, token)
+
     return data
   } catch (error) {
     console.error('get twitter tweets info error = ', error)

@@ -12,18 +12,22 @@ import type {
   Bounty,
   BountySendHistory,
   InviteCodeInfo,
-  TwitterTweetInfo,
-  TwitterSpaceInfo,
   AllSubmissionWithCalculatedBounties,
   TaskWithLink,
+  SubmissionUpdateResponse,
+  ValidatedTweetInfo,
+  ValidatedSpacesInfo,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
-import { useTaskValidation } from '~/composables/tasks/useTaskValidation'
+import validateTaskData from '~/utils/validateTaskData'
 import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
 import { tweetUrlSchema } from '~/utils/schemas'
+import { useFetch } from '@vueuse/core'
+import { useSignature } from '~/composables/useSignature'
+import { fetchSpacesInfo, fetchTweetInfo } from '~/utils/twitter/twitter.client'
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -155,63 +159,97 @@ onMounted(async () => {
       !task.isSettled &&
       isOwner
     ) {
-      // TODO batch fetch space/tweet data
-      await Promise.all(
-        submissions.map(async s => {
-          const { validateTaskData } = useTaskValidation(task!, s.url, 'update')
-          switch (task?.type) {
-            case 'space': {
-              const spaceInfo = await validateTaskData<TwitterSpaceInfo>()
+      const { getSignature, error: signatureError } = useSignature()
+      if (signatureError.value) {
+        throw new Error('Failed to update submissions, can\'t get signature: ' + signatureError.value)
+      }
 
-              // TODO only update space url if it's changed
-              return saveSpaceTaskSubmitInfo({
-                submitterAddress: s.address,
-                spaceUrl: s.url,
-                spaceInfo,
-                taskPid: s.taskPid,
-                communityInfo,
-                invites,
-                mode: 'update',
-                submissionId: s.id,
-              })
-            }
-            case 'promotion':
-            case 'bird':
-            case 'article': {
-              const tweetInfo = await validateTaskData<TwitterTweetInfo>()
-              // TODO only update tweet info if it's changed
-              return saveTweetTaskSubmitInfo({
-                submitterAddress: s.address,
-                taskEndTime: task.endTime,
-                data: tweetInfo,
-                taskPid,
-                communityUuid: communityInfo.uuid,
-                invites,
-                mode: 'update',
-                url: s.url,
-                submissionId: s.id,
-              })
-            }
-            default:
-              throw new Error('Invalid task type.')
-          }
-        }),
-      )
-
-      const updatedSubmissions = useTaskScoreCalculate(task, submissions)
-      console.log('score calculated submissions ', submissions)
-
-      // save submission scores and set task.isScoreCalculated
-      const scores = updatedSubmissions.map(s => {
-        return {
-          id: s.id,
-          score: s.score,
+      const { signature, address, publicKey, message } = await getSignature(taskPid)
+  
+      console.log('signature', signature, address)
+      
+      const { data, error } = await useFetch(
+        '/api/updateTaskSubmissions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            taskPid,
+            signature,
+            address,
+            publicKey,
+            message
+          })
         }
-      })
-      await updateTaskScores(taskPid, scores)
-      task.submissions = updatedSubmissions
-      // refetch task info
-      task = await getTask(taskPid, address)
+      ).json<SubmissionUpdateResponse>()
+      const submissionUpdateResponse = unref(data)
+
+      if (error.value) {
+        console.error('updateTaskSubmissions error', {data: data.value, error: error.value})
+        throw new Error('Failed to update submissions: ' + error.value)
+      }
+
+      console.log('submissionUpdateResponse', submissionUpdateResponse)
+
+      // TODO batch fetch space/tweet data
+      // await Promise.all(
+      //   submissions.map(async s => {
+      //     const { validateTaskData } = useTaskValidation(task!, s.url, 'update')
+      //     switch (task?.type) {
+      //       case 'space': {
+      //         const spaceInfo = await validateTaskData<TwitterSpaceInfo>()
+
+      //         // TODO only update space url if it's changed
+      //         return saveSpaceTaskSubmitInfo({
+      //           submitterAddress: s.address,
+      //           spaceUrl: s.url,
+      //           spaceInfo,
+      //           taskPid: s.taskPid,
+      //           communityInfo,
+      //           invites,
+      //           mode: 'update',
+      //           submissionId: s.id,
+      //         })
+      //       }
+      //       case 'promotion':
+      //       case 'bird':
+      //       case 'article': {
+      //         const tweetInfo = validateTaskData<TwitterTweetInfo>()
+      //         // TODO only update tweet info if it's changed
+      //         return saveTweetTaskSubmitInfo({
+      //           submitterAddress: s.address,
+      //           taskEndTime: task.endTime,
+      //           data: tweetInfo,
+      //           taskPid,
+      //           communityUuid: communityInfo.uuid,
+      //           invites,
+      //           mode: 'update',
+      //           url: s.url,
+      //           submissionId: s.id,
+      //         })
+      //       }
+      //       default:
+      //         throw new Error('Invalid task type.')
+      //     }
+      //   }),
+      // )
+
+      // const updatedSubmissions = useTaskScoreCalculate(task, submissions)
+      // console.log('score calculated submissions ', submissions)
+
+      // // save submission scores and set task.isScoreCalculated
+      // const scores = updatedSubmissions.map(s => {
+      //   return {
+      //     id: s.id,
+      //     score: s.score,
+      //   }
+      // })
+      // await updateTaskScores(taskPid, scores)
+      // task.submissions = updatedSubmissions
+      // // refetch task info
+      // task = await getTask(taskPid, address)
     }
 
     // console.log({ isSubmitted })
@@ -221,7 +259,7 @@ onMounted(async () => {
     // if (!task) {
     //   showErrorOverlay = true
     // }
-    showError('Data loading failed.')
+    showError('Data loading failed.', e as Error)
   } finally {
     isLoading = false
   }
@@ -269,8 +307,8 @@ async function onSubmitTweetUrl() {
       throw new Error('You have submitted this quest.')
     }
 
-    const { validateTaskData } = useTaskValidation(task, tweetUrlForm.url, 'add', twitterVouchedIDs)
-    const tweetInfo = await validateTaskData<TwitterTweetInfo>()
+    const data = await fetchTweetInfo([tweetUrlForm.url])
+    const tweetInfo = validateTaskData<ValidatedTweetInfo>({ task, data, mode: 'add', twitterVouchedIDs })
     if (tweetInfo) {
       await saveTweetTaskSubmitInfo({
         submitterAddress: address,
@@ -314,8 +352,8 @@ async function onSubmitSpaceUrl() {
       throw new Error('You have submitted this quest.')
     }
 
-    const { validateTaskData } = useTaskValidation(task!, spaceUrl, 'add', twitterVouchedIDs)
-    const spaceInfo = await validateTaskData<TwitterSpaceInfo>()
+    const data = await fetchSpacesInfo([spaceUrl])
+    const spaceInfo = validateTaskData<ValidatedSpacesInfo>({ task, data, mode: 'add', twitterVouchedIDs })
     
     await saveSpaceTaskSubmitInfo({
       submitterAddress: address,

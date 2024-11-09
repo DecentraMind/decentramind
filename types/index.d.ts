@@ -359,6 +359,36 @@ export type ValidatedSpaceInfo = {
   data: NonNullable<TwitterSpaceInfo['data']>,
   includes: NonNullable<TwitterSpaceInfo['includes']>
 }
+export type TwitterSpacesInfo = {
+  data?: {
+    id: string
+    state: 'scheduled' | 'live' | 'ended'
+    started_at: string
+    ended_at?: string
+    creator_id: string
+    participant_count: number
+    host_ids: string[]
+  }[]
+  includes?: {
+    users: Array<{
+      created_at: string
+      id: string
+      name: string
+      profile_image_url: string
+      /** twitter handle */
+      username: string
+    }>
+  }
+  errors?: {
+    detail: string
+    title: string
+    type: string
+  }[]
+}
+export type ValidatedSpacesInfo = {
+  data: NonNullable<TwitterSpacesInfo['data']>,
+  includes: NonNullable<TwitterSpacesInfo['includes']>
+}
 
 export type TwitterTweetInfo = {
   data?: {
@@ -427,4 +457,16 @@ type VouchData = {
   Sub_IDs: string[]
   Total_Value: string
   Values: string[]
+}
+
+export interface TaskValidationParams<T extends ValidatedSpacesInfo | ValidatedTweetInfo> {
+  task: Task
+  data?: T
+  mode: 'add' | 'update'
+  twitterVouchedIDs?: string[]
+}
+
+export type SubmissionUpdateResponse = {
+  result: 'success' | 'error'
+  message: string
 }

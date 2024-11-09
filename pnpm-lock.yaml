@@ -80,6 +80,9 @@ importers:
       global-agent:
         specifier: ^3.0.0
         version: 3.0.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       needle:
         specifier: ^3.3.1
         version: 3.3.1
@@ -138,6 +141,9 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.6
         version: 2.4.6
+      arconnect:
+        specifier: ^1.0.4
+        version: 1.0.4
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
@@ -2828,6 +2834,9 @@ packages:
 
   arconnect@0.4.2:
     resolution: {integrity: sha512-Jkpd4QL3TVqnd3U683gzXmZUVqBUy17DdJDuL/3D9rkysLgX6ymJ2e+sR+xyZF5Rh42CBqDXWNMmCjBXeP7Gbw==}
+
+  arconnect@1.0.4:
+    resolution: {integrity: sha512-oEJRl2Cci2dSH+IEpdS1XEBqiZ+3OgPRSYWRx6MxDJU3I+NORrfrrjeZLcuruj6YNId5dpr0ROQuVnUrNkpfRg==}
 
   are-we-there-yet@2.0.0:
     resolution: {integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw==}
@@ -11037,6 +11046,8 @@ snapshots:
   arconnect@0.4.2:
     dependencies:
       arweave: 1.15.5
+
+  arconnect@1.0.4: {}
 
   are-we-there-yet@2.0.0:
     dependencies:

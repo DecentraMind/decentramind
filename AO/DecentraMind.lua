@@ -587,6 +587,7 @@ Actions = {
       u.replyData(msg, tostring(submission.id))
     end,
 
+    -- update specific submission
     UpdateSubmission = function(msg)
       local pid = msg.Tags.TaskPid
       local id = tonumber(msg.Tags.SubmissionID)
@@ -703,6 +704,7 @@ Actions = {
       Tasks[pid].isScoreCalculated = true
     end,
 
+    -- update all submissions of a task
     -- TODO Update submission.calculatedBounties only, don't update the whole submissions
     UpdateTaskSubmissions = function(msg)
       local pid = msg.Tags.TaskPid

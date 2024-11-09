@@ -22,7 +22,8 @@ const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
   'SIGNATURE',
   'SIGN_TRANSACTION',
-  'DISPATCH'
+  'DISPATCH',
+  'ACCESS_PUBLIC_KEY'
 ]
 
 import Arweave from 'arweave'
