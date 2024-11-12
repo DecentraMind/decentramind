@@ -61,6 +61,13 @@ export const tokens: Record<string, Token> = {
     denomination: 6,
     logo: 'qUjrTmHdVjXX4D6rU6Fik02bUOzWkOR6oOqUg39g4-s'
   },
+  APUS_Tn1: {
+    ticker: 'APUS_Tn1',
+    label: 'APUS_Tn1',
+    processID: 'al1xXXnWnfJD8qyZJvttVGq60z1VPGn4M5y6uCcMBUM',
+    denomination: 12,
+    logo: 'YC9BWMO7OOdOgIkxSznrP81-ApHzNtI0zj2TDxFqDLE'
+  },
   BRKTST: {
     ticker: 'BRKTST',
     label: 'BRKTST', // Bark
