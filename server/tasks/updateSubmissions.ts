@@ -1,30 +1,17 @@
-import { defineTask } from '#imports'
-import { getTask } from '~/modules/task'
+import { updateSubmissions } from '~/utils/task/updateSubmissions.server'
 
-interface UpdateSubmissionsPayload {
+type UpdateSubmissionsPayload = {
   taskPid: string
-  signature: string
 }
 
 export default defineTask({
   meta: {
-    name: 'UpdateSubmissions',
+    name: 'updateSubmissions',
     description: 'Update task submissions.',
   },
-  async run({ payload }) {
-    const { taskPid, signature } = payload as unknown as UpdateSubmissionsPayload
-    if (!taskPid || !signature) {
-      throw new Error('taskPid and signature are required')
-    }
-    console.log('update task submissions payload = ', payload)
-    // TODO verify signature
-    
-
-    const task = await getTask(taskPid)
-    if (!task) {
-      throw new Error('task not found')
-    }
-
-    return { result: 'success' }
+  run({ payload }) {
+    const { taskPid } = payload as UpdateSubmissionsPayload
+    return updateSubmissions(taskPid)
   }
 })
+

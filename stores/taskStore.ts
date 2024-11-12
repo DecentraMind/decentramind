@@ -11,7 +11,7 @@ import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunR
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
-import { getTask, updateSubmission, updateTaskSubmissions, saveSpaceTaskSubmitInfo, submitTask, saveTweetTaskSubmitInfo, getInvitesByInviter } from '~/utils/task'
+import { getTask, updateTaskSubmissions, submitTask, getInvitesByInviter } from '~/utils/task'
 
 export const useTaskStore = defineStore('task', () => {
   const taskManagerProcessID = DM_PROCESS_ID
@@ -301,7 +301,7 @@ export const useTaskStore = defineStore('task', () => {
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
-    submitTask, updateSubmission, saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo,
+    submitTask,
 
     updateTaskSubmissions, updateTaskScores,
 

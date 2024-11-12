@@ -116,6 +116,11 @@ const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs }: TaskV
   return tweetInfo
 }
 
+/**
+ * validate task data
+ * @param params - task validation parameters
+ * @returns validated task data if validation passed, otherwise throw error
+ */
 export default function validateTaskData<T extends ValidatedSpacesInfo | ValidatedTweetInfo>(params: TaskValidationParams<T>) {
   switch (params.task.type) {
     case 'space':

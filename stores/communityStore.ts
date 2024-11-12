@@ -10,6 +10,7 @@ import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, messageResultCheck, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
+import { getCommunity as getCommunityAO } from '~/utils/community/community'
 
 export const communityStore = defineStore('communityStore', () => {
   const aoCommunityProcessID = DM_PROCESS_ID
@@ -285,20 +286,7 @@ export const communityStore = defineStore('communityStore', () => {
 
   // Getting information about a specific community
   const getCommunity = async (uuid: string, address?: string) => {
-    const tags = [
-      { name: 'Action', value: 'GetCommunity' },
-      { name: 'Uuid', value: uuid }
-    ]
-    if (address) {
-      tags.push({ name: 'userAddress', value: address })
-    }
-    const result = await dryrun({
-      process: aoCommunityProcessID,
-      tags
-    })
-
-    const json = extractResult<string>(result)
-    const res = JSON.parse(json) as Community
+    const res = await getCommunityAO(uuid, address)
 
     updateLocalCommunity(uuid, res)
     console.log('community refreshed', { res, uuid, address })

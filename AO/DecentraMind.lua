@@ -1,4 +1,4 @@
-Variant = '0.4.63'
+Variant = '0.4.64'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -85,6 +85,10 @@ MutedUsers = MutedUsers or {}
 --- @field url string|nil
 --- @field createTime number
 --- @field updateTime number
+--- @field validateStatus string @Status of the submission, either 'waiting_for_validation', 'validated', 'invalid', 'validation_error'
+--- @field validateError string|nil @Error message if the submission was invalidated
+--- @field validateTime number|nil @Timestamp when the submission was validated
+--- @field validator string|nil @Address of the validator
 
 --- @type table<string, Task> @Tasks table using task's processID as key
 Tasks = Tasks or {}
@@ -568,6 +572,7 @@ Actions = {
       submission.score = 0
       submission.createTime = msg.Timestamp
       submission.updateTime = msg.Timestamp
+      submission.validateStatus = 'waiting_for_validation'
       --- if task.type == 'space'
       --- submission.brandEffect = 0
       --- submission.inviteCount = 0

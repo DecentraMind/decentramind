@@ -28,6 +28,7 @@ import { tweetUrlSchema } from '~/utils/schemas'
 import { useFetch } from '@vueuse/core'
 import { useSignature } from '~/composables/useSignature'
 import { fetchSpacesInfo, fetchTweetInfo } from '~/utils/twitter/twitter.client'
+import { saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo } from '~/utils/task'
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -43,9 +44,7 @@ const {
   updateTaskScores,
   getTask,
   joinTask,
-  createTaskInviteCode,
-  saveSpaceTaskSubmitInfo,
-  saveTweetTaskSubmitInfo
+  createTaskInviteCode
 } = useTaskStore()
 
 
@@ -168,6 +167,7 @@ onMounted(async () => {
   
       console.log('signature', signature, address)
       
+      // validate and update task submissions at DecentraMind server
       const { data, error } = await useFetch(
         '/api/updateTaskSubmissions',
         {
@@ -192,64 +192,23 @@ onMounted(async () => {
       }
 
       console.log('submissionUpdateResponse', submissionUpdateResponse)
+      task = await getTask(taskPid, address)
 
-      // TODO batch fetch space/tweet data
-      // await Promise.all(
-      //   submissions.map(async s => {
-      //     const { validateTaskData } = useTaskValidation(task!, s.url, 'update')
-      //     switch (task?.type) {
-      //       case 'space': {
-      //         const spaceInfo = await validateTaskData<TwitterSpaceInfo>()
+      const updatedSubmissions = useTaskScoreCalculate(task, task.submissions as AllSubmissionWithCalculatedBounties[])
+      console.log('score calculated submissions ', submissions)
 
-      //         // TODO only update space url if it's changed
-      //         return saveSpaceTaskSubmitInfo({
-      //           submitterAddress: s.address,
-      //           spaceUrl: s.url,
-      //           spaceInfo,
-      //           taskPid: s.taskPid,
-      //           communityInfo,
-      //           invites,
-      //           mode: 'update',
-      //           submissionId: s.id,
-      //         })
-      //       }
-      //       case 'promotion':
-      //       case 'bird':
-      //       case 'article': {
-      //         const tweetInfo = validateTaskData<TwitterTweetInfo>()
-      //         // TODO only update tweet info if it's changed
-      //         return saveTweetTaskSubmitInfo({
-      //           submitterAddress: s.address,
-      //           taskEndTime: task.endTime,
-      //           data: tweetInfo,
-      //           taskPid,
-      //           communityUuid: communityInfo.uuid,
-      //           invites,
-      //           mode: 'update',
-      //           url: s.url,
-      //           submissionId: s.id,
-      //         })
-      //       }
-      //       default:
-      //         throw new Error('Invalid task type.')
-      //     }
-      //   }),
-      // )
-
-      // const updatedSubmissions = useTaskScoreCalculate(task, submissions)
-      // console.log('score calculated submissions ', submissions)
-
-      // // save submission scores and set task.isScoreCalculated
-      // const scores = updatedSubmissions.map(s => {
-      //   return {
-      //     id: s.id,
-      //     score: s.score,
-      //   }
-      // })
-      // await updateTaskScores(taskPid, scores)
-      // task.submissions = updatedSubmissions
-      // // refetch task info
-      // task = await getTask(taskPid, address)
+      // save submission scores and set task.isScoreCalculated
+      const scores = updatedSubmissions.map(s => {
+        return {
+          id: s.id,
+          score: s.score,
+        }
+      })
+      // TODO move this step to server
+      await updateTaskScores(taskPid, scores)
+      task.submissions = updatedSubmissions
+      // refetch task info
+      task = await getTask(taskPid, address)
     }
 
     // console.log({ isSubmitted })
@@ -360,7 +319,8 @@ async function onSubmitSpaceUrl() {
       spaceUrl,
       spaceInfo,
       taskPid,
-      communityInfo,
+      communityUuid: communityInfo.uuid,
+      communityLogo: communityInfo.logo,
       invites,
       mode: 'add',
     })

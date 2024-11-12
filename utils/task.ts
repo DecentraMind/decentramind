@@ -1,5 +1,5 @@
 import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner } from '~/utils/ao'
-import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, SpaceSubmission, ValidatedTweetInfo, TweetSubmission, ValidatedSpacesInfo, RelatedUserMap } from '~/types'
+import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, SpaceSubmission, ValidatedTweetInfo, TweetSubmission, ValidatedSpacesInfo, RelatedUserMap, Submission } from '~/types'
 import { extractResult, wordCount } from '~/utils'
 import { DM_PROCESS_ID } from '~/utils/processID'
 import { compareImages } from '~/utils/image'
@@ -43,16 +43,25 @@ export async function getTask(taskPid: string, address?: string): Promise<Task> 
 }
 
 /**
-* update specific submission
-* @param submission 
-* @returns 
-*/
-export const updateSubmission = async (submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime'>>, taskPid: string) => {
+ * TODO: update using admin wallet
+ * update specific submission
+ * @param submission 
+ * @param taskPid 
+ * @returns 
+ */
+export const updateSubmission = async (
+  submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime'>>,
+  taskPid: string,
+  wallet?: Parameters<typeof createDataItemSigner>[0]
+) => {
   console.log('update submission', submission)
   
+  if (!globalThis.arweaveWallet && !wallet) {
+    throw new Error('Wallet is required to update submission')
+  }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(window.arweaveWallet),
+    signer: createDataItemSigner(wallet || globalThis.arweaveWallet),
     tags: [
       { name: 'Action', value: 'UpdateSubmission' },
       { name: 'TaskPid', value: taskPid },
@@ -68,12 +77,14 @@ export const updateSubmission = async (submission: Pick<AllSubmission, 'id'> & P
  * @param submissions 
  * @returns 
  */
-export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[]) => {
+export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
   console.log('update task submissions', submissions)
-
+  if (!globalThis.arweaveWallet && !wallet) {
+    throw new Error('Wallet is required to submit task')
+  }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(window.arweaveWallet),
+    signer: createDataItemSigner(wallet || globalThis.arweaveWallet),
     tags: [
       { name: 'Action', value: 'UpdateTaskSubmissions' },
       { name: 'TaskPid', value: taskPid }
@@ -82,7 +93,7 @@ export const updateTaskSubmissions = async (taskPid: string, submissions: AllSub
   })
 }
 
-export const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, spaceInfo, taskPid, communityInfo, invites, mode, submissionId}: {submitterAddress: string, spaceUrl: string, spaceInfo: ValidatedSpacesInfo, taskPid: string, communityInfo: Community, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number}) {
+export const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, spaceInfo, taskPid, communityUuid, communityLogo, invites, mode, submissionId, wallet, validateStatus, validateError}: {submitterAddress: string, spaceUrl: string, spaceInfo: ValidatedSpacesInfo, taskPid: string, communityUuid: string, communityLogo: string, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number, wallet?: Parameters<typeof createDataItemSigner>[0], validateStatus?: Submission['validateStatus'], validateError?: string}) {
   const {
     ended_at,
     participant_count: participantCount,
@@ -107,7 +118,7 @@ export const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceU
   const userAvatar = host.profile_image_url.replace(/_(normal|bigger|mini).jpg$/, '.jpg')
   
   const ssim = userAvatar
-    ? await compareImages(arUrl(communityInfo.logo, gateways.ario), userAvatar)
+    ? await compareImages(arUrl(communityLogo, gateways.ario), userAvatar)
     : 0
   // console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
   
@@ -119,7 +130,7 @@ export const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceU
   const inviteCount = invites.filter(inviteInfo => {
     return (
       inviteInfo.inviterAddress === submitterAddress &&
-      inviteInfo.communityUuid === communityInfo.uuid
+      inviteInfo.communityUuid === communityUuid
     )
   }).reduce((total, inviteInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -148,23 +159,50 @@ export const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceU
     if (!submissionId) {
       throw new Error('Submission ID is required')
     }
+    if (!validateStatus) {
+      throw new Error('Validate status is required')
+    }
+
     const spaceSubmission:Omit<SpaceSubmission, 'createTime'|'brandEffect'|'audience'|'score'|'taskPid'|'address'|'updateTime'> = {
       id: submissionId!,
       inviteCount,
-      url: spaceUrl
+      url: spaceUrl,
+      validateStatus: 'validated',
+      validateTime: new Date().getTime()
     }
-    await updateSubmission(spaceSubmission, taskPid)
+    
+    await updateSubmission(spaceSubmission, taskPid, wallet)
   } else {
     throw new Error('Invalid mode')
   }
 }
 
-export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, mode, submissionId} : {url: string, submitterAddress: string, taskEndTime: number, data: ValidatedTweetInfo, invites: InviteCodeInfo[], taskPid: string, communityUuid: string, mode: 'add' | 'update', submissionId?: number}) {
+/**
+ * update invalid or validation error submission
+ */
+export const updateInvalidSubmission = async function({submissionId, taskPid, wallet, validateStatus, validateError}: {submissionId: number, taskPid: string, wallet?: Parameters<typeof createDataItemSigner>[0], validateStatus: Submission['validateStatus'], validateError?: string}) {
+  if (!validateStatus || !['invalid', 'validation_error'].includes(validateStatus)) {
+    throw new Error('Invalid validate status')
+  }
+  const submission:Pick<Submission, 'id'|'validateStatus'|'validateError'|'validateTime'> = {
+    id: submissionId,
+    validateStatus,
+    validateError,
+    validateTime: new Date().getTime()
+  }
+  await updateSubmission(submission, taskPid, wallet)
+}
+
+/**
+ * save validated tweet task submission
+ */
+export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, mode, submissionId, wallet, }: {url: string, submitterAddress: string, taskEndTime: number, data: ValidatedTweetInfo, invites: InviteCodeInfo[], taskPid: string, communityUuid: string, mode: 'add' | 'update', submissionId?: number, wallet?: Parameters<typeof createDataItemSigner>[0], validateStatus?: Submission['validateStatus'], validateError?: string}) {
   console.log('save promotion task submit info')
   const tweetInfo = data.data[0]
   
   const tweetCreateTime = new Date(tweetInfo.created_at).getTime()
 
+  // TODO pass invite count as a parameter
   const inviteCount = invites.filter(inviteInfo => {
     return (
       inviteInfo.inviterAddress === submitterAddress &&
@@ -181,7 +219,7 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
   }, 0)
   
   const tweetLength = wordCount(tweetInfo.note_tweet ? tweetInfo.note_tweet.text : tweetInfo.text)
-  const submission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'> = {
+  const submission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'|'validateStatus'|'validateError'|'validateTime'|'validator'> = {
     url,
     taskPid,
     address: submitterAddress,
@@ -203,18 +241,30 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
     
     const updateSubmissionData: Omit<TweetSubmission, 'createTime'|'address'|'updateTime'> = {
       id: submissionId!,
-      ...submission
+      ...submission,
+      validateStatus: 'validated',
+      validateTime: new Date().getTime()
     }
-    await updateSubmission(updateSubmissionData, taskPid)
+    
+    await updateSubmission(updateSubmissionData, taskPid, wallet)
   } else {
     throw new Error('Invalid mode')
   }
 }
 
-export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTime'|'updateTime'>) => {
+/**
+ * submit a task submission
+ * @param submission 
+ * @returns 
+ */
+export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTime'|'updateTime'>, 
+  wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  if (!globalThis.arweaveWallet && !wallet) {
+    throw new Error('Wallet is required to submit task')
+  }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(window.arweaveWallet),
+    signer: createDataItemSigner(wallet || globalThis.arweaveWallet),
     tags: [{ name: 'Action', value: 'AddSubmission' }],
     data: JSON.stringify(submission)
   })

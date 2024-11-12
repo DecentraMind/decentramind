@@ -164,6 +164,10 @@ export type Submission = {
   score: number
   createTime: number
   updateTime: number
+  validateStatus?: 'waiting_for_validation' | 'validated' | 'invalid' | 'validation_error'
+  validateError?: string
+  validateTime?: number
+  validator?: string
 }
 
 export type Scores = {
