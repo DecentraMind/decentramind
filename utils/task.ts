@@ -1,9 +1,10 @@
-import { dryrun } from '~/utils/ao'
-import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, ValidatedSpaceInfo, Community, InviteCodeInfo, SpaceSubmission, ValidatedTweetInfo, TweetSubmission, ValidatedSpacesInfo } from '~/types'
-import { extractResult } from '~/utils'
+import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner } from '~/utils/ao'
+import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, SpaceSubmission, ValidatedTweetInfo, TweetSubmission, ValidatedSpacesInfo, RelatedUserMap } from '~/types'
+import { extractResult, wordCount } from '~/utils'
 import { DM_PROCESS_ID } from '~/utils/processID'
 import { compareImages } from '~/utils/image'
 import { gateways, arUrl } from '~/utils/arAssets'
+import { cloneDeep } from 'lodash-es'
 
 const taskManagerProcessID = DM_PROCESS_ID
 export async function getTask(taskPid: string, address?: string): Promise<Task> {
@@ -30,8 +31,8 @@ export async function getTask(taskPid: string, address?: string): Promise<Task> 
   task.submissions = task.submissions.map(submission => {
     return {
       ...submission,
-      calculatedBounties: (submission as AllSubmissionWithCalculatedBounties).calculatedBounties || useCloneDeep(task.bounties.map(bounty => {
-        const ret = useCloneDeep(bounty)
+      calculatedBounties: (submission as AllSubmissionWithCalculatedBounties).calculatedBounties || cloneDeep(task.bounties.map(bounty => {
+        const ret = cloneDeep(bounty)
         ret.amount = 0
         ret.quantity = BigInt(0)
         return ret
@@ -217,4 +218,22 @@ export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTim
     tags: [{ name: 'Action', value: 'AddSubmission' }],
     data: JSON.stringify(submission)
   })
+}
+
+export const getInvitesByInviter = async (inviter: string, type?: 'task' | 'community') => {
+  const tags = [{ name: 'Action', value: 'GetInvitesByInviter' }, { name: 'Inviter', value: inviter }]
+  if (type) {
+    tags.push({ name: 'InviteType', value: type })
+  }
+  const data = await dryrunResult<string>({
+    process: taskManagerProcessID,
+    tags
+  })
+
+  return JSON.parse(data) as {
+    invites: InviteCodeInfo[],
+    relatedUsers: RelatedUserMap,
+    relatedTasks: Record<string, Task>,
+    relatedCommunities: Record<string, Community>
+  }
 }

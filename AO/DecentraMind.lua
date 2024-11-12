@@ -1,4 +1,4 @@
-Variant = '0.4.61'
+Variant = '0.4.63'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -594,7 +594,7 @@ Actions = {
       local submission = json.decode(msg.Data)
 
       -- TODO allow community owner to update submission
-      assert(msg.From == Tasks[pid].ownerAddress, 'You are not the owner of this task.')
+      assert(msg.From == Tasks[pid].ownerAddress or msg.From == Owner, 'You are not the owner of this task.')
       assert(Tasks[pid].submissions[id], 'Submission not found. pid: ' .. pid .. ', submission id: ' .. id)
 
       for key, value in pairs(submission) do
@@ -688,7 +688,7 @@ Actions = {
         return u.replyError(msg, 'Task not found.')
       end
 
-      if Tasks[pid].ownerAddress ~= msg.From then
+      if Tasks[pid].ownerAddress ~= msg.From and msg.From ~= Owner then
         return u.replyError(msg, 'You are not the owner of this task.')
       end
 

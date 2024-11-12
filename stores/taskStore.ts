@@ -6,12 +6,12 @@ import {
 } from '@permaweb/aoconnect'
 
 import { defineStore } from 'pinia'
-import type { Bounty, RelatedUserMap, Task, TaskForm, Scores, BountySendHistory, InviteCodeInfo, Community } from '~/types'
+import type { Bounty, Task, TaskForm, Scores, BountySendHistory, InviteCodeInfo, Community } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
-import { getTask, updateSubmission, updateTaskSubmissions, saveSpaceTaskSubmitInfo, submitTask, saveTweetTaskSubmitInfo } from '~/utils/task'
+import { getTask, updateSubmission, updateTaskSubmissions, saveSpaceTaskSubmitInfo, submitTask, saveTweetTaskSubmitInfo, getInvitesByInviter } from '~/utils/task'
 
 export const useTaskStore = defineStore('task', () => {
   const taskManagerProcessID = DM_PROCESS_ID
@@ -292,24 +292,6 @@ export const useTaskStore = defineStore('task', () => {
     })
     
     return JSON.parse(data) as { invite: InviteCodeInfo, task?: Task, community: Community }
-  }
-
-  const getInvitesByInviter = async (inviter: string, type?: 'task' | 'community') => {
-    const tags = [{ name: 'Action', value: 'GetInvitesByInviter' }, { name: 'Inviter', value: inviter }]
-    if (type) {
-      tags.push({ name: 'InviteType', value: type })
-    }
-    const data = await dryrunResult<string>({
-      process: taskManagerProcessID,
-      tags
-    })
-
-    return JSON.parse(data) as {
-      invites: InviteCodeInfo[],
-      relatedUsers: RelatedUserMap,
-      relatedTasks: Record<string, Task>,
-      relatedCommunities: Record<string, Community>
-    }
   }
   
 
