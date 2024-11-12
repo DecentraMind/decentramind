@@ -105,7 +105,7 @@ const checkVouch = async () => {
       <div class="h-[200px] flex flex-col items-center justify-center">
         <span class="text-xl">Not Vouched</span>
         <div>
-          <NuxtLink to="https://vouch-twitter.g8way.io/" target="_blank">
+          <NuxtLink to="https://g8way.io/y77FlCnWP7xTxqoMYjc5_ojjeYpkSkjZEzB4e34We5g" target="_blank">
             <UButton color="white" class="mt-10">Get Vouched</UButton>
           </NuxtLink>
         </div>
