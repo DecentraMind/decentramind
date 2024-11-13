@@ -4,8 +4,6 @@ import {
   calcBounties,
   formatToLocale,
   fractionalPart,
-  shortString,
-  getTaskTableColumns
 } from '~/utils'
 import type {
   Task,
@@ -18,7 +16,7 @@ import type {
   ValidatedTweetInfo,
   ValidatedSpacesInfo,
 } from '~/types'
-import { DM_BOUNTY_CHARGE_PERCENT, maxTotalChances } from '~/utils/constants'
+import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
@@ -29,6 +27,7 @@ import { useFetch } from '@vueuse/core'
 import { useSignature } from '~/composables/useSignature'
 import { fetchSpacesInfo, fetchTweetInfo } from '~/utils/twitter/twitter.client'
 import { saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo } from '~/utils/task'
+import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -336,7 +335,7 @@ async function onSubmitSpaceUrl() {
   }
 }
 
-let selectedSubmissions = $ref<AllSubmissionWithCalculatedBounties[]>([])
+const selectedSubmissions = $ref<AllSubmissionWithCalculatedBounties[]>([])
 
 let sendBountyLoading = $ref(false)
 async function onClickSendBounty() {
@@ -542,13 +541,6 @@ function sendBountyBtnLabel() {
   }
 }
 
-const searchKeyword = $ref('')
-
-let filteredRows = $ref<AllSubmissionWithCalculatedBounties[]>([])
-const page = $ref(1)
-let pageSize = $ref<number>(maxTotalChances)
-let pageRows = $ref<AllSubmissionWithCalculatedBounties[]>([])
-
 const precisions = $computed(() =>
   task?.bounties.reduce((carry, bounty) => {
     const fractionalLength = fractionalPart(bounty.amount).length
@@ -561,60 +553,8 @@ const precisions = $computed(() =>
 )
 
 watch(
-  () => [submissions, searchKeyword, page],
-  () => {
-    // console.log('page rows should change')
-
-    filteredRows = searchKeyword
-      ? submissions
-      : submissions.filter(info => {
-          return Object.values(info).some(value => {
-            return String(value)
-              .toLowerCase()
-              .includes(searchKeyword.toLowerCase())
-          })
-        })
-
-    pageSize = task
-      ? task.totalChances >= submissions.length
-        ? submissions.length
-        : Math.max(task.totalChances, 10)
-      : maxTotalChances
-
-    pageRows = filteredRows
-      .slice((page - 1) * pageSize, page * pageSize)
-      .map(submission => {
-        if (!task?.isSettled)
-          submission.rewardHtml = calcRewardHtml(
-            submission.calculatedBounties,
-            true,
-            precisions,
-            'font-semibold',
-          ).join('&nbsp;+&nbsp;')
-        return submission
-      })
-    // console.log('new pageRows', pageRows)
-  },
-)
-
-watch(
   () => selectedSubmissions.length,
   () => {
-    // console.log('selection watch', selectedSubmissions)
-    if (!task) {
-      showMessage(
-        'Task data not ready, please try again later, or refresh this page.',
-      )
-      return
-    }
-
-    const maxSelection = task ? task.totalChances : 1
-    if (selectedSubmissions.length > maxSelection) {
-      showMessage(`Selected items exceed ${maxSelection}!`)
-      // 如果选择的数量超过最大值，取消超出的选择项
-      selectedSubmissions = selectedSubmissions.slice(0, maxSelection)
-    }
-
     const selectedTotalScore = selectedSubmissions.reduce(
       (total, submission) => {
         total += submission.score
@@ -817,76 +757,14 @@ const onClickShareToTwitter = () => {
               </div>
             </div>
 
-            <div class="mt-8">
-              <div
-                class="flex-center !justify-between py-3.5 border-b border-gray-300 dark:border-gray-700"
-              >
-                <div class="flex items-center">
-                  <div class="font-semibold w-44">{{ $t('Quests Form') }}</div>
-                  <UInput v-model="searchKeyword" placeholder="Filter..." />
-                </div>
-                <ULink
-                  :to="`https://www.ao.link/#/entity/${task.processID}?tab=incoming`"
-                  active-class="text-primary"
-                  target="_blank"
-                  inactive-class="text-primary"
-                >
-                  Transaction Book
-                </ULink>
-              </div>
-
-              <div
-                v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug"
-              >
-                <UTable
-                  v-model="selectedSubmissions"
-                  :rows="pageRows"
-                  :columns="getTaskTableColumns(task.type)"
-                  :loading="isLoading"
-                  :ui="{
-                    checkbox: {
-                      padding:
-                        task.isSettled || !isOwner ? 'hidden' : '',
-                    },
-                  }"
-                >
-                  <template #id-data="{ row }">
-                    {{ row.id }}
-                  </template>
-                  <template #address-data="{ row }">
-                    {{
-                      isOwner ? row.address : shortString(row.address, 4)
-                    }}
-                  </template>
-                  <template #url-data="{ row }">
-                    {{
-                      row.url.replace(/^https?:\/\//, '').replace(/\/peek$/, '')
-                    }}
-                  </template>
-                  <template #score-data="{ row }">
-                    {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
-                  </template>
-                  <template #rewardHtml-data="{ row }">
-                    <p
-                      class="flex justify-start items-center"
-                      v-html="
-                        task.isSettled ||
-                          selectedSubmissions.find(s => s.id === row.id)
-                          ? row.rewardHtml
-                          : '/'
-                      "
-                    />
-                  </template>
-                </UTable>
-
-                <div class="flex justify-end mt-2">
-                  <UPagination
-                    v-model="page"
-                    :page-count="pageSize"
-                    :total="filteredRows?.length || 0"
-                  />
-                </div>
-              </div>
+            <div v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug" class="mt-8">
+              <TaskSubmissionTable
+                v-model:selected-submissions="selectedSubmissions"
+                :task="task"
+                :is-owner="isOwner"
+                :is-loading="isLoading"
+                :submissions="submissions"
+              />
             </div>
 
             <div v-if="!isLoading && isJoined" class="flex justify-center my-8">
