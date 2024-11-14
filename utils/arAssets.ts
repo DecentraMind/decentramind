@@ -43,16 +43,16 @@ export const taskBannersMap: Record<Task['type'], string[]> = {
     'forWSpQwViqXBBb4jcXaffGMOi8y6LqJDBkxf0Sjqx4'
   ],
   bird: [
-    '56lhvYDBHLtAsr-STGwVNsJx45-aDqMZRRWwZOJpjsQ',
-    'eCFBZ8fjB3KB7lkSgJfXJJxV1_Krg7BXSDNZhzaN2Us',
-    'M4tEQezugPozOg4-7C7D1wN3kKrXfYuxLmCnUp8huJE',
-    'forWSpQwViqXBBb4jcXaffGMOi8y6LqJDBkxf0Sjqx4'
+    'eF7hIO0xMrBoOHL8iUqCi4beQN-dn-l1olaOVunpcGU',
+    'o4eUnWbWcogxjRNyicLkgQTTr6zTKQR2xuB0dizDIFc',
+    '1dfZexP1Vk_gQrn-P4XfkKzN0EpQo_7zQVbfzTUsAwY',
+    'ASSu5XLRLGKNw1NmciWVm7XO14ZKHWCcNaar_PDVwz4'
   ],
   article: [
-    '56lhvYDBHLtAsr-STGwVNsJx45-aDqMZRRWwZOJpjsQ',
-    'eCFBZ8fjB3KB7lkSgJfXJJxV1_Krg7BXSDNZhzaN2Us',
-    'M4tEQezugPozOg4-7C7D1wN3kKrXfYuxLmCnUp8huJE',
-    'forWSpQwViqXBBb4jcXaffGMOi8y6LqJDBkxf0Sjqx4'
+    'A6DsoHfFFGfwD-PDl0HRXd3PtkM9Vv7h_FDlgwCtlq0',
+    'iQ2mjhFUbwBQCVOb4fwWNCgO-GBwZFsizWqDlwRssKc',
+    'EuViB6R44a4WeoRTfCU4Orh677R55ZP9yQ4sTP2kaEE',
+    'PjB0YMyuQqEP9K3TOXarYOt0q5ENpeXRi6YCbTPb72M'
   ],
   invite: [
     '56lhvYDBHLtAsr-STGwVNsJx45-aDqMZRRWwZOJpjsQ',
