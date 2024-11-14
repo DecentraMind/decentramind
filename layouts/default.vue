@@ -2,12 +2,13 @@
 import { arUrl, defaultCommunityLogo, defaultUserAvatar, exploreLogo } from '~/utils/arAssets'
 import { cn } from '~/utils/util'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
+import LoginModal from '~/components/users/LoginModal.vue'
 
 const router = useRouter()
 
 const selectModal = $ref(0)
 
-const { address, checkIsActiveWallet } = $(aoStore())
+const { address, checkIsActiveWallet, addSwitchListener } = $(aoStore())
 const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
@@ -20,6 +21,7 @@ onMounted(async () => {
       router.push('/')
       return
     }
+    addSwitchListener()
 
     await vouch()
     await loadCommunityList(address)
@@ -166,8 +168,8 @@ const refetch = async () => {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
-              <template v-if="!userInfo">
-                <UAvatar size="2xl" />
+              <template v-if="!userInfo || !address">
+                <ArAvatar :src="defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
               <template v-else>
                 <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
@@ -212,9 +214,10 @@ const refetch = async () => {
         <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />
       </template>
     </UModal>
-    <!-- ~/components/HelpSlideover.vue -->
-    <HelpSlideover />
-    <!-- ~/components/NotificationsSlideover.vue -->
-    <NotificationsSlideover />
+    
+    <LoginModal />
+    
+    <!-- TODO notifications from /api/notifications, such as task submission winning, task ended, new task created, etc. -->
+    <!-- <NotificationsSlideover /> -->
   </UDashboardLayout>
 </template>
