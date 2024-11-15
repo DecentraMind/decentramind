@@ -4,21 +4,25 @@ import { cn } from '~/utils/util'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 import LoginModal from '~/components/users/LoginModal.vue'
 
-const router = useRouter()
-
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet, addSwitchListener } = $(aoStore())
+let { isLoginModalOpen } = $(aoStore())
 const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
+
+// reload page when address changes
+watch(() => address, () => {
+  reloadNuxtApp()
+})
 
 const isCreateModalOpen = $ref(false)
 let isLoading = $ref(true)
 onMounted(async () => {
-  // console.log({router})
   try {
+    // if not address, show login modal
     if (!address || !await checkIsActiveWallet()) {
-      router.push('/')
+      isLoginModalOpen = true
       return
     }
     addSwitchListener()

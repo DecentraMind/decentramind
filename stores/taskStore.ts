@@ -16,8 +16,6 @@ import { getTask, updateTaskSubmissions, submitTask, getInvitesByInviter } from 
 export const useTaskStore = defineStore('task', () => {
   const taskManagerProcessID = DM_PROCESS_ID
 
-  const allTasks = $ref([])
-
   const createTask = async (data: TaskForm, communityName: string) => {
     // create a task process，then add process ID to task info
     const taskProcessID = await spawn({
@@ -297,7 +295,6 @@ export const useTaskStore = defineStore('task', () => {
 
   return {
     createTask, getTask, getTasksByCommunityUuid, getTasksByOwner,
-    allTasks,
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 

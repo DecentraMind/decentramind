@@ -85,20 +85,22 @@ const refetch = async () => {
       <template #right>
         <!--<UButton @click="test">test</UButton>-->
         <UBadge color="white">
-          <NuxtLink :to="'/dashboard/quests'">
-            <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
-          </NuxtLink>
-          |
-          <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
-            <UButton variant="ghost" color="white" block>
-              {{ userInfo?.name || shortString(address) }}
-            </UButton>
-            <template #panel>
-              <UButton color="red" @click="logout">
-                Disconnect
+          <template v-if="address">
+            <NuxtLink :to="'/dashboard/quests'">
+              <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
+            </NuxtLink>
+            <span>|</span>
+            <UPopover :popper="{ placement: 'bottom-end' }">
+              <UButton variant="ghost" color="white" block>
+                {{ userInfo?.name || shortString(address) }}
               </UButton>
-            </template>
-          </UPopover>
+              <template #panel>
+                <UButton color="red" @click="logout">
+                  Disconnect
+                </UButton>
+              </template>
+            </UPopover>
+          </template>
           <UButton v-else variant="ghost" color="white" @click="isLoginModalOpen = true">
             Connect Wallet
           </UButton>

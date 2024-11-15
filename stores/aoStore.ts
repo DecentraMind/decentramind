@@ -72,6 +72,7 @@ export const aoStore = defineStore('aoStore', () => {
     isLoginModalOpen = false
 
     console.log('register/login result', res, address)
+    addSwitchListener()
 
     return res
   }
