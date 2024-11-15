@@ -63,8 +63,8 @@ const validateTweetData = ({ data: tweetInfo, mode, twitterVouchedIDs }: TaskVal
   return tweetInfo as ValidatedTweetInfo
 }
 
-const validateTweetPromotionData = ({ task, data, mode, twitterVouchedIDs }: TaskValidationParams<ValidatedTweetInfo>) => {
-  const tweetInfo = validateTweetData({ task, data, mode, twitterVouchedIDs })
+const validateTweetPromotionData = ({ task, data, mode, twitterVouchedIDs, communityName }: TaskValidationParams<ValidatedTweetInfo>) => {
+  const tweetInfo = validateTweetData({ task, data, mode, twitterVouchedIDs, communityName })
 
   // check if tweet created before task start time
   if (new Date(tweetInfo.data[0].created_at).getTime() < task.startTime) {
@@ -80,8 +80,8 @@ const validateTweetPromotionData = ({ task, data, mode, twitterVouchedIDs }: Tas
   return tweetInfo
 }
 
-const validateTweetBirdData = ({ task, data, mode, twitterVouchedIDs }: TaskValidationParams<ValidatedTweetInfo>) => {
-  const tweetInfo = validateTweetData({ task, data, mode, twitterVouchedIDs })
+const validateTweetBirdData = ({ task, data, mode, twitterVouchedIDs, communityName }: TaskValidationParams<ValidatedTweetInfo>) => {
+  const tweetInfo = validateTweetData({ task, data, mode, twitterVouchedIDs, communityName })
 
   if (tweetInfo.data[0].article) {
     throw new Error('Invalid tweet URL: article is not supported for bird quest.')
@@ -95,11 +95,15 @@ const validateTweetBirdData = ({ task, data, mode, twitterVouchedIDs }: TaskVali
     throw new Error(`Invalid tweet URL: tweet text length is less than ${minBirdTweetTextLength}.`)
   }
 
+  if (!tweetInfo.data[0].text.includes(communityName)) {
+    throw new Error(`Invalid tweet URL: tweet text does not include community name ${communityName}.`)
+  }
+
   return tweetInfo
 }
 
-const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs }: TaskValidationParams<ValidatedTweetInfo>) => {
-  const tweetInfo = validateTweetData({ task, data, mode, twitterVouchedIDs })
+const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs, communityName }: TaskValidationParams<ValidatedTweetInfo>) => {
+  const tweetInfo = validateTweetData({ task, data, mode, twitterVouchedIDs, communityName })
 
   if (tweetInfo.data[0].article) {
     throw new Error('Invalid tweet URL: article is not supported for good read quest.')
@@ -111,6 +115,10 @@ const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs }: TaskV
 
   if (wordCount(tweetInfo.data[0].note_tweet?.text ?? '') < minArticleTextLength) {
     throw new Error(`Invalid tweet URL: article text length is less than ${minArticleTextLength}.`)
+  }
+
+  if (!tweetInfo.data[0].note_tweet?.text?.includes(communityName)) {
+    throw new Error(`Invalid tweet URL: article text does not include community name ${communityName}.`)
   }
 
   return tweetInfo

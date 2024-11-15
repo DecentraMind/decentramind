@@ -266,7 +266,7 @@ async function onSubmitTweetUrl() {
     }
 
     const data = await fetchTweetInfo([tweetUrlForm.url])
-    const tweetInfo = validateTaskData<ValidatedTweetInfo>({ task, data, mode: 'add', twitterVouchedIDs })
+    const tweetInfo = validateTaskData<ValidatedTweetInfo>({ task, data, mode: 'add', twitterVouchedIDs, communityName: communityInfo.name })
     if (tweetInfo) {
       await saveTweetTaskSubmitInfo({
         submitterAddress: address,
@@ -311,7 +311,7 @@ async function onSubmitSpaceUrl() {
     }
 
     const data = await fetchSpacesInfo([spaceUrl])
-    const spaceInfo = validateTaskData<ValidatedSpacesInfo>({ task, data, mode: 'add', twitterVouchedIDs })
+    const spaceInfo = validateTaskData<ValidatedSpacesInfo>({ task, data, mode: 'add', twitterVouchedIDs, communityName: communityInfo.name })
     
     await saveSpaceTaskSubmitInfo({
       submitterAddress: address,

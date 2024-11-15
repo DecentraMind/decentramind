@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import validateTaskData from './validateTaskData'
 import { minSpaceLiveLength, minBirdTweetTextLength, minArticleTextLength } from '@/utils/constants'
-import { mockBaseTweetInfo, mockBaseTweetTask, mockSpaceInfo, mockSpaceTask, mockSpaceInfoNotEnded, mockSpaceInfoLastsLessThanMinSpaceLiveLength, mockBaseTweetInfoCreatedBeforeTaskStartTime, mockBaseTweetInfoWithShortText, mockArticleTask, mockArticleTweetInfo, mockArticleTypeTweetInfo, mockArticleTweetInfoCreatedBeforeTaskStartTime, mockPromotionTask, mockPromotionTweetInfo, mockPromotionWrongReferencedTweetInfo, mockPromotionTweetInfoCreatedBeforeTaskStartTime, mockArticleTweetInfoWithShortText } from '~/tests/data'
+import { mockBaseTweetInfo, mockBaseTweetTask, mockSpaceInfo, mockSpaceTask, mockSpaceInfoNotEnded, mockSpaceInfoLastsLessThanMinSpaceLiveLength, mockBaseTweetInfoCreatedBeforeTaskStartTime, mockBaseTweetInfoWithShortText, mockArticleTask, mockArticleTweetInfo, mockArticleTypeTweetInfo, mockArticleTweetInfoCreatedBeforeTaskStartTime, mockPromotionTask, mockPromotionTweetInfo, mockPromotionWrongReferencedTweetInfo, mockPromotionTweetInfoCreatedBeforeTaskStartTime, mockArticleTweetInfoWithShortText, mockArticleTweetInfoWithoutCommunityName, mockBaseTweetInfoWithoutCommunityName } from '~/tests/data'
 
 describe('useTaskValidation', () => {
 
@@ -11,7 +11,8 @@ describe('useTaskValidation', () => {
         task: mockSpaceTask,
         data: mockSpaceInfo,
         mode: 'add',
-        twitterVouchedIDs: ['testuser']
+        twitterVouchedIDs: ['testuser'],
+        communityName: 'testCommunity'
       })
 
       expect(result).toEqual(mockSpaceInfo)
@@ -22,7 +23,8 @@ describe('useTaskValidation', () => {
         task: mockSpaceTask,
         data: mockSpaceInfo,
         mode: 'add',
-        twitterVouchedIDs: ['testuser']
+        twitterVouchedIDs: ['testuser'],
+        communityName: 'testCommunity'
       })
 
       expect(result).toEqual(mockSpaceInfo)
@@ -33,7 +35,8 @@ describe('useTaskValidation', () => {
         task: mockSpaceTask,
         data: mockSpaceInfoNotEnded,
         mode: 'add',
-        twitterVouchedIDs: ['testuser']
+        twitterVouchedIDs: ['testuser'],
+        communityName: 'testCommunity'
       })).toThrowError('has not ended')
     })
 
@@ -41,14 +44,16 @@ describe('useTaskValidation', () => {
       expect(() => validateTaskData({
         task: mockSpaceTask,
         data: mockSpaceInfo,
-        mode: 'add'
+        mode: 'add',
+        communityName: 'testCommunity'
       })).toThrowError('Twitter vouched IDs are not provided.')
 
       expect(() => validateTaskData({
         task: mockSpaceTask,
         data: mockSpaceInfo,
         mode: 'add',
-        twitterVouchedIDs: []
+        twitterVouchedIDs: [],
+        communityName: 'testCommunity'
       })).toThrowError('Twitter vouched IDs are not provided.')
     })
 
@@ -57,7 +62,8 @@ describe('useTaskValidation', () => {
         task: mockSpaceTask,
         data: mockSpaceInfo,
         mode: 'add',
-        twitterVouchedIDs: ['another_user']
+        twitterVouchedIDs: ['another_user'],
+        communityName: 'testCommunity'
       })).toThrowError('not the primary host of space 1234.')
     })
 
@@ -66,7 +72,8 @@ describe('useTaskValidation', () => {
         task: mockSpaceTask,
         data: mockSpaceInfoLastsLessThanMinSpaceLiveLength,
         mode: 'add',
-        twitterVouchedIDs: ['testuser']
+        twitterVouchedIDs: ['testuser'],
+        communityName: 'testCommunity'
       })).toThrowError(`lasts less than ${minSpaceLiveLength} minutes`)
     })
   })
@@ -77,7 +84,8 @@ describe('useTaskValidation', () => {
         task: mockBaseTweetTask,
         data: mockBaseTweetInfo,
         mode: 'add',
-        twitterVouchedIDs: ['testuser']
+        twitterVouchedIDs: ['testuser'],
+        communityName: 'testCommunity'
       })
 
       expect(result).toEqual(mockBaseTweetInfo)
@@ -88,7 +96,8 @@ describe('useTaskValidation', () => {
         task: mockBaseTweetTask,
         data: mockBaseTweetInfo,
         mode: 'add',
-        twitterVouchedIDs: ['testuser']
+        twitterVouchedIDs: ['testuser'],
+        communityName: 'testCommunity'
       })
 
       expect(result).toEqual(mockBaseTweetInfo)
@@ -98,14 +107,16 @@ describe('useTaskValidation', () => {
       expect(() => validateTaskData({
         task: mockBaseTweetTask,
         data: mockBaseTweetInfo,
-        mode: 'add'
+        mode: 'add',
+        communityName: 'testCommunity'
       })).toThrowError('Twitter vouched IDs are not provided.')
 
       expect(() => validateTaskData({
         task: mockBaseTweetTask,
         data: mockBaseTweetInfo,
         mode: 'add',
-        twitterVouchedIDs: []
+        twitterVouchedIDs: [],
+        communityName: 'testCommunity'
       })).toThrowError('Twitter vouched IDs are not provided.')
     })
 
@@ -114,7 +125,8 @@ describe('useTaskValidation', () => {
         task: mockBaseTweetTask,
         data: mockBaseTweetInfo,
         mode: 'add',
-        twitterVouchedIDs: ['another_user']
+        twitterVouchedIDs: ['another_user'],
+        communityName: 'testCommunity'
       })).toThrowError('not the tweet author.')
     })
 
@@ -123,7 +135,8 @@ describe('useTaskValidation', () => {
         task: mockBaseTweetTask,
         data: mockBaseTweetInfoCreatedBeforeTaskStartTime,
         mode: 'add',
-        twitterVouchedIDs: ['testuser']
+        twitterVouchedIDs: ['testuser'],
+        communityName: 'testCommunity'
       })).toThrowError('created before task start time')
     })
 
@@ -133,7 +146,8 @@ describe('useTaskValidation', () => {
           task: mockBaseTweetTask,
           data: mockBaseTweetInfoWithShortText,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toThrowError(`tweet text length is less than ${minBirdTweetTextLength}`)
       })
 
@@ -142,8 +156,19 @@ describe('useTaskValidation', () => {
           task: mockBaseTweetTask,
           data: mockArticleTypeTweetInfo,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toThrowError('article is not supported for bird quest.')
+      })
+
+      it('should reject if the tweet text does not include community name', async () => {
+        expect(() => validateTaskData({
+          task: mockBaseTweetTask,
+          data: mockBaseTweetInfoWithoutCommunityName,
+          mode: 'add',
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
+        })).toThrowError('tweet text does not include community name testCommunity')
       })
     })
 
@@ -153,7 +178,8 @@ describe('useTaskValidation', () => {
           task: mockPromotionTask,
           data: mockPromotionTweetInfo,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })
 
         expect(result).toEqual(mockPromotionTweetInfo)
@@ -164,7 +190,8 @@ describe('useTaskValidation', () => {
           task: mockPromotionTask,
           data: mockPromotionWrongReferencedTweetInfo,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toThrowError('referenced tweet is not the task promotion tweet.')
       })
 
@@ -173,7 +200,8 @@ describe('useTaskValidation', () => {
           task: mockPromotionTask,
           data: mockPromotionTweetInfoCreatedBeforeTaskStartTime,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toThrowError('created before task start time')
       })
     })
@@ -184,7 +212,8 @@ describe('useTaskValidation', () => {
           task: mockArticleTask,
           data: mockArticleTweetInfo,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toEqual(mockArticleTweetInfo)
       })
 
@@ -193,7 +222,8 @@ describe('useTaskValidation', () => {
           task: mockArticleTask,
           data: mockArticleTypeTweetInfo,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toThrowError('article is not supported for good read quest.')
       })
 
@@ -202,7 +232,8 @@ describe('useTaskValidation', () => {
           task: mockArticleTask,
           data: mockArticleTweetInfoCreatedBeforeTaskStartTime,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toThrowError('created before task start time')
       })
 
@@ -211,8 +242,19 @@ describe('useTaskValidation', () => {
           task: mockArticleTask,
           data: mockArticleTweetInfoWithShortText,
           mode: 'add',
-          twitterVouchedIDs: ['testuser']
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
         })).toThrowError(`article text length is less than ${minArticleTextLength}`)
+      })
+
+      it('should reject if the article text does not include community name', async () => {
+        expect(() => validateTaskData({
+          task: mockArticleTask,
+          data: mockArticleTweetInfoWithoutCommunityName,
+          mode: 'add',
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
+        })).toThrowError('article text does not include community name testCommunity')
       })
     })
   })

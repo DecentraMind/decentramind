@@ -468,6 +468,7 @@ export interface TaskValidationParams<T extends ValidatedSpacesInfo | ValidatedT
   data?: T
   mode: 'add' | 'update'
   twitterVouchedIDs?: string[]
+  communityName: string
 }
 
 export type SubmissionUpdateResponse = {

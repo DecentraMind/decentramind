@@ -8,7 +8,7 @@ import {
 import type { Community, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, messageResultCheck, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
-import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
+import { moduleID, schedulerID, extractResult, DM_PROCESS_ID, VOUCH_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
 import { getCommunity as getCommunityAO } from '~/utils/community/community'
 
@@ -59,7 +59,7 @@ export const communityStore = defineStore('communityStore', () => {
       throw new Error('No address specified.')
     }
     const res = await dryrun({
-      process: 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo',
+      process: VOUCH_PROCESS_ID,
       tags: [
         { name: 'Action', value: 'Get-Vouches' },
         { name: 'ID', value: address }
