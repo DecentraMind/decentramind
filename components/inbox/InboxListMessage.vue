@@ -86,7 +86,7 @@ function bubbleClasses(message: MailCache) {
       />
       <div v-else class="w-10" />
 
-      <div class="flex flex-col w-fit max-w-[76%]">
+      <div :class="cn('flex flex-col w-fit max-w-[76%]', {'items-end': isSelf(message), 'items-start': !isSelf(message)})">
         <div v-if="index === 0 || message.From !== messages[index - 1].From" :class="cn('flex space-x-2 items-center rtl:space-x-reverse', {'flex-row-reverse': isSelf(message)})">
           <span class="font-medium text-base text-primary dark:text-white">{{ getUserName(message.From) }}</span>
           <TimeAgo class="font-normal text-sm text-gray-500 dark:text-gray-400" :time="message.Timestamp" />
@@ -95,7 +95,7 @@ function bubbleClasses(message: MailCache) {
           </span>
         </div>
         <div :class="bubbleClasses(message)">
-          <p class="font-normal text-base text-gray-900 dark:text-white break-all"> {{ message.Data }}</p>
+          <p class="font-normal text-base text-gray-900 dark:text-white break-all">{{ message.Data }}</p>
         </div>
       </div>
     </div>

@@ -96,7 +96,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
           </template>
         </UDashboardNavbar>
 
-        <div v-if="community" class="py-4 px-2">
+        <div v-if="community" class="py-4 px-2 max-h-[calc(100vh-var(--header-height))] overflow-y-auto">
           <div
             v-for="user in users"
             :key="user.address"
