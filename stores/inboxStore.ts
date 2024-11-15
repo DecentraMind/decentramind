@@ -1,10 +1,4 @@
-import {
-  createDataItemSigner,
-  result,
-  results,
-  message,
-  dryrun
-} from '@permaweb/aoconnect'
+import { createDataItemSigner, results, message, dryrun } from '~/utils/ao'
 import type { InboxState, MailCache } from '~/types'
 
 export const inboxStore = defineStore('inboxStore', () => {
