@@ -1,11 +1,15 @@
-import type { PromotionSubmissionWithCalculatedBounties, SpaceSubmissionWithCalculatedBounties, Task, PromotionSubmission } from '~/types'
+import type { SpaceSubmissionWithCalculatedBounties, Task, TweetSubmissionWithCalculatedBounties, TweetSubmission, AllSubmissionWithCalculatedBounties } from '~/types'
 
-export function useTaskScoreCalculate<T extends SpaceSubmissionWithCalculatedBounties[] | PromotionSubmissionWithCalculatedBounties[]>(task: Task, submissions: T) {
+export function useTaskScoreCalculate<T extends AllSubmissionWithCalculatedBounties[]>(task: Task, submissions: T) {
   switch (task.type) {
     case 'space':
       return calcSpaceScore(submissions as SpaceSubmissionWithCalculatedBounties[]) as T
     case 'promotion':
-      return calcPromotionScore(submissions as PromotionSubmissionWithCalculatedBounties[]) as T
+      return calcPromotionScore(submissions as TweetSubmissionWithCalculatedBounties[]) as T
+    case 'bird':
+      return calcBirdScore(submissions as TweetSubmissionWithCalculatedBounties[]) as T
+    case 'article':
+      return calcArticleScore(submissions as TweetSubmissionWithCalculatedBounties[]) as T
     default:
       throw new Error('Invalid task type.')
   }
@@ -37,20 +41,14 @@ export function useTaskScoreCalculate<T extends SpaceSubmissionWithCalculatedBou
     return clone
   }
 
-  function calcPromotionScore(submissions: PromotionSubmissionWithCalculatedBounties[]) {
+  function calcTweetScore(
+    submissions: TweetSubmissionWithCalculatedBounties[],
+    portion: Record<keyof Pick<TweetSubmission, 'buzz' | 'discuss' | 'identify' | 'popularity' | 'spread' | 'friends'>, number>
+  ) {
     const clone = useCloneDeep(submissions)
     clone.forEach(item => {
       item.score = 0
     })
-
-    const portion: Record<keyof Pick<PromotionSubmission, 'buzz' | 'discuss' | 'identify' | 'popularity' | 'spread' | 'friends'>, number> = {
-      buzz: 10,
-      discuss: 10,
-      identify: 10,
-      popularity: 10,
-      spread: 20,
-      friends: 40,
-    }
 
     for (const field in portion) {
       const fieldKey = field as keyof typeof portion
@@ -65,5 +63,38 @@ export function useTaskScoreCalculate<T extends SpaceSubmissionWithCalculatedBou
     }
 
     return clone
+  }
+
+  function calcPromotionScore(submissions: TweetSubmissionWithCalculatedBounties[]) {
+    return calcTweetScore(submissions, {
+      buzz: 10,
+      discuss: 10,
+      identify: 10,
+      popularity: 10,
+      spread: 20,
+      friends: 40,
+    })
+  }
+
+  function calcBirdScore(submissions: TweetSubmissionWithCalculatedBounties[]) {
+    return calcTweetScore(submissions, {
+      buzz: 10,
+      discuss: 10,
+      identify: 10,
+      popularity: 10,
+      spread: 20,
+      friends: 40,
+    })
+  }
+
+  function calcArticleScore(submissions: TweetSubmissionWithCalculatedBounties[]) {
+    return calcTweetScore(submissions, {
+      buzz: 10,
+      discuss: 10,
+      identify: 10,
+      popularity: 10,
+      spread: 20,
+      friends: 40,
+    })
   }
 }

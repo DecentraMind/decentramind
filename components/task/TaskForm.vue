@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Dayjs } from 'dayjs'
 import { timezones, tokens, tokenChains } from '~/utils/constants'
-import type { Community, PromotionTaskForm, TaskForm } from '~/types/index'
+import type { Community, Task, TaskForm, TaskFormWithLink } from '~/types/index'
 import { arUrl, taskBannersMap, gateways } from '~/utils/arAssets'
 import { formatDate, taskSchema } from '~/utils'
 import { validateTaskForm } from '~/utils/schemas'
@@ -15,7 +15,7 @@ const { showError } = $(notificationStore())
 
 const props = defineProps<{
   taskForm?: TaskForm
-  taskType: 'space' | 'promotion'
+  taskType: Task['type']
   community: Community
 }>()
 
@@ -23,7 +23,7 @@ const emit = defineEmits<{
   (e: 'created'): void
 }>()
 
-let defaultTaskForm: TaskForm | PromotionTaskForm = {
+let defaultTaskForm: TaskForm | TaskFormWithLink = {
   processID: '',
   type: props.taskType,
   visible: 'public',
@@ -52,11 +52,11 @@ let defaultTaskForm: TaskForm | PromotionTaskForm = {
   communityUuid: '',
 }
 
-if (props.taskType === 'promotion') {
+if (['promotion', 'bird', 'article'].includes(props.taskType)) {
   defaultTaskForm = {
     ...defaultTaskForm,
     link: '',
-  } as PromotionTaskForm
+  } as TaskFormWithLink
 }
 
 let task = $ref<TaskForm>(defaultTaskForm)
@@ -204,7 +204,7 @@ onMounted(() => {
     </UFormGroup>
 
     <UFormGroup v-if="task.type === 'promotion'" name="link" :label="$t('task.fields.Promotion Quest Link')">
-      <UInput v-model.trim="(task as PromotionTaskForm).link" :placeholder="$t('task.fields.Promotion Quest Link')" />
+      <UInput v-model.trim="(task as TaskFormWithLink).link" :placeholder="$t('task.fields.Promotion Quest Link')" />
     </UFormGroup>
 
     <UFormGroup name="intro" :label="$t('Task Introduction')">

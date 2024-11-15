@@ -7,8 +7,13 @@ export default defineNuxtConfig({
     public: {
       chatroomFetchInterval: parseInt(process.env.NUXT_PUBLIC_CHATROOM_FETCH_INTERVAL || '5000'),
       debug: process.env.NUXT_PUBLIC_DEBUG,
-      processID: process.env.NUXT_PUBLIC_PROCESS_ID
+      processID: process.env.VITE_PUBLIC_PROCESS_ID
     },
+  },
+  icon: {
+    serverBundle: {
+      remote: 'jsdelivr', // 'unpkg' or 'github-raw', or a custom function
+    }
   },
   modules: [
     '@nuxtjs/i18n',
@@ -22,7 +27,8 @@ export default defineNuxtConfig({
     'nuxt-lodash',
     'nuxt-gtag',
     '@pinia/nuxt',
-    '@ant-design-vue/nuxt'
+    '@ant-design-vue/nuxt',
+    '@nuxt/test-utils/module'
   ],
 
   nitro: {

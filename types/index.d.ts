@@ -163,6 +163,11 @@ export type Submission = {
   address: string
   score: number
   createTime: number
+  updateTime: number
+  validateStatus?: 'waiting_for_validation' | 'validated' | 'invalid' | 'validation_error'
+  validateError?: string
+  validateTime?: number
+  validator?: string
 }
 
 export type Scores = {
@@ -176,7 +181,7 @@ interface SpaceSubmission extends Submission {
   audience: number
   url: string
 }
-interface PromotionSubmission extends Submission {
+interface TweetSubmission extends Submission {
   url: string
   buzz: number // tweet text length
   discuss: number // public_metrics.reply_count
@@ -185,6 +190,12 @@ interface PromotionSubmission extends Submission {
   spread: number // public_metrics.impression_count (times this post was seen)
   friends: number // invite count
 }
+interface PromotionSubmission extends TweetSubmission {}
+interface BirdSubmission extends TweetSubmission {}
+interface ArticleSubmission extends TweetSubmission {}
+
+export type AllSubmission = SpaceSubmission | PromotionSubmission | BirdSubmission | ArticleSubmission
+export type AllSubmissions = SpaceSubmission[] | PromotionSubmission[] | BirdSubmission[] | ArticleSubmission[]
 
 export type TaskFormBounty = {
   /** Human readable number of bounty amount. amount = quantity / Math.pow(10, token.denomination) */
@@ -198,7 +209,7 @@ export type Task = {
   /** process ID as unique primary key */
   processID: string
 
-  type: 'space' | 'promotion'
+  type: 'space' | 'promotion' | 'bird' | 'article' | 'invite'
   visible: 'public' | 'private'
   communityUuid: string
   name: string
@@ -230,18 +241,17 @@ export type Task = {
     joinTime?: number
   }>
 
-  submissions: SpaceSubmission[] | PromotionSubmission[]
+  submissions: AllSubmissions
 
   inviteCode?: string
 }
 
-export type PromotionTask = Task & {
-  type: 'promotion'
-  /** the tweet url be be referenced by the promotion tweet */
+export type TaskWithLink = Task & {
+  /** tweet url */
   link: string
 }
 
-export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & {
+type ExtraCalculatedFields = {
   calculatedBounties: Task['bounties']
   /**
    * html representation of calculatedBounties 
@@ -249,15 +259,11 @@ export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & {
    * this field is calculated at client, only for client display */
   rewardHtml?: string
 }
+export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & ExtraCalculatedFields
 
-export type PromotionSubmissionWithCalculatedBounties = PromotionSubmission & {
-  calculatedBounties: Task['bounties']
-  /**
-   * html representation of calculatedBounties 
-   * bounty is not included in process reply,
-   * this field is calculated at client, only for client display */
-  rewardHtml?: string
-}
+export type TweetSubmissionWithCalculatedBounties = TweetSubmission & ExtraCalculatedFields
+
+export type AllSubmissionWithCalculatedBounties = AllSubmission & ExtraCalculatedFields
 
 /** bounty item for SendBounty action of task process */
 export type Bounty = {
@@ -281,7 +287,7 @@ export type TaskForm = Omit<Task, 'createTime'|'ownerAddress'|'submittersCount'|
   bounties: TaskFormBounty[]
 }
 
-export type PromotionTaskForm = TaskForm & {
+export type TaskFormWithLink = TaskForm & {
   type: 'promotion'
   link: string
 }
@@ -328,7 +334,7 @@ export type UploadResponse = {
 }
 
 export type TwitterSpaceInfo = {
-  data: {
+  data?: {
     id: string
     state: 'scheduled' | 'live' | 'ended'
     started_at: string
@@ -337,7 +343,7 @@ export type TwitterSpaceInfo = {
     participant_count: number
     host_ids: string[]
   }
-  includes: {
+  includes?: {
     users: Array<{
       created_at: string
       id: string
@@ -347,21 +353,59 @@ export type TwitterSpaceInfo = {
       username: string
     }>
   }
+  errors?: {
+    detail: string
+    title: string
+    type: string
+  }[]
+}
+export type ValidatedSpaceInfo = {
+  data: NonNullable<TwitterSpaceInfo['data']>,
+  includes: NonNullable<TwitterSpaceInfo['includes']>
+}
+export type TwitterSpacesInfo = {
+  data?: {
+    id: string
+    state: 'scheduled' | 'live' | 'ended'
+    started_at: string
+    ended_at?: string
+    creator_id: string
+    participant_count: number
+    host_ids: string[]
+  }[]
+  includes?: {
+    users: Array<{
+      created_at: string
+      id: string
+      name: string
+      profile_image_url: string
+      /** twitter handle */
+      username: string
+    }>
+  }
+  errors?: {
+    detail: string
+    title: string
+    type: string
+  }[]
+}
+export type ValidatedSpacesInfo = {
+  data: NonNullable<TwitterSpacesInfo['data']>,
+  includes: NonNullable<TwitterSpacesInfo['includes']>
 }
 
 export type TwitterTweetInfo = {
-  /**
-   * example data:
-   * 
-{"data":[{"referenced_tweets":[{"type":"quoted","id":"1846888057615929553"}],"created_at":"2024-10-20T13:29:19.000Z","public_metrics":{"retweet_count":26,"reply_count":11,"like_count":81,"quote_count":0,"bookmark_count":8,"impression_count":13241},"edit_history_tweet_ids":["1847993500572225638"],"author_id":"406218355","id":"1847993500572225638","text":"xxx…"includes":{"users":[{"profile_image_url":"https://pbs.twimg.com/profile_images/1713818863698341888/C7FqgbAv_normal.jpg","username":"lilyanna_btc","created_at":"2011-11-06T12:13:05.000Z","id":"406218355","name":"Lilyanna"}]}}
-  * */
-  data: {
+  data?: {
     author_id: string
     created_at: string
     id: string
     /** infomation for Tweets longer than 280 characters */
     note_tweet?: {
       text: string
+    }
+    /** infomation for article */
+    article?: {
+      title: string
     }
     public_metrics: {
       retweet_count: number
@@ -375,10 +419,10 @@ export type TwitterTweetInfo = {
       type: string
       id: string
     }[]
-    /** tweet text */
+    /** tweet text. If it's an article, it's the url of the article page */
     text: string
   }[]
-  includes: {
+  includes?: {
     users: {
       created_at: string
       id: string
@@ -388,6 +432,16 @@ export type TwitterTweetInfo = {
       username: string
     }[]
   }
+  errors?: {
+    detail: string
+    title: string
+    type: string
+  }[]
+}
+
+export type ValidatedTweetInfo = {
+  data: NonNullable<TwitterTweetInfo['data']>,
+  includes: NonNullable<TwitterTweetInfo['includes']>
 }
 
 /**
@@ -407,4 +461,16 @@ type VouchData = {
   Sub_IDs: string[]
   Total_Value: string
   Values: string[]
+}
+
+export interface TaskValidationParams<T extends ValidatedSpacesInfo | ValidatedTweetInfo> {
+  task: Task
+  data?: T
+  mode: 'add' | 'update'
+  twitterVouchedIDs?: string[]
+}
+
+export type SubmissionUpdateResponse = {
+  result: 'success' | 'error'
+  message: string
 }

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ARWEAVE_ID_REGEXP, maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber } from '~/utils'
 import type { FormError } from '#ui/types'
-import type { CommunitySetting, PromotionTaskForm, Task } from '~/types'
+import type { CommunitySetting, Task, TaskFormWithLink } from '~/types'
 
 export const communitySettingSchema = z.object({
   // banner: z.enum(['banner6', 'banner7', 'banner8', 'banner9', 'banner10']),
@@ -163,12 +163,12 @@ export const taskSchema = z.object({
 
 export type TaskSchema = z.infer<typeof taskSchema>
 
-export const promotionUrlSchema = z.object({
+export const tweetUrlSchema = z.object({
   url: z.string().url().refine((value) => {
     return TWEET_URL_REGEXP.test(value)
   }, { message: 'The URL must be a valid tweet URL like https://twitter.com/x/status/1234567890' })
 })
-export type PromotionUrlSchema = z.infer<typeof promotionUrlSchema>
+export type TweetUrlSchema = z.infer<typeof tweetUrlSchema>
 
 export function validateTaskForm(state: Task): FormError[] {
   const errors = []
@@ -250,13 +250,13 @@ export function validateTaskForm(state: Task): FormError[] {
   }
 
   if (state.type === 'promotion') {
-    if (!(state as unknown as PromotionTaskForm).link) {
+    if (!(state as unknown as TaskFormWithLink).link) {
       errors.push({
         path: 'link',
         message: 'Link cannot be empty.'
       })
     }
-    if (!TWEET_URL_REGEXP.test((state as unknown as PromotionTaskForm).link)) {
+    if (!TWEET_URL_REGEXP.test((state as unknown as TaskFormWithLink).link)) {
       errors.push({
         path: 'link',
         message: 'Link must be a valid tweet URL.'

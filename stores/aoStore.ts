@@ -22,7 +22,8 @@ const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
   'SIGNATURE',
   'SIGN_TRANSACTION',
-  'DISPATCH'
+  'DISPATCH',
+  'ACCESS_PUBLIC_KEY'
 ]
 
 import Arweave from 'arweave'
@@ -39,12 +40,23 @@ export const aoStore = defineStore('aoStore', () => {
   const { clearCommunityData } = $(communityStore())
 
   const tokenMap = $ref(tokenProcessIDs)
-  const isLoginModalOpen = $ref(false)
+  let isLoginModalOpen = $ref(false)
 
   /** current connected address */
   let address = $(lsItemRef<string>('address', ''))
 
   const { showError } = $(notificationStore())
+
+  async function addSwitchListener() {
+    const onSwitch = async (e: any) => {
+      if (e.detail.address !== address) {
+        console.log('Wallet switched, logout.', e.detail.address, address)
+        await doLogout()
+        globalThis.removeEventListener('walletSwitch', onSwitch)
+      }
+    }
+    globalThis.addEventListener('walletSwitch', onSwitch)
+  }
 
   async function _login(wallet: typeof window.arweaveWallet) {
     address = await wallet.getActiveAddress()
@@ -57,17 +69,10 @@ export const aoStore = defineStore('aoStore', () => {
       ],
       signer: createDataItemSigner(wallet),
     })
+    isLoginModalOpen = false
 
     console.log('register/login result', res, address)
-
-    const onSwitch = async (e) => {
-      if (e.detail.address !== address) {
-        console.log('Wallet switched, logout.', e.detail.address, address)
-        await doLogout()
-        globalThis.removeEventListener('walletSwitch', onSwitch)
-      }
-    }
-    globalThis.addEventListener('walletSwitch', onSwitch)
+    addSwitchListener()
 
     return res
   }
@@ -241,7 +246,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, getData, address, sendToken, doLogout, othentLogin, doLogin, getArBalance, checkIsActiveWallet, isLoginModalOpen })
+  return $$({ tokenMap, getData, address, sendToken, addSwitchListener, doLogout, othentLogin, doLogin, getArBalance, checkIsActiveWallet, isLoginModalOpen })
 })
 
 if (import.meta.hot)

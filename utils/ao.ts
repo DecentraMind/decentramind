@@ -1,5 +1,6 @@
 import { connect, createDataItemSigner } from '@permaweb/aoconnect'
 import type { z } from 'zod'
+import { get } from 'lodash-es'
 
 const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect(
   {
@@ -90,7 +91,7 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
     throw new Error(res.Error)
   }
 
-  const tags = useGet(res, 'Messages[0].Tags') as {name: string, value: string}[]
+  const tags = get(res, 'Messages[0].Tags') as {name: string, value: string}[]
   if (tags) {
     const errorTag = tags.find(tag => tag.name === 'Error')?.value
     if (errorTag) {

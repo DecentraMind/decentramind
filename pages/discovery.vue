@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { getCommunityBannerUrl, defaultCommunityLogo, shortString } from '~/utils'
 
-const { address, doLogout, doLogin } = $(aoStore())
+const { address, doLogout, isLoginModalOpen } = $(aoStore())
 
-const { communityList, isCommunityListLoading, communityListError, vouch, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
+const { communityList, isCommunityListLoading, communityListError, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 const { showError, showSuccess } = $(notificationStore())
@@ -47,7 +47,7 @@ const translate = [
   }]
 ]
 
-const Logout = async() => {
+const logout = async() => {
   await doLogout()
 
   router.push('/')
@@ -85,21 +85,23 @@ const refetch = async () => {
       <template #right>
         <!--<UButton @click="test">test</UButton>-->
         <UBadge color="white">
-          <NuxtLink :to="'/dashboard/quests'">
-            <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
-          </NuxtLink>
-          |
-          <UPopover v-if="address" :popper="{ placement: 'bottom-end' }">
-            <UButton variant="ghost" color="white" block>
-              {{ userInfo?.name || shortString(address) }}
-            </UButton>
-            <template #panel>
-              <UButton color="red" @click="Logout">
-                Disconnect
+          <template v-if="address">
+            <NuxtLink :to="'/dashboard/quests'">
+              <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
+            </NuxtLink>
+            <span>|</span>
+            <UPopover :popper="{ placement: 'bottom-end' }">
+              <UButton variant="ghost" color="white" block>
+                {{ userInfo?.name || shortString(address) }}
               </UButton>
-            </template>
-          </UPopover>
-          <UButton v-else variant="ghost" color="white" @click="doLogin">
+              <template #panel>
+                <UButton color="red" @click="logout">
+                  Disconnect
+                </UButton>
+              </template>
+            </UPopover>
+          </template>
+          <UButton v-else variant="ghost" color="white" @click="isLoginModalOpen = true">
             Connect Wallet
           </UButton>
         </UBadge>

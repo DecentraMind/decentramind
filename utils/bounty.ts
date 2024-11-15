@@ -1,44 +1,10 @@
 import type {
-  PromotionSubmissionWithCalculatedBounties,
-  SpaceSubmissionWithCalculatedBounties,
+  AllSubmissionWithCalculatedBounties,
   Task
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 
-/**
- * TODO: replace with useTaskScoreCalculate
- * Calculate and modify submission.score based on submission's inviteCount, audience and brandEffect
- * @param submissions 
- * @returns 
- */
-export function calcScore(submissions: SpaceSubmissionWithCalculatedBounties[]) {
-  const clone = useCloneDeep(submissions)
-  const maxInviteCount = Math.max(...clone.map(item => item.inviteCount))
-  const maxAudience = Math.max(...clone.map(item => item.audience))
-
-  for (const submission of clone) {
-    let friendScore = 0
-    if (maxInviteCount != 0) {
-      friendScore = (submission.inviteCount / maxInviteCount) * 40
-    }
-
-    let audienceScore = 0
-    if (maxAudience != 0) {
-      audienceScore = (submission.audience / maxAudience) * 50
-    }
-
-    let brandScore = 0
-    if (submission.brandEffect === 10) {
-      brandScore = 10
-    }
-
-    console.log({friendScore, audienceScore, brandScore})
-    submission.score = friendScore + audienceScore + brandScore
-  }
-  return clone
-}
-
-export function calcBounties(submission: SpaceSubmissionWithCalculatedBounties | PromotionSubmissionWithCalculatedBounties, selectedTotalScore: number, selectedSubmissionsLength: number, taskBounties: Task['bounties']) {
+export function calcBounties(submission: AllSubmissionWithCalculatedBounties, selectedTotalScore: number, selectedSubmissionsLength: number, taskBounties: Task['bounties']) {
   const { score, address } = submission
 
   if (score > selectedTotalScore) {

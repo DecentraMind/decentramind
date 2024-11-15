@@ -1,4 +1,4 @@
-Variant = '0.4.59'
+Variant = '0.4.64'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -79,11 +79,16 @@ MutedUsers = MutedUsers or {}
 --- @field address string submitter's address
 --- @field taskPid string task process ID
 --- @field score number
---- @field createTime number
 --- @field brandEffect number|nil
 --- @field inviteCount number|nil
 --- @field audience number|nil
 --- @field url string|nil
+--- @field createTime number
+--- @field updateTime number
+--- @field validateStatus string @Status of the submission, either 'waiting_for_validation', 'validated', 'invalid', 'validation_error'
+--- @field validateError string|nil @Error message if the submission was invalidated
+--- @field validateTime number|nil @Timestamp when the submission was validated
+--- @field validator string|nil @Address of the validator
 
 --- @type table<string, Task> @Tasks table using task's processID as key
 Tasks = Tasks or {}
@@ -339,12 +344,10 @@ Actions = {
         return
       end
 
-      if community then
-        if community.buildnum then
-          community.buildnum = community.buildnum + 1
-        else
-          community.buildnum = 1
-        end
+      if community.buildnum then
+        community.buildnum = community.buildnum + 1
+      else
+        community.buildnum = 1
       end
 
       if not UserCommunities[address] then
@@ -568,6 +571,8 @@ Actions = {
       submission.id = #Tasks[pid].submissions + 1
       submission.score = 0
       submission.createTime = msg.Timestamp
+      submission.updateTime = msg.Timestamp
+      submission.validateStatus = 'waiting_for_validation'
       --- if task.type == 'space'
       --- submission.brandEffect = 0
       --- submission.inviteCount = 0
@@ -587,18 +592,20 @@ Actions = {
       u.replyData(msg, tostring(submission.id))
     end,
 
+    -- update specific submission
     UpdateSubmission = function(msg)
       local pid = msg.Tags.TaskPid
       local id = tonumber(msg.Tags.SubmissionID)
       local submission = json.decode(msg.Data)
 
       -- TODO allow community owner to update submission
-      assert(msg.From == Tasks[pid].ownerAddress, 'You are not the owner of this task.')
+      assert(msg.From == Tasks[pid].ownerAddress or msg.From == Owner, 'You are not the owner of this task.')
       assert(Tasks[pid].submissions[id], 'Submission not found. pid: ' .. pid .. ', submission id: ' .. id)
 
       for key, value in pairs(submission) do
         if key ~= 'id' and key ~= 'createTime' then
           Tasks[pid].submissions[id][key] = value
+          Tasks[pid].submissions[id].updateTime = msg.Timestamp
         end
       end
     end,
@@ -686,7 +693,7 @@ Actions = {
         return u.replyError(msg, 'Task not found.')
       end
 
-      if Tasks[pid].ownerAddress ~= msg.From then
+      if Tasks[pid].ownerAddress ~= msg.From and msg.From ~= Owner then
         return u.replyError(msg, 'You are not the owner of this task.')
       end
 
@@ -702,6 +709,7 @@ Actions = {
       Tasks[pid].isScoreCalculated = true
     end,
 
+    -- update all submissions of a task
     -- TODO Update submission.calculatedBounties only, don't update the whole submissions
     UpdateTaskSubmissions = function(msg)
       local pid = msg.Tags.TaskPid

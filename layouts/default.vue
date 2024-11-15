@@ -2,24 +2,30 @@
 import { arUrl, defaultCommunityLogo, defaultUserAvatar, exploreLogo } from '~/utils/arAssets'
 import { cn } from '~/utils/util'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
-
-const router = useRouter()
+import LoginModal from '~/components/users/LoginModal.vue'
 
 const selectModal = $ref(0)
 
-const { address, checkIsActiveWallet } = $(aoStore())
+const { address, checkIsActiveWallet, addSwitchListener } = $(aoStore())
+let { isLoginModalOpen } = $(aoStore())
 const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
+
+// reload page when address changes
+watch(() => address, () => {
+  reloadNuxtApp()
+})
 
 const isCreateModalOpen = $ref(false)
 let isLoading = $ref(true)
 onMounted(async () => {
-  // console.log({router})
   try {
+    // if not address, show login modal
     if (!address || !await checkIsActiveWallet()) {
-      router.push('/')
+      isLoginModalOpen = true
       return
     }
+    addSwitchListener()
 
     await vouch()
     await loadCommunityList(address)
@@ -166,8 +172,8 @@ const refetch = async () => {
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
             <NuxtLink :to="'/settings'">
-              <template v-if="!userInfo">
-                <UAvatar size="2xl" />
+              <template v-if="!userInfo || !address">
+                <ArAvatar :src="defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
               <template v-else>
                 <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
@@ -212,9 +218,10 @@ const refetch = async () => {
         <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />
       </template>
     </UModal>
-    <!-- ~/components/HelpSlideover.vue -->
-    <HelpSlideover />
-    <!-- ~/components/NotificationsSlideover.vue -->
-    <NotificationsSlideover />
+    
+    <LoginModal />
+    
+    <!-- TODO notifications from /api/notifications, such as task submission winning, task ended, new task created, etc. -->
+    <!-- <NotificationsSlideover /> -->
   </UDashboardLayout>
 </template>

@@ -201,6 +201,8 @@ export const communityRightPages = {
 export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRightPages]
 
 export const ARWEAVE_ID_REGEXP = /^[a-zA-Z0-9-_]{43}$/
+
+export const SPACE_URL_REGEXP = /(?:x|twitter)\.com\/i\/spaces\/([^/]+)\/?/
 export const TWEET_URL_REGEXP = /^(?:https?:\/\/)?(?:twitter|x)\.com\/.+\/status\/(\d+)/
 
 export const maxCommunityLogoDimension = {
@@ -212,3 +214,10 @@ export const maxCommunityBannerDimension = {
   width: 1280,
   height: 720
 }
+
+export const minArticleTextLength = 100
+export const minBirdTweetTextLength = 20
+export const minSpaceLiveLength = 15
+
+export const maxFetchSpaceIds = 100
+export const maxFetchTweetIds = 100
