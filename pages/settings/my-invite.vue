@@ -124,7 +124,7 @@ const findInvitedByCommunityID = (communityID: string) => {
           <div class="flex items-center">
             <img :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)" class="h-[70px] w-[70px] rounded-lg border">
             <div class="ml-10 text-xl w-[160px] overflow-hidden">{{ community.name }}</div>
-            <div class="ml-10 text-xl w-[200px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].length }} </div>
+            <div class="ml-10 text-xl w-[200px] overflow-hidden text-nowrap">{{ $t('setting.invited') }}{{ invitedByMe[community.uuid].reduce((acc, invite) => acc + Object.keys(invite.invitees).length, 0) }} </div>
           </div>
           <div class="flex">
             <UAvatarGroup v-if="users" size="sm" :max="2" class="ml-10">
