@@ -279,13 +279,14 @@ onBeforeUnmount(() => {
                 :rows="rankings"
                 :loading="isLoadingRankings"
                 :ui="{
-                  wrapper: 'mt-4',
+                  wrapper: 'mt-4 px-1 max-h-[676px] overflow-y-auto relative',
+                  thead: 'sticky top-0 bg-white',
                   th: {
-                    padding: 'px-0',
+                    padding: 'px-1',
                   },
                   td: {
-                    padding: 'px-0',
-                  },
+                    padding: 'px-1',
+                  }
                 }"
               >
                 <template #name-data="{ row }">
