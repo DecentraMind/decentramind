@@ -301,7 +301,10 @@ onBeforeUnmount(() => {
               v-if="community?.tokensupply"
               title="Token Allocation"
               class="col-span-7 row-span-2"
-              :ui="{title: 'text-lg'}"
+              :ui="{
+                wrapper: 'h-fit',
+                title: 'text-lg'
+              }"
             >
               <div ref="chart" class="w-full h-96" />
             </ULandingCard>
