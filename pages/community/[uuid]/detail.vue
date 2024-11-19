@@ -6,6 +6,8 @@ import { useTaskStore } from '~/stores/taskStore'
 import BaseField from '~/components/fields/BaseField.vue'
 import { baseFieldClasses } from '~/components/fields'
 import * as echarts from 'echarts'
+import CommunityMembersTable from '~/components/community/CommunityMembersTable.vue'
+
 
 const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
@@ -29,6 +31,11 @@ const route = useRoute()
 const communityID = $computed(() => route.params.uuid) as string
 
 let community = $ref<Community>()
+
+const isAdminOrOwner = $computed(
+  () =>
+    community?.owner === address || community?.admins.includes(address),
+)
 
 type Rank = {
   receiver: string
@@ -308,6 +315,18 @@ onBeforeUnmount(() => {
               }"
             >
               <div ref="chart" class="w-full h-96" />
+            </ULandingCard>
+
+            <ULandingCard
+              v-if="isAdminOrOwner"
+              title="Community Members"
+              class="col-span-12"
+              :ui="{
+                wrapper: 'h-fit',
+                title: 'text-lg'
+              }"
+            >
+              <CommunityMembersTable :community-id="communityID" />
             </ULandingCard>
           </ULandingGrid>
         </UPageBody>

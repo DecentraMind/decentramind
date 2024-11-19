@@ -25,6 +25,7 @@ logs
 
 # VSC
 .history
+.cursorrules
 
 AO/aos
 *.code-workspace

@@ -3,7 +3,7 @@ import type { Dayjs } from 'dayjs'
 import { timezones, tokens, tokenChains } from '~/utils/constants'
 import type { Community, Task, TaskForm, TaskFormWithLink } from '~/types/index'
 import { arUrl, taskBannersMap, gateways } from '~/utils/arAssets'
-import { formatDate, taskSchema } from '~/utils'
+import { formatDate, taskSchema, getLocalTimezone } from '~/utils'
 import { validateTaskForm } from '~/utils/schemas'
 import { useTaskStore } from '~/stores/taskStore'
 
