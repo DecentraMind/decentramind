@@ -125,8 +125,12 @@ export async function messageResultParsed(messageParams: SendMessageArgs) {
 }
 
 export async function dryrunResult<T>(messageParams: DryrunInput) {
-  const messageId = await dryrun(messageParams)
-  return extractResult<T>(messageId)
+  const result = await dryrun(messageParams)
+  return extractResult<T>(result)
+}
+
+export async function dryrunResultParsed<T>(messageParams: DryrunInput) {
+  return JSON.parse(await dryrunResult<string>(messageParams)) as T
 }
 
 /**

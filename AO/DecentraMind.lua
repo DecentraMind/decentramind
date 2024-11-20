@@ -1,4 +1,4 @@
-Variant = '0.4.64'
+Variant = '0.4.66'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -753,6 +753,15 @@ Actions = {
       u.replyData(msg, userInfo)
     end,
 
+    GetAllUsers = function(msg)
+      local users = {}
+      for address, user in pairs(Users) do
+        users[address] = user
+        -- TODO if this user is invited by other users, add the inviter to the user
+      end
+      u.replyData(msg, users)
+    end,
+
     GetUsersByCommunityUUID = function(msg)
       local uuid = msg.Tags.CommunityUuid
       local communityUsers = {}
@@ -765,6 +774,15 @@ Actions = {
           end
           communityUsers[address] = Users[address]
           communityUsers[address].muted = false
+
+          communityUsers[address].joinTime = inviteInfo[uuid].joinTime
+          if inviteInfo[uuid].inviteCode and Invites[inviteInfo[uuid].inviteCode] then
+            communityUsers[address].inviterAddress = Invites[inviteInfo[uuid].inviteCode].inviterAddress
+            local inviter = Users[Invites[inviteInfo[uuid].inviteCode].inviterAddress]
+            if inviter and inviter.name then
+              communityUsers[address].inviterName = inviter.name
+            end
+          end
 
           if MutedUsers[uuid] then
             for _, mutedAddress in ipairs(MutedUsers[uuid]) do

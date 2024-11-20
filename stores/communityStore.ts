@@ -3,9 +3,10 @@ import {
   message,
   spawn,
   dryrun,
-  result
+  result,
+  dryrunResultParsed
 } from '~/utils/ao'
-import type { Community, CommunitySetting, CreateToken, UserInfo, UserInfoWithMuted, VouchData } from '~/types'
+import type { Community, CommunityMembers, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, messageResultCheck, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID, VOUCH_PROCESS_ID } from '~/utils'
@@ -332,6 +333,18 @@ export const communityStore = defineStore('communityStore', () => {
     return updateItemInArray(params)
   }
 
+  const getAllUsers = async () => {
+    return await dryrunResultParsed<Record<string, {
+      name: string
+      avatar: string
+      createdAt?: number
+      canCreateCommunity?: boolean
+    }>>({
+      process: aoCommunityProcessID,
+      tags: [{ name: 'Action', value: 'GetAllUsers' }]
+    })
+  }
+
   /**
    * Get joined users of a community.
    * */
@@ -346,7 +359,7 @@ export const communityStore = defineStore('communityStore', () => {
 
     const dataStr = extractResult<string>(result)
 
-    const communityUserMap = JSON.parse(dataStr) as Record<string, UserInfoWithMuted>
+    const communityUserMap = JSON.parse(dataStr) as Record<string, CommunityMembers>
 
     return communityUserMap
   }
@@ -560,6 +573,7 @@ export const communityStore = defineStore('communityStore', () => {
     exitCommunity,
     updateUser,
     getUserByAddress,
+    getAllUsers,
     getCommunityUser,
     setCurrentCommunityUserMap,
     currentCommunityUserMap,

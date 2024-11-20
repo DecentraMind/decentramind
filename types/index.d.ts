@@ -325,6 +325,11 @@ export type UserInfo = {
 
 export type UserInfoWithMuted = UserInfo & { muted: boolean }
 export type UserInfoWithAddress = UserInfoWithMuted & { address: string }
+export type CommunityMember = UserInfoWithAddress & {
+  joinTime: number
+  inviterAddress?: string
+  inviterName?: string
+}
 
 export type UploadResponse = {
   url?: string
