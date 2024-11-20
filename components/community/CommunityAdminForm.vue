@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
-import { communityAdminSchema, validateCommunityAdmin, type CommunityAdminSchema } from '~/utils/schemas'
+import { validateCommunityAdmin, type CommunityAdminSchema } from '~/utils/schemas'
 import type { Community, UserInfoWithAddress } from '~/types'
 
 const props = defineProps<{

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { shortString } from '~/utils'
-import type { CommunityMembers } from '~/types'
+import type { CommunityMember } from '~/types'
 
 const props = defineProps<{
   communityId: string
@@ -8,7 +8,7 @@ const props = defineProps<{
 
 const { getCommunityUser } = $(communityStore())
 const loading = ref(true)
-let communityMembers = $ref<CommunityMembers>([])
+let communityMembers = $ref<CommunityMember[]>([])
 const search = ref('')
 
 // Debounced search term
@@ -67,7 +67,7 @@ const columns = [{
   <div>
     <UInput
       v-model="search"
-      icon="i-heroicons-magnifying-glass-20-solid"
+      icon="heroicons:magnifying-glass"
       placeholder="Search members or inviters..."
       size="sm"
       class="mb-4"

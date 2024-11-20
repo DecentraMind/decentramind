@@ -31,7 +31,7 @@ let selectedMail = $ref<Mail>()
 
 watchEffect(() => {
   if (!filteredMails?.find(mail => mail.id === selectedMail?.id)) {
-    selectedMail = null
+    selectedMail = undefined
   }
 })
 
