@@ -6,7 +6,7 @@ import { useTaskStore } from '~/stores/taskStore'
 const questColumns = [
   {
     key: 'name',
-    label: 'Task Name',
+    label: 'Quest Name',
     class: 'w-60',
   },
   {
@@ -57,7 +57,7 @@ let awarded = $ref<Categorized>({
 })
 
 type questRow = {
-  name: string // task name
+  name: string // quest name
   rewardHtml: string // reward html
   communityName: string
 }
