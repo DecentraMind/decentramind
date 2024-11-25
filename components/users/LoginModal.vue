@@ -49,7 +49,7 @@ const onClickOthent = async () => {
         <UButton :loading="arconnectLogining" color="white" class="w-[120px]" @click="onClickArConnect">
           <template #leading>
             <UAvatar
-              src="wallet/arconnect.svg"
+              src="/wallet/arconnect.svg"
               size="2xs"
             />
           </template>
@@ -59,7 +59,7 @@ const onClickOthent = async () => {
           <UButton :loading="othentLogining" color="white" class="w-[120px] hidden" @click="onClickOthent">
             <template #leading>
               <UAvatar
-                src="wallet/google.svg"
+                src="/wallet/google.svg"
                 size="2xs"
               />
             </template>
