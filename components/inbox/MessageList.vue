@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import type { MailCache } from '~/types'
 import { cn, shortString } from '~/utils'
+import TimeAgo from '../TimeAgo.vue'
+import Loading from '../Loading.vue'
+import audioFile from '@/assets/notify.mp3'
+
+const notifySound = new Audio(audioFile)
+
 const runtimeConfig = useRuntimeConfig()
 
 const { pid } = $defineProps<{
   pid: string, // process id
 }>()
 
-import audioFile from '@/assets/notify.mp3' // Adjust the path accordingly
-const notifySound = new Audio(audioFile)
-
-const emitLoaded = defineEmit('loaded')
-
-const { state, mailCache, loadInboxList, isInboxLoading: isLoading, getInboxCount } = $(inboxStore())
+const { state, mailCache, getInboxCount } = $(inboxStore())
 const { currentCommunityUserMap: userMap } = $(communityStore())
 
 const { address } = $(aoStore())
@@ -20,17 +21,8 @@ const messages = $computed(() => {
   return mailCache ? useSortBy(useFilter(mailCache[pid], item => !!item.Data), item => item.index) : []
 })
 
-const doLoadMore = async () => {
-  if (!pid) return
-
-  await loadInboxList(pid, 10)
-  emitLoaded()
-}
-watchEffect(doLoadMore)
-
 let interval: ReturnType<typeof setInterval>
 onMounted(async () => {
-  //await getActiveAddress()
   interval = setInterval(async () => {
     const oldCount = state[pid].inboxCount
     const newCount = await getInboxCount(pid, true)
@@ -65,9 +57,15 @@ function bubbleClasses(message: MailCache) {
     }
   )
 }
+
+function bubbleContainerClasses(message: MailCache) {
+  return cn('group w-full flex justify-between items-center', {
+    'flex-row-reverse' : isSelf(message),
+  })
+}
 </script>
 <template>
-  <div class="space-y-5 h-[calc(100vh-5rem)] overflow-y-scroll pl-3">
+  <div class="space-y-5 h-fit pl-3">
     <div
       v-for="(message, index) in messages"
       :key="message.id"
@@ -86,20 +84,23 @@ function bubbleClasses(message: MailCache) {
       />
       <div v-else class="w-10" />
 
-      <div :class="cn('flex flex-col w-fit max-w-[76%]', {'items-end': isSelf(message), 'items-start': !isSelf(message)})">
+      <div :class="cn('flex flex-col w-full', {'items-end': isSelf(message), 'items-start': !isSelf(message)})">
         <div v-if="index === 0 || message.From !== messages[index - 1].From" :class="cn('flex space-x-2 items-center rtl:space-x-reverse', {'flex-row-reverse': isSelf(message)})">
           <span class="font-medium text-base text-primary dark:text-white">{{ getUserName(message.From) }}</span>
-          <TimeAgo class="font-normal text-sm text-gray-500 dark:text-gray-400" :time="message.Timestamp" />
           <span v-if="message.isPending" class="flex font-normal text-sm text-gray-500 justify-start items-center dark:text-gray-400">
             <Loading class="h-5 mr-2 w-5" />
           </span>
         </div>
-        <div :class="bubbleClasses(message)">
-          <p class="font-normal text-base text-gray-900 dark:text-white break-all">{{ message.Data }}</p>
+        <div :class="bubbleContainerClasses(message)">
+          <div :class="bubbleClasses(message)">
+            <p class="font-normal text-base text-gray-900 dark:text-white break-all">{{ message.Data }}</p>
+          </div>
+          <div :class="cn('flex items-center', {'flex-row-reverse': !isSelf(message)})">
+            <div class="invisible w-12" />
+            <!-- <TimeAgo class="invisible group-hover:visible min-w-28 font-normal text-sm text-gray-300 dark:text-gray-400" :msg="message.Data" :time="message.Timestamp" /> -->
+          </div>
         </div>
       </div>
     </div>
-    
-    <Loading v-show="isLoading" class="flex py-10 items-center justify-center" icon-class="h-4 w-4" />
   </div>
 </template>

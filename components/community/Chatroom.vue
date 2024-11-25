@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Community, Mail, UserInfoWithAddress } from '~/types'
+import type { Community, UserInfoWithAddress } from '~/types'
 import { shortString, defaultUserAvatar } from '~/utils'
-import InboxMail from '../inbox/InboxMail.vue'
+import ChatArea from '../inbox/ChatArea.vue'
 
 const props = defineProps<{
   community: Community
@@ -10,30 +10,9 @@ const props = defineProps<{
 const { community, address } = $(toRefs(props))
 
 const { getCommunityUser, mute, unmute, getMutedUsers, setCurrentCommunityUuid, setCurrentCommunityUserMap } = $(communityStore())
-const { stateArr: mails } = $(inboxStore())
 const { showSuccess, showError } = $(notificationStore())
 
 const isAdminOrOwner = (address: string) => community && address ? community.owner === address || community.admins.includes(address) : false
-
-
-const selectedTab = $ref(0)
-
-// Filter mails based on the selected tab
-const filteredMails = $computed(() => {
-  if (selectedTab === 1) {
-    return mails.filter(mail => !!mail.unread)
-  }
-
-  return mails
-})
-
-let selectedMail = $ref<Mail>()
-
-watchEffect(() => {
-  if (!filteredMails?.find(mail => mail.id === selectedMail?.id)) {
-    selectedMail = undefined
-  }
-})
 
 let users = $ref<UserInfoWithAddress[]>([])
 
@@ -86,7 +65,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
   <UPage class="w-full">
     <div class="relative w-full h-full grid grid-cols-1 sm:grid-cols-[1fr,230px]">
       <div v-if="community.isJoined" class="flex h-screen ">
-        <InboxMail :chat="community.communitychatid" />
+        <ChatArea :chat="community.communitychatid" />
         <UDivider orientation="vertical" />
       </div>
       <div v-if="community.isJoined" class="hidden sm:block bg-gray-50">
