@@ -54,7 +54,6 @@ export default defineAppConfig({
         container: 'gap-1'
       }
     },
-    icons: ['heroicons', 'svg-spinners', 'ri', 'uil'],
     table: {
       loadingState: {
         icon: 'animate-none'

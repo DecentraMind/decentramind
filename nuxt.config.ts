@@ -12,7 +12,8 @@ export default defineNuxtConfig({
   },
   icon: {
     serverBundle: {
-      remote: 'jsdelivr', // 'unpkg' or 'github-raw', or a custom function
+      // remote: 'jsdelivr', // 'unpkg' or 'github-raw', or a custom function
+      collections: ['heroicons', 'svg-spinners', 'ri', 'uil'],
     }
   },
   modules: [
@@ -28,7 +29,8 @@ export default defineNuxtConfig({
     'nuxt-gtag',
     '@pinia/nuxt',
     '@ant-design-vue/nuxt',
-    '@nuxt/test-utils/module'
+    '@nuxt/test-utils/module',
+    '@nuxt/icon'
   ],
 
   nitro: {
