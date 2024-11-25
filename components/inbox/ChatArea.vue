@@ -1,25 +1,36 @@
 <script setup lang="ts">
-import { format, isToday } from 'date-fns'
-import type { Mail, UserInfo } from '~/types'
 import { nextTick } from 'vue'
-import { useElementVisibility, watchDebounced } from '@vueuse/core'
+import MessageList from './MessageList.vue'
+import Loading from '../Loading.vue'
 
 const { chat: chatID } = $defineProps<{
   chat: string
 }>()
 
-const msgTop = ref(null)
-const msgTopIsVisible = useElementVisibility(msgTop)
-
 // load this process data list
 // send msg
 // auto load new message for this process and other process, so we can show last unread message on the left sidebar msg list
-const { sendMessage, loadInboxList, mailCache } = $(inboxStore())
+const { sendMessage, loadInboxList, isInboxLoading, mailCache } = $(inboxStore())
 const { mutedUsers } = $(communityStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
-const msgBottom = $ref<HTMLDivElement>()
+const listBottom = $ref<HTMLDivElement>()
+
+const listTop = ref<HTMLElement | null>(null)
+const { stop } = useIntersectionObserver(
+  listTop,
+  async ([{ isIntersecting }]) => {
+    if (!isIntersecting || isInboxLoading) return
+    
+    console.log('listTop isIntersecting', isIntersecting)
+    await loadInboxList(chatID, 10, false)
+  }
+)
+
+onUnmounted(() => {
+  stop()
+})
 
 let msg = $ref('')
 let isSubmitting = $ref(false)
@@ -27,8 +38,9 @@ let isSubmitting = $ref(false)
 const loadedItemsCount = $computed(() => mailCache && mailCache[chatID] ? Object.keys(mailCache[chatID]).length : 0)
 
 const scrollToBottom = () => {
+  console.log('scrollToBottom')
   nextTick(() => {
-    msgBottom && msgBottom.scrollIntoView({ behavior: 'smooth' })
+    listBottom && listBottom.scrollIntoView({ behavior: 'smooth' })
   })
 }
 
@@ -40,7 +52,7 @@ const submitMessage = async () => {
   isSubmitting = true
 
   if (!mailCache[chatID]) {
-    mailCache[chatID] = []
+    mailCache[chatID] = {}
   }
   // show pending status
   mailCache[chatID][999999] = {
@@ -65,16 +77,6 @@ const submitMessage = async () => {
   await loadInboxList(chatID)
   scrollToBottom()
 }
-
-let isTopLoading = $ref(false)
-
-watchDebounced(msgTopIsVisible, async () => {
-  if (!msgTopIsVisible.value || isTopLoading || loadedItemsCount === 0) return
-
-  isTopLoading = true
-  await loadInboxList(chatID, 10, false)
-  isTopLoading = false
-})
 
 defineShortcuts({
   meta_enter: {
@@ -101,20 +103,18 @@ const isTextareaDisabled = computed(() => {
         </div>
       </div>
     </div>
-    <!--
-    <div ref="msgTop" class="my-5">
-      &nbsp;
-      <div v-show="isTopLoading" class="flex py-10 items-center justify-center">
-        <Loading class="h-8 w-8" />
-      </div>
-    </div>
-    -->
+
     <div class="relative h-[calc(100vh-var(--header-height))] flex flex-col justify-between pt-0 pb-4">
       <div class="overflow-y-auto h-[calc(100%-160px)] flex flex-col-reverse">
-        <!--<InboxListMessage :id="chatID" @loaded="scrollToBottom" />-->
-        <InboxListMessage :pid="chatID" />
+        <div ref="listBottom" class="h-0" />
+
+        <MessageList :pid="chatID" />
+
+        <div ref="listTop" class="w-full min-h-1 h-fit flex py-3 items-center justify-center">
+          <Loading v-show="isInboxLoading" class="h-8 w-8" />
+        </div>
       </div>
-      <div ref="msgBottom" class="msg-bottom" />
+
       <div class="sticky px-3">
         <form @submit.prevent="submitMessage">
           <UTextarea

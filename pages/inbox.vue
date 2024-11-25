@@ -1,71 +1,71 @@
 <script setup lang="ts">
-import type { Mail } from "~/types";
+import type { Mail } from '~/types'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 const tabItems = [
   {
-    label: t("All"),
+    label: t('All'),
   },
   {
-    label: "Unread",
+    label: 'Unread',
   },
-];
-const selectedTab = ref(0);
+]
+const selectedTab = ref(0)
 
 const dropdownItems = [
   [
     {
-      label: "Mark as unread",
-      icon: "i-heroicons-check-circle",
+      label: 'Mark as unread',
+      icon: 'i-heroicons-check-circle',
     },
     {
-      label: "Mark as important",
-      icon: "i-heroicons-exclamation-circle",
+      label: 'Mark as important',
+      icon: 'i-heroicons-exclamation-circle',
     },
   ],
   [
     {
-      label: "Star thread",
-      icon: "i-heroicons-star",
+      label: 'Star thread',
+      icon: 'i-heroicons-star',
     },
     {
-      label: "Mute thread",
-      icon: "i-heroicons-pause-circle",
+      label: 'Mute thread',
+      icon: 'i-heroicons-pause-circle',
     },
   ],
-];
+]
 
-const { data: mails } = await useFetch<Mail[]>("/api/mails", { default: () => [] });
+const { data: mails } = await useFetch<Mail[]>('/api/mails', { default: () => [] })
 
 // Filter mails based on the selected tab
 const filteredMails = computed(() => {
   if (selectedTab.value === 1) {
-    return mails.value.filter((mail) => !!mail.unread);
+    return mails.value.filter((mail) => !!mail.unread)
   }
 
-  return mails.value;
-});
+  return mails.value
+})
 
-const selectedMail = ref<Mail | null>();
+const selectedMail = ref<Mail | null>()
 
 const isMailPanelOpen = computed({
   get() {
-    return !!selectedMail.value;
+    return !!selectedMail.value
   },
   set(value: boolean) {
     if (!value) {
-      selectedMail.value = null;
+      selectedMail.value = null
     }
   },
-});
+})
 
 // Reset selected mail if it's not in the filtered mails
 watch(filteredMails, () => {
   if (!filteredMails.value.find((mail) => mail.id === selectedMail.value?.id)) {
-    selectedMail.value = null;
+    selectedMail.value = null
   }
-});
+})
 </script>
 
 <template>
@@ -135,8 +135,8 @@ watch(filteredMails, () => {
           </template>
         </UDashboardNavbar>
 
-        <!-- ~/components/inbox/InboxMail.vue -->
-        <InboxMail :mail="selectedMail" />
+        <!-- ~/components/inbox/ChatArea.vue -->
+        <ChatArea :mail="selectedMail" />
       </template>
       <div v-else class="flex-1 hidden items-center justify-center lg:flex">
         <UIcon name="i-heroicons-inbox" class="h-32 text-gray-400 w-32 dark:text-gray-500" />
