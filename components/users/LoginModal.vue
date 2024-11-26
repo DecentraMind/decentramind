@@ -11,10 +11,8 @@ const onClickArConnect = async () => {
   othentLogining = true
   try {
     const result = await doLogin()
-    if (result) {
-      router.push('/discovery')
-    } else {
-      console.log('User did not connect the wallet, not navigating to /signup')
+    if (!result) {
+      console.log('User did not connect the wallet.')
     }
   } catch (error) {
     console.error('Error during login operation', error)
@@ -29,10 +27,8 @@ const onClickOthent = async () => {
   othentLogining = true
   try {
     const result = await othentLogin()
-    if (result) {
-      router.push('/discovery')
-    } else {
-      console.log('User did not connect the wallet, not navigating to /signup')
+    if (!result) {
+      console.log('User did not connect the wallet.')
     }
   } catch (error) {
     console.error(error)
@@ -44,7 +40,19 @@ const onClickOthent = async () => {
 
 <template>
   <UModal v-model="isLoginModalOpen">
-    <UCard class="h-[200px] flex items-center justify-center">
+    <UCard
+      class="h-fit flex flex-col items-center justify-start"
+      :ui="{
+        body: {
+          base: 'w-full',
+        }
+      }"
+    >
+      <template #header>
+        <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+          Connect Your Wallet
+        </h3>
+      </template>
       <div v-if="!othentLogining && !arconnectLogining" class="flex justify-center space-x-3">
         <UButton :loading="arconnectLogining" color="white" class="w-[120px]" @click="onClickArConnect">
           <template #leading>

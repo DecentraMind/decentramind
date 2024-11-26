@@ -47,13 +47,15 @@ const {
 } = useTaskStore()
 
 
-const { getLocalCommunity, twitterVouchedIDs, setCurrentCommunityUuid } = $(
+const { getLocalCommunity, twitterVouchedIDs, twitterVouched, setCurrentCommunityUuid } = $(
   communityStore(),
 )
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
 const { address } = $(aoStore())
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
 
@@ -226,13 +228,24 @@ onMounted(async () => {
 let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
 
-function openSubmitModal() {
+function checkLoginAndVouch() {
   // TODO check if vouched, if not, show a modal with a link to vouch page, and a 'I'm vouched' button to verify and update vouched state
+  if(!address) {
+    isLoginModalOpen = true
+    return false
+  } else if (!twitterVouched) {
+    isVouchModalOpen = true
+    return false  
+  }
+  return true
+}
+function openSubmitModal() {
+  if (!checkLoginAndVouch()) return
   isSubmitModalOpen = true
 }
 
 function openJoinModal() {
-  // TODO check if vouched, if not, show a modal with a link to vouch page, and a 'I'm vouched' button to verify and update vouched state
+  if (!checkLoginAndVouch()) return
   isJoinModalOpen = true
 }
 

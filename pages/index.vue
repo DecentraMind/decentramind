@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { isLoginModalOpen } = $(aoStore())
+const { isLoginModalOpen, address } = $(aoStore())
+const router = useRouter()
 
 definePageMeta({
   layout: 'landing',
@@ -25,7 +26,7 @@ useSeoMeta({
     <UColorModeImage src="DMLogo.png" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-2/3 lg:w-[600px] mb-6" />
     <div class="text-xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-center">Start your real community journey.</div>
     <div class="mt-3 mb-6 text-sm md:text-lg text-center">Try a better way than airdrop to build your community.</div>
-    <UButton size="xl" color="black" @click="isLoginModalOpen = true">
+    <UButton size="xl" color="black" @click="address ? router.push('/discovery') : isLoginModalOpen = true">
       Open to Build
       <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
     </UButton>
