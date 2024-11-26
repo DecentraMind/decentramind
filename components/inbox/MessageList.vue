@@ -72,7 +72,7 @@ function bubbleContainerClasses(message: MailCache) {
       :data-index="message.index?.toString()"
       :class="cn('flex gap-2.5 items-start pr-2', {
         'flex-row-reverse' : isSelf(message),
-        '!mt-1.5 gap-[13px]': index > 0 && message.From == messages[index - 1].From
+        '!mt-1.5 gap-[14px]': index > 0 && message.From == messages[index - 1].From
       })"
     >
       <!--<DicebearAvatar :seed="item.From" class="rounded-full h-8 w-8" size="lg" />-->
