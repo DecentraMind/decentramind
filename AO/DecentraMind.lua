@@ -1,4 +1,4 @@
-Variant = '0.4.66'
+Variant = '0.4.68'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -757,6 +757,7 @@ Actions = {
       local users = {}
       for address, user in pairs(Users) do
         users[address] = user
+        users[address].address = address
         -- TODO if this user is invited by other users, add the inviter to the user
       end
       u.replyData(msg, users)
@@ -773,6 +774,7 @@ Actions = {
             Users[address] = { name = '', avatar = '' }
           end
           communityUsers[address] = Users[address]
+          communityUsers[address].address = address
           communityUsers[address].muted = false
 
           communityUsers[address].joinTime = inviteInfo[uuid].joinTime
@@ -790,6 +792,8 @@ Actions = {
                 communityUsers[address].muted = true
               end
             end
+          else
+            communityUsers[address].muted = false
           end
         end
       end

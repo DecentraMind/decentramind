@@ -6,7 +6,7 @@ import {
   result,
   dryrunResultParsed
 } from '~/utils/ao'
-import type { Community, CommunityMembers, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
+import type { Community, CommunityMember, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, messageResultCheck, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID, VOUCH_PROCESS_ID } from '~/utils'
@@ -335,6 +335,7 @@ export const communityStore = defineStore('communityStore', () => {
 
   const getAllUsers = async () => {
     return await dryrunResultParsed<Record<string, {
+      address: string
       name: string
       avatar: string
       createdAt?: number
@@ -359,7 +360,7 @@ export const communityStore = defineStore('communityStore', () => {
 
     const dataStr = extractResult<string>(result)
 
-    const communityUserMap = JSON.parse(dataStr) as Record<string, CommunityMembers>
+    const communityUserMap = JSON.parse(dataStr) as Record<string, CommunityMember>
 
     return communityUserMap
   }
