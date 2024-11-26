@@ -15,21 +15,26 @@ const { mutedUsers } = $(communityStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
+
 const listBottom = $ref<HTMLDivElement>()
 
 const listTop = ref<HTMLElement | null>(null)
-const { stop } = useIntersectionObserver(
-  listTop,
-  async ([{ isIntersecting }]) => {
-    if (!isIntersecting || isInboxLoading) return
-    
-    console.log('listTop isIntersecting', isIntersecting)
-    await loadInboxList(chatID, 10, false)
-  }
-)
 
-onUnmounted(() => {
-  stop()
+onMounted(async () => {
+  await loadInboxList(chatID, 10, false)
+  const { stop } = useIntersectionObserver(
+    listTop,
+    async ([{ isIntersecting }]) => {
+      if (!isIntersecting || isInboxLoading) return
+      
+      console.log('listTop isIntersecting', isIntersecting)
+      await loadInboxList(chatID, 10, false)
+    }
+  )
+
+  onUnmounted(() => {
+    stop()
+  })
 })
 
 let msg = $ref('')
