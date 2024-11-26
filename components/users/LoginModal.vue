@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const { doLogin, othentLogin, isLoginModalOpen } = $(aoStore())
 const { showError } = $(notificationStore())
-const router = useRouter()
+
+const emit = defineEmits(['login'])
 
 let arconnectLogining = $ref(false)
 let othentLogining = $ref(false)
@@ -14,6 +15,7 @@ const onClickArConnect = async () => {
     if (!result) {
       console.log('User did not connect the wallet.')
     }
+    emit('login')
   } catch (error) {
     console.error('Error during login operation', error)
     showError('Failed to login.', error as Error)
@@ -30,6 +32,7 @@ const onClickOthent = async () => {
     if (!result) {
       console.log('User did not connect the wallet.')
     }
+    emit('login')
   } catch (error) {
     console.error(error)
   } finally {
