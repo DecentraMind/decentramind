@@ -54,6 +54,13 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: '9FSEgmUsrug7kTdZJABDekwTGJy7YG7KaN5khcbwcX4'
   },
+  $APUS: {
+    ticker: '$APUS',
+    label: '$APUS',
+    processID: '5ZAZiY6p7vMhtlvwA10zb-3px7AqaoRGW6HjIg11dJE',
+    denomination: 12,
+    logo: 'ljYWasItSQZ8dvFOYXVx0nPFxW7z4fDsO7q0FccXlG0'
+  },
   tIO: {
     ticker: 'tIO',
     label: 'tIO',
