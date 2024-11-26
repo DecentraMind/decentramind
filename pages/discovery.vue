@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { getCommunityBannerUrl, defaultCommunityLogo, shortString } from '~/utils'
 
-const { address, doLogout, isLoginModalOpen } = $(aoStore())
+const { address, doLogout } = $(aoStore())
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 
 const { communityList, isCommunityListLoading, communityListError, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
@@ -9,8 +11,6 @@ const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUse
 const { showError, showSuccess } = $(notificationStore())
 
 const router = useRouter()
-
-let vouchModalOpen = $ref(false)
 
 const sortedCommunities = $computed(() => {
   // TODO if buildnum of a, b are equal, sort by create time (community.timestamp)
@@ -21,20 +21,7 @@ const sortedCommunities = $computed(() => {
 })
 
 onMounted(async () => {
-  if (!address) {
-    router.push('/')
-  }
   setCurrentCommunityUuid(undefined)
-
-  try {
-    if (!twitterVouched) {
-      vouchModalOpen = true
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : error
-    showError('Error fetching data:' + message)
-    console.error('Error fetching data:', message)
-  }
 })
 
 const translate = [
@@ -47,17 +34,15 @@ const translate = [
   }]
 ]
 
-const logout = async() => {
-  await doLogout()
-
-  router.push('/')
-}
-
 let joinLoading = $ref(false)
 
 const joinToCommunity = async(uuid: string, name: string) => {
-  if (!twitterVouched) {
-    vouchModalOpen = true
+  if (!address) {
+    isLoginModalOpen = true
+    return
+  }
+  if (address && !twitterVouched) {
+    isVouchModalOpen = true
     return
   }
   joinLoading = true
@@ -91,11 +76,11 @@ const refetch = async () => {
             </NuxtLink>
             <span>|</span>
             <UPopover :popper="{ placement: 'bottom-end' }">
-              <UButton variant="ghost" color="white" block>
+              <UButton variant="ghost" color="white" block :title="address">
                 {{ userInfo?.name || shortString(address) }}
               </UButton>
               <template #panel>
-                <UButton color="red" @click="logout">
+                <UButton color="red" @click="doLogout">
                   Disconnect
                 </UButton>
               </template>
@@ -194,16 +179,6 @@ const refetch = async () => {
         </UCard>
       </div>
     </div>
-    <UModal v-model="vouchModalOpen">
-      <div class="h-[200px] flex flex-col items-center justify-center">
-        <span class="text-xl">Not Vouched</span>
-        <div>
-          <NuxtLink to="https://g8way.io/y77FlCnWP7xTxqoMYjc5_ojjeYpkSkjZEzB4e34We5g" target="_blank">
-            <UButton color="white" class="mt-10">Get Vouched</UButton>
-          </NuxtLink>
-        </div>
-      </div>
-    </UModal>
     <UModal v-model="joinLoading">
       <div class="h-[200px] flex flex-col items-center justify-center">
         <div>Join...</div>

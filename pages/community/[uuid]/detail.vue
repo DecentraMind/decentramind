@@ -14,8 +14,6 @@ const { address } = $(aoStore())
 const { getBountiesByCommunityID } = useTaskStore()
 const { showError } = $(notificationStore())
 
-const router = useRouter()
-
 const columns = [{
   key: 'name',
   label: 'Contributor'
@@ -73,9 +71,6 @@ const loadRanks = async () => {
 const chart = $ref<HTMLDivElement>()
 let isLoading = $ref(true)
 onMounted( async () => {
-  if (!address) {
-    return router.push('/')
-  }
   isLoading = true
   rankings = await loadRanks()
 

@@ -41,6 +41,7 @@ export const aoStore = defineStore('aoStore', () => {
 
   const tokenMap = $ref(tokenProcessIDs)
   let isLoginModalOpen = $ref(false)
+  const isVouchModalOpen = $ref(false)
 
   /** current connected address */
   let address = $(lsItemRef<string>('address', ''))
@@ -120,12 +121,17 @@ export const aoStore = defineStore('aoStore', () => {
 
   async function checkIsActiveWallet() {
     if (!window.arweaveWallet) {
+      console.log('no wallet')
       return false
     }
     try {
       const activeAddress = await window.arweaveWallet.getActiveAddress()
+      console.log('address', address)
+      console.log('activeAddress', activeAddress)
+
       return address === activeAddress
-    } catch {
+    } catch (error) {
+      console.error(error)
       return false
     }
   }
@@ -246,7 +252,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, getData, address, sendToken, addSwitchListener, doLogout, othentLogin, doLogin, getArBalance, checkIsActiveWallet, isLoginModalOpen })
+  return $$({ tokenMap, getData, address, sendToken, addSwitchListener, doLogout, othentLogin, doLogin, getArBalance, checkIsActiveWallet, isLoginModalOpen, isVouchModalOpen })
 })
 
 if (import.meta.hot)

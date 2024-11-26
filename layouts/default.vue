@@ -7,8 +7,9 @@ import LoginModal from '~/components/users/LoginModal.vue'
 const selectModal = $ref(0)
 
 const { address, checkIsActiveWallet, addSwitchListener } = $(aoStore())
-let { isLoginModalOpen } = $(aoStore())
-const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch } = $(communityStore())
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
+const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch, twitterVouched } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 // reload page when address changes
@@ -21,14 +22,24 @@ let isLoading = $ref(true)
 onMounted(async () => {
   try {
     // if not address, show login modal
-    if (!address || !await checkIsActiveWallet()) {
-      isLoginModalOpen = true
-      return
-    }
-    addSwitchListener()
+    if (!address) {
+      await loadCommunityList()
+    } else {
+      if (!await checkIsActiveWallet()){
+        console.log('not active wallet')
+        isLoginModalOpen = true
+        return
+      }
+      addSwitchListener()
 
-    await vouch()
-    await loadCommunityList(address)
+      await vouch()
+      await loadCommunityList(address)
+
+      if (!twitterVouched) {
+        isVouchModalOpen = true
+        return
+      }
+    }
   } catch (error) {
     console.error('Error fetching data:', error)
   } finally {
@@ -187,7 +198,7 @@ const refetch = async () => {
     <div v-if="isLoading || isUserInfoLoading" class="flex-center w-full h-full">
       <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
     </div>
-    <div v-else-if="communityListError || userInfoError" class="flex-col-center h-full w-full">
+    <div v-else-if="communityListError || (address && userInfoError)" class="flex-col-center h-full w-full">
       <UCard>
         <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
           <div class="flex-col-center gap-y-4">
@@ -220,6 +231,32 @@ const refetch = async () => {
     </UModal>
     
     <LoginModal />
+
+    <UModal v-model="isVouchModalOpen">
+      <UCard
+        class="h-fit flex flex-col items-center justify-start"
+        :ui="{
+          header: {
+            padding: 'py-4',
+          },
+          body: {
+            base: 'w-full'
+          }
+        }"
+      >
+        <template #header>
+          <h3 class="font-semibold leading-6 text-gray-900 dark:text-white">
+            Vouch Required
+          </h3>
+        </template>
+        <div class="w-full flex-center gap-x-4">
+          <UButton color="gray" variant="ghost" title="I'm vouched, reload page" @click="reloadNuxtApp()">I'm vouched</UButton>
+          <NuxtLink to="https://g8way.io/y77FlCnWP7xTxqoMYjc5_ojjeYpkSkjZEzB4e34We5g" target="_blank">
+            <UButton icon="heroicons:arrow-top-right-on-square">Get Vouched</UButton>
+          </NuxtLink>
+        </div>
+      </UCard>
+    </UModal>
     
     <!-- TODO notifications from /api/notifications, such as task submission winning, task ended, new task created, etc. -->
     <!-- <NotificationsSlideover /> -->
