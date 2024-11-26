@@ -11,10 +11,22 @@ export default defineNuxtConfig({
     },
   },
   icon: {
-    serverBundle: {
-      // remote: 'jsdelivr', // 'unpkg' or 'github-raw', or a custom function
-      collections: ['heroicons', 'svg-spinners', 'ri', 'uil'],
-    }
+    serverBundle: false,
+    clientBundle: {
+      // list of icons to include in the client bundle
+      icons: [
+        'heroicons', 'svg-spinners', 'ri', 'uil'
+      ],
+
+      // scan all components in the project and include icons 
+      scan: true,
+
+      // include all custom collections in the client bundle
+      includeCustomCollections: true, 
+
+      // guard for uncompressed bundle size, will fail the build if exceeds
+      sizeLimitKb: 256,
+    },
   },
   modules: [
     '@nuxtjs/i18n',
