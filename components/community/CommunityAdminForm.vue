@@ -54,10 +54,9 @@ async function search(query: string) {
 
 let communityUsers = $ref<UserInfoWithAddress[]>([])
 onMounted(async () => {
-  communityUsers = Object.entries(await getCommunityUser(props.uuid)).map(([address, user]) => ({
+  communityUsers = Object.values(await getCommunityUser(props.uuid)).map(user => ({
     ...user,
-    name: user.name || address,
-    address,
+    name: user.name || user.address
   }))
 
   console.log('props.initState: ', props.initState)

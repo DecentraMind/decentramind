@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { useTaskStore } from '~/stores/taskStore'
-import {
-  calcBounties,
-  formatToLocale,
-  fractionalPart,
-} from '~/utils'
+import { calcBounties, formatToLocale, fractionalPart } from '~/utils'
 import type {
   Task,
   Bounty,
@@ -43,13 +39,15 @@ const {
   updateTaskScores,
   getTask,
   joinTask,
-  createTaskInviteCode
+  createTaskInviteCode,
 } = useTaskStore()
 
-
-const { getLocalCommunity, twitterVouchedIDs, twitterVouched, setCurrentCommunityUuid } = $(
-  communityStore(),
-)
+const {
+  getLocalCommunity,
+  twitterVouchedIDs,
+  twitterVouched,
+  setCurrentCommunityUuid,
+} = $(communityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
@@ -93,7 +91,9 @@ const submittedBuilderCount = $computed(() => {
 
 let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 
-const isOwner = $computed(() => task?.ownerAddress === address || communityInfo?.owner === address)
+const isOwner = $computed(
+  () => task?.ownerAddress === address || communityInfo?.owner === address,
+)
 
 const isAdminOrOwner = $computed(
   () =>
@@ -125,14 +125,20 @@ onMounted(async () => {
     }
 
     // if the task status(from not started to ing, or from ing to ended) changes with time, refresh current page
-    watch(() => now.value, (newVal, oldVal) => {
-      if (!task) return
+    watch(
+      () => now.value,
+      (newVal, oldVal) => {
+        if (!task) return
 
-      if ((newVal >= task.startTime && oldVal < task.startTime) || (newVal >= task.endTime && oldVal < task.endTime)) {
-        // same as window.location.reload()
-        reloadNuxtApp()
-      }
-    })
+        if (
+          (newVal >= task.startTime && oldVal < task.startTime) ||
+          (newVal >= task.endTime && oldVal < task.endTime)
+        ) {
+          // same as window.location.reload()
+          reloadNuxtApp()
+        }
+      },
+    )
 
     // console.log({ isIng, isSettle: task.isSettled, isCal: task.isScoreCalculated })
 
@@ -140,9 +146,9 @@ onMounted(async () => {
     invites = (await getInvitesByInviter(address, 'task')).invites
 
     communityInfo = await getLocalCommunity(task.communityUuid)
-    setCurrentCommunityUuid(communityInfo.uuid);
+    setCurrentCommunityUuid(communityInfo.uuid)
 
-    (task.submissions as AllSubmissionWithCalculatedBounties[]).forEach(s => {
+    ;(task.submissions as AllSubmissionWithCalculatedBounties[]).forEach(s => {
       s.rewardHtml = calcRewardHtml(
         s.calculatedBounties,
         true,
@@ -161,41 +167,49 @@ onMounted(async () => {
     ) {
       const { getSignature, error: signatureError } = useSignature()
       if (signatureError.value) {
-        throw new Error('Failed to update submissions, can\'t get signature: ' + signatureError.value)
+        throw new Error(
+          'Failed to update submissions, can\'t get signature: ' +
+            signatureError.value,
+        )
       }
 
-      const { signature, address, publicKey, message } = await getSignature(taskPid)
-  
+      const { signature, address, publicKey, message } = await getSignature(
+        taskPid,
+      )
+
       console.log('signature', signature, address)
-      
+
       // validate and update task submissions at DecentraMind server
-      const { data, error } = await useFetch(
-        '/api/updateTaskSubmissions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            taskPid,
-            signature,
-            address,
-            publicKey,
-            message
-          })
-        }
-      ).json<SubmissionUpdateResponse>()
+      const { data, error } = await useFetch('/api/updateTaskSubmissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          taskPid,
+          signature,
+          address,
+          publicKey,
+          message,
+        }),
+      }).json<SubmissionUpdateResponse>()
       const submissionUpdateResponse = unref(data)
 
       if (error.value) {
-        console.error('updateTaskSubmissions error', {data: data.value, error: error.value})
+        console.error('updateTaskSubmissions error', {
+          data: data.value,
+          error: error.value,
+        })
         throw new Error('Failed to update submissions: ' + error.value)
       }
 
       console.log('submissionUpdateResponse', submissionUpdateResponse)
       task = await getTask(taskPid, address)
 
-      const updatedSubmissions = useTaskScoreCalculate(task, task.submissions as AllSubmissionWithCalculatedBounties[])
+      const updatedSubmissions = useTaskScoreCalculate(
+        task,
+        task.submissions as AllSubmissionWithCalculatedBounties[],
+      )
       console.log('score calculated submissions ', submissions)
 
       // save submission scores and set task.isScoreCalculated
@@ -229,13 +243,12 @@ let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
 
 function checkLoginAndVouch() {
-  // TODO check if vouched, if not, show a modal with a link to vouch page, and a 'I'm vouched' button to verify and update vouched state
-  if(!address) {
+  if (!address) {
     isLoginModalOpen = true
     return false
   } else if (!twitterVouched) {
     isVouchModalOpen = true
-    return false  
+    return false
   }
   return true
 }
@@ -279,7 +292,13 @@ async function onSubmitTweetUrl() {
     }
 
     const data = await fetchTweetInfo([tweetUrlForm.url])
-    const tweetInfo = validateTaskData<ValidatedTweetInfo>({ task, data, mode: 'add', twitterVouchedIDs, communityName: communityInfo.name })
+    const tweetInfo = validateTaskData<ValidatedTweetInfo>({
+      task,
+      data,
+      mode: 'add',
+      twitterVouchedIDs,
+      communityName: communityInfo.name,
+    })
     if (tweetInfo) {
       await saveTweetTaskSubmitInfo({
         submitterAddress: address,
@@ -324,8 +343,14 @@ async function onSubmitSpaceUrl() {
     }
 
     const data = await fetchSpacesInfo([spaceUrl])
-    const spaceInfo = validateTaskData<ValidatedSpacesInfo>({ task, data, mode: 'add', twitterVouchedIDs, communityName: communityInfo.name })
-    
+    const spaceInfo = validateTaskData<ValidatedSpacesInfo>({
+      task,
+      data,
+      mode: 'add',
+      twitterVouchedIDs,
+      communityName: communityInfo.name,
+    })
+
     await saveSpaceTaskSubmitInfo({
       submitterAddress: address,
       spaceUrl,
@@ -606,14 +631,17 @@ watch(
   },
 )
 
-watch(() => tweetUrlForm.url, (value) => {
-  try {
-    const url = new URL(value)
-    tweetUrlForm.url = url.origin + url.pathname
-  } catch (e) {
-    console.error('Invalid URL.')
-  }
-})
+watch(
+  () => tweetUrlForm.url,
+  value => {
+    try {
+      const url = new URL(value)
+      tweetUrlForm.url = url.origin + url.pathname
+    } catch (e) {
+      console.error('Invalid URL.')
+    }
+  },
+)
 
 const onClickCopyInviteCode = async () => {
   try {
@@ -770,7 +798,10 @@ const onClickShareToTwitter = () => {
               </div>
             </div>
 
-            <div v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug" class="mt-8">
+            <div
+              v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug"
+              class="mt-8"
+            >
               <TaskSubmissionTable
                 v-model:selected-submissions="selectedSubmissions"
                 :task="task"
@@ -781,7 +812,10 @@ const onClickShareToTwitter = () => {
             </div>
 
             <div v-if="!isLoading && isJoined" class="flex justify-center my-8">
-              <div v-if="isIng && (!isSubmitted || runtimeConfig.public.debug)" class="mx-4">
+              <div
+                v-if="isIng && (!isSubmitted || runtimeConfig.public.debug)"
+                class="mx-4"
+              >
                 <UButton
                   color="white"
                   :label="$t('Submit Quest')"
@@ -792,10 +826,7 @@ const onClickShareToTwitter = () => {
 
             <div
               v-if="
-                !isLoading &&
-                  isOwner &&
-                  !task.isSettled &&
-                  now >= task.endTime
+                !isLoading && isOwner && !task.isSettled && now >= task.endTime
               "
               class="flex-center"
             >
@@ -825,7 +856,12 @@ const onClickShareToTwitter = () => {
         <div class="space-y-2">
           <div class="flex flex-col justify-center">
             <div class="text-center">
-              <p v-if="task" v-html="$t(`task.joinModal.${task.type}`, { lineBreak: '<br>' })" />
+              <p
+                v-if="task"
+                v-html="
+                  $t(`task.joinModal.${task.type}`, { lineBreak: '<br>' })
+                "
+              />
             </div>
           </div>
 

@@ -17,11 +17,15 @@ const debouncedSearch = refDebounced(search, 300)
 // Filtered members based on search
 const filteredMembers = computed(() => {
   if (!debouncedSearch.value) return communityMembers
-  
+
   const searchTerm = debouncedSearch.value.toLowerCase()
   return communityMembers.filter(member => {
-    const memberMatch = (member.name || member.address).toLowerCase().includes(searchTerm)
-    const inviterMatch = (member.inviterName || member.inviterAddress || '').toLowerCase().includes(searchTerm)
+    const memberMatch = (member.name || member.address)
+      .toLowerCase()
+      .includes(searchTerm)
+    const inviterMatch = (member.inviterName || member.inviterAddress || '')
+      .toLowerCase()
+      .includes(searchTerm)
     return memberMatch || inviterMatch
   })
 })
@@ -29,38 +33,40 @@ const filteredMembers = computed(() => {
 onMounted(async () => {
   try {
     const userMap = await getCommunityUser(props.communityId)
-    communityMembers = Object.entries(userMap).map(([key, user]) => {
-      return {
-        address: key,
-        ...user
-      }
-    })
+    communityMembers = Object.values(userMap)
+
+    console.log({ communityMembers })
   } finally {
     loading.value = false
   }
 })
 
-const columns = [{
-  key: 'name',
-  label: 'Member Name',
-  sortable: true,
-  search: true
-}, {
-  key: 'address',
-  label: 'Address',
-  sortable: true,
-  search: true
-}, {
-  key: 'joinTime',
-  label: 'Joined',
-  sortable: true,
-  sort: (a: number, b: number) => b - a // Default sort newest first
-}, {
-  key: 'inviter',
-  label: 'Invited By',
-  sortable: true,
-  search: true
-}]
+const columns = [
+  {
+    key: 'name',
+    label: 'Member Name',
+    sortable: true,
+    search: true,
+  },
+  {
+    key: 'address',
+    label: 'Address',
+    sortable: true,
+    search: true,
+  },
+  {
+    key: 'joinTime',
+    label: 'Joined',
+    sortable: true,
+    sort: (a: number, b: number) => b - a, // Default sort newest first
+  },
+  {
+    key: 'inviter',
+    label: 'Invited By',
+    sortable: true,
+    search: true,
+  },
+]
 </script>
 
 <template>
@@ -85,12 +91,15 @@ const columns = [{
         },
         td: {
           padding: 'px-1',
-        }
+        },
       }"
     >
       <template #name-data="{ row }">
         <div class="flex items-center gap-3">
-          <span class="text-gray-900 dark:text-white font-medium" :title="row.address">
+          <span
+            class="text-gray-900 dark:text-white font-medium"
+            :title="row.address"
+          >
             {{ row.name || '/' }}
           </span>
         </div>
@@ -106,9 +115,13 @@ const columns = [{
 
       <template #inviter-data="{ row }">
         <span :title="row.inviterAddress">
-          {{ row.inviterName ? `${row.inviterName} (${shortString(row.inviterAddress, 4)})` : shortString(row.inviterAddress, 14) }}
+          {{
+            row.inviterName
+              ? `${row.inviterName} (${shortString(row.inviterAddress, 4)})`
+              : shortString(row.inviterAddress, 14)
+          }}
         </span>
       </template>
     </UTable>
   </div>
-</template> 
+</template>

@@ -22,17 +22,10 @@ onMounted(async () => {
   setCurrentCommunityUuid(community.uuid)
   mutedUsers = await getMutedUsers(community.uuid)
   const userMap = await getCommunityUser(community.uuid)
-  users = Object.entries(userMap).map((
-      [key, user]
-    ) => {
-      return {
-        address: key,
-        ...user
-      }
-    }).sort((a, b) => {
-      return a.muted && !b.muted ? 1
-      : !a.muted && !b.muted ? 0 : -1
-    })
+  users = Object.values(userMap).sort((a, b) => {
+    return a.muted && !b.muted ? 1
+    : !a.muted && !b.muted ? 0 : -1
+  })
   await setCurrentCommunityUserMap(userMap)
   console.log('-------chatroom mounted--------')
   console.log({users})
