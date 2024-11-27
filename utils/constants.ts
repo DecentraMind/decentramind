@@ -54,12 +54,12 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: '9FSEgmUsrug7kTdZJABDekwTGJy7YG7KaN5khcbwcX4'
   },
-  $APUS: {
-    ticker: '$APUS',
-    label: '$APUS',
-    processID: '5ZAZiY6p7vMhtlvwA10zb-3px7AqaoRGW6HjIg11dJE',
+  EDA: {
+    ticker: 'EDA',
+    label: 'Event-DA',
+    processID: 'b7PP-BVcAodp8EjFjEyRCtR40W_lgq_tiVAozCWrb_4',
     denomination: 12,
-    logo: 'ljYWasItSQZ8dvFOYXVx0nPFxW7z4fDsO7q0FccXlG0'
+    logo: 'rZbcNfx8UumPfzZJxXHlwXt7f_kxbO1_dcFbL_i0obg'
   },
   tIO: {
     ticker: 'tIO',
