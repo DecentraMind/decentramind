@@ -59,7 +59,7 @@ export const communityStore = defineStore('communityStore', () => {
     if (!address) {
       throw new Error('No address specified.')
     }
-    const res = await dryrun({
+    const data = await messageResult<string>({
       process: VOUCH_PROCESS_ID,
       tags: [
         { name: 'Action', value: 'Get-Vouches' },
@@ -67,14 +67,7 @@ export const communityStore = defineStore('communityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
-
-    let data: string
-    try {
-      data = extractResult<string>(res)
-    } catch (e) {
-      console.error('Failed to get vouch data', e)
-      return []
-    }
+    
     console.log('vouch data:', data)
     // Parse the JSON string
     const vouchData = JSON.parse(data) as VouchData

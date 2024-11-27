@@ -32,8 +32,10 @@ onMounted(async () => {
       }
       addSwitchListener()
 
-      await vouch()
-      await loadCommunityList(address)
+      await Promise.all([
+        vouch(),
+        loadCommunityList(address)
+      ])
 
       if (!twitterVouched) {
         isVouchModalOpen = true
