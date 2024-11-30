@@ -9,7 +9,7 @@ import {
 import type { Community, CommunityMember, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, messageResultCheck, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
-import { moduleID, schedulerID, extractResult, DM_PROCESS_ID, VOUCH_PROCESS_ID } from '~/utils'
+import { moduleID, schedulerID, extractResult, DM_PROCESS_ID, VOUCH_PROCESS_ID, VALID_VOUCHERS } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
 import { getCommunity as getCommunityAO } from '~/utils/community/community'
 
@@ -68,9 +68,14 @@ export const communityStore = defineStore('communityStore', () => {
       signer: createDataItemSigner(window.arweaveWallet),
     })
     
-    console.log('vouch data:', data)
-    // Parse the JSON string
     const vouchData = JSON.parse(data) as VouchData
+
+    console.log(`vouch data for ${address}:`, vouchData)
+    if (vouchData['Vouches-For'] !== address) {
+      twitterVouched = false
+      console.log('You are not vouched for this address.')
+      return []
+    }
 
     // Check if Vouchers exist in the data
     if (!vouchData.Vouchers || Object.keys(vouchData.Vouchers).length === 0) {
@@ -83,8 +88,9 @@ export const communityStore = defineStore('communityStore', () => {
     const vouchers = vouchData.Vouchers
 
     // Get all Identifiers
-    twitterVouchedIDs = Object.values(vouchers)
-      .map(voucher => voucher.Identifier)
+    twitterVouchedIDs = Object.entries(vouchers)
+      .filter(([voucherAddress, _]) => VALID_VOUCHERS.includes(voucherAddress))
+      .map(([_, vouchInfo]) => vouchInfo.Identifier)
       .filter(identifier => identifier) // Remove any undefined or null values
 
     if (twitterVouchedIDs.length === 0) {
@@ -150,7 +156,7 @@ export const communityStore = defineStore('communityStore', () => {
     chatroomID: string
   ) => {
     const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
-    const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined'> = {
+    const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined' | 'admins'> = {
       logo,
       banner,
       name,
