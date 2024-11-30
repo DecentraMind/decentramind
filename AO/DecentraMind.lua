@@ -1,4 +1,4 @@
-Variant = '0.4.71'
+Variant = '0.4.72'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -361,7 +361,7 @@ Actions = {
 
       local userCommunity = { joinTime = msg.Timestamp }
       if inviteCode then
-        if Invites[inviteCode] then
+        if Invites[inviteCode] and Invites[inviteCode].inviterAddress ~= address then
           Invites[inviteCode].invitees[address] = { joinTime = msg.Timestamp }
           userCommunity.inviteCode = inviteCode
         end
@@ -553,7 +553,7 @@ Actions = {
         if not invite.invitees then
           invite.invitees = {}
         end
-        if not invite.invitees[msg.From] then
+        if invite.inviterAddress ~= msg.From and not invite.invitees[msg.From] then
           invite.invitees[msg.From] = { joinTime = msg.Timestamp }
         end
       end
@@ -796,6 +796,7 @@ Actions = {
 
           communityUsers[address].joinTime = inviteInfo[uuid].joinTime
           if inviteInfo[uuid].inviteCode and Invites[inviteInfo[uuid].inviteCode] then
+            communityUsers[address].inviteCode = inviteInfo[uuid].inviteCode
             communityUsers[address].inviterAddress = Invites[inviteInfo[uuid].inviteCode].inviterAddress
             local inviter = Users[Invites[inviteInfo[uuid].inviteCode].inviterAddress]
             if inviter and inviter.name then
