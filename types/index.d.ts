@@ -327,6 +327,7 @@ export type UserInfoWithMuted = UserInfo & { muted: boolean }
 export type UserInfoWithAddress = UserInfoWithMuted & { address: string }
 export type CommunityMember = UserInfoWithAddress & {
   joinTime: number
+  inviteCode?: string
   inviterAddress?: string
   inviterName?: string
 }
