@@ -20,6 +20,9 @@ onMounted(async () => {
   try {
     // if not address, show login modal
     if (!address) {
+      if (window.arweaveWallet) {
+        await window.arweaveWallet.disconnect()
+      }
       await loadCommunityList()
     } else {
       if (!await checkIsActiveWallet()) {

@@ -41,6 +41,7 @@ export const aoStore = defineStore('aoStore', () => {
 
   async function addSwitchListener() {
     const onSwitch = async (e: any) => {
+      console.log('onSwitch', e.detail.address, address)
       if (e.detail.address !== address) {
         console.log('Wallet switched, logout.', e.detail.address, address)
         await doLogout()
