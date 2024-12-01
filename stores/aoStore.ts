@@ -45,8 +45,11 @@ export const aoStore = defineStore('aoStore', () => {
         console.log('Wallet switched, logout.', e.detail.address, address)
         await doLogout()
         globalThis.removeEventListener('walletSwitch', onSwitch)
+        console.log('reload page')
+        reloadNuxtApp()
       }
     }
+    console.log('add switch listener')
     globalThis.addEventListener('walletSwitch', onSwitch)
   }
 
@@ -64,9 +67,7 @@ export const aoStore = defineStore('aoStore', () => {
     isLoginModalOpen = false
 
     console.log('register/login result', res, activeAddress)
-    // update address after login. because the page will reload after address changes, which will interrupt the message sending
     address = activeAddress
-    addSwitchListener()
 
     return res
   }

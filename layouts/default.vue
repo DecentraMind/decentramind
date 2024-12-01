@@ -14,11 +14,6 @@ let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch, twitterVouched } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
-// reload page when address changes
-watch(() => address, () => {
-  reloadNuxtApp()
-})
-
 const isCreateModalOpen = $ref(false)
 let isLoading = $ref(true)
 onMounted(async () => {
@@ -64,6 +59,11 @@ const refetch = async () => {
   } finally {
     isLoading = false
   }
+}
+
+const afterLogin = () => {
+  console.log('reload page')
+  reloadNuxtApp()
 }
 </script>
 
@@ -236,7 +236,7 @@ const refetch = async () => {
       </template>
     </UModal>
     
-    <LoginModal />
+    <LoginModal @login="afterLogin" />
 
     <VouchModal />
 
