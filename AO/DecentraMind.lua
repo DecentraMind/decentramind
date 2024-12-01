@@ -1,9 +1,10 @@
-Variant = '0.4.72'
+Variant = '0.4.74'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
 local u = require("u")
 VouchProcessId = 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
+DefaultUserAvatar = 'gAh_m4pAU-PCAvDfDkv-6MPKp46E7MpaGlfwvZV-cgw'
 
 ---@class Community
 ---@field uuid string
@@ -193,6 +194,22 @@ local function createInviteCode(type, address, pidOrCommunityUuid)
   return code
 end
 
+---@param address string
+---@param avatar string|nil
+---@param name string|nil
+---@param createdAt number
+local function registerUser(address, createdAt, avatar, name)
+  -- TODO check vouch data
+  if not Users[address] then
+    Users[address] = {
+      avatar = avatar or DefaultUserAvatar,
+      name = name or string.sub(address, -4),
+      createdAt = createdAt,
+      canCreateCommunity = false
+    }
+  end
+end
+
 Actions = {
   Community = {
     CreateCommunity = function(msg)
@@ -348,6 +365,10 @@ Actions = {
         community.buildnum = community.buildnum + 1
       else
         community.buildnum = 1
+      end
+
+      if not Users[address] then
+        return u.replyError(msg, 'User not found. Please login first.')
       end
 
       if not UserCommunities[address] then
@@ -533,10 +554,20 @@ Actions = {
         return u.replyError(msg, 'Task not found.')
       end
 
+      -- check if the user has joined the community
+      local cid = Tasks[pid].communityUuid
+      if not UserCommunities[msg.From] or not UserCommunities[msg.From][cid] then
+        return u.replyError(msg, 'You have not joined the community.')
+      end
+
       assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
 
       if Tasks[pid].builders[msg.From] then
         return u.replyError(msg, 'You have joined this task.')
+      end
+
+      if not Users[msg.From] then
+        return u.replyError(msg, 'User not found. Please login first.')
       end
 
       local builder = {
@@ -745,20 +776,14 @@ Actions = {
 
   User = {
     RegisterUserOrLogin = function(msg)
-      local address = msg.From
-      local avatar = msg.Tags.Avatar
-      local name = msg.Tags.UserName
-      local user = {
-        avatar = avatar,
-        name = name,
-        createdAt = msg.Timestamp,
-        canCreateCommunity = false
-      }
-      if not Users[address] then
-        Users[address] = user
-      end
+      registerUser(
+        msg.From,
+        msg.Timestamp,
+        msg.Tags.Avatar,
+        msg.Tags.UserName
+      )
 
-      u.replyData(msg, Users[address])
+      u.replyData(msg, Users[msg.From])
     end,
 
     GetUserByAddress = function(msg)

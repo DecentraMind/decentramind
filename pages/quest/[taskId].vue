@@ -245,9 +245,11 @@ let isJoinModalOpen = $ref(false)
 
 function checkLoginAndVouch() {
   if (!address) {
+    console.log('address false open login modal')
     isLoginModalOpen = true
     return false
   } else if (!twitterVouched) {
+    console.log('twitterVouched false open vouch modal')
     isVouchModalOpen = true
     return false
   }

@@ -7,7 +7,8 @@ import VouchModal from '~/components/users/VouchModal.vue'
 
 const selectModal = $ref(0)
 
-const { address, checkIsActiveWallet, addSwitchListener } = $(aoStore())
+const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
+let { address } = $(aoStore())
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch, twitterVouched } = $(communityStore())
@@ -26,8 +27,9 @@ onMounted(async () => {
     if (!address) {
       await loadCommunityList()
     } else {
-      if (!await checkIsActiveWallet()){
+      if (!await checkIsActiveWallet()) {
         console.log('not active wallet')
+        address = ''
         isLoginModalOpen = true
         return
       }
@@ -165,6 +167,7 @@ const refetch = async () => {
 
 
           <UButton
+            v-if="userInfo && address"
             class="w-full mt-2 aspect-square"
             variant="soft"
             :ui="{
@@ -185,7 +188,7 @@ const refetch = async () => {
         <template #footer>
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
-            <NuxtLink :to="'/settings'">
+            <NuxtLink :to="userInfo && address ? '/settings' : '#'">
               <template v-if="!userInfo || !address">
                 <ArAvatar :src="defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
