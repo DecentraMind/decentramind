@@ -7,7 +7,8 @@ import VouchModal from '~/components/users/VouchModal.vue'
 
 const selectModal = $ref(0)
 
-const { address, checkIsActiveWallet, addSwitchListener } = $(aoStore())
+const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
+let { address } = $(aoStore())
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch, twitterVouched } = $(communityStore())
@@ -26,8 +27,9 @@ onMounted(async () => {
     if (!address) {
       await loadCommunityList()
     } else {
-      if (!await checkIsActiveWallet()){
+      if (!await checkIsActiveWallet()) {
         console.log('not active wallet')
+        address = ''
         isLoginModalOpen = true
         return
       }
