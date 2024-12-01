@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Community, Task, InviteCodeInfo, UserInfo } from '~/types'
 import { shortString } from '~/utils'
+import VouchModal from '~/components/users/VouchModal.vue'
 
 definePageMeta({
   layout: 'landing',
@@ -101,15 +102,7 @@ const checkVouch = async () => {
         </div>
       </template>
     </UCard>
-    <UModal v-model="vouchModalOpen">
-      <div class="h-[200px] flex flex-col items-center justify-center">
-        <span class="text-xl">Not Vouched</span>
-        <div>
-          <NuxtLink to="https://g8way.io/y77FlCnWP7xTxqoMYjc5_ojjeYpkSkjZEzB4e34We5g" target="_blank">
-            <UButton color="white" class="mt-10">Get Vouched</UButton>
-          </NuxtLink>
-        </div>
-      </div>
-    </UModal>
+    
+    <VouchModal :is-open="vouchModalOpen" />
   </UMain>
 </template>

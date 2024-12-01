@@ -47,6 +47,7 @@ const {
   twitterVouchedIDs,
   twitterVouched,
   setCurrentCommunityUuid,
+  joinCommunity
 } = $(communityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
@@ -265,6 +266,10 @@ function openJoinModal() {
 let isJoinLoading = $ref(false)
 async function onClickJoin() {
   isJoinLoading = true
+  // if not joined the community, join the community first
+  if (!communityInfo.isJoined) {
+    await joinCommunity(communityInfo.uuid)
+  }
   await joinTask(taskPid)
   task = await getTask(taskPid, address)
   isJoinModalOpen = false

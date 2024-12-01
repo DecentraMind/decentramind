@@ -83,6 +83,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (!window.arweaveWallet) {
       console.error('window.arweaveWallet not found.')
       alert('Please install Arweave Wallet or use Othent to continue')
+      // TODO redirect to https://arconnect.io if in mobile
       window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap'
       return false
     }

@@ -77,7 +77,7 @@ export type Community = {
   name: string
   /** description */
   desc: string
-  banner: `banner${6 | 7 | 8 | 9 | 10}`
+  banner: string
   website?: string
   github?: string
   twitter?: string
@@ -327,6 +327,7 @@ export type UserInfoWithMuted = UserInfo & { muted: boolean }
 export type UserInfoWithAddress = UserInfoWithMuted & { address: string }
 export type CommunityMember = UserInfoWithAddress & {
   joinTime: number
+  inviteCode?: string
   inviterAddress?: string
   inviterName?: string
 }
@@ -454,17 +455,17 @@ export type ValidatedTweetInfo = {
  * {"X-Value":"0-USD","Vouches-For":"xb...3B4","Vouchers":{"Ax_uXyLQBPZSQ15movzv9-O1mDo30khslqN64qD27Z8":{"Country":"","Identifier":"vico","Value":"0-USD"}},"Sub-IDs":[],"Total-Value":"0-USD","Values":["0-USD"]}
  * */
 type VouchData = {
-  X_Value: string
-  Vouches_For: string
+  'X-Value': string
+  'Vouches-For': string
   Vouchers: {
-    [key: string]: {
+    [voucherAddress: string]: {
       Country: string
       Identifier: string
       Value: string
     }
   }
-  Sub_IDs: string[]
-  Total_Value: string
+  'Sub-IDs': string[]
+  'Total-Value': string
   Values: string[]
 }
 

@@ -1,4 +1,4 @@
-Variant = '0.4.68'
+Variant = '0.4.72'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -361,7 +361,7 @@ Actions = {
 
       local userCommunity = { joinTime = msg.Timestamp }
       if inviteCode then
-        if Invites[inviteCode] then
+        if Invites[inviteCode] and Invites[inviteCode].inviterAddress ~= address then
           Invites[inviteCode].invitees[address] = { joinTime = msg.Timestamp }
           userCommunity.inviteCode = inviteCode
         end
@@ -488,6 +488,16 @@ Actions = {
       u.replyData(msg, copy)
     end,
 
+    GetUnsettledTasks = function(msg)
+      local tasks = {}
+      for _, task in pairs(Tasks) do
+        if not task.isSettled then
+          table.insert(tasks, task)
+        end
+      end
+      u.replyData(msg, tasks)
+    end,
+
     GetTasksByCommunityUuid = function(msg)
       local cid = msg.Tags.CommunityUuid
       if not TasksByCommunity[cid] then
@@ -543,7 +553,7 @@ Actions = {
         if not invite.invitees then
           invite.invitees = {}
         end
-        if not invite.invitees[msg.From] then
+        if invite.inviterAddress ~= msg.From and not invite.invitees[msg.From] then
           invite.invitees[msg.From] = { joinTime = msg.Timestamp }
         end
       end
@@ -566,6 +576,13 @@ Actions = {
       end
 
       assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
+
+      --- for each task, every builder can submit only one submission
+      for _, taskSubmission in pairs(Tasks[pid].submissions) do
+        if taskSubmission.address == msg.From then
+          return u.replyError(msg, 'You have already submitted a submission for this task.')
+        end
+      end
 
       --- TODO if not Tasks[pid].builders[msg.From] then Tasks[pid].builders[msg.From] = builder end
       submission.id = #Tasks[pid].submissions + 1
@@ -779,6 +796,7 @@ Actions = {
 
           communityUsers[address].joinTime = inviteInfo[uuid].joinTime
           if inviteInfo[uuid].inviteCode and Invites[inviteInfo[uuid].inviteCode] then
+            communityUsers[address].inviteCode = inviteInfo[uuid].inviteCode
             communityUsers[address].inviterAddress = Invites[inviteInfo[uuid].inviteCode].inviterAddress
             local inviter = Users[Invites[inviteInfo[uuid].inviteCode].inviterAddress]
             if inviter and inviter.name then

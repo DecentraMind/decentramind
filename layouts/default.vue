@@ -3,6 +3,7 @@ import { arUrl, defaultCommunityLogo, defaultUserAvatar, exploreLogo } from '~/u
 import { cn } from '~/utils/util'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 import LoginModal from '~/components/users/LoginModal.vue'
+import VouchModal from '~/components/users/VouchModal.vue'
 
 const selectModal = $ref(0)
 
@@ -234,32 +235,8 @@ const refetch = async () => {
     
     <LoginModal />
 
-    <UModal v-model="isVouchModalOpen">
-      <UCard
-        class="h-fit flex flex-col items-center justify-start"
-        :ui="{
-          header: {
-            padding: 'py-4',
-          },
-          body: {
-            base: 'w-full'
-          }
-        }"
-      >
-        <template #header>
-          <h3 class="font-semibold leading-6 text-gray-900 dark:text-white">
-            Vouch Required
-          </h3>
-        </template>
-        <div class="w-full flex-center gap-x-4">
-          <UButton color="gray" variant="ghost" title="I'm vouched, reload page" @click="reloadNuxtApp()">I'm vouched</UButton>
-          <NuxtLink to="https://g8way.io/y77FlCnWP7xTxqoMYjc5_ojjeYpkSkjZEzB4e34We5g" target="_blank">
-            <UButton icon="heroicons:arrow-top-right-on-square">Get Vouched</UButton>
-          </NuxtLink>
-        </div>
-      </UCard>
-    </UModal>
-    
+    <VouchModal :is-open="isVouchModalOpen" />
+
     <!-- TODO notifications from /api/notifications, such as task submission winning, task ended, new task created, etc. -->
     <!-- <NotificationsSlideover /> -->
   </UDashboardLayout>
