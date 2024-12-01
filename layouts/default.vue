@@ -165,6 +165,7 @@ const refetch = async () => {
 
 
           <UButton
+            v-if="userInfo && address"
             class="w-full mt-2 aspect-square"
             variant="soft"
             :ui="{
