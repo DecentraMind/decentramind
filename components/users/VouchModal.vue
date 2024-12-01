@@ -1,8 +1,8 @@
 <script setup lang="ts">
-const isOpen = ref(false)
+const { isVouchModalOpen } = $(aoStore())
 </script>
 <template>
-  <UModal v-model="isOpen">
+  <UModal v-model="isVouchModalOpen">
     <UCard
       class="h-fit flex flex-col items-center justify-start"
       :ui="{

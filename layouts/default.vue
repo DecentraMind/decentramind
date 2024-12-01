@@ -235,7 +235,7 @@ const refetch = async () => {
     
     <LoginModal />
 
-    <VouchModal :is-open="isVouchModalOpen" />
+    <VouchModal />
 
     <!-- TODO notifications from /api/notifications, such as task submission winning, task ended, new task created, etc. -->
     <!-- <NotificationsSlideover /> -->
