@@ -1,4 +1,4 @@
-Variant = '0.4.72'
+Variant = '0.4.73'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -531,6 +531,12 @@ Actions = {
       local pid = msg.Tags.TaskPid
       if not Tasks[pid] then
         return u.replyError(msg, 'Task not found.')
+      end
+
+      -- check if the user has joined the community
+      local cid = Tasks[pid].communityUuid
+      if not UserCommunities[msg.From] or not UserCommunities[msg.From][cid] then
+        return u.replyError(msg, 'You have not joined the community.')
       end
 
       assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
