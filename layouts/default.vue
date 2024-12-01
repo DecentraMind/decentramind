@@ -185,7 +185,7 @@ const refetch = async () => {
         <template #footer>
           <!-- <UserDropdownMini /> -->
           <UPopover mode="hover" :to="'/settings'">
-            <NuxtLink :to="'/settings'">
+            <NuxtLink :to="userInfo && address ? '/settings' : '#'">
               <template v-if="!userInfo || !address">
                 <ArAvatar :src="defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
