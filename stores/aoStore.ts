@@ -45,13 +45,13 @@ export const aoStore = defineStore('aoStore', () => {
       if (e.detail.address !== address) {
         console.log('Wallet switched, logout.', e.detail.address, address)
         await doLogout()
-        globalThis.removeEventListener('walletSwitch', onSwitch)
+        window.removeEventListener('walletSwitch', onSwitch)
         console.log('reload page')
         reloadNuxtApp()
       }
     }
     console.log('add switch listener')
-    globalThis.addEventListener('walletSwitch', onSwitch)
+    window.addEventListener('walletSwitch', onSwitch)
   }
 
   async function _login(wallet: typeof window.arweaveWallet) {
