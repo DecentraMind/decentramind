@@ -1,15 +1,6 @@
 import { tokenProcessIDs } from '~/utils/constants'
 import { defaultUserAvatar } from '~/utils/arAssets'
-import {
-  createDataItemSigner,
-  result,
-  // results,
-  message,
-  // spawn,
-  // monitor,
-  // unmonitor,
-  dryrun
-} from '@permaweb/aoconnect'
+import { messageResultParsed, result, dryrun, message, createDataItemSigner } from '~/utils/ao'
 import { DM_PROCESS_ID } from '~/utils/processID'
 
 const aoCommunityProcessID = DM_PROCESS_ID
@@ -60,19 +51,21 @@ export const aoStore = defineStore('aoStore', () => {
   }
 
   async function _login(wallet: typeof window.arweaveWallet) {
-    address = await wallet.getActiveAddress()
-    const res = await messageResultCheck({
+    const activeAddress = await wallet.getActiveAddress()
+    const res = await messageResultParsed({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'RegisterUserOrLogin' },
-        { name: 'UserName', value: address.slice(-4) },
+        { name: 'Name', value: activeAddress.slice(-4) },
         { name: 'Avatar', value: defaultUserAvatar },
       ],
       signer: createDataItemSigner(wallet),
     })
     isLoginModalOpen = false
 
-    console.log('register/login result', res, address)
+    console.log('register/login result', res, activeAddress)
+    // update address after login. because the page will reload after address changes, which will interrupt the message sending
+    address = activeAddress
     addSwitchListener()
 
     return res
