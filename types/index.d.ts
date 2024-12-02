@@ -459,9 +459,11 @@ type VouchData = {
   'Vouches-For': string
   Vouchers: {
     [voucherAddress: string]: {
-      Country: string
       Identifier: string
+      ['Vouch-For']: string
       Value: string
+      Country: string
+      Method: string
     }
   }
   'Sub-IDs': string[]

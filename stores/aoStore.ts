@@ -20,6 +20,7 @@ const permissions: PermissionType[] = [
 import Arweave from 'arweave'
 import type { Tag } from 'arweave/node/lib/transaction'
 import type { AoTag } from '~/types'
+import { getVouchData } from '~/utils/user/vouch.client'
 
 const arweave = Arweave.init({
   host: 'arweave.net', // 这是主网节点的 URL
@@ -31,11 +32,20 @@ export const aoStore = defineStore('aoStore', () => {
   const { clearCommunityData } = $(communityStore())
 
   const tokenMap = $ref(tokenProcessIDs)
-  let isLoginModalOpen = $ref(false)
+  const isLoginModalOpen = $ref(false)
   const isVouchModalOpen = $ref(false)
 
-  /** current connected address */
+  /**
+   * Address currently logged in, cached in local storage.
+   * If current active address(from await window.arweaveWallet.getActiveAddress())
+   * is successfully logged in, this address will be updated to current active address.
+   */
   let address = $(lsItemRef<string>('address', ''))
+
+  /** if current active address is vouched */
+  let twitterVouched = $ref(false)
+  /** twitter handles vouched by current active address */
+  let twitterVouchedIDs = $ref<string[]>([])
 
   const { showError } = $(notificationStore())
 
@@ -54,7 +64,7 @@ export const aoStore = defineStore('aoStore', () => {
     window.addEventListener('walletSwitch', onSwitch)
   }
 
-  async function _login(wallet: typeof window.arweaveWallet) {
+  async function registerOrLogin(wallet: typeof window.arweaveWallet) {
     const activeAddress = await wallet.getActiveAddress()
     const res = await messageResultParsed({
       process: aoCommunityProcessID,
@@ -65,7 +75,6 @@ export const aoStore = defineStore('aoStore', () => {
       ],
       signer: createDataItemSigner(wallet),
     })
-    isLoginModalOpen = false
 
     console.log('register/login result', res, activeAddress)
     address = activeAddress
@@ -73,8 +82,13 @@ export const aoStore = defineStore('aoStore', () => {
     return res
   }
 
+  const checkPermissions = async () => {
+    const allowedPermissions = await window.arweaveWallet.getPermissions() as PermissionType[]
+    return allowedPermissions.some((permission) => permissions.includes(permission))
+  }
+
   /** ArConnect browser extension login */
-  const doLogin = async () => {
+  const connectExtensionWallet = async () => {
     if (!window.arweaveWallet) {
       console.error('window.arweaveWallet not found.')
       alert('Please install Arweave Wallet or use Othent to continue')
@@ -83,10 +97,13 @@ export const aoStore = defineStore('aoStore', () => {
       return false
     }
     await window.arweaveWallet.connect(permissions)
-    return await _login(window.arweaveWallet)
+    console.log('connected to extension wallet')
+    // todo: check permissions, if not all permissions are granted,
+    // show text "Please grant all permissions" to let user grant all permissions
+    return true
   }
 
-  const othentLogin = async () => {
+  const connectOthentWallet = async () => {
     if (typeof window !== 'undefined') {
       try {
         const { Othent } = await import('@othent/kms')
@@ -99,6 +116,8 @@ export const aoStore = defineStore('aoStore', () => {
           inject: true
         })
         await othent.connect(undefined)
+        console.log('connected to othent wallet')
+        return true
       } catch (error) {
         console.error(error)
         throw new Error('Failed to login through Othent.')
@@ -106,13 +125,13 @@ export const aoStore = defineStore('aoStore', () => {
     } else {
       console.log('Running on server side, connect() is not available')
     }
-
-    return await _login(window.arweaveWallet)
   }
 
   const doLogout = async () => {
     await window.arweaveWallet.disconnect()
     clearCommunityData()
+    twitterVouched = false
+    twitterVouchedIDs = []
     address = ''
   }
 
@@ -131,6 +150,30 @@ export const aoStore = defineStore('aoStore', () => {
       console.error(error)
       return false
     }
+  }
+
+
+  /**
+   * update vouch data of current active address
+   * @returns twitterVouchedIDs string[] vouched twitter handles for this address
+   * @updates twitterVouched boolean if there is at least one vouched twitter handle
+   */
+  const updateVouchData = async () => {
+    const activeAddress = await window.arweaveWallet.getActiveAddress()
+    if (!activeAddress) {
+      throw new Error('No address specified.')
+    }
+    twitterVouchedIDs = await getVouchData(activeAddress, 'X')
+
+    if (twitterVouchedIDs.length === 0) {
+      console.log('No valid Identifiers found in Vouchers.')
+      twitterVouched = false
+      return []
+    }
+    console.log('twitterVouchedIDs:', twitterVouchedIDs)
+
+    twitterVouched = true
+    return twitterVouchedIDs
   }
 
   const getBalance = async (process: string) => {
@@ -188,7 +231,7 @@ export const aoStore = defineStore('aoStore', () => {
 
   const sendToken = async (process: string, recipient: string, amount: string, tags = []) => {
     if (!address) {
-      await doLogin()
+      await connectExtensionWallet()
     }
 
     if (tokenMap[process]) {
@@ -249,7 +292,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, getData, address, sendToken, addSwitchListener, doLogout, othentLogin, doLogin, getArBalance, checkIsActiveWallet, isLoginModalOpen, isVouchModalOpen })
+  return $$({ tokenMap, getData, address, sendToken, addSwitchListener, doLogout, connectOthentWallet, connectExtensionWallet, getArBalance, checkIsActiveWallet, isLoginModalOpen, isVouchModalOpen, updateVouchData, twitterVouched, twitterVouchedIDs, registerOrLogin })
 })
 
 if (import.meta.hot)

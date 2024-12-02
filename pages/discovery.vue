@@ -80,13 +80,14 @@ const refetch = async () => {
                 {{ userInfo?.name || shortString(address) }}
               </UButton>
               <template #panel>
-                <UButton color="red" @click="doLogout">
+                <UButton color="red" @click="() => { doLogout(); reloadNuxtApp() }">
                   Disconnect
                 </UButton>
               </template>
             </UPopover>
           </template>
           <UButton v-else variant="ghost" color="white" @click="isLoginModalOpen = true">
+            <UIcon name="ri:wallet-line" />
             Connect Wallet
           </UButton>
         </UBadge>

@@ -2,7 +2,7 @@
 const { isVouchModalOpen } = $(aoStore())
 </script>
 <template>
-  <UModal v-model="isVouchModalOpen">
+  <UModal v-model="isVouchModalOpen" prevent-close>
     <UCard
       class="h-fit flex flex-col items-center justify-start"
       :ui="{

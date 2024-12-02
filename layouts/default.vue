@@ -9,9 +9,10 @@ const selectModal = $ref(0)
 
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
 let { address } = $(aoStore())
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { updateVouchData, twitterVouched } = $(aoStore())
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
-const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch, twitterVouched } = $(communityStore())
+const { joinedCommunities, currentUuid, loadCommunityList, communityListError } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 const isCreateModalOpen = $ref(false)
@@ -34,11 +35,12 @@ onMounted(async () => {
       addSwitchListener()
 
       await Promise.all([
-        vouch(),
+        updateVouchData(),
         loadCommunityList(address)
       ])
 
       if (!twitterVouched) {
+        // TODO remove vouch modal from this layout if all users are vouched
         isVouchModalOpen = true
         return
       }
@@ -65,7 +67,10 @@ const refetch = async () => {
 }
 
 const afterLogin = () => {
-  console.log('reload page')
+  console.log('reload page after login')
+  console.log('address', address)
+  console.log('communityListError', communityListError)
+  console.log('userInfoError', userInfoError)
   reloadNuxtApp()
 }
 </script>
@@ -207,7 +212,7 @@ const afterLogin = () => {
     <div v-if="isLoading || isUserInfoLoading" class="flex-center w-full h-full">
       <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
     </div>
-    <div v-else-if="communityListError || (address && userInfoError)" class="flex-col-center h-full w-full">
+    <div v-else-if="communityListError || (address && !isUserInfoLoading && userInfoError)" class="flex-col-center h-full w-full">
       <UCard>
         <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
           <div class="flex-col-center gap-y-4">

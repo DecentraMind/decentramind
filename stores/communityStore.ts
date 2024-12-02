@@ -9,10 +9,10 @@ import {
   messageResult,
   messageResultParsed
 } from '~/utils/ao'
-import type { Community, CommunityMember, CommunitySetting, CreateToken, UserInfo, VouchData } from '~/types'
+import type { Community, CommunityMember, CommunitySetting, CreateToken, UserInfo } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
-import { moduleID, schedulerID, extractResult, DM_PROCESS_ID, VOUCH_PROCESS_ID, VALID_VOUCHERS } from '~/utils'
+import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
 import { getCommunity as getCommunityAO } from '~/utils/community/community'
 
@@ -20,8 +20,6 @@ export const communityStore = defineStore('communityStore', () => {
   const aoCommunityProcessID = DM_PROCESS_ID
 
   const { address } = $(aoStore())
-  let twitterVouched = $ref(false)
-  let twitterVouchedIDs = $ref<string[]>([])
   let communityList = $ref<Community[]>([])
   let mutedUsers = $ref<string[]>([])
   let currentUuid = $ref<string>()
@@ -51,60 +49,8 @@ export const communityStore = defineStore('communityStore', () => {
      item.joinTime = undefined
      return item
     })
-    twitterVouched = false
-    twitterVouchedIDs = []
     mutedUsers = []
     currentUuid = undefined
-  }
-
-  /** move this function to aoStore */
-  const vouch = async () => {
-    if (!address) {
-      throw new Error('No address specified.')
-    }
-    const data = await messageResult<string>({
-      process: VOUCH_PROCESS_ID,
-      tags: [
-        { name: 'Action', value: 'Get-Vouches' },
-        { name: 'ID', value: address }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-    
-    const vouchData = JSON.parse(data) as VouchData
-
-    console.log(`vouch data for ${address}:`, vouchData)
-    if (vouchData['Vouches-For'] !== address) {
-      twitterVouched = false
-      console.log('You are not vouched for this address.')
-      return []
-    }
-
-    // Check if Vouchers exist in the data
-    if (!vouchData.Vouchers || Object.keys(vouchData.Vouchers).length === 0) {
-      twitterVouched = false
-      console.log('No Vouchers found in the data.')
-      return []
-    }
-
-    // Get the Vouchers object
-    const vouchers = vouchData.Vouchers
-
-    // Get all Identifiers
-    twitterVouchedIDs = Object.entries(vouchers)
-      .filter(([voucherAddress, _]) => VALID_VOUCHERS.includes(voucherAddress))
-      .map(([_, vouchInfo]) => vouchInfo.Identifier)
-      .filter(identifier => identifier) // Remove any undefined or null values
-
-    if (twitterVouchedIDs.length === 0) {
-      console.log('No valid Identifiers found in Vouchers.')
-      twitterVouched = false
-      return []
-    }
-    console.log('twitterVouchedIDs:', twitterVouchedIDs)
-
-    twitterVouched = true
-    return twitterVouchedIDs
   }
 
   const mute = async (communityUuid: string, userAddress: string) => {
@@ -555,9 +501,6 @@ export const communityStore = defineStore('communityStore', () => {
     joinedCommunities,
     currentUuid,
     mutedUsers,
-    twitterVouched,
-    twitterVouchedIDs,
-    vouch,
     mute,
     unmute,
     createToken,
