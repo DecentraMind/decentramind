@@ -223,9 +223,9 @@ const afterLogin = () => {
       </UCard>
     </div>
 
-    <div v-else class="p-0 w-full">
+    <main v-else class="w-full">
       <slot />
-    </div>
+    </main>
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
       <div v-if="!userInfo?.canCreateCommunity" class="flex-center text-center whitespace-pre-line text-xl text-gray-500">

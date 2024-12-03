@@ -43,25 +43,8 @@ useSeoMeta({
 
 <template>
   <div>
-    <NuxtLoadingIndicator />
-
     <NuxtLayout>
-      <NuxtPage>
-        <template #hero>
-          test
-        </template>
-      </NuxtPage>
-
-      <!--
-      <div class="flex flex-col h-screen items-center gap-4 justify-center">
-        <Text class="text-7xl font-bold">Start your real community journey</Text>
-        <Text class="mt-3 mb-6">Try a better way than airdrop to build your community.</Text>
-        <NuxtLink to="signup">
-          Open to Build
-          <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
-      </NuxtLink>
-      </div>
-      -->
+      <NuxtPage />
     </NuxtLayout>
 
     <UNotifications />
