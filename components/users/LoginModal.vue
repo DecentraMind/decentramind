@@ -101,7 +101,9 @@ const checkVouch = async (showErrorMsg = true) => {
 }
 
 const onClose = () => {
-  isLoginModalOpen = false
+  if (loginStep === 'vouching') {
+    return
+  }
   window.setTimeout(() => {
     loginWallet = null
     loginStep = 'connecting'
