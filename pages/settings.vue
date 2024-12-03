@@ -1,5 +1,14 @@
 <script setup lang="ts">
 const {t} = useI18n()
+const { address } = $(aoStore())
+const router = useRouter()
+
+onMounted(async () => {
+  if(!address) {
+    router.push('/')
+    return
+  }
+})
 
 const links = [[{
     label: t('setting.person'),

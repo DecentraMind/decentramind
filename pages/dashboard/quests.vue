@@ -31,7 +31,7 @@ const sort = $ref({ column: 'id', direction: 'asc' as const })
 const { getBountiesByAddress, getTasksByOwner } = useTaskStore()
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
-const { joinedCommunities } = $(communityStore())
+const { joinedCommunities, setCurrentCommunityUuid } = $(communityStore())
 
 const page = $ref(1)
 const pageC = $ref(1)
@@ -117,6 +117,7 @@ let awardedSums = $ref<sumRow[]>([])
 
 let loadingBounties = $ref(true)
 onMounted(async () => {
+  setCurrentCommunityUuid(null)
   try {
     const { awarded: awardedBounties } = await getBountiesByAddress(address)
     publishedTasks = (await getTasksByOwner(address) as unknown as Array<Task & { rewardHtml: string }>).map(task => {

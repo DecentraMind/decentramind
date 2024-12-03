@@ -143,7 +143,7 @@ export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
 
   if (!result?.Messages?.[0]?.Data) {
     console.error('Failed to extract data from result.Messages', result)
-    if (result.Output.print) {
+    if (result.Output?.print) {
       console.error(result.Output.data)
     }
     throw new Error('Failed to extract data from result.Messages.')

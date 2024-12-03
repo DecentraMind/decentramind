@@ -7,11 +7,11 @@ definePageMeta({
   layout: 'landing',
 })
 
-const { joinCommunity, getUserByAddress, vouch } = $(communityStore())
+const { joinCommunity, getUserByAddress } = $(communityStore())
 const { getInviteByCode, joinTask } = useTaskStore()
 const runtimeConfig = useRuntimeConfig()
 
-const { doLogin } = $(aoStore())
+const { connectExtensionWallet, updateVouchData } = $(aoStore())
 
 const { showError, showSuccess } = $(notificationStore())
 
@@ -32,7 +32,7 @@ async function join() {
     return
   }
 
-  await doLogin()
+  await connectExtensionWallet()
   const isVouched = await checkVouch()
   if (!isVouched && !runtimeConfig.public.debug) {
     vouchModalOpen = true
@@ -75,7 +75,7 @@ onMounted(async () => {
 })
 
 const checkVouch = async () => {
-  const twitterIDs = await vouch()
+  const twitterIDs = await updateVouchData()
   return !!twitterIDs.length
 }
 </script>

@@ -71,21 +71,40 @@ const taskTypes = [
   ]
 ]
 
-const taskVisibleTabs = [
+const taskVisibleTabs: {
+  type: Task['visible']
+  label: string
+  content: string
+}[] = [
   {
+    type: 'public',
     label: t('Public Quests'),
     content: '',
   },
   {
+    type: 'private',
     label: t('Private Quests'),
     content: '',
   },
 ]
 
-function onTaskVisibleTabChange(index: number) {
-  const item = taskVisibleTabs[index]
-  if (item.label === 'Private Quests') {
+let selectedTaskVisibleType = $computed({
+  get() {
+    const index = taskVisibleTabs.findIndex(item => item.type === (route.query.visible || 'public'))
+    console.log('get selectedTaskVisibleType', route.query.visible, index)
+    return index === -1 ? 0 : index
+  },
+  set(value: number) {
+    router.replace({ query: { visible: taskVisibleTabs[value].type }, hash: route.hash })
+  },
+})
+const onTaskVisibleTypeChange = (value: number) => {
+  // prevent user to select private quests
+  if (value !== 0) {
     showMessage('Being Cooked!')
+    setTimeout(() => {
+      selectedTaskVisibleType = 0
+    }, 500)
   }
 }
 
@@ -148,32 +167,36 @@ const currentRightPage = $computed<PageSymbol>(() => {
       :community="community"
       :address="address"
     />
-    <UDashboardPage>
-      <UPage v-if="currentRightPage === communityRightPages['#quests']" class="bg-grid overflow-y-auto h-full w-full">
-        <div class="relative flex flex-col mx-10 pt-10 items-center h-screen">
-          <div class="flex w-full justify-between items-center mb-6">
-            <UTabs
-              :items="taskVisibleTabs"
-              :ui="{ wrapper: 'space-y-0' }"
-              @change="onTaskVisibleTabChange"
+    <div class="w-full h-screen">
+      <div v-if="currentRightPage === communityRightPages['#quests']" class="bg-grid">
+        <!-- header buttons -->
+        <div class="w-full relative flex justify-between items-center px-4 py-3 z-10 bg-white drop-shadow-sm">
+          <UTabs
+            v-model="selectedTaskVisibleType"
+            :items="taskVisibleTabs"
+            :ui="{ wrapper: 'space-y-0' }"
+            @change="onTaskVisibleTypeChange"
+          />
+          <UDropdown
+            v-if="community && isAdminOrOwner"
+            :items="taskTypes"
+            :popper="{ placement: 'bottom-end' }"
+            :ui="{ wrapper: 'h-8' }"
+          >
+            <UButton
+              color="white"
+              :label="$t('Start a Public Quest')"
+              trailing-icon="i-heroicons-chevron-down-20-solid"
             />
-            <UDropdown
-              v-if="community && isAdminOrOwner"
-              :items="taskTypes"
-              :popper="{ placement: 'bottom-start' }"
-              :ui="{ wrapper: 'h-8' }"
-            >
-              <UButton
-                color="white"
-                :label="$t('Start a Public Quest')"
-                trailing-icon="i-heroicons-chevron-down-20-solid"
-              />
-            </UDropdown>
-          </div>
+          </UDropdown>
+        </div>
 
+        <!-- tasks list -->
+        <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height))] overflow-y-auto scroll-gutter">
+          <!-- No tasks -->
           <div
             v-if="!tasks.length && !isLoading"
-            class="absolute h-[calc(100vh-var(--header-height)-40px)] w-2/3 flex justify-center items-center"
+            class="h-[calc(100vh-var(--header-height)-40px)] w-2/3 flex justify-center items-center"
           >
             <UCard>
               <div
@@ -207,7 +230,7 @@ const currentRightPage = $computed<PageSymbol>(() => {
 
           <div
             v-if="isLoading"
-            class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
+            class="absolute top-0 right-0 w-full h-full flex justify-center items-center"
           >
             <UIcon
               name="svg-spinners:blocks-scale"
@@ -266,52 +289,44 @@ const currentRightPage = $computed<PageSymbol>(() => {
                     </div>
                   </div>
                 </template>
-                <!-- <UButton
-                  :to="`/quest/${task.processID}`"
-                  class="absolute bottom-2 right-2 mt-2 ring-gray-200 hover:ring-gray-400"
-                  color="white"
-                  variant="outline"
-                >
-                  {{ $t('View Details') }}
-                </UButton> -->
               </UBlogPost>
             </div>
           </div>
         </div>
-
-        <UModal v-model="isCreateTaskModalOpen">
-          <UCard :ui="{ base: 'sm:min-w-[36rem] sm:max-w-full' }">
-            <template #header>
-              <div class="flex items-center justify-between">
-                <h3
-                  class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-                >
-                  {{ $t(`task.start.${createTaskType}`) }}
-                </h3>
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  icon="i-heroicons-x-mark-20-solid"
-                  class="-my-1"
-                  @click="isCreateTaskModalOpen = false"
-                />
-              </div>
-            </template>
-            <TaskForm
-              v-if="community"
-              :community="community"
-              :task-type="createTaskType"
-              @created="onTaskCreated"
-            />
-          </UCard>
-        </UModal>
-      </UPage>
+      </div>
 
       <Chatroom
         v-if="community && currentRightPage === communityRightPages['#chatroom']"
         :community="community"
         :address="address"
       />
-    </UDashboardPage>
+    </div>
+
+    <UModal v-model="isCreateTaskModalOpen">
+      <UCard :ui="{ base: 'sm:min-w-[36rem] sm:max-w-full' }">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3
+              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
+            >
+              {{ $t(`task.start.${createTaskType}`) }}
+            </h3>
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              class="-my-1"
+              @click="isCreateTaskModalOpen = false"
+            />
+          </div>
+        </template>
+        <TaskForm
+          v-if="community"
+          :community="community"
+          :task-type="createTaskType"
+          @created="onTaskCreated"
+        />
+      </UCard>
+    </UModal>
   </UDashboardLayout>
 </template>

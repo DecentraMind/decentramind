@@ -181,7 +181,7 @@ const onClose = () => {
     >
       <template #header>
         <h3 class="font-semibold leading-6 text-gray-900 dark:text-white">
-          Logging in
+          Login
         </h3>
       </template>
       <div v-if="isLoggingIn" class="flex justify-center">

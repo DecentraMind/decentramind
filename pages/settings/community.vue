@@ -1,17 +1,8 @@
 <script setup lang="ts">
 import { arUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
-const { address } = $(aoStore())
 const { joinedCommunities } = $(communityStore())
 
-const router = useRouter()
-
-onMounted(async () => {
-  if(!address) {
-    router.push('/')
-    return
-  }
-})
 </script>
 
 <template>

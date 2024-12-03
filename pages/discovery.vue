@@ -1,12 +1,24 @@
 <script setup lang="ts">
-import { getCommunityBannerUrl, defaultCommunityLogo, shortString } from '~/utils'
+import TopNav from '~/components/TopNav.vue'
+import { getCommunityBannerUrl, defaultCommunityLogo } from '~/utils'
 
-const { address, doLogout } = $(aoStore())
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { address, twitterVouched } = $(aoStore())
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 
-const { communityList, isCommunityListLoading, communityListError, twitterVouched, loadCommunityList, joinCommunity, setCurrentCommunityUuid } = $(communityStore())
-const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
+const {
+  communityList,
+  isCommunityListLoading,
+  communityListError,
+  loadCommunityList,
+  joinCommunity,
+  setCurrentCommunityUuid,
+} = $(communityStore())
+const {
+  isLoading: isUserInfoLoading,
+  error: userInfoError,
+  refetchUserInfo,
+} = $(useUserInfo())
 
 const { showError, showSuccess } = $(notificationStore())
 
@@ -24,19 +36,9 @@ onMounted(async () => {
   setCurrentCommunityUuid(undefined)
 })
 
-const translate = [
-  [
-  //   {
-  //   label: '简体中文',
-  // },
-  {
-    label: 'English'
-  }]
-]
-
 let joinLoading = $ref(false)
 
-const joinToCommunity = async(uuid: string, name: string) => {
+const joinToCommunity = async (uuid: string, name: string) => {
   if (!address) {
     isLoginModalOpen = true
     return
@@ -56,7 +58,6 @@ const joinToCommunity = async(uuid: string, name: string) => {
   } finally {
     joinLoading = false
   }
-
 }
 
 const refetch = async () => {
@@ -65,56 +66,31 @@ const refetch = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen w-full relative">
-    <UDashboardNavbar title="Explore">
-      <template #right>
-        <!--<UButton @click="test">test</UButton>-->
-        <UBadge color="white">
-          <template v-if="address">
-            <NuxtLink :to="'/dashboard/quests'">
-              <UButton color="white" variant="ghost">{{ $t('wallet.Dashboard') }}</UButton>
-            </NuxtLink>
-            <span>|</span>
-            <UPopover :popper="{ placement: 'bottom-end' }">
-              <UButton variant="ghost" color="white" block :title="address">
-                {{ userInfo?.name || shortString(address) }}
-              </UButton>
-              <template #panel>
-                <UButton color="red" @click="() => { doLogout(); reloadNuxtApp() }">
-                  Disconnect
-                </UButton>
-              </template>
-            </UPopover>
-          </template>
-          <UButton v-else variant="ghost" color="white" @click="isLoginModalOpen = true">
-            <UIcon name="ri:wallet-line" />
-            Connect Wallet
-          </UButton>
-        </UBadge>
-        <UDropdown :items="translate" mode="hover" :popper="{ placement: 'bottom-start' }" class="hidden">
-          <UButton color="white" label="English" trailing-icon="i-heroicons-chevron-down-20-solid" />
-        </UDropdown>
-        <!--<UColorModeButton />-->
-      </template>
-    </UDashboardNavbar>
-
-    <div class="w-full overflow-y-auto h-[calc(100vh-var(--header-height))] pt-5 pb-20 px-10 bg-grid">
-      <div v-if="sortedCommunities.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-8">
+  <div class="relative bg-grid h-screen">
+    <TopNav class="sticky top-0 z-10" />
+    <div class="h-[calc(100vh-var(--header-height)-1rem)] overflow-y-auto">
+      <div
+        v-if="sortedCommunities.length > 0"
+        class="pt-5 pb-20 px-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-8"
+      >
         <UBlogPost
           v-for="community in sortedCommunities"
           :key="community.uuid"
           :image="getCommunityBannerUrl(community.banner)"
           class="mb-2"
           :ui="{
-            wrapper: 'bg-white gap-y-0 ring-1 ring-gray-100 hover:ring-gray-200 rounded-lg overflow-hidden cursor-pointer',
+            wrapper:
+              'bg-white gap-y-0 ring-1 ring-gray-100 hover:ring-gray-200 rounded-lg overflow-hidden cursor-pointer',
             container: 'group-hover:bg-dot pt-4',
             inner: 'flex-1 px-4 overflow-hidden',
             image: {
               wrapper: 'ring-0 rounded-none',
-              base: 'ease-in-out'
-            }
+              base: 'ease-in-out',
+            },
           }"
-          @click="community.isJoined && $router.push('/community/' + community.uuid)"
+          @click="
+            community.isJoined && $router.push('/community/' + community.uuid)
+          "
         >
           <template #title>
             <div class="flex items-center">
@@ -133,7 +109,9 @@ const refetch = async () => {
                 <div class="text-lg font-semibold">
                   builder: {{ community.buildnum }}
                 </div>
-                <div class="text-base overflow-hidden whitespace-nowrap overflow-ellipsis">
+                <div
+                  class="text-base overflow-hidden whitespace-nowrap overflow-ellipsis"
+                >
                   {{ community.desc }}
                 </div>
               </div>
@@ -167,24 +145,36 @@ const refetch = async () => {
       </div>
       <div v-else class="flex-col-center h-full">
         <div v-if="isCommunityListLoading || isUserInfoLoading">
-          <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
+          <UIcon
+            name="svg-spinners:blocks-scale"
+            dynamic
+            class="w-16 h-16 opacity-50"
+          />
         </div>
         <UCard v-else>
-          <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
-            <div v-if="communityListError || userInfoError" class="flex-col-center gap-y-4">
+          <div
+            class="flex-center text-center whitespace-pre-line text-xl text-gray-500"
+          >
+            <div
+              v-if="communityListError || userInfoError"
+              class="flex-col-center gap-y-4"
+            >
               <p>Failed to load data.</p>
-              <UButton variant="soft" class="block" @click="refetch()">Retry</UButton>
+              <UButton variant="soft" class="block" @click="refetch()">
+                Retry
+              </UButton>
             </div>
             <p v-else>Nothing here，please create the first community.</p>
           </div>
         </UCard>
       </div>
+
+      <UModal v-model="joinLoading">
+        <div class="h-[200px] flex flex-col items-center justify-center">
+          <div>Join...</div>
+          <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        </div>
+      </UModal>
     </div>
-    <UModal v-model="joinLoading">
-      <div class="h-[200px] flex flex-col items-center justify-center">
-        <div>Join...</div>
-        <UIcon name="svg-spinners:12-dots-scale-rotate" />
-      </div>
-    </UModal>
   </div>
 </template>
