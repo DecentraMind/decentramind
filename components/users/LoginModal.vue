@@ -19,16 +19,21 @@ const login = async () => {
   isLoggingIn = true
   try {
     await registerOrLogin(window.arweaveWallet)
+
+    // update localstorage cached address to remember the login status
     address = await window.arweaveWallet.getActiveAddress()
     console.log('update address after login', address)
+
     refetchUserInfo()
     isLoginSuccess = true
     console.log('show login success', isLoginSuccess)
+
     setTimeout(() => {
       console.log('emit login')
       isLoginModalOpen = false
       emit('login')
     }, 3000)
+
     setTimeout(() => {
       console.log('reset login step')
       loginStep = 'connecting'
@@ -41,7 +46,7 @@ const login = async () => {
   }
 }
 
-const onClickLogin = async (wallet: LoginWallet) => {
+const onClickConnect = async (wallet: LoginWallet) => {
   loginWallet = wallet
 
   const connectFunction = wallet === 'extension' ? connectExtensionWallet : 
@@ -65,18 +70,29 @@ const onClickLogin = async (wallet: LoginWallet) => {
 }
 
 let isCheckingVouch = $ref(false)
+let isCheckVouchSuccess = $ref(false)
 const checkVouch = async (showErrorMsg = true) => {
-  isCheckingVouch = true
-  await updateVouchData()
-  isCheckingVouch = false
-  if (!twitterVouched) {
-    if (showErrorMsg) {
-      showError('You are not vouched.')
+  try {
+    isCheckingVouch = true
+    await updateVouchData()
+    isCheckingVouch = false
+
+    if (!twitterVouched) {
+      if (showErrorMsg) {
+        showError('You are not vouched.')
+      }
+      return
     }
-    return
+
+    loginStep = 'logging'
+    await login()
+    isCheckVouchSuccess = true
+  } catch (_) {
+    // showError('Failed to check vouch.', error as Error)
+    isCheckVouchSuccess = false
+  } finally {
+    isCheckingVouch = false
   }
-  loginStep = 'logging'
-  await login()
 }
 
 const onClose = () => {
@@ -105,14 +121,14 @@ const onClose = () => {
         </h3>
       </template>
       <div class="flex justify-center space-x-3">
-        <UButton variant="outline" :loading="loginWallet === 'extension'" :disabled="!!loginWallet" @click="onClickLogin('extension')">
+        <UButton variant="outline" :loading="loginWallet === 'extension'" :disabled="!!loginWallet" @click="onClickConnect('extension')">
           <UAvatar
             src="/wallet/arconnect.svg"
             size="2xs"
           />
           ArConnect
         </UButton>
-        <UButton variant="outline" :loading="loginWallet === 'othent'" :disabled="!!loginWallet" class="hidden" @click="onClickLogin('othent')">
+        <UButton variant="outline" :loading="loginWallet === 'othent'" :disabled="!!loginWallet" class="hidden" @click="onClickConnect('othent')">
           <UAvatar
             src="/wallet/google.svg"
             size="2xs"
@@ -139,24 +155,33 @@ const onClose = () => {
           Vouch Required
         </h3>
       </template>
-      <div v-if="!isCheckingVouch" class="w-full flex-center gap-x-4">
-        <UButton
-          color="gray"
-          variant="ghost"
-          title="I'm vouched, reload page"
-          @click="checkVouch()"
-        >
-          I'm vouched
-        </UButton>
-        <NuxtLink
-          to="https://g8way.io/Cikp3X7Zk4cI1RtBEq-pVh_fhz-npd5dZ5-0EgCxTQM"
-          target="_blank"
-        >
-          <UButton icon="heroicons:arrow-top-right-on-square">
-            Get Vouched
+
+      <template v-if="!isCheckingVouch">
+        <div v-if="isCheckVouchSuccess" class="w-full flex-center gap-x-4">
+          <UButton
+            color="gray"
+            variant="ghost"
+            title="I'm vouched, reload page"
+            @click="checkVouch()"
+          >
+            I'm vouched
           </UButton>
-        </NuxtLink>
-      </div>
+          <NuxtLink
+            to="https://g8way.io/Cikp3X7Zk4cI1RtBEq-pVh_fhz-npd5dZ5-0EgCxTQM"
+            target="_blank"
+          >
+            <UButton icon="heroicons:arrow-top-right-on-square">
+              Get Vouched
+            </UButton>
+          </NuxtLink>
+        </div>
+        <div v-else class="flex flex-col justify-center items-center gap-y-2">
+          <span>Failed to check vouch.</span>
+          <UButton variant="ghost" @click="checkVouch(false)">
+            Try again
+          </UButton>
+        </div>
+      </template>
       <div v-else class="flex justify-center items-center gap-x-2">
         <UIcon name="svg-spinners:12-dots-scale-rotate" />
         <span>Checking vouch</span>
@@ -180,12 +205,22 @@ const onClose = () => {
           Login
         </h3>
       </template>
+
       <div v-if="isLoggingIn" class="flex justify-center">
         <UIcon name="svg-spinners:12-dots-scale-rotate" />
       </div>
-      <div v-else-if="isLoginSuccess" class="flex justify-center">
-        🎉 Welcome to DecentraMind!
-      </div>
+      <template v-else>
+        <div v-if="isLoginSuccess" class="flex justify-center">
+          🎉 Welcome to DecentraMind!
+        </div>
+
+        <div v-else class="flex justify-center items-center flex-col gap-y-2">
+          Failed to login.
+          <UButton variant="ghost" @click="login()">
+            Try again
+          </UButton>
+        </div>
+      </template>
     </UCard>
   </UModal>
 </template> 

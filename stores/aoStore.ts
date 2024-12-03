@@ -1,6 +1,6 @@
 import { tokenProcessIDs } from '~/utils/constants'
 import { defaultUserAvatar } from '~/utils/arAssets'
-import { messageResultParsed, result, dryrun, message, createDataItemSigner } from '~/utils/ao'
+import { result, results, dryrun, message, createDataItemSigner } from '~/utils/ao'
 import { DM_PROCESS_ID } from '~/utils/processID'
 
 const aoCommunityProcessID = DM_PROCESS_ID
@@ -64,22 +64,48 @@ export const aoStore = defineStore('aoStore', () => {
     window.addEventListener('walletSwitch', onSwitch)
   }
 
-  async function registerOrLogin(wallet: typeof window.arweaveWallet) {
-    const activeAddress = await wallet.getActiveAddress()
-    const res = await messageResultParsed({
+  async function _sendRegisterOrLoginMessage(wallet: typeof window.arweaveWallet, name: string) {
+    await message({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'RegisterUserOrLogin' },
-        { name: 'Name', value: activeAddress.slice(-4) },
+        { name: 'Name', value: name },
         { name: 'Avatar', value: defaultUserAvatar },
       ],
-      signer: createDataItemSigner(wallet),
+      signer: createDataItemSigner(wallet)
     })
+  }
 
-    console.log('register/login result', res, activeAddress)
-    address = activeAddress
+  async function registerOrLogin(wallet: typeof window.arweaveWallet, name?: string) {
+    const activeAddress = await wallet.getActiveAddress()
 
-    return res
+    await _sendRegisterOrLoginMessage(wallet, name || activeAddress.slice(-4))
+
+    const item = await retry({
+      fn: async () => {
+        const res = await results({
+          process: aoCommunityProcessID, 
+          sort: 'DESC',
+          limit: 10
+        })
+        const resultMessage = res.edges[0].node
+        const targetAddress = resultMessage.Messages?.[0]?.Target
+
+        if (targetAddress !== activeAddress) {
+          console.log('no required result message, waiting for next round...', targetAddress, activeAddress)
+          throw new Error('No required result message.')
+        }
+        return resultMessage
+      },
+      maxAttempts: 3,
+      interval: 2000
+    })
+    console.log('register/login result message', item)
+
+    const userData = extractResult(item)
+    console.log('register/login result', userData, activeAddress)
+
+    return userData
   }
 
   const checkPermissions = async () => {
@@ -97,7 +123,7 @@ export const aoStore = defineStore('aoStore', () => {
       return false
     }
     await window.arweaveWallet.connect(permissions)
-    console.log('connected to extension wallet')
+    console.log('connected to extension wallet', await window.arweaveWallet.getActiveAddress())
     // todo: check permissions, if not all permissions are granted,
     // show text "Please grant all permissions" to let user grant all permissions
     return true

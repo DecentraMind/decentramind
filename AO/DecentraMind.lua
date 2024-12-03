@@ -1,4 +1,4 @@
-Variant = '0.4.74'
+Variant = '0.4.75'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -776,6 +776,10 @@ Actions = {
 
   User = {
     RegisterUserOrLogin = function(msg)
+      if not u.isVouch(msg.From) then
+        return u.replyError(msg, 'You are not vouched.')
+      end
+
       registerUser(
         msg.From,
         msg.Timestamp,
