@@ -53,15 +53,8 @@ const onClickLogin = async (wallet: LoginWallet) => {
       throw new Error('Invalid login wallet')
     }
     if (await connectFunction()) {
-      // check if current active address is vouched
-      await updateVouchData()
-      if (!twitterVouched) {
-        loginStep = 'vouching'
-        return
-      }
-
-      loginStep = 'logging'
-      await login()
+      loginStep = 'vouching'
+      await checkVouch(false)
     }
   } catch (error) {
     console.error('Error during login operation', error)
@@ -72,12 +65,14 @@ const onClickLogin = async (wallet: LoginWallet) => {
 }
 
 let isCheckingVouch = $ref(false)
-const checkVouch = async () => {
+const checkVouch = async (showErrorMsg = true) => {
   isCheckingVouch = true
   await updateVouchData()
   isCheckingVouch = false
   if (!twitterVouched) {
-    showError('You are not vouched.')
+    if (showErrorMsg) {
+      showError('You are not vouched.')
+    }
     return
   }
   loginStep = 'logging'
@@ -162,8 +157,9 @@ const onClose = () => {
           </UButton>
         </NuxtLink>
       </div>
-      <div v-else class="flex justify-center">
+      <div v-else class="flex justify-center items-center gap-x-2">
         <UIcon name="svg-spinners:12-dots-scale-rotate" />
+        <span>Checking vouch</span>
       </div>
     </UCard>
 
