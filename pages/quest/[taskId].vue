@@ -44,16 +44,14 @@ const {
 
 const {
   getLocalCommunity,
-  twitterVouchedIDs,
-  twitterVouched,
   setCurrentCommunityUuid,
   joinCommunity
 } = $(communityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
-const { address } = $(aoStore())
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { address, twitterVouched, twitterVouchedIDs } = $(aoStore())
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
