@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const { connectExtensionWallet, connectOthentWallet, registerOrLogin, updateVouchData, twitterVouched } = $(aoStore())
+import { VOUCH_SITE_URL } from '~/utils/constants'
+
+const { connectExtensionWallet, connectOthentWallet, registerOrLogin, updateVouchData, twitterVouched, twitterVouchedIDs } = $(aoStore())
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 let { isLoginModalOpen, address } = $(aoStore())
 const { showError } = $(notificationStore())
@@ -18,7 +20,10 @@ let isLoginSuccess = $ref(false)
 const login = async () => {
   isLoggingIn = true
   try {
-    await registerOrLogin(window.arweaveWallet)
+    if (twitterVouchedIDs.length <= 0) {
+      throw new Error('No vouched X identifiers found.')
+    }
+    await registerOrLogin(window.arweaveWallet, twitterVouchedIDs[0])
 
     // update localstorage cached address to remember the login status
     address = await window.arweaveWallet.getActiveAddress()
@@ -76,6 +81,7 @@ const checkVouch = async (showErrorMsg = true) => {
     isCheckingVouch = true
     await updateVouchData()
     isCheckingVouch = false
+    isCheckVouchSuccess = true
 
     if (!twitterVouched) {
       if (showErrorMsg) {
@@ -86,7 +92,6 @@ const checkVouch = async (showErrorMsg = true) => {
 
     loginStep = 'logging'
     await login()
-    isCheckVouchSuccess = true
   } catch (_) {
     // showError('Failed to check vouch.', error as Error)
     isCheckVouchSuccess = false
@@ -166,10 +171,7 @@ const onClose = () => {
           >
             I'm vouched
           </UButton>
-          <NuxtLink
-            to="https://g8way.io/Cikp3X7Zk4cI1RtBEq-pVh_fhz-npd5dZ5-0EgCxTQM"
-            target="_blank"
-          >
+          <NuxtLink :to="VOUCH_SITE_URL" target="_blank">
             <UButton icon="heroicons:arrow-top-right-on-square">
               Get Vouched
             </UButton>
@@ -177,7 +179,7 @@ const onClose = () => {
         </div>
         <div v-else class="flex flex-col justify-center items-center gap-y-2">
           <span>Failed to check vouch.</span>
-          <UButton variant="ghost" @click="checkVouch(false)">
+          <UButton variant="ghost" @click="checkVouch()">
             Try again
           </UButton>
         </div>

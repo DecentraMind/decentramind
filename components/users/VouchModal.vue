@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { VOUCH_SITE_URL } from '~/utils/constants'
 const { isVouchModalOpen } = $(aoStore())
 </script>
 <template>
@@ -28,10 +29,7 @@ const { isVouchModalOpen } = $(aoStore())
         >
           I'm vouched
         </UButton>
-        <NuxtLink
-          to="https://g8way.io/Cikp3X7Zk4cI1RtBEq-pVh_fhz-npd5dZ5-0EgCxTQM"
-          target="_blank"
-        >
+        <NuxtLink :to="VOUCH_SITE_URL" target="_blank">
           <UButton icon="heroicons:arrow-top-right-on-square">
             Get Vouched
           </UButton>
