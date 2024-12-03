@@ -49,10 +49,10 @@ export const taskBannersMap: Record<Task['type'], string[]> = {
     'ASSu5XLRLGKNw1NmciWVm7XO14ZKHWCcNaar_PDVwz4'
   ],
   article: [
-    'A6DsoHfFFGfwD-PDl0HRXd3PtkM9Vv7h_FDlgwCtlq0',
-    'iQ2mjhFUbwBQCVOb4fwWNCgO-GBwZFsizWqDlwRssKc',
-    'EuViB6R44a4WeoRTfCU4Orh677R55ZP9yQ4sTP2kaEE',
-    'PjB0YMyuQqEP9K3TOXarYOt0q5ENpeXRi6YCbTPb72M'
+    'jyVC4XeIxLNOZitnjgPzljLzf9jQikbPg1aQVHOV1wM',
+    'xIGLkFhuHLmqNnJMamzbAg0EascuMW8odU8u3EXdjQk',
+    'cSGrre5FzyMvYBdoLJ2VfBU7JHavHb7pVSAEpdYY2cU',
+    '4qYkZ6nWT22v_v_MkyCH4ZJ-LvRWhf0M0NC29aehbPA'
   ],
   invite: [
     '56lhvYDBHLtAsr-STGwVNsJx45-aDqMZRRWwZOJpjsQ',
