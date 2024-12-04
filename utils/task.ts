@@ -43,6 +43,16 @@ export async function getTask(taskPid: string, address?: string): Promise<Task> 
 }
 
 /**
+ * Get tasks that are not settled
+ */
+export async function getUnsettledTasks() {
+  return await dryrunResultParsed<Task[]>({
+    process: taskManagerProcessID,
+    tags: [{ name: 'Action', value: 'GetUnsettledTasks' }]
+  })
+}
+
+/**
  * TODO: update using admin wallet
  * update specific submission
  * @param submission 
