@@ -2,6 +2,16 @@
 import { onErrorCaptured } from 'vue'
 const { showError } = $(notificationStore())
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare, no-unused-vars, @typescript-eslint/no-unused-vars
+interface BigInt {
+  /** Convert to BigInt to string form in JSON.stringify */
+  toJSON: () => string;
+}
+// fix "JSON.stringify() doesn't know how to serialize a BigInt"
+BigInt.prototype.toJSON = function () {
+  return this.toString()
+}
+
 onErrorCaptured((error, instance, info) => {
   console.error('Global error handler:', error, info)
   showError('Application Error: ', error)

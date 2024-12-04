@@ -40,9 +40,11 @@ const pageSize = computed(() =>
     : maxTotalChances
 )
 
-const pageRows = computed(() => 
-  filteredRows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
-)
+const pageRows = computed(() => {
+  const rows = filteredRows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
+  console.log('pageRows', rows)
+  return rows
+})
 
 // Selected submissions
 const selectedSubmissions = ref<AllSubmissionWithCalculatedBounties[]>([])
