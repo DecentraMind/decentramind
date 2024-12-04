@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import LoginModal from '~/components/users/LoginModal.vue'
+
 const { isLoginModalOpen, address } = $(aoStore())
 const router = useRouter()
 
@@ -30,5 +32,6 @@ useSeoMeta({
       Open to Build
       <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
     </UButton>
+    <LoginModal @login="router.push('/discovery')" />
   </UMain>
 </template>

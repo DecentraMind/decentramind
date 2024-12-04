@@ -5,6 +5,8 @@ import CommunitySettingForm from '~/components/community/CommunitySettingForm.vu
 import LoginModal from '~/components/users/LoginModal.vue'
 import VouchModal from '~/components/users/VouchModal.vue'
 
+const router = useRouter()
+
 const selectModal = $ref(0)
 
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
@@ -67,11 +69,11 @@ const refetch = async () => {
 }
 
 const afterLogin = () => {
-  console.log('reload page after login')
+  console.log('after login triggered')
   console.log('address', address)
   console.log('communityListError', communityListError)
   console.log('userInfoError', userInfoError)
-  reloadNuxtApp()
+  router.push('/')
 }
 </script>
 

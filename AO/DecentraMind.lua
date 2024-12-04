@@ -1,4 +1,4 @@
-Variant = '0.4.76'
+Variant = '0.4.79'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -350,13 +350,6 @@ Actions = {
       local uuid = msg.Tags.CommunityUuid
       local inviteCode = msg.Tags.InviteCode
 
-      --- TODO check vouch data
-      --- FIXME user will not be able to join community if check vouch data here
-      -- local isVouched = u.isVouch(address)
-      -- if not isVouched then
-      --   return u.replyError(msg, 'No vouch data of ' .. address .. '.')
-      -- end
-
       local community = Communities[uuid]
       assert(community, 'Community not found.')
 
@@ -540,6 +533,17 @@ Actions = {
       u.replyData(msg, tasks)
     end,
 
+    GetUnsettledTasksByCommunityUuid = function(msg)
+      local cid = msg.Tags.CommunityUuid
+      local tasks = {}
+      for _, task in pairs(Tasks) do
+        if task.communityUuid == cid and not task.isSettled then
+          table.insert(tasks, task)
+        end
+      end
+      u.replyData(msg, tasks)
+    end,
+
     GetTasksByOwner = function(msg)
       local address = msg.Tags.Address
       local tasks = {}
@@ -656,6 +660,13 @@ Actions = {
 
       for key, value in pairs(submission) do
         if key ~= 'id' and key ~= 'createTime' then
+          -- TODO find by submission.id instead of index
+          -- for _, taskSubmission in pairs(Tasks[pid].submissions) do
+          --   if taskSubmission.id == id then
+          --     taskSubmission[key] = value
+          --     taskSubmission.updateTime = msg.Timestamp
+          --   end
+          -- end
           Tasks[pid].submissions[id][key] = value
           Tasks[pid].submissions[id].updateTime = msg.Timestamp
         end

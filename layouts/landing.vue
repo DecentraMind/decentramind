@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import LoginModal from '~/components/users/LoginModal.vue'
-const router = useRouter()
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
 let { address } = $(aoStore())
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 let { isLoginModalOpen } = $(aoStore())
 
 onMounted(async () => {
@@ -22,6 +21,5 @@ onMounted(async () => {
   <div>
     <Header />
     <slot />
-    <LoginModal @login="router.push('/discovery')" />
   </div>
 </template>

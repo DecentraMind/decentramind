@@ -8,6 +8,9 @@ import { baseFieldClasses } from '~/components/fields'
 import * as echarts from 'echarts'
 import CommunityMembersTable from '~/components/community/CommunityMembersTable.vue'
 
+definePageMeta({
+  ssr: false
+})
 
 const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())

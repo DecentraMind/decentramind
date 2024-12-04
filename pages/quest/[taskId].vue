@@ -25,6 +25,10 @@ import { fetchSpacesInfo, fetchTweetInfo } from '~/utils/twitter/twitter.client'
 import { saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo } from '~/utils/task'
 import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
 
+definePageMeta({
+  ssr: false
+})
+
 const runtimeConfig = useRuntimeConfig()
 
 let now: Ref<number>

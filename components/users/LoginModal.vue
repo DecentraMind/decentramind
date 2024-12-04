@@ -104,6 +104,7 @@ const onClose = () => {
   if (loginStep === 'vouching') {
     return
   }
+  isLoginModalOpen = false
   window.setTimeout(() => {
     loginWallet = null
     loginStep = 'connecting'
