@@ -52,6 +52,16 @@ export async function getUnsettledTasks() {
   })
 }
 
+export async function getUnsettledTasksByCommunityUuid(communityUuid: string) {
+  return await dryrunResultParsed<Task[]>({
+    process: taskManagerProcessID,
+    tags: [
+      { name: 'Action', value: 'GetUnsettledTasksByCommunityUuid' },
+      { name: 'CommunityUuid', value: communityUuid }
+    ]
+  })
+}
+
 /**
  * TODO: update using admin wallet
  * update specific submission
