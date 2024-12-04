@@ -659,7 +659,7 @@ const onClickCopyInviteCode = async () => {
       location.origin + '/i/' + task.inviteCode!,
     )
     showSuccess('Copied!')
-  } catch (err) {
+  } catch (_) {
     showError('Copy failed.')
   }
 }
