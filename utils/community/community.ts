@@ -1,7 +1,7 @@
 
 import { DM_PROCESS_ID } from '~/utils/processID'
 import type { Community } from '~/types'
-import { extractResult } from '~/utils'
+import { dryrunResultParsed } from '~/utils/ao'
 
 const aoCommunityProcessID = DM_PROCESS_ID
 // Getting information about a specific community
@@ -13,13 +13,8 @@ export const getCommunity = async (uuid: string, address?: string) => {
   if (address) {
     tags.push({ name: 'userAddress', value: address })
   }
-  const result = await dryrun({
+  return await dryrunResultParsed({
     process: aoCommunityProcessID,
     tags
-  })
-
-  const json = extractResult<string>(result)
-  const res = JSON.parse(json) as Community
-
-  return res
+  }) as Community
 }
