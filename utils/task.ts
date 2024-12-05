@@ -113,7 +113,34 @@ export const updateTaskSubmissions = async (taskPid: string, submissions: AllSub
   })
 }
 
-export const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceUrl, spaceInfo, taskPid, communityUuid, communityLogo, invites, mode, submissionId, wallet, validateStatus, validateError}: {submitterAddress: string, spaceUrl: string, spaceInfo: ValidatedSpacesInfo, taskPid: string, communityUuid: string, communityLogo: string, invites: InviteCodeInfo[], mode: 'add' | 'update', submissionId?: number, wallet?: Parameters<typeof createDataItemSigner>[0], validateStatus?: Submission['validateStatus'], validateError?: string}) {
+type SaveSpaceTaskSubmitInfoParams = {
+  submitterAddress: string
+  spaceUrl: string
+  spaceInfo: ValidatedSpacesInfo
+  taskPid: string
+  communityUuid: string
+  communityLogo: string
+  invites: InviteCodeInfo[]
+  mode: 'add' | 'update'
+  submissionId?: number
+  wallet?: Parameters<typeof createDataItemSigner>[0]
+  validateStatus?: Submission['validateStatus']
+  validateError?: string
+}
+export const saveSpaceTaskSubmitInfo = async function ({
+  submitterAddress,
+  spaceUrl,
+  spaceInfo,
+  taskPid,
+  communityUuid,
+  communityLogo,
+  invites,
+  mode,
+  submissionId,
+  wallet,
+  validateStatus,
+  validateError
+}: SaveSpaceTaskSubmitInfoParams) {
   const {
     ended_at,
     participant_count: participantCount,
@@ -150,7 +177,9 @@ export const saveSpaceTaskSubmitInfo = async function ({submitterAddress, spaceU
   const inviteCount = invites.filter(inviteInfo => {
     return (
       inviteInfo.inviterAddress === submitterAddress &&
-      inviteInfo.communityUuid === communityUuid
+      inviteInfo.communityUuid === communityUuid &&
+      inviteInfo.type === 'task' &&
+      inviteInfo.taskPid === taskPid
     )
   }).reduce((total, inviteInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -226,7 +255,9 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
   const inviteCount = invites.filter(inviteInfo => {
     return (
       inviteInfo.inviterAddress === submitterAddress &&
-      inviteInfo.communityUuid === communityUuid
+      inviteInfo.communityUuid === communityUuid &&
+      inviteInfo.type === 'task' &&
+      inviteInfo.taskPid === taskPid
     )
   }).reduce((total, inviteInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
