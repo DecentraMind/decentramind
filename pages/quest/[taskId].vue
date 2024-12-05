@@ -682,7 +682,7 @@ const onClickShareToTwitter = () => {
 </script>
 
 <template>
-  <UDashboardPage>
+  <div class="h-screen overflow-y-auto">
     <div
       v-if="isLoading"
       class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
@@ -696,25 +696,21 @@ const onClickShareToTwitter = () => {
 
     <UPage v-if="!isLoading" class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full">
-        <div class="flex justify-end mb-4">
-          <div class="ml-3">
-            <NuxtLink v-if="task" :to="`/community/${task.communityUuid}`">
-              <UButton
-                icon="i-heroicons-x-mark-20-solid"
-                color="white"
-                variant="solid"
-                size="lg"
-              />
-            </NuxtLink>
-          </div>
-        </div>
+        <NuxtLink v-if="task" :to="`/community/${task.communityUuid}`" class="fixed top-4 right-4 z-10">
+          <UButton
+            icon="i-heroicons-x-mark-20-solid"
+            color="white"
+            variant="solid"
+            size="lg"
+          />
+        </NuxtLink>
 
         <UBlogPost
           v-if="task"
           :key="task.processID"
           :title="task.name"
           :description="task.intro"
-          class="px-10 pt-0 pb-10"
+          class="px-10 pt-16 pb-10"
           :ui="{ title: 'text-3xl mb-6 text-clip' }"
         >
           <template #description>
@@ -987,5 +983,5 @@ const onClickShareToTwitter = () => {
         </div>
       </UCard>
     </UModal>
-  </UDashboardPage>
+  </div>
 </template>
