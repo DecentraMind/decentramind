@@ -73,7 +73,7 @@ const afterLogin = () => {
   console.log('address', address)
   console.log('communityListError', communityListError)
   console.log('userInfoError', userInfoError)
-  router.push('/')
+  reloadNuxtApp()
 }
 </script>
 
@@ -197,15 +197,15 @@ const afterLogin = () => {
 
         <template #footer>
           <!-- <UserDropdownMini /> -->
-          <UPopover mode="hover" :to="'/settings'">
-            <NuxtLink :to="userInfo && address ? '/settings' : '#'">
+          <UPopover mode="hover" :to="userInfo && address ? '/settings' : '#'">
+            <UButton variant="ghost" @click="userInfo && address ? router.push('/settings') : isLoginModalOpen = true">
               <template v-if="!userInfo || !address">
                 <ArAvatar :src="defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
               <template v-else>
                 <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
-            </NuxtLink>
+            </UButton>
           </UPopover>
         </template>
       </UDashboardSidebar>

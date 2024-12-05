@@ -7,6 +7,7 @@ const { isLoginModalOpen } = $(aoStore())
 const { address, doLogout } = $(aoStore())
 const { userInfo } = $(useUserInfo())
 const { class: className } = $(useAttrs())
+const router = useRouter()
 
 const translate = [
   [
@@ -21,7 +22,7 @@ const translate = [
 
 const onClickDisconnect = async () => {
   await doLogout()
-  reloadNuxtApp()
+  router.push('/')
 }
 </script>
 

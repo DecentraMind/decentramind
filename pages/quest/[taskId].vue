@@ -72,6 +72,9 @@ const isJoined = $computed(() => {
     ? Object.keys(task.builders).findIndex(builder => builder === address) > -1
     : false
 })
+const isJoinedCommunity = $computed(() => {
+  return communityInfo && communityInfo.isJoined
+})
 
 const isIng = $computed(() => {
   return task ? now.value > task.startTime && now.value < task.endTime : false
@@ -696,7 +699,11 @@ const onClickShareToTwitter = () => {
 
     <UPage v-if="!isLoading" class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full">
-        <NuxtLink v-if="task" :to="`/community/${task.communityUuid}`" class="fixed top-4 right-4 z-10">
+        <NuxtLink
+          v-if="task && isJoinedCommunity"
+          :to="`/community/${task.communityUuid}`"
+          class="fixed top-4 right-4 z-10"
+        >
           <UButton
             icon="i-heroicons-x-mark-20-solid"
             color="white"
