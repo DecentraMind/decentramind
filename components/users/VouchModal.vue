@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { VOUCH_SITE_URL } from '~/utils/constants'
 const { isVouchModalOpen } = $(aoStore())
+
+// TODO remove this component and isVouchModalOpen after all user data fixed(no unvouched user), and new user must be vouched before first login
 </script>
 <template>
   <UModal v-model="isVouchModalOpen" prevent-close>

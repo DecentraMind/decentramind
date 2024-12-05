@@ -11,7 +11,7 @@ const selectModal = $ref(0)
 
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
 let { address } = $(aoStore())
-const { updateVouchData, twitterVouched } = $(aoStore())
+const { updateVouchData, twitterVouched, redirectUrlAfterLogin } = $(aoStore())
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const { joinedCommunities, currentUuid, loadCommunityList, communityListError } = $(communityStore())
@@ -73,7 +73,11 @@ const afterLogin = () => {
   console.log('address', address)
   console.log('communityListError', communityListError)
   console.log('userInfoError', userInfoError)
-  reloadNuxtApp()
+  if (redirectUrlAfterLogin) {
+    router.push(redirectUrlAfterLogin)
+  } else {
+    reloadNuxtApp()
+  }
 }
 </script>
 

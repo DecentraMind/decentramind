@@ -205,7 +205,7 @@ export const communityStore = defineStore('communityStore', () => {
   let communityListError = $ref<string>()
   /**
    * Get community list method. This function will update communityList and joinedCommunityList cache.
-   * */
+   */
   const loadCommunityList = async (address?: string) => {
     isCommunityListLoading = true
     communityListError = undefined
@@ -342,7 +342,6 @@ export const communityStore = defineStore('communityStore', () => {
     return join
   }
 
-  //Methods of withdrawing from the community
   const exitCommunity = async (uuid: string) => {
     const messageId = await message({
       process: aoCommunityProcessID,

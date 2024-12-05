@@ -10,8 +10,8 @@ definePageMeta({
   ssr: false
 })
 
-const { joinCommunity, getUserByAddress, getCommunityUser } = $(communityStore())
-const { getInviteByCode, joinTask } = useTaskStore()
+const { joinCommunity, getUserByAddress, getCommunityUser, loadCommunityList } = $(communityStore())
+const { getInviteByCode } = useTaskStore()
 // const runtimeConfig = useRuntimeConfig()
 
 const { address } = $(aoStore())
@@ -47,22 +47,12 @@ async function join() {
     }
 
     await joinCommunity(community.uuid, code)
-    // if (inviteInfo.type === 'community' && community) {
-    //   await joinCommunity(community.uuid, code)
-    // } else if (inviteInfo.type === 'task' && task) {
-    //   await joinCommunity(task.communityUuid, code)
-    //   await joinTask(task.processID, code)
-    // }
 
     isJoinLoading = false
     showSuccess(`Successfully joined ${community.name}!`)
 
+    await loadCommunityList(address)
     await router.push({ path: '/community/' + community.uuid })
-    // if (inviteInfo.type === 'community') {
-    //   await router.push({ path: '/community/' + inviteInfo.communityUuid })
-    // } else {
-    //   await router.push({ path: '/task/' + inviteInfo.taskPid })
-    // }
   } catch (error) {
     console.error(error)
     showError('Failed to join community.', error as Error)
