@@ -74,7 +74,17 @@ const afterLogin = () => {
   console.log('communityListError', communityListError)
   console.log('userInfoError', userInfoError)
   if (redirectUrlAfterLogin) {
-    router.push(redirectUrlAfterLogin)
+    console.log('redirect after login:', redirectUrlAfterLogin)
+    if (typeof redirectUrlAfterLogin === 'string') {
+      router.push(redirectUrlAfterLogin)
+    } else {
+      if (redirectUrlAfterLogin.path === router.currentRoute.value.path) {
+        redirectUrlAfterLogin.force = true
+        router.push(redirectUrlAfterLogin)
+      } else {
+        router.push(redirectUrlAfterLogin)
+      }
+    }
   } else {
     reloadNuxtApp()
   }

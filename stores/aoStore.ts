@@ -46,6 +46,14 @@ export const aoStore = defineStore('aoStore', () => {
   let twitterVouched = $ref(false)
   /** twitter handles vouched by current active address */
   let twitterVouchedIDs = $ref<string[]>([])
+  /** redirect url after login */
+  let redirectUrlAfterLogin = $ref<{
+    path?: string
+    query?: Record<string, string>
+    hash?: string
+    replace?: boolean
+    force?: boolean
+  }>({})
 
   const { showError } = $(notificationStore())
 
@@ -74,38 +82,6 @@ export const aoStore = defineStore('aoStore', () => {
       ],
       signer: createDataItemSigner(wallet)
     })
-  }
-
-  async function registerOrLogin(wallet: typeof window.arweaveWallet, name?: string) {
-    const activeAddress = await wallet.getActiveAddress()
-
-    await _sendRegisterOrLoginMessage(wallet, name || activeAddress.slice(-4))
-
-    const item = await retry({
-      fn: async () => {
-        const res = await results({
-          process: aoCommunityProcessID, 
-          sort: 'DESC',
-          limit: 10
-        })
-        const resultMessage = res.edges[0].node
-        const targetAddress = resultMessage.Messages?.[0]?.Target
-
-        if (targetAddress !== activeAddress) {
-          console.log('no required result message, waiting for next round...', targetAddress, activeAddress)
-          throw new Error('No required result message.')
-        }
-        return resultMessage
-      },
-      maxAttempts: 3,
-      interval: 2000
-    })
-    console.log('register/login result message', item)
-
-    const userData = extractResult(item)
-    console.log('register/login result', userData, activeAddress)
-
-    return userData
   }
 
   const checkPermissions = async () => {
@@ -153,12 +129,45 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
+  async function registerOrLogin(wallet: typeof window.arweaveWallet, name?: string) {
+    const activeAddress = await wallet.getActiveAddress()
+
+    await _sendRegisterOrLoginMessage(wallet, name || activeAddress.slice(-4))
+
+    const item = await retry({
+      fn: async () => {
+        const res = await results({
+          process: aoCommunityProcessID, 
+          sort: 'DESC',
+          limit: 10
+        })
+        const resultMessage = res.edges[0].node
+        const targetAddress = resultMessage.Messages?.[0]?.Target
+
+        if (targetAddress !== activeAddress) {
+          console.log('no required result message, waiting for next round...', targetAddress, activeAddress)
+          throw new Error('No required result message.')
+        }
+        return resultMessage
+      },
+      maxAttempts: 3,
+      interval: 5000
+    })
+    console.log('register/login result message', item)
+
+    const userData = extractResult(item)
+    console.log('register/login result', userData, activeAddress)
+
+    return userData
+  }
+
   const doLogout = async () => {
     await window.arweaveWallet.disconnect()
     clearCommunityData()
     twitterVouched = false
     twitterVouchedIDs = []
     address = ''
+    redirectUrlAfterLogin = {}
   }
 
   async function checkIsActiveWallet() {
@@ -318,7 +327,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-  return $$({ tokenMap, getData, address, sendToken, addSwitchListener, doLogout, connectOthentWallet, connectExtensionWallet, getArBalance, checkIsActiveWallet, isLoginModalOpen, isVouchModalOpen, updateVouchData, twitterVouched, twitterVouchedIDs, registerOrLogin })
+  return $$({ tokenMap, getData, address, sendToken, addSwitchListener, doLogout, connectOthentWallet, connectExtensionWallet, getArBalance, checkIsActiveWallet, isLoginModalOpen, isVouchModalOpen, updateVouchData, twitterVouched, twitterVouchedIDs, registerOrLogin, redirectUrlAfterLogin })
 })
 
 if (import.meta.hot)

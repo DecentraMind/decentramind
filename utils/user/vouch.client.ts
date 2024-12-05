@@ -1,12 +1,13 @@
 import type { VouchData } from '~/types'
 import { uniq } from 'lodash-es'
+import { dryrunResult } from '~/utils/ao'
 
 /** move this function to aoStore */
 export const getVouchData = async (address: string, method: string = 'X'): Promise<string[]> => {
   if (!address) {
     throw new Error('No address specified.')
   }
-  const data = await messageResult<string>({
+  const data = await dryrunResult<string>({
     process: VOUCH_PROCESS_ID,
     tags: [
       { name: 'Action', value: 'Get-Vouches' },

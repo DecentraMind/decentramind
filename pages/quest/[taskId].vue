@@ -28,6 +28,7 @@ import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
 definePageMeta({
   ssr: false
 })
+const router = useRouter()
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -56,7 +57,7 @@ const { showError, showSuccess, showMessage } = $(notificationStore())
 
 const { address, twitterVouched, twitterVouchedIDs } = $(aoStore())
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
+let { isLoginModalOpen, isVouchModalOpen, redirectUrlAfterLogin } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
 
@@ -243,14 +244,28 @@ onMounted(async () => {
   } finally {
     isLoading = false
   }
+
+  // auto join task if there is a joinTask action in the url
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.get('action') === 'joinTask') {
+    console.log('auto join task')
+    await onClickJoin()
+  }
 })
 
 let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
-
 function checkLoginAndVouch() {
   if (!address) {
     console.log('address false open login modal')
+    // set redirect url with joinTask action after login
+    redirectUrlAfterLogin = {
+      path: router.currentRoute.value.path,
+      query: {
+        action: 'joinTask',
+      },
+      force: true,
+    }
     isLoginModalOpen = true
     return false
   } else if (!twitterVouched) {
@@ -804,6 +819,8 @@ const onClickShareToTwitter = () => {
               >
                 <UButton
                   color="white"
+                  :loading="isJoinLoading"
+                  :disabled="isJoinLoading"
                   :label="$t('Join Quest')"
                   @click="openJoinModal"
                 />

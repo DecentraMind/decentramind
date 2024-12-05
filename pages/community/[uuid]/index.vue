@@ -9,6 +9,10 @@ import TaskStatus from '~/components/task/TaskStatus.vue'
 import { useTaskStore } from '~/stores/taskStore'
 import TaskForm from '~/components/task/TaskForm.vue'
 
+definePageMeta({
+  ssr: false
+})
+
 const { t } = useI18n()
 const taskStore = useTaskStore()
 const { getTasksByCommunityUuid } = taskStore
