@@ -6,7 +6,7 @@ const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect(
   {
     MU_URL: 'https://mu.ao-testnet.xyz',
     CU_URL: 'https://cu.ao-testnet.xyz',
-    GATEWAY_URL: 'https://arweave.net',
+    GATEWAY_URL: 'https://g8way.io',
   },
 )
 
@@ -143,7 +143,7 @@ export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
 
   if (!result?.Messages?.[0]?.Data) {
     console.error('Failed to extract data from result.Messages', result)
-    if (result.Output.print) {
+    if (result.Output?.print) {
       console.error(result.Output.data)
     }
     throw new Error('Failed to extract data from result.Messages.')

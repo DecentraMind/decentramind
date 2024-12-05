@@ -1,5 +1,5 @@
 -- u is a utility library for DecentraMind
-local u = { _version = "0.0.4" }
+local u = { _version = "0.0.5" }
 
 local json = require("json")
 
@@ -79,7 +79,10 @@ function u.uid(length)
   return id
 end
 
-function u.isVouch(address)
+function u.fetchVouchedIdentifiers(address, method, validVouchers)
+  method = method or 'X'
+  validVouchers = validVouchers or {}
+
   Send({
     Target = VouchProcessId,
     Action = 'Get-Vouches',
@@ -87,7 +90,7 @@ function u.isVouch(address)
   })
   local receivedAddress = address -- capture the address value
   --- FIXME: when Vouch process error(the address is not vouched)
-  local vouchData = Receive(function(msg)
+  local vouchResult = Receive(function(msg)
     if (msg.From ~= VouchProcessId) then return false end
     -- print('receive from vouch process')
 
@@ -107,13 +110,26 @@ function u.isVouch(address)
 
     return false
   end).Data
-  print("vouchData of " .. address .. ": " .. vouchData)
+  print("vouchData of " .. address .. ": " .. vouchResult)
 
-  local result = json.decode(vouchData)
+  local result = json.decode(vouchResult)
+  local identifiers = {}
   if result["Vouches-For"] == address then
-    return true
+    if not result["Vouchers"] then
+      return identifiers
+    end
+    for voucher, vouchData in pairs(result["Vouchers"]) do
+      local isValidVoucher = u.findIndex(validVouchers, function(validVoucher)
+        return validVoucher == voucher
+      end)
+      if isValidVoucher and vouchData['Method'] == method then
+        table.insert(identifiers, vouchData['Identifier'])
+      end
+    end
+    print('vouched identifiers: ' .. json.encode(identifiers))
+    return identifiers
   end
-  return false
+  return identifiers
 end
 
 return u

@@ -8,6 +8,9 @@ import { baseFieldClasses } from '~/components/fields'
 import * as echarts from 'echarts'
 import CommunityMembersTable from '~/components/community/CommunityMembersTable.vue'
 
+definePageMeta({
+  ssr: false
+})
 
 const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
@@ -177,7 +180,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <UDashboardPage>
+  <div class="h-screen">
     <div v-if="isLoading" class="absolute top-0 left-0 w-full h-full flex-center">
       <UIcon
         name="svg-spinners:blocks-scale"
@@ -185,9 +188,9 @@ onBeforeUnmount(() => {
         class="w-16 h-16 opacity-50"
       />
     </div>
-    <div else class="w-full px-10 pt-16 overflow-y-auto">
+    <div v-if="community" class="w-full h-full px-10 pt-16 overflow-y-auto">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
-      <UPage v-if="community" class="xl:m-auto xl:max-w-[1200px]">
+      <UPage class="xl:m-auto xl:max-w-[1200px]">
         <ULandingCard
           :description="community.desc"
         >
@@ -327,5 +330,5 @@ onBeforeUnmount(() => {
         </UPageBody>
       </UPage>
     </div>
-  </UDashboardPage>
+  </div>
 </template>

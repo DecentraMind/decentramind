@@ -33,6 +33,10 @@ export const updateSubmissions = async(taskPid: string) => {
   const submissions = task.submissions// as AllSubmissionWithCalculatedBounties[]
   switch (task.type) {
     case 'space': {
+      if (submissions.length <= 0) {
+        return { result: 'success', message: 'no submissions, no data to update.' }
+      }
+
       const spaceIds = submissions.map(s => {
         const matched = s.url.trim().match(SPACE_URL_REGEXP)
         if (!matched || !matched[1]) {
@@ -70,7 +74,13 @@ export const updateSubmissions = async(taskPid: string) => {
         }
         let validatedSpaceInfo: ValidatedSpacesInfo
         try {
-          validatedSpaceInfo = validateTaskData<ValidatedSpacesInfo>({task, data: spaceInfo, mode: 'update', twitterVouchedIDs: []})
+          validatedSpaceInfo = validateTaskData<ValidatedSpacesInfo>({
+            task,
+            data: spaceInfo,
+            mode: 'update',
+            twitterVouchedIDs: [],
+            communityName: community.name,
+          })
         } catch (error) {
           const validateError = error instanceof Error ? error.message : 'Unknown error'
           return updateInvalidSubmission({
@@ -106,6 +116,10 @@ export const updateSubmissions = async(taskPid: string) => {
     case 'promotion':
     case 'bird':
     case 'article': {
+      if (submissions.length <= 0) {
+        return { result: 'success', message: 'no submissions, no data to update.' }
+      }
+
       const tweetIds = submissions.map(s => {
         const matched = s.url.trim().match(TWEET_URL_REGEXP)
 
@@ -120,6 +134,11 @@ export const updateSubmissions = async(taskPid: string) => {
       if (!tweets || !tweets.data || !tweets.data.length || !tweets.includes) {
         console.error('Error fetching tweets:', tweets)
         throw new Error('Failed to validate tweet URL: fetch data failed.')
+      }
+
+      const community = await getCommunity(task.communityUuid)
+      if (!community) {
+        throw new Error('Community not found.')
       }
 
       await Promise.all(submissions.map(async s => {
@@ -146,7 +165,9 @@ export const updateSubmissions = async(taskPid: string) => {
 
         let validatedTweetInfo
         try {
-          validatedTweetInfo = validateTaskData<ValidatedTweetInfo>({task, data: tweetInfo, mode: 'update', twitterVouchedIDs: []})
+          validatedTweetInfo = validateTaskData<ValidatedTweetInfo>({
+            task, data: tweetInfo, mode: 'update', twitterVouchedIDs: [], communityName: community.name,
+          })
         } catch (error) {
           console.error('Error validating tweet:', error)
           const validateError = error instanceof Error ? error.message

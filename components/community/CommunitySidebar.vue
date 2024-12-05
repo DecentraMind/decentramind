@@ -94,7 +94,7 @@ const inviteUrl = $computed(() => {
       v-if="community"
       class="pb-2"
       :ui="{
-        container: 'py-0 gap-y-0',
+        container: 'py-0 gap-y-0 h-screen',
         header: 'px-0',
         body: 'pb-2',
         footer: 'flex-col-center pb-2 gap-y-2 flex-shrink-0'

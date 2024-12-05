@@ -24,6 +24,10 @@ export async function getSpaces(ids: string, token: string) {
 }
 
 export async function getTweets(ids: string, token: string) {
+  if (!ids) {
+    throw new Error('No tweet ids provided.')
+  }
+
   const url = 'https://api.twitter.com/2/tweets?ids=' + ids + '&tweet.fields=referenced_tweets,created_at,public_metrics,note_tweet&expansions=author_id&user.fields=created_at,profile_image_url'
   
   console.log('fetch tweets from twitter api: ' + url)

@@ -2,6 +2,16 @@
 import { onErrorCaptured } from 'vue'
 const { showError } = $(notificationStore())
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare, no-unused-vars, @typescript-eslint/no-unused-vars
+interface BigInt {
+  /** Convert to BigInt to string form in JSON.stringify */
+  toJSON: () => string;
+}
+// fix "JSON.stringify() doesn't know how to serialize a BigInt"
+BigInt.prototype.toJSON = function () {
+  return this.toString()
+}
+
 onErrorCaptured((error, instance, info) => {
   console.error('Global error handler:', error, info)
   showError('Application Error: ', error)
@@ -43,25 +53,8 @@ useSeoMeta({
 
 <template>
   <div>
-    <NuxtLoadingIndicator />
-
     <NuxtLayout>
-      <NuxtPage>
-        <template #hero>
-          test
-        </template>
-      </NuxtPage>
-
-      <!--
-      <div class="flex flex-col h-screen items-center gap-4 justify-center">
-        <Text class="text-7xl font-bold">Start your real community journey</Text>
-        <Text class="mt-3 mb-6">Try a better way than airdrop to build your community.</Text>
-        <NuxtLink to="signup">
-          Open to Build
-          <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
-      </NuxtLink>
-      </div>
-      -->
+      <NuxtPage />
     </NuxtLayout>
 
     <UNotifications />

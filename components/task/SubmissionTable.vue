@@ -40,9 +40,11 @@ const pageSize = computed(() =>
     : maxTotalChances
 )
 
-const pageRows = computed(() => 
-  filteredRows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
-)
+const pageRows = computed(() => {
+  const rows = filteredRows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
+  console.log('pageRows', rows)
+  return rows
+})
 
 // Selected submissions
 const selectedSubmissions = ref<AllSubmissionWithCalculatedBounties[]>([])
@@ -72,11 +74,7 @@ watch(() => selectedSubmissions.value.length, () => {
 
 <template>
   <div>
-    <div class="flex-center !justify-between py-3.5 border-b border-gray-300 dark:border-gray-700">
-      <div class="flex items-center">
-        <div class="font-semibold w-44">{{ $t('Quests Form') }}</div>
-        <UInput v-model="searchKeyword" placeholder="Filter..." />
-      </div>
+    <div class="flex-center !justify-between flex-row-reverse py-3.5 border-b border-gray-300 dark:border-gray-700">
       <ULink
         :to="`https://www.ao.link/#/entity/${task.processID}?tab=incoming`"
         active-class="text-primary"
@@ -85,6 +83,10 @@ watch(() => selectedSubmissions.value.length, () => {
       >
         Transaction Book
       </ULink>
+      <div :class="cn('flex items-center', !isOwner && 'hidden')">
+        <div class="font-semibold w-44">{{ $t('Quests Form') }}</div>
+        <UInput v-model="searchKeyword" placeholder="Filter..." />
+      </div>
     </div>
 
     <UTable

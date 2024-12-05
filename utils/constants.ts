@@ -47,6 +47,13 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE'
   },
+  DMT1: {
+    ticker: 'DMT1',
+    label: 'Decentramind Test1',
+    processID: '1jdhi6SJkaY_Sb5u3btnNU8VVMb6XHMlkt4OZ4etvBM',
+    denomination: 12,
+    logo: 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
+  },
   LLAMA : {
     ticker: 'LLAMA',
     label: 'Llama Coin',
@@ -228,3 +235,5 @@ export const minSpaceLiveLength = 15
 
 export const maxFetchSpaceIds = 100
 export const maxFetchTweetIds = 100
+
+export const VOUCH_SITE_URL = 'https://g8way.io/Cikp3X7Zk4cI1RtBEq-pVh_fhz-npd5dZ5-0EgCxTQM'

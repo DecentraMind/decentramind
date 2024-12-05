@@ -5,13 +5,16 @@ import CommunitySettingForm from '~/components/community/CommunitySettingForm.vu
 import LoginModal from '~/components/users/LoginModal.vue'
 import VouchModal from '~/components/users/VouchModal.vue'
 
+const router = useRouter()
+
 const selectModal = $ref(0)
 
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
 let { address } = $(aoStore())
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { updateVouchData, twitterVouched, redirectUrlAfterLogin } = $(aoStore())
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
-const { joinedCommunities, currentUuid, loadCommunityList, communityListError, vouch, twitterVouched } = $(communityStore())
+const { joinedCommunities, currentUuid, loadCommunityList, communityListError } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 const isCreateModalOpen = $ref(false)
@@ -34,11 +37,12 @@ onMounted(async () => {
       addSwitchListener()
 
       await Promise.all([
-        vouch(),
+        updateVouchData(),
         loadCommunityList(address)
       ])
 
       if (!twitterVouched) {
+        // TODO remove vouch modal from this layout if all users are vouched
         isVouchModalOpen = true
         return
       }
@@ -65,8 +69,25 @@ const refetch = async () => {
 }
 
 const afterLogin = () => {
-  console.log('reload page')
-  reloadNuxtApp()
+  console.log('after login triggered')
+  console.log('address', address)
+  console.log('communityListError', communityListError)
+  console.log('userInfoError', userInfoError)
+  if (redirectUrlAfterLogin) {
+    console.log('redirect after login:', redirectUrlAfterLogin)
+    if (typeof redirectUrlAfterLogin === 'string') {
+      router.push(redirectUrlAfterLogin)
+    } else {
+      if (redirectUrlAfterLogin.path === router.currentRoute.value.path) {
+        redirectUrlAfterLogin.force = true
+        router.push(redirectUrlAfterLogin)
+      } else {
+        router.push(redirectUrlAfterLogin)
+      }
+    }
+  } else {
+    reloadNuxtApp()
+  }
 }
 </script>
 
@@ -190,15 +211,15 @@ const afterLogin = () => {
 
         <template #footer>
           <!-- <UserDropdownMini /> -->
-          <UPopover mode="hover" :to="'/settings'">
-            <NuxtLink :to="userInfo && address ? '/settings' : '#'">
+          <UPopover mode="hover" :to="userInfo && address ? '/settings' : '#'">
+            <UButton variant="ghost" @click="userInfo && address ? router.push('/settings') : isLoginModalOpen = true">
               <template v-if="!userInfo || !address">
                 <ArAvatar :src="defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
               <template v-else>
                 <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
               </template>
-            </NuxtLink>
+            </UButton>
           </UPopover>
         </template>
       </UDashboardSidebar>
@@ -207,7 +228,7 @@ const afterLogin = () => {
     <div v-if="isLoading || isUserInfoLoading" class="flex-center w-full h-full">
       <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
     </div>
-    <div v-else-if="communityListError || (address && userInfoError)" class="flex-col-center h-full w-full">
+    <div v-else-if="communityListError || (address && !isUserInfoLoading && userInfoError)" class="flex-col-center h-full w-full">
       <UCard>
         <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
           <div class="flex-col-center gap-y-4">
@@ -217,7 +238,10 @@ const afterLogin = () => {
         </div>
       </UCard>
     </div>
-    <slot v-else />
+
+    <main v-else class="w-full">
+      <slot />
+    </main>
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
       <div v-if="!userInfo?.canCreateCommunity" class="flex-center text-center whitespace-pre-line text-xl text-gray-500">

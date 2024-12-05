@@ -1,10 +1,14 @@
-Variant = '0.4.74'
+Variant = '0.4.79'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
 local u = require("u")
 VouchProcessId = 'ZTTO02BL2P-lseTLUgiIPD9d0CF1sc4LbMA2AQ7e9jo'
 DefaultUserAvatar = 'gAh_m4pAU-PCAvDfDkv-6MPKp46E7MpaGlfwvZV-cgw'
+ValidVouchers = {
+  'N29ZBiXqWtQK-COOJh9ZQrnMV2btE8XoBy8vyApVYWw', -- DecentraMind voucher
+  'Ax_uXyLQBPZSQ15movzv9-O1mDo30khslqN64qD27Z8' -- VouchDAO voucher
+}
 
 ---@class Community
 ---@field uuid string
@@ -346,13 +350,6 @@ Actions = {
       local uuid = msg.Tags.CommunityUuid
       local inviteCode = msg.Tags.InviteCode
 
-      --- TODO check vouch data
-      --- FIXME user will not be able to join community if check vouch data here
-      -- local isVouched = u.isVouch(address)
-      -- if not isVouched then
-      --   return u.replyError(msg, 'No vouch data of ' .. address .. '.')
-      -- end
-
       local community = Communities[uuid]
       assert(community, 'Community not found.')
 
@@ -536,6 +533,17 @@ Actions = {
       u.replyData(msg, tasks)
     end,
 
+    GetUnsettledTasksByCommunityUuid = function(msg)
+      local cid = msg.Tags.CommunityUuid
+      local tasks = {}
+      for _, task in pairs(Tasks) do
+        if task.communityUuid == cid and not task.isSettled then
+          table.insert(tasks, task)
+        end
+      end
+      u.replyData(msg, tasks)
+    end,
+
     GetTasksByOwner = function(msg)
       local address = msg.Tags.Address
       local tasks = {}
@@ -652,6 +660,13 @@ Actions = {
 
       for key, value in pairs(submission) do
         if key ~= 'id' and key ~= 'createTime' then
+          -- TODO find by submission.id instead of index
+          -- for _, taskSubmission in pairs(Tasks[pid].submissions) do
+          --   if taskSubmission.id == id then
+          --     taskSubmission[key] = value
+          --     taskSubmission.updateTime = msg.Timestamp
+          --   end
+          -- end
           Tasks[pid].submissions[id][key] = value
           Tasks[pid].submissions[id].updateTime = msg.Timestamp
         end
@@ -776,11 +791,16 @@ Actions = {
 
   User = {
     RegisterUserOrLogin = function(msg)
+      local vouchedIdentifiers = u.fetchVouchedIdentifiers(msg.From, 'X', ValidVouchers)
+      if #vouchedIdentifiers == 0 then
+        return u.replyError(msg, 'You are not vouched.')
+      end
+
       registerUser(
         msg.From,
         msg.Timestamp,
         msg.Tags.Avatar,
-        msg.Tags.UserName
+        msg.Tags.UserName or vouchedIdentifiers[1]
       )
 
       u.replyData(msg, Users[msg.From])

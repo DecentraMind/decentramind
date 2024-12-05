@@ -27,8 +27,6 @@ const saveInfo = async () => {
   isSaving = false
 }
 
-const router = useRouter()
-
 let userForm = $ref<UserInfo & {address: string}>({
   name: userInfo?.name || '',
   avatar: userInfo?.avatar || '',
@@ -43,11 +41,6 @@ watch(() => userInfo, () => {
 })
 
 onMounted(async () => {
-  if(!address) {
-    router.push('/')
-    return
-  }
-
   if (userInfo) {
     console.log('use userInfo[0]')
     userForm = {

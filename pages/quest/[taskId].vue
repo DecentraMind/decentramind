@@ -25,6 +25,11 @@ import { fetchSpacesInfo, fetchTweetInfo } from '~/utils/twitter/twitter.client'
 import { saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo } from '~/utils/task'
 import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
 
+definePageMeta({
+  ssr: false
+})
+const router = useRouter()
+
 const runtimeConfig = useRuntimeConfig()
 
 let now: Ref<number>
@@ -44,17 +49,15 @@ const {
 
 const {
   getLocalCommunity,
-  twitterVouchedIDs,
-  twitterVouched,
   setCurrentCommunityUuid,
   joinCommunity
 } = $(communityStore())
 
 const { showError, showSuccess, showMessage } = $(notificationStore())
 
-const { address } = $(aoStore())
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
+const { address, twitterVouched, twitterVouchedIDs } = $(aoStore())
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+let { isLoginModalOpen, isVouchModalOpen, redirectUrlAfterLogin } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
 
@@ -69,6 +72,9 @@ const isJoined = $computed(() => {
   return task && task.builders
     ? Object.keys(task.builders).findIndex(builder => builder === address) > -1
     : false
+})
+const isJoinedCommunity = $computed(() => {
+  return communityInfo && communityInfo.isJoined
 })
 
 const isIng = $computed(() => {
@@ -238,14 +244,28 @@ onMounted(async () => {
   } finally {
     isLoading = false
   }
+
+  // auto join task if there is a joinTask action in the url
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.get('action') === 'joinTask') {
+    console.log('auto join task')
+    await onClickJoin()
+  }
 })
 
 let isSubmitModalOpen = $ref(false)
 let isJoinModalOpen = $ref(false)
-
 function checkLoginAndVouch() {
   if (!address) {
     console.log('address false open login modal')
+    // set redirect url with joinTask action after login
+    redirectUrlAfterLogin = {
+      path: router.currentRoute.value.path,
+      query: {
+        action: 'joinTask',
+      },
+      force: true,
+    }
     isLoginModalOpen = true
     return false
   } else if (!twitterVouched) {
@@ -657,7 +677,7 @@ const onClickCopyInviteCode = async () => {
       location.origin + '/i/' + task.inviteCode!,
     )
     showSuccess('Copied!')
-  } catch (err) {
+  } catch (_) {
     showError('Copy failed.')
   }
 }
@@ -680,7 +700,7 @@ const onClickShareToTwitter = () => {
 </script>
 
 <template>
-  <UDashboardPage>
+  <div class="h-screen overflow-y-auto">
     <div
       v-if="isLoading"
       class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
@@ -694,25 +714,25 @@ const onClickShareToTwitter = () => {
 
     <UPage v-if="!isLoading" class="overflow-y-auto h-full w-full">
       <div class="w-full overflow-y-auto h-full">
-        <div class="flex justify-end mb-4">
-          <div class="ml-3">
-            <NuxtLink v-if="task" :to="`/community/${task.communityUuid}`">
-              <UButton
-                icon="i-heroicons-x-mark-20-solid"
-                color="white"
-                variant="solid"
-                size="lg"
-              />
-            </NuxtLink>
-          </div>
-        </div>
+        <NuxtLink
+          v-if="task && isJoinedCommunity"
+          :to="`/community/${task.communityUuid}`"
+          class="fixed top-4 right-4 z-10"
+        >
+          <UButton
+            icon="i-heroicons-x-mark-20-solid"
+            color="white"
+            variant="solid"
+            size="lg"
+          />
+        </NuxtLink>
 
         <UBlogPost
           v-if="task"
           :key="task.processID"
           :title="task.name"
           :description="task.intro"
-          class="px-10 pt-0 pb-10"
+          class="px-10 pt-16 pb-10"
           :ui="{ title: 'text-3xl mb-6 text-clip' }"
         >
           <template #description>
@@ -799,6 +819,8 @@ const onClickShareToTwitter = () => {
               >
                 <UButton
                   color="white"
+                  :loading="isJoinLoading"
+                  :disabled="isJoinLoading"
                   :label="$t('Join Quest')"
                   @click="openJoinModal"
                 />
@@ -985,5 +1007,5 @@ const onClickShareToTwitter = () => {
         </div>
       </UCard>
     </UModal>
-  </UDashboardPage>
+  </div>
 </template>

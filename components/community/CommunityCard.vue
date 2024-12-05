@@ -3,8 +3,6 @@ import { getCommunityBannerUrl } from '~/utils/arAssets'
 
 const { joinCommunity, getCommunity, getUserByAddress } = $(communityStore())
 
-const { doLogin } = $(aoStore())
-
 const { showError, showSuccess } = $(notificationStore())
 
 const props = defineProps({
