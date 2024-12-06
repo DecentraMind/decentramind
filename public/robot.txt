@@ -1,0 +1,3 @@
+# Allow only homepage, block all other paths
+User-agent: *
+Disallow: /*
