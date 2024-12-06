@@ -5,6 +5,7 @@ import { DM_PROCESS_ID } from '~/utils/processID'
 import { compareImages } from '~/utils/image'
 import { gateways, arUrl } from '~/utils/arAssets'
 import { cloneDeep } from 'lodash-es'
+import { bigintReplacer } from '~/utils/int'
 
 const taskManagerProcessID = DM_PROCESS_ID
 export async function getTask(taskPid: string, address?: string): Promise<Task> {
