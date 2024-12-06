@@ -123,5 +123,9 @@ const columns = [
         </span>
       </template>
     </UTable>
+
+    <div class="flex justify-between items-center mt-2">
+      <b class="font-medium pl-2">Total Members: {{ communityMembers.length }}</b>
+    </div>
   </div>
 </template>
