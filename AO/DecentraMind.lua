@@ -1,4 +1,4 @@
-Variant = '0.4.79'
+Variant = '0.4.80'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
