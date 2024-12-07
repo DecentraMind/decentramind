@@ -77,12 +77,12 @@ export const updateSubmission = async (
 ) => {
   console.log('update submission', submission)
   
-  if (!globalThis.arweaveWallet && !wallet) {
+  if (!window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to update submission')
   }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(wallet || globalThis.arweaveWallet),
+    signer: createDataItemSigner(wallet || window.arweaveWallet),
     tags: [
       { name: 'Action', value: 'UpdateSubmission' },
       { name: 'TaskPid', value: taskPid },
@@ -100,12 +100,12 @@ export const updateSubmission = async (
  */
 export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
   console.log('update task submissions', submissions)
-  if (!globalThis.arweaveWallet && !wallet) {
+  if (!window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
   }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(wallet || globalThis.arweaveWallet),
+    signer: createDataItemSigner(wallet || window.arweaveWallet),
     tags: [
       { name: 'Action', value: 'UpdateTaskSubmissions' },
       { name: 'TaskPid', value: taskPid }
@@ -311,12 +311,12 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
  */
 export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTime'|'updateTime'>, 
   wallet?: Parameters<typeof createDataItemSigner>[0]) => {
-  if (!globalThis.arweaveWallet && !wallet) {
+  if (!window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
   }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(wallet || globalThis.arweaveWallet),
+    signer: createDataItemSigner(wallet || window.arweaveWallet),
     tags: [{ name: 'Action', value: 'AddSubmission' }],
     data: JSON.stringify(submission)
   })
