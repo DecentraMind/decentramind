@@ -9,8 +9,9 @@ import type {
   AllSubmissionWithCalculatedBounties,
   TaskWithLink,
   SubmissionUpdateResponse,
-  ValidatedTweetInfo,
   ValidatedSpacesInfo,
+  SpaceSubmission,
+  TweetSubmission,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
@@ -317,27 +318,21 @@ async function onSubmitTweetUrl() {
     if (isSubmitted && !runtimeConfig.public.debug) {
       throw new Error('You have submitted this quest.')
     }
-
-    const data = await fetchTweetInfo([tweetUrlForm.url])
-    const tweetInfo = validateTaskData<ValidatedTweetInfo>({
-      task,
-      data,
-      mode: 'add',
-      twitterVouchedIDs,
-      communityName: communityInfo.name,
-    })
-    if (tweetInfo) {
-      await saveTweetTaskSubmitInfo({
-        submitterAddress: address,
-        taskEndTime: task.endTime,
-        data: tweetInfo,
-        taskPid,
-        communityUuid: communityInfo.uuid,
-        invites,
-        mode: 'add',
-        url: tweetUrlForm.url,
-      })
+    
+    const tweetSubmission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'> = {
+      taskPid,
+      address,
+      url: tweetUrlForm.url,
+      // metrics and score will be overwritten by process side
+      buzz: 0,
+      discuss: 0,
+      identify: 0,
+      popularity: 0,
+      spread: 0,
+      friends: 0,
+      score: 0
     }
+    await submitTask(tweetSubmission)
 
     task = await getTask(taskPid, address)
 
@@ -369,25 +364,17 @@ async function onSubmitSpaceUrl() {
       throw new Error('You have submitted this quest.')
     }
 
-    const data = await fetchSpacesInfo([spaceUrl])
-    const spaceInfo = validateTaskData<ValidatedSpacesInfo>({
-      task,
-      data,
-      mode: 'add',
-      twitterVouchedIDs,
-      communityName: communityInfo.name,
-    })
-
-    await saveSpaceTaskSubmitInfo({
-      submitterAddress: address,
-      spaceUrl,
-      spaceInfo,
+    const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'|'updateTime'> = {
       taskPid,
-      communityUuid: communityInfo.uuid,
-      communityLogo: communityInfo.logo,
-      invites,
-      mode: 'add',
-    })
+      address,
+      url: spaceUrl,
+      // metrics and score will be overwritten by process side
+      inviteCount: 0,
+      audience: 0,
+      brandEffect: 0,
+      score: 0
+    }
+    await submitTask(spaceSubmission)
 
     task = await getTask(taskPid, address)
 
