@@ -71,7 +71,7 @@ export async function getUnsettledTasksByCommunityUuid(communityUuid: string) {
  * @returns 
  */
 export const updateSubmission = async (
-  submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime'>>,
+  submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime' | 'validateStatus' | 'validateTime' | 'validator'>>,
   taskPid: string,
   wallet?: Parameters<typeof createDataItemSigner>[0]
 ) => {
@@ -116,27 +116,26 @@ export const updateTaskSubmissions = async (taskPid: string, submissions: AllSub
 
 type SaveSpaceTaskSubmitInfoParams = {
   submitterAddress: string
-  spaceUrl: string
   spaceInfo: ValidatedSpacesInfo
   taskPid: string
   communityUuid: string
   communityLogo: string
   invites: InviteCodeInfo[]
-  mode: 'add' | 'update'
   submissionId?: number
   wallet?: Parameters<typeof createDataItemSigner>[0]
-  validateStatus?: Submission['validateStatus']
+  validateStatus: Submission['validateStatus']
   validateError?: string
 }
+/**
+ * update space task submission, only for server side validation(trigger by cron job or task owner)
+ */
 export const saveSpaceTaskSubmitInfo = async function ({
   submitterAddress,
-  spaceUrl,
   spaceInfo,
   taskPid,
   communityUuid,
   communityLogo,
   invites,
-  mode,
   submissionId,
   wallet,
   validateStatus,
@@ -192,38 +191,39 @@ export const saveSpaceTaskSubmitInfo = async function ({
     return total
   }, 0)
 
+  if (!submissionId) {
+    throw new Error('Submission ID is required')
+  }
 
-  if (mode === 'add') {
-    const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'|'updateTime'> = {
-      taskPid,
-      address: submitterAddress,
+  if (validateStatus === 'validated') {
+    // from 'waiting_for_validation' to 'validated'
+    const spaceSubmission:Omit<SpaceSubmission, 'url'|'createTime'|'updateTime'|'score'|'taskPid'|'address'> = {
+      id: submissionId,
       inviteCount,
       audience,
       brandEffect,
-      url: spaceUrl,
-      // TODO calculate score at server side or at AO
-      score: 0
-    }
-    await submitTask(spaceSubmission)
-  } else if (mode === 'update') {
-    if (!submissionId) {
-      throw new Error('Submission ID is required')
-    }
-    if (!validateStatus) {
-      throw new Error('Validate status is required')
-    }
-
-    const spaceSubmission:Omit<SpaceSubmission, 'createTime'|'brandEffect'|'audience'|'score'|'taskPid'|'address'|'updateTime'> = {
-      id: submissionId!,
-      inviteCount,
-      url: spaceUrl,
-      validateStatus: 'validated',
+      validateStatus,
       validateTime: new Date().getTime()
+    }
+    await updateSubmission(spaceSubmission, taskPid, wallet)
+  } else if (validateStatus === 'revalidated') {
+    // from 'validated' to 'revalidated'
+    const spaceSubmission:Omit<SpaceSubmission, 'url'|'createTime'|'brandEffect'|'audience'|'score'|'taskPid'|'address'|'updateTime'> = {
+      id: submissionId,
+      inviteCount,
+      validateStatus,
+      validateTime: new Date().getTime()
+    }
+    if (validateError) {
+      spaceSubmission.validateError = validateError
     }
     
     await updateSubmission(spaceSubmission, taskPid, wallet)
+  } else if (validateStatus === 'invalid' || validateStatus === 'validation_error') {
+    // from 'waiting_for_validation' to 'invalid' or 'validation_error'
+    await updateInvalidSubmission({submissionId, taskPid, wallet, validateStatus, validateError})
   } else {
-    throw new Error('Invalid mode')
+    throw new Error('Invalid validate status')
   }
 }
 
@@ -243,11 +243,28 @@ export const updateInvalidSubmission = async function({submissionId, taskPid, wa
   await updateSubmission(submission, taskPid, wallet)
 }
 
+type SaveTweetTaskSubmitInfoParams = {
+  url: string,
+  submitterAddress: string,
+  taskEndTime: number,
+  data: ValidatedTweetInfo,
+  invites: InviteCodeInfo[],
+  taskPid: string,
+  communityUuid: string,
+  submissionId: number,
+  wallet?: Parameters<typeof createDataItemSigner>[0],
+  validateStatus: Submission['validateStatus'],
+  validateError?: string
+}
 /**
- * save validated tweet task submission
+ * update tweet task submission, only for server side validation(trigger by cron job or task owner)
  */
-export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, mode, submissionId, wallet, }: {url: string, submitterAddress: string, taskEndTime: number, data: ValidatedTweetInfo, invites: InviteCodeInfo[], taskPid: string, communityUuid: string, mode: 'add' | 'update', submissionId?: number, wallet?: Parameters<typeof createDataItemSigner>[0], validateStatus?: Submission['validateStatus'], validateError?: string}) {
-  console.log('save promotion task submit info')
+export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, submissionId, wallet, validateStatus, validateError }: SaveTweetTaskSubmitInfoParams) {
+  if (!submissionId) {
+    throw new Error('Submission ID is required')
+  }
+
+  console.log('save tweet task submit info')
   const tweetInfo = data.data[0]
   
   const tweetCreateTime = new Date(tweetInfo.created_at).getTime()
@@ -271,7 +288,8 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
   }, 0)
   
   const tweetLength = wordCount(tweetInfo.note_tweet ? tweetInfo.note_tweet.text : tweetInfo.text)
-  const submission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'|'validateStatus'|'validateError'|'validateTime'|'validator'> = {
+  const submission:Omit<TweetSubmission, 'createTime'|'updateTime'|'validateError'|'validateTime'|'validator'> = {
+    id: submissionId,
     url,
     taskPid,
     address: submitterAddress,
@@ -284,23 +302,30 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
     // TODO calculate score at server side or at AO
     score: 0
   }
-  if (mode === 'add') {
-    await submitTask(submission)
-  } else if (mode === 'update') {
-    if (!submissionId) {
-      throw new Error('Submission ID is required')
-    }
-    
+  if (validateStatus === 'validated') {
+    // from 'waiting_for_validation' to 'validated'
     const updateSubmissionData: Omit<TweetSubmission, 'createTime'|'address'|'updateTime'> = {
-      id: submissionId!,
       ...submission,
-      validateStatus: 'validated',
+      validateStatus,
+    }
+    await updateSubmission(updateSubmissionData, taskPid, wallet)
+  } else if (validateStatus === 'revalidated') {
+    // from 'validated' to 'revalidated'
+    const updateSubmissionData: Omit<TweetSubmission, 'createTime'|'address'|'updateTime'> = {
+      ...submission,
+      validateStatus,
       validateTime: new Date().getTime()
+    }
+    if (validateError) {
+      updateSubmissionData.validateError = validateError
     }
     
     await updateSubmission(updateSubmissionData, taskPid, wallet)
+  } else if (validateStatus === 'invalid' || validateStatus === 'validation_error') {
+    // from 'waiting_for_validation' to 'invalid' or 'validation_error'
+    await updateInvalidSubmission({submissionId, taskPid, wallet, validateStatus, validateError})
   } else {
-    throw new Error('Invalid mode')
+    throw new Error('Invalid validate status')
   }
 }
 

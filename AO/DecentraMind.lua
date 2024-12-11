@@ -679,9 +679,10 @@ Actions = {
           --   end
           -- end
           Tasks[pid].submissions[id][key] = value
-          Tasks[pid].submissions[id].updateTime = msg.Timestamp
         end
       end
+      Tasks[pid].submissions[id].updateTime = msg.Timestamp
+      Tasks[pid].submissions[id].validator = msg.From
     end,
 
     StoreBountySendHistory = function(msg)
