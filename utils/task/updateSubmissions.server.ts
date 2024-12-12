@@ -22,11 +22,12 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
   const wallet = JSON.parse(walletJson)
 
   const submissions = task.submissions// as AllSubmissionWithCalculatedBounties[]
+  if (submissions.length <= 0) {
+    return { result: 'success', message: 'no submissions, no data to update.' }
+  }
+
   switch (task.type) {
     case 'space': {
-      if (submissions.length <= 0) {
-        return { result: 'success', message: 'no submissions, no data to update.' }
-      }
 
       const spacesInfo = data as TwitterSpacesInfo
 
@@ -38,14 +39,17 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
       await Promise.all(submissions.map(async s => {
         const spaceId = getSpaceIds([s.url])[0]
         const spaceData = spacesInfo.data?.find(si => si.id === spaceId)
-        if (!spaceData && s.validateStatus == 'waiting_for_validation') {
-          return updateInvalidSubmission({
-            submissionId: s.id,
-            taskPid,
-            wallet,
-            validateStatus: 'validation_error',
-            validateError: 'Space not found from Twitter API.',
-          })
+        if (!spaceData) {
+          if (s.validateStatus == 'waiting_for_validation' || s.validateStatus == 'validation_error') {
+            return updateInvalidSubmission({
+              submissionId: s.id,
+              taskPid,
+              wallet,
+              validateStatus: 'validation_error',
+              validateError: 'Space not found from Twitter API.',
+            })
+          }
+          return
         }
         const spaceInfo = {
           data: [spaceData],
@@ -60,7 +64,22 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
             twitterVouchedIDs: [],
             communityName: community.name,
           })
+        } catch (error) {
+          console.error('Error validating submission:', error)
+          const validateError = error instanceof Error ? error.message
+            : (typeof error === 'string' ? error : 'Unknown error.' )
+          if (s.validateStatus == 'waiting_for_validation' || s.validateStatus == 'validation_error' || s.validateStatus == 'invalid') {
+            return updateInvalidSubmission({
+              submissionId: s.id,
+              taskPid,
+              wallet,
+              validateStatus: 'invalid',
+              validateError,
+            })
+          }
+        }
 
+        try {
           // TODO getInvitesByInviters
           const invites = (await getInvitesByInviter(s.address, 'task')).invites
 
@@ -69,7 +88,7 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
           return saveSpaceTaskSubmitInfo({
             wallet,
             submitterAddress: s.address,
-            spaceInfo: validatedSpaceInfo,
+            spaceInfo: validatedSpaceInfo!,
             taskPid,
             communityUuid: task.communityUuid,
             communityLogo: community.logo,
@@ -80,7 +99,7 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
           })
         } catch (error) {
           const validateError = error instanceof Error ? error.message : 'Unknown error'
-          if (s.validateStatus == 'waiting_for_validation') {
+          if (s.validateStatus == 'waiting_for_validation' || s.validateStatus == 'validation_error') {
             return updateInvalidSubmission({
               submissionId: s.id,
               taskPid,
@@ -97,10 +116,6 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
     case 'promotion':
     case 'bird':
     case 'article': {
-      if (submissions.length <= 0) {
-        return { result: 'success', message: 'no submissions, no data to update.' }
-      }
-
       const tweets = data as TwitterTweetInfo
       if (!tweets || !tweets.data || !tweets.data.length || !tweets.includes) {
         console.error('Error fetching tweets:', tweets)
@@ -115,18 +130,20 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
       await Promise.all(submissions.map(async s => {
         const tweetId = getTweetIds([s.url])[0]
         const tweetData = tweets.data?.find(t => t.id === tweetId)
-        if (!tweetData && s.validateStatus == 'waiting_for_validation') {
+        if (!tweetData) {
           // console.error('Tweet not found. tweetId = ', tweetId)
           // throw new Error('Tweet not found.')
-          // TODO set submission status to validation error
           console.log('Tweet not found, skip. tweetId = ', tweetId)
-          return updateInvalidSubmission({
-            submissionId: s.id,
-            taskPid,
-            wallet,
-            validateStatus: 'validation_error',
-            validateError: 'Tweet not found from Twitter API.',
-          })
+          if (s.validateStatus == 'waiting_for_validation' || s.validateStatus == 'validation_error') {
+            return updateInvalidSubmission({
+              submissionId: s.id,
+              taskPid,
+              wallet,
+              validateStatus: 'validation_error',
+              validateError: 'Tweet not found from Twitter API.',
+            })
+          }
+          return
         }
 
         const tweetInfo = {
@@ -139,17 +156,33 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
           validatedTweetInfo = validateTaskData<ValidatedTweetInfo>({
             task, data: tweetInfo, mode: 'update', twitterVouchedIDs: [], communityName: community.name,
           })
+        } catch (error) {
+          console.error('Error validating tweet:', error)
+          const validateError = error instanceof Error ? error.message
+            : (typeof error === 'string' ? error : 'Unknown error' )
+          if (s.validateStatus == 'waiting_for_validation' || s.validateStatus == 'validation_error' || s.validateStatus == 'invalid') {
+            return updateInvalidSubmission({
+              submissionId: s.id,
+              taskPid,
+              wallet,
+              validateStatus: 'invalid',
+              validateError,
+            })
+          }
+        }
+
+        try {
           // TODO getInvitesByInviters
           const invites = (await getInvitesByInviter(s.address, 'task')).invites
 
           console.log('saveTweetTaskSubmitInfo, submission ID = ', s.id)
-          console.log('public metrics = ', validatedTweetInfo.data[0].public_metrics)
+          console.log('public metrics = ', validatedTweetInfo!.data[0].public_metrics)
           // TODO batch update
           return saveTweetTaskSubmitInfo({
             wallet,
             submitterAddress: s.address,
             taskEndTime: task.endTime,
-            data: validatedTweetInfo,
+            data: validatedTweetInfo!,
             taskPid,
             communityUuid: task.communityUuid,
             invites,
@@ -158,16 +191,16 @@ export const updateSubmissions = async(task: Task, data: TwitterSpacesInfo | Twi
               ? 'validated' : 'revalidated',
           })
         } catch (error) {
-          console.error('Error validating tweet:', error)
+          console.error('Error update submission:', error)
           const validateError = error instanceof Error ? error.message
             : (typeof error === 'string' ? error : 'Unknown error' )
-          if (s.validateStatus == 'waiting_for_validation') {
+          if (s.validateStatus == 'waiting_for_validation' || s.validateStatus == 'validation_error') {
             // set submission status to validation error
             return updateInvalidSubmission({
               submissionId: s.id,
               taskPid,
               wallet,
-              validateStatus: 'invalid',
+              validateStatus: 'validation_error',
               validateError,
             })
           }
