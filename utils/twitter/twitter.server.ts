@@ -1,6 +1,9 @@
 import type { TwitterSpacesInfo, TwitterTweetInfo } from '~/types'
 
-export async function getSpaces(ids: string, token: string) {
+const { TWITTER_BEARER_TOKEN: token } = process.env
+if (!token) throw new Error('Twitter token not configured')
+
+export async function getSpaces(ids: string) {
   const url = 'https://api.twitter.com/2/spaces?ids=' + ids + '&space.fields=creator_id,host_ids,participant_count,started_at,ended_at&expansions=host_ids&user.fields=created_at,profile_image_url'
   
   console.log('fetch spaces from twitter api: ' + url)
@@ -23,7 +26,7 @@ export async function getSpaces(ids: string, token: string) {
   return data
 }
 
-export async function getTweets(ids: string, token: string) {
+export async function getTweets(ids: string) {
   if (!ids) {
     throw new Error('No tweet ids provided.')
   }

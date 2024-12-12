@@ -115,13 +115,13 @@ export const updateTaskSubmissions = async (taskPid: string, submissions: AllSub
 }
 
 type SaveSpaceTaskSubmitInfoParams = {
+  taskPid: string
+  submissionId: number
   submitterAddress: string
   spaceInfo: ValidatedSpacesInfo
-  taskPid: string
   communityUuid: string
   communityLogo: string
   invites: InviteCodeInfo[]
-  submissionId?: number
   wallet?: Parameters<typeof createDataItemSigner>[0]
   validateStatus: Submission['validateStatus']
   validateError?: string
@@ -130,13 +130,13 @@ type SaveSpaceTaskSubmitInfoParams = {
  * update space task submission, only for server side validation(trigger by cron job or task owner)
  */
 export const saveSpaceTaskSubmitInfo = async function ({
+  taskPid,
+  submissionId,
   submitterAddress,
   spaceInfo,
-  taskPid,
   communityUuid,
   communityLogo,
   invites,
-  submissionId,
   wallet,
   validateStatus,
   validateError
@@ -244,14 +244,13 @@ export const updateInvalidSubmission = async function({submissionId, taskPid, wa
 }
 
 type SaveTweetTaskSubmitInfoParams = {
-  url: string,
+  taskPid: string,
+  submissionId: number,
   submitterAddress: string,
   taskEndTime: number,
   data: ValidatedTweetInfo,
   invites: InviteCodeInfo[],
-  taskPid: string,
   communityUuid: string,
-  submissionId: number,
   wallet?: Parameters<typeof createDataItemSigner>[0],
   validateStatus: Submission['validateStatus'],
   validateError?: string
@@ -259,7 +258,18 @@ type SaveTweetTaskSubmitInfoParams = {
 /**
  * update tweet task submission, only for server side validation(trigger by cron job or task owner)
  */
-export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, taskEndTime, data, invites, taskPid, communityUuid, submissionId, wallet, validateStatus, validateError }: SaveTweetTaskSubmitInfoParams) {
+export const saveTweetTaskSubmitInfo = async function({
+  taskPid,
+  submissionId,
+  submitterAddress,
+  taskEndTime,
+  data,
+  invites,
+  communityUuid,
+  wallet,
+  validateStatus,
+  validateError
+}: SaveTweetTaskSubmitInfoParams) {
   if (!submissionId) {
     throw new Error('Submission ID is required')
   }
@@ -288,9 +298,8 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
   }, 0)
   
   const tweetLength = wordCount(tweetInfo.note_tweet ? tweetInfo.note_tweet.text : tweetInfo.text)
-  const submission:Omit<TweetSubmission, 'createTime'|'updateTime'|'validateError'|'validateTime'|'validator'> = {
+  const submission:Omit<TweetSubmission, 'url' | 'createTime'|'updateTime'|'validateError'|'validateTime'|'validator'> = {
     id: submissionId,
-    url,
     taskPid,
     address: submitterAddress,
     buzz: tweetLength,
@@ -304,14 +313,14 @@ export const saveTweetTaskSubmitInfo = async function({url, submitterAddress, ta
   }
   if (validateStatus === 'validated') {
     // from 'waiting_for_validation' to 'validated'
-    const updateSubmissionData: Omit<TweetSubmission, 'createTime'|'address'|'updateTime'> = {
+    const updateSubmissionData: Omit<TweetSubmission, 'url' | 'createTime'|'address'|'updateTime'> = {
       ...submission,
       validateStatus,
     }
     await updateSubmission(updateSubmissionData, taskPid, wallet)
   } else if (validateStatus === 'revalidated') {
     // from 'validated' to 'revalidated'
-    const updateSubmissionData: Omit<TweetSubmission, 'createTime'|'address'|'updateTime'> = {
+    const updateSubmissionData: Omit<TweetSubmission, 'url' | 'createTime'|'address'|'updateTime'> = {
       ...submission,
       validateStatus,
       validateTime: new Date().getTime()
