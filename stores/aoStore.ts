@@ -2,6 +2,10 @@ import { tokenProcessIDs } from '~/utils/constants'
 import { defaultUserAvatar } from '~/utils/arAssets'
 import { result, results, dryrun, message, createDataItemSigner } from '~/utils/ao'
 import { DM_PROCESS_ID } from '~/utils/processID'
+import Arweave from 'arweave'
+import type { Tag } from 'arweave/node/lib/transaction'
+import type { AoTag } from '~/types'
+import { getVouchDataGQL } from '~/utils/user/vouch.client'
 
 const aoCommunityProcessID = DM_PROCESS_ID
 
@@ -16,11 +20,6 @@ const permissions: PermissionType[] = [
   'DISPATCH',
   'ACCESS_PUBLIC_KEY'
 ]
-
-import Arweave from 'arweave'
-import type { Tag } from 'arweave/node/lib/transaction'
-import type { AoTag } from '~/types'
-import { getVouchData } from '~/utils/user/vouch.client'
 
 const arweave = Arweave.init({
   host: 'arweave.net', // 这是主网节点的 URL
@@ -198,7 +197,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (!activeAddress) {
       throw new Error('No address specified.')
     }
-    twitterVouchedIDs = await getVouchData(activeAddress, 'X')
+    twitterVouchedIDs = await getVouchDataGQL(activeAddress, 'X')
 
     if (twitterVouchedIDs.length === 0) {
       console.log('No valid Identifiers found in Vouchers.')

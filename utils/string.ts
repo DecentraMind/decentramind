@@ -31,8 +31,8 @@ export function getDomain(url: string) {
 
 export function getHandle(url: string) {
   if (!url) return ''
-  const handle = url.match(/\/(\w+)\/?$/)?.[1]
-  return `${handle}` || url.replace(/https?:\/\//, '')
+  const handle = url.match(/\/([^/?#]+)\/?$/)?.[1]
+  return handle ? `${handle}` : url.replace(/https?:\/\//, '')
 }
 
 export function toBase62(num: number) {
