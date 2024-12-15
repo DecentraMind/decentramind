@@ -803,16 +803,17 @@ Actions = {
 
   User = {
     RegisterUserOrLogin = function(msg)
-      local vouchedIdentifiers = u.fetchVouchedIdentifiers(msg.From, 'X', ValidVouchers)
-      if #vouchedIdentifiers == 0 then
-        return u.replyError(msg, 'You are not vouched.')
-      end
+      -- fetchVouchedIdentifiers may take a long time, so disable it for now
+      -- local vouchedIdentifiers = u.fetchVouchedIdentifiers(msg.From, 'X', ValidVouchers)
+      -- if #vouchedIdentifiers == 0 then
+      --   return u.replyError(msg, 'You are not vouched.')
+      -- end
 
       registerUser(
         msg.From,
         msg.Timestamp,
         msg.Tags.Avatar,
-        msg.Tags.UserName or vouchedIdentifiers[1]
+        msg.Tags.UserName -- or vouchedIdentifiers[1]
       )
 
       u.replyData(msg, Users[msg.From])
