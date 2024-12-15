@@ -1,5 +1,6 @@
 import type { TaskValidationParams, TaskWithLink, ValidatedSpacesInfo, ValidatedTweetInfo } from '~/types'
 import { minSpaceLiveLength, minBirdTweetTextLength, minArticleTextLength, TWEET_URL_REGEXP } from '~/utils/constants'
+import { wordCount } from '~/utils/string'
 
 const validateSpaceData = ({ task, data: spaceInfo, mode, twitterVouchedIDs }: TaskValidationParams<ValidatedSpacesInfo>) => {
   if (!spaceInfo) {
