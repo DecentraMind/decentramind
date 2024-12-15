@@ -240,3 +240,149 @@ export const mockArticleTweetInfoWithoutCommunityName: ValidatedTweetInfo = {
     note_tweet: { text: mockArticleTweetInfo.data[0].note_tweet!.text.replace('testCommunity', '') }
   }]
 }
+
+export const mockSingleSpacesSuccessResponse1: TwitterSpacesInfo = {
+  data: [
+    {
+      participant_count: 3363,
+      creator_id: '1557376757342564352',
+      host_ids: [
+        '1557376757342564352',
+        '928827107974701056',
+        '202457967'
+      ],
+      id: '1YqGovqmZvMKv',
+      started_at: '2024-08-07T11:06:17.000Z',
+      ended_at: '2024-08-07T13:31:54.000Z',
+      state: 'ended'
+    }
+  ],
+  includes: {
+    users: [
+      {
+        created_at: '2022-08-10T14:42:27.000Z',
+        profile_image_url: 'https://pbs.twimg.com/profile_images/1714969617259692032/pfuj9r_X_normal.jpg',
+        username: 'cxo_no',
+        name: 'CXO.Adam👁💎',
+        id: '1557376757342564352'
+      },
+      {
+        created_at: '2017-11-10T03:30:14.000Z',
+        profile_image_url: 'https://pbs.twimg.com/profile_images/1681285909583650816/BcT_-5jd_normal.jpg',
+        username: 'garymetaz',
+        name: 'GARY',
+        id: '928827107974701056'
+      },
+      {
+        created_at: '2010-10-14T02:32:01.000Z',
+        profile_image_url: 'https://pbs.twimg.com/profile_images/1816771232844709888/Qm7XOEZO_normal.jpg',
+        username: 'CKN_ACEE',
+        name: 'ACE',
+        id: '202457967'
+      }
+    ]
+  }
+}
+
+export const mockSingleSpacesSuccessResponse2: TwitterSpacesInfo = {
+  data: [
+    {
+      state: 'ended',
+      ended_at: '2024-03-27T14:04:54.000Z',
+      host_ids: [
+        '1772108008212029440'
+      ],
+      id: '1kvJpvQNwODKE',
+      creator_id: '1772108008212029440',
+      participant_count: 92,
+      started_at: '2024-03-27T12:50:54.000Z'
+    }
+  ],
+  includes: {
+    users: [
+      {
+        created_at: '2024-03-25T03:47:39.000Z',
+        username: 'decentramindcn',
+        id: '1772108008212029440',
+        name: 'DecentraMind中文社区',
+        profile_image_url: 'https://pbs.twimg.com/profile_images/1793641844511010816/ujO5zVLk_normal.jpg'
+      }
+    ]
+  }
+}
+
+export const mockMultipleSpacesSuccessResponse: TwitterSpacesInfo = {
+  data: [
+    ...mockSingleSpacesSuccessResponse1.data!,
+    ...mockSingleSpacesSuccessResponse2.data!
+  ],
+  includes: {
+    users: [
+      ...mockSingleSpacesSuccessResponse1.includes!.users!,
+      ...mockSingleSpacesSuccessResponse2.includes!.users!
+    ]
+  }
+}
+
+export const mockTweetsResponse1: TwitterTweetInfo = {
+  data: [{
+    id: '1',
+    text: 'Test tweet',
+    author_id: '32423987987',
+    created_at: '2024-01-01T00:00:00Z',
+    public_metrics: {
+      retweet_count: 0,
+      reply_count: 0,
+      like_count: 0,
+      quote_count: 0,
+      bookmark_count: 0,
+      impression_count: 0
+    }
+  }],
+  includes: {
+    users: [{
+      id: '32423987987',
+      name: 'author1_name',
+      username: 'author1_handle',
+      created_at: '2020-01-01T00:00:00Z',
+      profile_image_url: 'https://example.com/image.jpg'
+    }]
+  }
+}
+
+export const mockTweetsResponse2: TwitterTweetInfo = {
+  data: [
+    {
+      id: '1848308061611683852',
+      public_metrics: {
+        retweet_count: 0,
+        reply_count: 0,
+        like_count: 3,
+        quote_count: 2,
+        bookmark_count: 0,
+        impression_count: 634
+      },
+      author_id: '1759580709143171072',
+      created_at: '2024-10-21T10:19:16.000Z',
+      text: '🎊We launched its video tutorial series!'
+    }
+  ],
+  includes: {
+    users: [
+      {
+        name: 'DecentraMind',
+        created_at: '2024-02-19T14:08:57.000Z',
+        profile_image_url: 'https://pbs.twimg.com/profile_images/1806545056436043776/XgEzPPcz_normal.jpg',
+        id: '1759580709143171072',
+        username: 'decentramindio'
+      }
+    ]
+  }
+}
+
+export const mockMultipleTweetsResponse: TwitterTweetInfo = {
+  data: [...mockTweetsResponse1.data!, ...mockTweetsResponse2.data!],
+  includes: {
+    users: [...mockTweetsResponse1.includes!.users!, ...mockTweetsResponse2.includes!.users!]
+  }
+}
