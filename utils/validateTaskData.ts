@@ -125,7 +125,7 @@ const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs, communi
 }
 
 /**
- * validate task data
+ * validate twitter space or tweet data
  * @param params - task validation parameters
  * @returns validated task data if validation passed, otherwise throw error
  */

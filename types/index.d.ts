@@ -155,7 +155,7 @@ export type Tokens = {
 export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
 
 export type ChainNames = 'AO'
-
+export type SubmissionValidateStatus = 'waiting_for_validation' | 'validated' | 'invalid' | 'validation_error' | 'revalidated'
 export type Submission = {
   id: number
   taskPid: string
@@ -164,7 +164,7 @@ export type Submission = {
   score: number
   createTime: number
   updateTime: number
-  validateStatus?: 'waiting_for_validation' | 'validated' | 'invalid' | 'validation_error' | 'revalidated'
+  validateStatus?: SubmissionValidateStatus
   validateError?: string
   validateTime?: number
   validator?: string
