@@ -68,7 +68,7 @@ const refetch = async () => {
   }
 }
 
-const afterLogin = () => {
+const afterLogin = async () => {
   console.log('after login triggered')
   console.log('address', address)
   console.log('communityListError', communityListError)
@@ -85,6 +85,8 @@ const afterLogin = () => {
         router.push(redirectUrlAfterLogin)
       }
     }
+
+    await loadCommunityList(address)
   } else {
     reloadNuxtApp()
   }
