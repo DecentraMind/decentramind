@@ -245,7 +245,7 @@ onMounted(async () => {
 
   // auto join task if there is a joinTask action in the url
   const urlParams = new URLSearchParams(window.location.search)
-  if (urlParams.get('action') === 'joinTask') {
+  if (urlParams.get('action') === 'joinTask' && !isJoined) {
     console.log('auto join task')
     await onClickJoin()
   }
