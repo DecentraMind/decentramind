@@ -97,9 +97,16 @@ export function getTaskTableColumns(taskType: Task['type']) {
     class: 'text-left',
     rowClass: 'font-mono pr-0',
   }
+  const validateStatusField = {
+    key: 'validateStatus',
+    label: t('Validation Status'),
+    class: 'text-left',
+    rowClass: 'font-mono text-left',
+  }
 
   const tweetTableColumns = [
     idField,
+    validateStatusField,
     addressField,
     urlField,
     {
@@ -139,6 +146,7 @@ export function getTaskTableColumns(taskType: Task['type']) {
   const taskTableColumns = {
     space: [
       idField,
+      validateStatusField,
       addressField,
       {
         key: 'brandEffect',

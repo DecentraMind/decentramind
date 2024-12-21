@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { getTaskTableColumns } from '~/utils'
-import type { AllSubmissionWithCalculatedBounties, Task } from '~/types'
+import type { AllSubmissionWithCalculatedBounties, SubmissionValidateStatus, Task } from '~/types'
 import { maxTotalChances } from '~/utils/constants'
+import { formatDate } from '~/utils/time'
+import ValidateStatus from './ValidateStatus.vue'
 
 const props = defineProps<{
   task: Task
@@ -70,6 +72,13 @@ watch(() => selectedSubmissions.value.length, () => {
     selectedSubmissions.value = selectedSubmissions.value.slice(0, maxSelection)
   }
 })
+
+const lastUpdateTime = computed(() => {
+  const lastUpdateTime = props.submissions.reduce((max, submission) => {
+    return Math.max(max, submission.updateTime)
+  }, 0)
+  return lastUpdateTime
+})
 </script>
 
 <template>
@@ -84,8 +93,8 @@ watch(() => selectedSubmissions.value.length, () => {
         Transaction Book
       </ULink>
       <div :class="cn('flex items-center', !isOwner && 'hidden')">
-        <div class="font-semibold w-44">{{ $t('Quests Form') }}</div>
-        <UInput v-model="searchKeyword" placeholder="Filter..." />
+        <div class="font-semibold mr-2">{{ $t('Submissions') }}</div>
+        <UInput v-model="searchKeyword" icon="heroicons:magnifying-glass" placeholder="Search..." />
       </div>
     </div>
 
@@ -102,6 +111,12 @@ watch(() => selectedSubmissions.value.length, () => {
     >
       <template #id-data="{ row }">
         {{ row.id }}
+      </template>
+      <template #validateStatus-data="{ row }">
+        <ValidateStatus
+          :status="row.validateStatus as SubmissionValidateStatus"
+          :error="row.validateError"
+        />
       </template>
       <template #address-data="{ row }">
         {{ isOwner ? row.address : shortString(row.address, 4) }}
@@ -124,7 +139,8 @@ watch(() => selectedSubmissions.value.length, () => {
       </template>
     </UTable>
 
-    <div class="flex justify-end mt-2">
+    <div class="flex justify-between items-center mt-2">
+      <div class="text-sm text-gray-500">Last Update: {{ formatDate(lastUpdateTime) }}</div>
       <UPagination
         v-model="page"
         :page-count="pageSize"
