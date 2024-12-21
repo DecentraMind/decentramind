@@ -403,7 +403,7 @@ async function onClickSendBounty() {
   }
 
   if (selectedSubmissions.length === 0 && task.submissions.length > 0) {
-    if (!confirm('Confirm skipping all submissions?')) {
+    if (!confirm('You did not select any submissions. Confirm skipping all submissions(no bounty will be sent to the submitters, but the bounty will be returned to the task owner)?')) {
       return
     }
   }
