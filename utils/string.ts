@@ -45,6 +45,10 @@ export function toBase62(num: number) {
   return result
 }
 
+/**
+ * calculate the reward html with logo image for a task
+ * TODO remove this function and replace with <Bounties />
+ */
 export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, precisions?: Map<string, number>, classes = 'font-medium') {
   return bounties.reduce((carry, bounty) => {
     if (!bounty.tokenName || !bounty.amount) return carry

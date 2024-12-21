@@ -9,7 +9,6 @@ import type {
   AllSubmissionWithCalculatedBounties,
   TaskWithLink,
   SubmissionUpdateResponse,
-  ValidatedSpacesInfo,
   SpaceSubmission,
   TweetSubmission,
 } from '~/types'
@@ -17,14 +16,12 @@ import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
-import validateTaskData from '~/utils/validateTaskData'
 import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
 import { tweetUrlSchema } from '~/utils/schemas'
 import { useFetch } from '@vueuse/core'
 import { useSignature } from '~/composables/useSignature'
-import { fetchSpacesInfo, fetchTweetInfo } from '~/utils/twitter/twitter.client'
-import { saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo } from '~/utils/task'
 import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
+import Bounties from '~/components/task/Bounties.vue'
 
 definePageMeta({
   ssr: false
@@ -604,6 +601,7 @@ const precisions = $computed(() =>
   }, new Map<string, number>()),
 )
 
+// update calculatedBounties when selectedSubmissions changes
 watch(
   () => selectedSubmissions.length,
   () => {
@@ -645,6 +643,7 @@ watch(
   },
 )
 
+// validate tweetUrlForm.url when it changes
 watch(
   () => tweetUrlForm.url,
   value => {
@@ -753,7 +752,9 @@ const onClickShareToTwitter = () => {
                 <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div class="flex-center" v-html="taskRewardHtml" />
+                <div class="flex-center">
+                  <Bounties v-if="task.bounties" :bounties="task.bounties" :precisions="precisions" />
+                </div>
               </div>
               <div class="flex justify-start">
                 <div class="font-semibold w-44 shrink-0">
