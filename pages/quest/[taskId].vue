@@ -170,46 +170,46 @@ onMounted(async () => {
       !task.isSettled &&
       isOwner
     ) {
-      const { getSignature, error: signatureError } = useSignature()
-      if (signatureError.value) {
-        throw new Error(
-          'Failed to update submissions, can\'t get signature: ' +
-            signatureError.value,
-        )
-      }
+      // const { getSignature, error: signatureError } = useSignature()
+      // if (signatureError.value) {
+      //   throw new Error(
+      //     'Failed to update submissions, can\'t get signature: ' +
+      //       signatureError.value,
+      //   )
+      // }
 
-      const { signature, address, publicKey, message } = await getSignature(
-        taskPid,
-      )
+      // const { signature, address, publicKey, message } = await getSignature(
+      //   taskPid,
+      // )
 
-      console.log('signature', signature, address)
+      // console.log('signature', signature, address)
 
-      // validate and update task submissions at DecentraMind server
-      const { data, error } = await useFetch('/api/updateTaskSubmissions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          taskPid,
-          signature,
-          address,
-          publicKey,
-          message,
-        }),
-      }).json<SubmissionUpdateResponse>()
-      const submissionUpdateResponse = unref(data)
+      // // validate and update task submissions at DecentraMind server
+      // const { data, error } = await useFetch('/api/updateTaskSubmissions', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     taskPid,
+      //     signature,
+      //     address,
+      //     publicKey,
+      //     message,
+      //   }),
+      // }).json<SubmissionUpdateResponse>()
+      // const submissionUpdateResponse = unref(data)
 
-      if (error.value) {
-        console.error('updateTaskSubmissions error', {
-          data: data.value,
-          error: error.value,
-        })
-        throw new Error('Failed to update submissions: ' + error.value)
-      }
+      // if (error.value) {
+      //   console.error('updateTaskSubmissions error', {
+      //     data: data.value,
+      //     error: error.value,
+      //   })
+      //   throw new Error('Failed to update submissions: ' + error.value)
+      // }
 
-      console.log('submissionUpdateResponse', submissionUpdateResponse)
-      task = await getTask(taskPid, address)
+      // console.log('submissionUpdateResponse', submissionUpdateResponse)
+      // task = await getTask(taskPid, address)
 
       const updatedSubmissions = useTaskScoreCalculate(
         task,
