@@ -445,6 +445,7 @@ export type TwitterTweetInfo = {
   }[]
 }
 
+// TODO rename to ValidatedTweetsInfo
 export type ValidatedTweetInfo = {
   data: NonNullable<TwitterTweetInfo['data']>,
   includes: NonNullable<TwitterTweetInfo['includes']>

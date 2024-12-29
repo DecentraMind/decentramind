@@ -1,3 +1,4 @@
+import { ValidatedSpacesInfo, ValidatedTweetInfo } from '~/types'
 import { SPACE_URL_REGEXP, TWEET_URL_REGEXP } from '~/utils'
 import { getTask } from '~/utils/task'
 import { updateSubmissions } from '~/utils/task/updateSubmissions.server'
@@ -34,7 +35,7 @@ export default defineTask({
         console.error('Error fetching spaces:', spacesInfo)
         throw new Error('Failed to validate space URL: fetch data failed.')
       }
-      return updateSubmissions(task, spacesInfo)
+      return updateSubmissions(task, spacesInfo as ValidatedSpacesInfo)
 
     } else if (task.type === 'promotion' || task.type === 'bird' || task.type === 'article') {
       const tweetIds = task.submissions.map(s => {
@@ -47,7 +48,7 @@ export default defineTask({
       }).filter(Boolean).join(',')
 
       const tweets = await getTweets(tweetIds)
-      return updateSubmissions(task, tweets)
+      return updateSubmissions(task, tweets as ValidatedTweetInfo)
     } else {
       return { result: 'error', message: 'not implemented.' }
     }

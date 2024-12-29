@@ -46,7 +46,7 @@ export async function getTask(taskPid: string, address?: string): Promise<Task> 
 /**
  * Get tasks that are not settled
  */
-export async function getUnsettledTasks() {
+export async function getUnsettledTasks(): Promise<Task[]> {
   return await dryrunResultParsed<Task[]>({
     process: taskManagerProcessID,
     tags: [{ name: 'Action', value: 'GetUnsettledTasks' }]

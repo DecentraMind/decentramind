@@ -95,7 +95,7 @@ const saveValidatedSubmission = async <T extends ValidatedSpacesInfo | Validated
   }
 }
 
-export const updateSubmissions = async (task: Task, data: ValidatedSpacesInfo | ValidatedTweetInfo) => {
+export const updateSubmissions = async <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(task: Task, data: T) => {
   // Validate environment
   const { TWITTER_BEARER_TOKEN: token, WALLET_PATH: walletPath } = process.env
   if (!token) return { result: 'error', message: 'TWITTER_BEARER_TOKEN is not set' }
@@ -110,7 +110,7 @@ export const updateSubmissions = async (task: Task, data: ValidatedSpacesInfo | 
   const community = await getCommunity(task.communityUuid)
   if (!community) throw new Error('Community not found.')
 
-  await Promise.all(submissions.map(async submission => {
+  await Promise.all(submissions.map(submission => {
     try {
       // Get content ID and data based on task type
       const contentId = task.type === 'space'
@@ -154,12 +154,12 @@ export const updateSubmissions = async (task: Task, data: ValidatedSpacesInfo | 
       }
 
       if (validatedData) {
-        await saveValidatedSubmission(submission, validatedData, task, wallet, community.logo)
+        return saveValidatedSubmission(submission, validatedData, task, wallet, community.logo)
       }
 
     } catch (error) {
       const validateError = error instanceof Error ? error.message : 'Unknown error'
-      await updateInvalidSubmission({
+      return updateInvalidSubmission({
         submissionId: submission.id,
         taskPid: task.processID,
         wallet,
