@@ -420,12 +420,11 @@ async function onClickSendBounty() {
     )
     console.group('Bounty calculating')
     console.log({ selected: selectedSubmissions })
-    submissions
-      .map(s => {
-        console.log(s.address)
-        return s.calculatedBounties
-      })
-      .forEach(i => console.table(i))
+    // submissions
+    //   .map(s => {
+    //     return s.calculatedBounties
+    //   })
+    //   .forEach(i => console.table(i))
 
     selectedSubmissions.forEach(submission => {
       const calculated = calcBounties(
@@ -439,8 +438,8 @@ async function onClickSendBounty() {
     })
 
     console.log('calculated bounties')
-    submissions.forEach(s => {
-      console.log(s.address)
+    selectedSubmissions.forEach(s => {
+      console.log(s.address, 'calculated bounties:')
       console.table(s.calculatedBounties)
     })
     console.groupEnd()
@@ -450,12 +449,12 @@ async function onClickSendBounty() {
     await updateTaskSubmissions(taskPid, submissions)
 
     /** bounties that should send back to the task owner */
-    const refoundMap = {} as Record<string, Bounty>
+    const refundMap = {} as Record<string, Bounty>
     // initialize refoundMap
     for (const taskBounty of task.bounties) {
       const { tokenProcessID: pid } = taskBounty
-      if (!refoundMap[pid]) {
-        refoundMap[pid] = {
+      if (!refundMap[pid]) {
+        refundMap[pid] = {
           taskPid,
           sender: task!.ownerAddress,
           recipient: task!.ownerAddress,
@@ -464,12 +463,13 @@ async function onClickSendBounty() {
           quantity: BigInt(0),
         }
       }
-      refoundMap[pid].amount += taskBounty.amount
-      refoundMap[pid].quantity += BigInt(taskBounty.quantity)
+      refundMap[pid].amount += taskBounty.amount
+      refundMap[pid].quantity += BigInt(taskBounty.quantity)
     }
+
     // set decentraMind service charge quantity
     const dmQuantityMap = {} as Record<string, bigint>
-    for (const [pid, returnBounty] of Object.entries(refoundMap)) {
+    for (const [pid, returnBounty] of Object.entries(refundMap)) {
       if (!dmQuantityMap[pid]) {
         dmQuantityMap[pid] =
           (returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT)) /
@@ -478,11 +478,11 @@ async function onClickSendBounty() {
     }
 
     // add selected submission's bounty to bountiesToSend
-    const selectedSubmitters = selectedSubmissions.map(
-      submission => submission.address,
+    const selectedSubmissionIds = selectedSubmissions.map(
+      submission => submission.id,
     )
     submissions
-      .filter(submission => selectedSubmitters.includes(submission.address))
+      .filter(submission => selectedSubmissionIds.includes(submission.id))
       .forEach(submission => {
         submission.calculatedBounties.forEach(bounty => {
           const pid = bounty.tokenProcessID
@@ -496,14 +496,14 @@ async function onClickSendBounty() {
           }
 
           // update refoundMap
-          refoundMap[pid].amount -= bounty.amount
-          refoundMap[pid].quantity -= BigInt(bounty.quantity)
+          refundMap[pid].amount -= bounty.amount
+          refundMap[pid].quantity -= BigInt(bounty.quantity)
 
           bountiesToSend.push(bountyData)
         })
       })
 
-    for (const [pid, returnBounty] of Object.entries(refoundMap)) {
+    for (const [pid, returnBounty] of Object.entries(refundMap)) {
       // add DecentraMind bounty service charges if submissions.length > 0
       if (submissions.length) {
         const quantity = dmQuantityMap[pid]
@@ -522,17 +522,20 @@ async function onClickSendBounty() {
           quantity: correctQuantity,
         })
 
-        refoundMap[pid].amount -= correctAmount
-        refoundMap[pid].quantity -= BigInt(correctQuantity)
+        refundMap[pid].amount -= correctAmount
+        refundMap[pid].quantity -= BigInt(correctQuantity)
       } else {
         bountiesToSend.push(returnBounty)
       }
     }
 
+    // add refundMap to bountiesToSend
+    bountiesToSend.push(...Object.values(refundMap))
+
     console.log('bounties to send:', {
       bounties: bountiesToSend,
       submissions,
-      refoundMap,
+      refundMap: refundMap,
     })
 
     sendBountyResult = await sendBounty(task.processID, bountiesToSend)
