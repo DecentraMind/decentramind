@@ -14,6 +14,7 @@ import type { PermissionType } from 'arconnect'
 
 const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
+  'ACCESS_ALL_ADDRESSES', // wallet switch event needs this permission
   'SIGNATURE',
   'SIGN_TRANSACTION',
   'DISPATCH',
