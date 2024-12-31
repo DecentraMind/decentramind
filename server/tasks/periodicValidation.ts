@@ -96,7 +96,7 @@ async function validateTweetTasks(tweetTasks: Task[]) {
     const tweetInfo = taskPid2TweetInfo[task.processID]
 
     if (!tweetInfo) {
-      console.error('Tweet info not found:', { pid: task.processID, tweetIds: taskPid2TweetIdsMap[task.processID] })
+      console.warn('Tweet info not found:', { pid: task.processID, tweetIds: taskPid2TweetIdsMap[task.processID] })
       continue
     }
 

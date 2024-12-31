@@ -35,7 +35,7 @@ const statusConfig: Record<SubmissionValidateStatus, { icon: string; color: stri
   },
   revalidated: {
     icon: 'i-heroicons-check-circle',
-    color: 'blue',
+    color: 'green',
     label: 'Revalidated',
     description: 'This submission has been revalidated successfully.'
   }

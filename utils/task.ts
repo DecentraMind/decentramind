@@ -64,18 +64,17 @@ export async function getUnsettledTasksByCommunityUuid(communityUuid: string) {
 }
 
 /**
- * TODO: update using admin wallet
- * update specific submission
+ * update specific submission. this function is only for server side validation or task owner
  * @param submission 
  * @param taskPid 
  * @returns 
  */
 export const updateSubmission = async (
-  submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime' | 'validateStatus' | 'validateTime' | 'validator'>>,
+  submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime' | 'validateTime' | 'validator'>>,
   taskPid: string,
   wallet?: Parameters<typeof createDataItemSigner>[0]
 ) => {
-  console.log('update submission', submission)
+  console.log('update submission', { taskPid, submission: submission.id, validateStatus: submission.validateStatus })
   
   if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to update submission')
