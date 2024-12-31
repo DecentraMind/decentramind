@@ -1,6 +1,6 @@
 import type { TwitterSpacesInfo, TwitterTweetInfo } from '~/types'
 import { maxFetchSpaceIds, maxFetchTweetIds } from '~/utils/constants'
-import { chunk } from 'lodash-es'
+import { chunk, uniq } from 'lodash-es'
 
 const { TWITTER_BEARER_TOKEN: token } = process.env
 if (!token) throw new Error('Twitter token not configured')
@@ -14,16 +14,25 @@ export async function getByPid2IdsMap<T extends TwitterSpacesInfo | TwitterTweet
   ids: Record<string, string[]>,
   getInfo: (_: string) => Promise<T>
 ) {
-  const idsArray = Object.values(ids).flat() 
+  const idsArray = uniq(Object.values(ids).flat())
   if (!idsArray.length) {
-    throw new Error('No space or tweet ids provided.')
+    return {}
   }
 
-  const resultMap: Record<string, T> = {}
+  const resultMap: Record<string, T> = Object.keys(ids).reduce((acc, pid) => {
+    acc[pid] = {data: [], includes: {}} as unknown as T
+    return acc
+  }, {} as Record<string, T>)
+
   const result = await getInfo(idsArray.join(','))
   if (!result || !result.data || !result.data.length) {
+    if (result.errors) {
+      console.warn('Failed to fetch space or tweet info: ', { ids, result, errors: result.errors })
+      return resultMap
+    }
     throw new Error('Failed to fetch space or tweet info.')
   }
+
   for (const data of result.data) {
     // put data to resultMap
     const spaceOrTweetId = data.id
@@ -75,9 +84,19 @@ export async function getSpaces(ids: string | string[]) {
     data: [],
     includes: {
       users: []
-    }
+    },
+    errors: []
   }
   for (const [index, resultChunk] of resultChunks.entries()) {
+    if (!resultChunk.data || !resultChunk.data.length) {
+      if (resultChunk.errors) {
+        const error = resultChunk.errors[0].detail
+        console.warn('Failed to fetch space info from twitter api: ', { ids, error })
+        result.errors?.push(...resultChunk.errors)
+      }
+      continue
+    }
+
     console.log('resultChunk ' + index)
     result.data?.push(...resultChunk.data!)
     if (resultChunk.includes) {
@@ -130,7 +149,8 @@ export async function getTweets(ids: string | string[]) {
     data: [],
     includes: {
       users: []
-    }
+    },
+    errors: []
   }
   
   for (const [index, resultChunk] of resultChunks.entries()) {
@@ -156,10 +176,10 @@ export async function getTweets(ids: string | string[]) {
     if (!resultChunk.data || !resultChunk.data.length) {
       if (resultChunk.errors) {
         const error = resultChunk.errors[0].detail
-        console.error('Failed to fetch tweets from twitter api: ', { ids, resultChunk })
-        throw new Error('Failed to fetch tweets from twitter api: ' + error)
+        console.warn('Failed to fetch tweets from twitter api: ', { ids, error })
+        result.errors?.push(...resultChunk.errors)
       }
-      throw new Error('Failed to fetch tweets from twitter api.')
+      continue
     }
     
     result.data?.push(...resultChunk.data!)

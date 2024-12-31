@@ -58,7 +58,7 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
 export async function messageResultCheck(messageParams: SendMessageArgs) {
   const messageId = await message(messageParams)
   const res = await result({ process: messageParams.process, message: messageId })
-  console.log('check result', res)
+  // console.log('check result', res)
   return checkResult(res)
 }
 

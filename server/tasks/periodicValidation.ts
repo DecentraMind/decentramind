@@ -1,9 +1,13 @@
 import { defineTask } from '#imports'
-import { getUnsettledTasks } from '~/utils/task'
+import { getTask, getUnsettledTasks } from '~/utils/task'
 import { updateSubmissions } from '~/utils/task/updateSubmissions.server'
 import { Task, ValidatedSpacesInfo, ValidatedTweetInfo } from '~/types'
-import { SPACE_URL_REGEXP } from '~/utils'
+import { SPACE_URL_REGEXP, TWEET_URL_REGEXP } from '~/utils'
 import { getByPid2IdsMap, getSpaces, getTweets } from '~/utils/twitter/twitter.server'
+
+type Payload = {
+  taskPid: string
+}
 
 export default defineTask({
   meta: {
@@ -11,9 +15,11 @@ export default defineTask({
     description: 'Periodically validate submissions and update metrics'
   },
 
-  async run() {
+  async run({ payload }) {
+    const { taskPid } = payload as Payload
+
     try {
-      const tasks = await getUnsettledTasks()
+      const tasks = taskPid ? [await getTask(taskPid)] : await getUnsettledTasks()
 
       // separate tasks by type
       const spaceTasks = tasks.filter(task => task.type === 'space')
@@ -45,20 +51,21 @@ async function validateSpaceTasks(spaceTasks: Task[]) {
     return map
   }, {} as Record<string, string[]>)
 
+  // console.log('taskPid2SpaceIdsMap', taskPid2SpaceIdsMap)
   const taskPid2SpaceInfo = await getByPid2IdsMap(taskPid2SpaceIdsMap, getSpaces)
 
   for (const task of spaceTasks) {
-    console.log('periodic validation task', task)
+    console.log('periodic validation task', task.processID, `${task.submissions.length} submissions.`)
     const spaceInfo = taskPid2SpaceInfo[task.processID]
 
     if (!spaceInfo) {
-      console.error('Space info not found:', task.submissions[0].url)
+      console.error('Space info not found:', { pid: task.processID, spaceIds: taskPid2SpaceIdsMap[task.processID] })
       continue
     }
 
     if (!spaceInfo || !spaceInfo.data || !spaceInfo.data.length || !spaceInfo.includes) {
-      console.error('Error fetching spaces:', { taskPid: task.processID, spaceIds: taskPid2SpaceIdsMap[task.processID], spaceInfo })
-      throw new Error('Failed to validate space URL: fetch data failed.')
+      console.warn('Error fetching spaces:', { taskPid: task.processID, spaceIds: taskPid2SpaceIdsMap[task.processID], spaceInfo })
+      // continue
     }
     return updateSubmissions(task, spaceInfo as ValidatedSpacesInfo)
   }
@@ -68,7 +75,7 @@ async function validateTweetTasks(tweetTasks: Task[]) {
   /** a map of task pid to tweet ids */
   const taskPid2TweetIdsMap = tweetTasks.reduce((map, task) => {
     const tweetIds = task.submissions.map(s => {
-      const matched = s.url.trim().match(SPACE_URL_REGEXP)
+      const matched = s.url.trim().match(TWEET_URL_REGEXP)
       if (!matched || !matched[1]) {
         return false
       }
@@ -80,20 +87,22 @@ async function validateTweetTasks(tweetTasks: Task[]) {
     return map
   }, {} as Record<string, string[]>)
 
+  console.log('taskPid2TweetIdsMap', taskPid2TweetIdsMap)
   const taskPid2TweetInfo = await getByPid2IdsMap(taskPid2TweetIdsMap, getTweets)
+  console.log('taskPid2TweetInfo', taskPid2TweetInfo)
 
   for (const task of tweetTasks) {
-    console.log('periodic validation task', task)
+    console.log('periodic validation task', task.processID, `${task.submissions.length} submissions.`)
     const tweetInfo = taskPid2TweetInfo[task.processID]
 
     if (!tweetInfo) {
-      console.error('Tweet info not found:', task.submissions[0].url)
+      console.error('Tweet info not found:', { pid: task.processID, tweetIds: taskPid2TweetIdsMap[task.processID] })
       continue
     }
 
     if (!tweetInfo || !tweetInfo.data || !tweetInfo.data.length || !tweetInfo.includes) {
-      console.error('Error fetching tweets:', { taskPid: task.processID, tweetIds: taskPid2TweetIdsMap[task.processID], tweetInfo })
-      throw new Error('Failed to validate tweet URL: fetch data failed.')
+      console.warn('Error fetching tweets.', { taskPid: task.processID, tweetIds: taskPid2TweetIdsMap[task.processID] })
+      // continue
     }
     await updateSubmissions<ValidatedTweetInfo>(task, tweetInfo as ValidatedTweetInfo)
   }

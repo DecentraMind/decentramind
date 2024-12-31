@@ -1,4 +1,4 @@
-import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner } from '~/utils/ao'
+import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner, dryrunResultParsed } from '~/utils/ao'
 import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, SpaceSubmission, ValidatedTweetInfo, TweetSubmission, ValidatedSpacesInfo, RelatedUserMap, Submission } from '~/types'
 import { extractResult, wordCount } from '~/utils'
 import { DM_PROCESS_ID } from '~/utils/processID'
@@ -77,12 +77,12 @@ export const updateSubmission = async (
 ) => {
   console.log('update submission', submission)
   
-  if (!window?.arweaveWallet && !wallet) {
+  if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to update submission')
   }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(wallet || window.arweaveWallet),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
     tags: [
       { name: 'Action', value: 'UpdateSubmission' },
       { name: 'TaskPid', value: taskPid },
@@ -100,12 +100,12 @@ export const updateSubmission = async (
  */
 export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
   console.log('update task submissions', submissions)
-  if (!window?.arweaveWallet && !wallet) {
+  if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
   }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(wallet || window.arweaveWallet),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
     tags: [
       { name: 'Action', value: 'UpdateTaskSubmissions' },
       { name: 'TaskPid', value: taskPid }
@@ -345,12 +345,12 @@ export const saveTweetTaskSubmitInfo = async function({
  */
 export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTime'|'updateTime'>, 
   wallet?: Parameters<typeof createDataItemSigner>[0]) => {
-  if (!window?.arweaveWallet && !wallet) {
+  if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
   }
   return await messageResultCheck({
     process: taskManagerProcessID,
-    signer: createDataItemSigner(wallet || window.arweaveWallet),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
     tags: [{ name: 'Action', value: 'AddSubmission' }],
     data: JSON.stringify(submission)
   })
