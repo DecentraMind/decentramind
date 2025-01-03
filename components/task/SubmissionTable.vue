@@ -83,16 +83,17 @@ const lastUpdateTime = computed(() => {
 
 <template>
   <div>
-    <div class="flex-center !justify-between flex-row-reverse py-3.5 border-b border-gray-300 dark:border-gray-700">
+    <div class="flex-center !justify-between gap-2 flex-row-reverse py-3.5 border-b border-gray-300 dark:border-gray-700">
       <ULink
         :to="`https://www.ao.link/#/entity/${task.processID}?tab=incoming`"
         active-class="text-primary"
         target="_blank"
         inactive-class="text-primary"
+        class="text-xs md:text-base"
       >
         Transaction Book
       </ULink>
-      <div :class="cn('flex items-center', !isOwner && 'hidden')">
+      <div :class="cn('flex items-center text-sm md:text-base', !isOwner && 'hidden')">
         <div class="font-semibold mr-2">{{ $t('Submissions') }}</div>
         <UInput v-model="searchKeyword" icon="heroicons:magnifying-glass" placeholder="Search..." />
       </div>

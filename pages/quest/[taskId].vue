@@ -701,7 +701,7 @@ const onClickShareToTwitter = () => {
       />
     </div>
 
-    <UPage v-if="!isLoading" class="overflow-y-auto h-full w-full">
+    <UPage v-if="!isLoading" class="overflow-y-auto h-full w-[calc(100%-80px)] lg:w-full">
       <div class="w-full overflow-y-auto h-full">
         <NuxtLink
           v-if="task && isJoinedCommunity"
@@ -721,8 +721,11 @@ const onClickShareToTwitter = () => {
           :key="task.processID"
           :title="task.name"
           :description="task.intro"
-          class="px-10 pt-16 pb-10"
-          :ui="{ title: 'text-3xl mb-6 text-clip' }"
+          class="px-4 sm:px-10 pt-8 sm:pt-16 pb-8 sm:pb-10"
+          :ui="{
+            // wrapper: 'p-2 sm:p-4',
+            title: 'text-3xl mb-6 text-clip'
+          }"
         >
           <template #description>
             <div class="flex flex-col space-y-6">
@@ -859,7 +862,7 @@ const onClickShareToTwitter = () => {
               />
             </div>
 
-            <div class="mt-4">
+            <div class="mt-8">
               <h4 class="font-semibold mb-2">{{ $t('Rules of Judgment') }}</h4>
               <p
                 class="leading-6 text-gray-400 text-sm"
