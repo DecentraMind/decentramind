@@ -9,21 +9,19 @@ import type {
   AllSubmissionWithCalculatedBounties,
   TaskWithLink,
   SubmissionUpdateResponse,
-  ValidatedTweetInfo,
-  ValidatedSpacesInfo,
+  SpaceSubmission,
+  TweetSubmission,
 } from '~/types'
 import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
-import validateTaskData from '~/utils/validateTaskData'
 import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
 import { tweetUrlSchema } from '~/utils/schemas'
 import { useFetch } from '@vueuse/core'
 import { useSignature } from '~/composables/useSignature'
-import { fetchSpacesInfo, fetchTweetInfo } from '~/utils/twitter/twitter.client'
-import { saveSpaceTaskSubmitInfo, saveTweetTaskSubmitInfo } from '~/utils/task'
 import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
+import Bounties from '~/components/task/Bounties.vue'
 
 definePageMeta({
   ssr: false
@@ -172,46 +170,46 @@ onMounted(async () => {
       !task.isSettled &&
       isOwner
     ) {
-      const { getSignature, error: signatureError } = useSignature()
-      if (signatureError.value) {
-        throw new Error(
-          'Failed to update submissions, can\'t get signature: ' +
-            signatureError.value,
-        )
-      }
+      // const { getSignature, error: signatureError } = useSignature()
+      // if (signatureError.value) {
+      //   throw new Error(
+      //     'Failed to update submissions, can\'t get signature: ' +
+      //       signatureError.value,
+      //   )
+      // }
 
-      const { signature, address, publicKey, message } = await getSignature(
-        taskPid,
-      )
+      // const { signature, address, publicKey, message } = await getSignature(
+      //   taskPid,
+      // )
 
-      console.log('signature', signature, address)
+      // console.log('signature', signature, address)
 
-      // validate and update task submissions at DecentraMind server
-      const { data, error } = await useFetch('/api/updateTaskSubmissions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          taskPid,
-          signature,
-          address,
-          publicKey,
-          message,
-        }),
-      }).json<SubmissionUpdateResponse>()
-      const submissionUpdateResponse = unref(data)
+      // // validate and update task submissions at DecentraMind server
+      // const { data, error } = await useFetch('/api/updateTaskSubmissions', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     taskPid,
+      //     signature,
+      //     address,
+      //     publicKey,
+      //     message,
+      //   }),
+      // }).json<SubmissionUpdateResponse>()
+      // const submissionUpdateResponse = unref(data)
 
-      if (error.value) {
-        console.error('updateTaskSubmissions error', {
-          data: data.value,
-          error: error.value,
-        })
-        throw new Error('Failed to update submissions: ' + error.value)
-      }
+      // if (error.value) {
+      //   console.error('updateTaskSubmissions error', {
+      //     data: data.value,
+      //     error: error.value,
+      //   })
+      //   throw new Error('Failed to update submissions: ' + error.value)
+      // }
 
-      console.log('submissionUpdateResponse', submissionUpdateResponse)
-      task = await getTask(taskPid, address)
+      // console.log('submissionUpdateResponse', submissionUpdateResponse)
+      // task = await getTask(taskPid, address)
 
       const updatedSubmissions = useTaskScoreCalculate(
         task,
@@ -247,7 +245,7 @@ onMounted(async () => {
 
   // auto join task if there is a joinTask action in the url
   const urlParams = new URLSearchParams(window.location.search)
-  if (urlParams.get('action') === 'joinTask') {
+  if (urlParams.get('action') === 'joinTask' && !isJoined) {
     console.log('auto join task')
     await onClickJoin()
   }
@@ -317,27 +315,21 @@ async function onSubmitTweetUrl() {
     if (isSubmitted && !runtimeConfig.public.debug) {
       throw new Error('You have submitted this quest.')
     }
-
-    const data = await fetchTweetInfo([tweetUrlForm.url])
-    const tweetInfo = validateTaskData<ValidatedTweetInfo>({
-      task,
-      data,
-      mode: 'add',
-      twitterVouchedIDs,
-      communityName: communityInfo.name,
-    })
-    if (tweetInfo) {
-      await saveTweetTaskSubmitInfo({
-        submitterAddress: address,
-        taskEndTime: task.endTime,
-        data: tweetInfo,
-        taskPid,
-        communityUuid: communityInfo.uuid,
-        invites,
-        mode: 'add',
-        url: tweetUrlForm.url,
-      })
+    
+    const tweetSubmission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'> = {
+      taskPid,
+      address,
+      url: tweetUrlForm.url,
+      // metrics and score will be overwritten by process side
+      buzz: 0,
+      discuss: 0,
+      identify: 0,
+      popularity: 0,
+      spread: 0,
+      friends: 0,
+      score: 0
     }
+    await submitTask(tweetSubmission)
 
     task = await getTask(taskPid, address)
 
@@ -369,25 +361,17 @@ async function onSubmitSpaceUrl() {
       throw new Error('You have submitted this quest.')
     }
 
-    const data = await fetchSpacesInfo([spaceUrl])
-    const spaceInfo = validateTaskData<ValidatedSpacesInfo>({
-      task,
-      data,
-      mode: 'add',
-      twitterVouchedIDs,
-      communityName: communityInfo.name,
-    })
-
-    await saveSpaceTaskSubmitInfo({
-      submitterAddress: address,
-      spaceUrl,
-      spaceInfo,
+    const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'|'updateTime'> = {
       taskPid,
-      communityUuid: communityInfo.uuid,
-      communityLogo: communityInfo.logo,
-      invites,
-      mode: 'add',
-    })
+      address,
+      url: spaceUrl,
+      // metrics and score will be overwritten by process side
+      inviteCount: 0,
+      audience: 0,
+      brandEffect: 0,
+      score: 0
+    }
+    await submitTask(spaceSubmission)
 
     task = await getTask(taskPid, address)
 
@@ -416,7 +400,7 @@ async function onClickSendBounty() {
   }
 
   if (selectedSubmissions.length === 0 && task.submissions.length > 0) {
-    if (!confirm('Confirm skipping all submissions?')) {
+    if (!confirm('You did not select any submissions. Confirm skipping all submissions(no bounty will be sent to the submitters, but the bounty will be returned to the task owner)?')) {
       return
     }
   }
@@ -436,12 +420,11 @@ async function onClickSendBounty() {
     )
     console.group('Bounty calculating')
     console.log({ selected: selectedSubmissions })
-    submissions
-      .map(s => {
-        console.log(s.address)
-        return s.calculatedBounties
-      })
-      .forEach(i => console.table(i))
+    // submissions
+    //   .map(s => {
+    //     return s.calculatedBounties
+    //   })
+    //   .forEach(i => console.table(i))
 
     selectedSubmissions.forEach(submission => {
       const calculated = calcBounties(
@@ -455,8 +438,8 @@ async function onClickSendBounty() {
     })
 
     console.log('calculated bounties')
-    submissions.forEach(s => {
-      console.log(s.address)
+    selectedSubmissions.forEach(s => {
+      console.log(s.address, 'calculated bounties:')
       console.table(s.calculatedBounties)
     })
     console.groupEnd()
@@ -466,12 +449,12 @@ async function onClickSendBounty() {
     await updateTaskSubmissions(taskPid, submissions)
 
     /** bounties that should send back to the task owner */
-    const refoundMap = {} as Record<string, Bounty>
+    const refundMap = {} as Record<string, Bounty>
     // initialize refoundMap
     for (const taskBounty of task.bounties) {
       const { tokenProcessID: pid } = taskBounty
-      if (!refoundMap[pid]) {
-        refoundMap[pid] = {
+      if (!refundMap[pid]) {
+        refundMap[pid] = {
           taskPid,
           sender: task!.ownerAddress,
           recipient: task!.ownerAddress,
@@ -480,12 +463,13 @@ async function onClickSendBounty() {
           quantity: BigInt(0),
         }
       }
-      refoundMap[pid].amount += taskBounty.amount
-      refoundMap[pid].quantity += BigInt(taskBounty.quantity)
+      refundMap[pid].amount += taskBounty.amount
+      refundMap[pid].quantity += BigInt(taskBounty.quantity)
     }
+
     // set decentraMind service charge quantity
     const dmQuantityMap = {} as Record<string, bigint>
-    for (const [pid, returnBounty] of Object.entries(refoundMap)) {
+    for (const [pid, returnBounty] of Object.entries(refundMap)) {
       if (!dmQuantityMap[pid]) {
         dmQuantityMap[pid] =
           (returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT)) /
@@ -494,11 +478,11 @@ async function onClickSendBounty() {
     }
 
     // add selected submission's bounty to bountiesToSend
-    const selectedSubmitters = selectedSubmissions.map(
-      submission => submission.address,
+    const selectedSubmissionIds = selectedSubmissions.map(
+      submission => submission.id,
     )
     submissions
-      .filter(submission => selectedSubmitters.includes(submission.address))
+      .filter(submission => selectedSubmissionIds.includes(submission.id))
       .forEach(submission => {
         submission.calculatedBounties.forEach(bounty => {
           const pid = bounty.tokenProcessID
@@ -512,14 +496,14 @@ async function onClickSendBounty() {
           }
 
           // update refoundMap
-          refoundMap[pid].amount -= bounty.amount
-          refoundMap[pid].quantity -= BigInt(bounty.quantity)
+          refundMap[pid].amount -= bounty.amount
+          refundMap[pid].quantity -= BigInt(bounty.quantity)
 
           bountiesToSend.push(bountyData)
         })
       })
 
-    for (const [pid, returnBounty] of Object.entries(refoundMap)) {
+    for (const [pid, returnBounty] of Object.entries(refundMap)) {
       // add DecentraMind bounty service charges if submissions.length > 0
       if (submissions.length) {
         const quantity = dmQuantityMap[pid]
@@ -538,17 +522,20 @@ async function onClickSendBounty() {
           quantity: correctQuantity,
         })
 
-        refoundMap[pid].amount -= correctAmount
-        refoundMap[pid].quantity -= BigInt(correctQuantity)
+        refundMap[pid].amount -= correctAmount
+        refundMap[pid].quantity -= BigInt(correctQuantity)
       } else {
         bountiesToSend.push(returnBounty)
       }
     }
 
+    // add refundMap to bountiesToSend
+    bountiesToSend.push(...Object.values(refundMap))
+
     console.log('bounties to send:', {
       bounties: bountiesToSend,
       submissions,
-      refoundMap,
+      refundMap: refundMap,
     })
 
     sendBountyResult = await sendBounty(task.processID, bountiesToSend)
@@ -617,6 +604,7 @@ const precisions = $computed(() =>
   }, new Map<string, number>()),
 )
 
+// update calculatedBounties when selectedSubmissions changes
 watch(
   () => selectedSubmissions.length,
   () => {
@@ -658,6 +646,7 @@ watch(
   },
 )
 
+// validate tweetUrlForm.url when it changes
 watch(
   () => tweetUrlForm.url,
   value => {
@@ -712,7 +701,7 @@ const onClickShareToTwitter = () => {
       />
     </div>
 
-    <UPage v-if="!isLoading" class="overflow-y-auto h-full w-full">
+    <UPage v-if="!isLoading" class="overflow-y-auto h-full w-[calc(100%-80px)] lg:w-full">
       <div class="w-full overflow-y-auto h-full">
         <NuxtLink
           v-if="task && isJoinedCommunity"
@@ -732,8 +721,11 @@ const onClickShareToTwitter = () => {
           :key="task.processID"
           :title="task.name"
           :description="task.intro"
-          class="px-10 pt-16 pb-10"
-          :ui="{ title: 'text-3xl mb-6 text-clip' }"
+          class="px-4 sm:px-10 pt-8 sm:pt-16 pb-8 sm:pb-10"
+          :ui="{
+            // wrapper: 'p-2 sm:p-4',
+            title: 'text-3xl mb-6 text-clip'
+          }"
         >
           <template #description>
             <div class="flex flex-col space-y-6">
@@ -766,7 +758,9 @@ const onClickShareToTwitter = () => {
                 <div class="font-semibold w-44 shrink-0">
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div class="flex-center" v-html="taskRewardHtml" />
+                <div class="flex-center">
+                  <Bounties v-if="task.bounties" :bounties="task.bounties" :precisions="precisions" />
+                </div>
               </div>
               <div class="flex justify-start">
                 <div class="font-semibold w-44 shrink-0">
@@ -868,7 +862,7 @@ const onClickShareToTwitter = () => {
               />
             </div>
 
-            <div class="mt-4">
+            <div class="mt-8">
               <h4 class="font-semibold mb-2">{{ $t('Rules of Judgment') }}</h4>
               <p
                 class="leading-6 text-gray-400 text-sm"

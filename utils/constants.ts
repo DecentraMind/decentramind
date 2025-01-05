@@ -236,4 +236,4 @@ export const minSpaceLiveLength = 15
 export const maxFetchSpaceIds = 100
 export const maxFetchTweetIds = 100
 
-export const VOUCH_SITE_URL = 'https://g8way.io/Cikp3X7Zk4cI1RtBEq-pVh_fhz-npd5dZ5-0EgCxTQM'
+export const VOUCH_SITE_URL = 'https://vouch.zeabur.app'

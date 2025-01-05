@@ -68,6 +68,12 @@ describe('string utils', () => {
       expect(getHandle('https://twitter.com/username/')).toBe('username')
     })
 
+    it('should handle URLs with dash or dot', () => {
+      expect(getHandle('https://twitter.com/username-123/')).toBe('username-123')
+      expect(getHandle('https://twitter.com/username.123/')).toBe('username.123')
+      expect(getHandle('https://twitter.com/username_123/')).toBe('username_123')
+    })
+
     it('should handle empty string', () => {
       expect(getHandle('')).toBe('')
     })

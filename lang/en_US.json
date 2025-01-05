@@ -69,7 +69,6 @@
   "Private Quests": "Private Quests",
   "Promotion Quest": "Promotion Quest",
   "Public Quests": "Public Quests",
-  "Quests Form": "Quests Form",
   "Quests Home": "Quests Home",
   "Quit": "Leave",
   "Rules of Judgment": "Rules of Judgment",
@@ -100,6 +99,8 @@
   "Submit Quest": "Submit",
   "myQuest": "My Quests",
   "Task Introduction": "Introduction",
+  "Submissions": "Submissions",
+  "Validation Status": "Validation Status",
   "task": {
     "start": {
       "space": "Start a Twitter Space Quest",

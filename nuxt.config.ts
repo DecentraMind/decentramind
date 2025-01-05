@@ -10,6 +10,11 @@ export default defineNuxtConfig({
       processID: process.env.VITE_PUBLIC_PROCESS_ID
     },
   },
+  // router: {
+  //   options: {
+  //     hashMode: true
+  //   }
+  // },
   icon: {
     serverBundle: false,
     clientBundle: {
@@ -55,10 +60,10 @@ export default defineNuxtConfig({
     experimental: {
       tasks: true
     },
-    // scheduledTasks: {
+    scheduledTasks: {
       // Run `cms:update` task every minute
-      // '*/15 * * * * *': 'updateTask'
-    // }
+      '0 */15 * * * *': 'periodicValidation'
+    }
   },
 
   colorMode: {

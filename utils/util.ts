@@ -65,7 +65,7 @@ export function taskProgress(now: number, startTime: number, endTime: number) {
   return res
 }
 
-export function getTaskTableColumns(taskType: Task['type']) {
+export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: boolean = false) {
   const { $i18n } = useNuxtApp()
   const t = $i18n.t
 
@@ -98,8 +98,16 @@ export function getTaskTableColumns(taskType: Task['type']) {
     rowClass: 'font-mono pr-0',
   }
 
+  const validateStatusField = {
+    key: 'validateStatus',
+    label: t('Validation Status'),
+    class: 'text-left',
+    rowClass: 'font-mono text-left',
+  }
+
   const tweetTableColumns = [
     idField,
+    validateStatusField,
     addressField,
     urlField,
     {
@@ -139,6 +147,7 @@ export function getTaskTableColumns(taskType: Task['type']) {
   const taskTableColumns = {
     space: [
       idField,
+      validateStatusField,
       addressField,
       {
         key: 'brandEffect',
@@ -178,8 +187,14 @@ export function getTaskTableColumns(taskType: Task['type']) {
       rewardHtmlField
     ],
   }
-  
-  return taskTableColumns[taskType]
+
+  const selectStatusField = {
+    key: 'selectStatus',
+    label: '',
+    class: 'text-left',
+    rowClass: 'font-mono text-left',
+  }
+  return showSelectStatus ? [selectStatusField, ...taskTableColumns[taskType]] : taskTableColumns[taskType]
 }
 
 export interface UpdateItemParams<T, K extends keyof T> {

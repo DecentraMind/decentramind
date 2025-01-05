@@ -79,6 +79,14 @@ function u.uid(length)
   return id
 end
 
+---@class VouchDataVouched
+---@field Vouches-For string
+---@field Vouchers table<string, {Identifier: string, Vouch-For: string, Value: string, Country: string, Method: string}>
+
+---@class VouchDataNotVouched
+---@field ID string
+---@field Status string
+
 function u.fetchVouchedIdentifiers(address, method, validVouchers)
   method = method or 'X'
   validVouchers = validVouchers or {}
@@ -88,23 +96,23 @@ function u.fetchVouchedIdentifiers(address, method, validVouchers)
     Action = 'Get-Vouches',
     ID = address
   })
-  local receivedAddress = address -- capture the address value
-  --- FIXME: when Vouch process error(the address is not vouched)
+
   local vouchResult = Receive(function(msg)
     if (msg.From ~= VouchProcessId) then return false end
     -- print('receive from vouch process')
 
     if (msg.Action ~= "VouchDAO.Vouches") then return false end
 
+    ---@type VouchDataVouched | VouchDataNotVouched
     local data = json.decode(msg.Data)
-    -- print('receive vouch data of ' .. receivedAddress)
+    -- print('receive vouch data of ' .. address)
 
-    if (data["Vouches-For"] and data["Vouches-For"] == receivedAddress) then
-      print(receivedAddress .. ' is vouched')
+    if (data["Vouches-For"] and data["Vouches-For"] == address) then
+      print(address .. ' is vouched')
       return true
     end
-    if (data["ID"] and data["ID"] == receivedAddress) then
-      print(receivedAddress .. ' is not vouched')
+    if (data["ID"] and data["ID"] == address) then
+      print(address .. ' is not vouched')
       return true
     end
 

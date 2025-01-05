@@ -11,10 +11,10 @@ const aoCommunityProcessID = DM_PROCESS_ID
 
 import type { PermissionType } from 'arconnect'
 
-declare const window: any
 
 const permissions: PermissionType[] = [
   'ACCESS_ADDRESS',
+  'ACCESS_ALL_ADDRESSES', // wallet switch event needs this permission
   'SIGNATURE',
   'SIGN_TRANSACTION',
   'DISPATCH',
@@ -72,7 +72,7 @@ export const aoStore = defineStore('aoStore', () => {
   }
 
   async function _sendRegisterOrLoginMessage(wallet: typeof window.arweaveWallet, name: string) {
-    await message({
+    return await message({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'RegisterUserOrLogin' },

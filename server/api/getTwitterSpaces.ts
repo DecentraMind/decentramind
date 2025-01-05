@@ -4,8 +4,6 @@ import { getSpaces } from '~/utils/twitter/twitter.server'
 export default eventHandler(async (event) => {
   const { spaceIds } = getQuery(event) as { spaceIds?: string }
   console.log('get twitter spaces info, spaceIds = ' + spaceIds)
-  
-  const { TWITTER_BEARER_TOKEN: token } = import.meta.env
 
   try{
     if (!spaceIds) {
@@ -18,11 +16,7 @@ export default eventHandler(async (event) => {
       throw new Error(`spaceIds should not be more than ${maxFetchSpaceIds}`)
     }
 
-    if (!token) {
-      throw new Error('TWITTER_BEARER_TOKEN is not set')
-    }
-
-    const data = await getSpaces(spaceIds, token)
+    const data = await getSpaces(spaceIds)
 
     return data
   } catch (error) {

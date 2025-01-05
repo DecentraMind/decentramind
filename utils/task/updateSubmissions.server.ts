@@ -1,210 +1,390 @@
-import type { ValidatedSpacesInfo, ValidatedTweetInfo } from '~/types'
-import { SPACE_URL_REGEXP, TWEET_URL_REGEXP } from '~/utils'
-import { getInvitesByInviter, getTask, updateInvalidSubmission, saveTweetTaskSubmitInfo } from '~/utils/task'
-import { getSpaces, getTweets } from '~/utils/twitter/twitter.server'
+import type {
+  Task,
+  ValidatedSpacesInfo,
+  ValidatedTweetInfo,
+  SubmissionValidateStatus,
+  SpaceSubmission,
+  TweetSubmission,
+  InviteCodeInfo,
+  Submission
+} from '~/types'
+import {
+  getInvitesByInviter,
+  updateInvalidSubmission,
+  updateSubmission
+} from '~/utils/task'
 import { getSpaceIds, getTweetIds } from '~/utils/twitter/twitter'
 import validateTaskData from '~/utils/validateTaskData'
 import fs from 'fs'
 import { getCommunity } from '~/utils/community/community'
+import { compareImages } from '~/utils/image.server'
+import { gateways, arUrl } from '~/utils/arAssets'
+import { createDataItemSigner, wordCount } from '~/utils'
 
-export const updateSubmissions = async(taskPid: string) => {
-  if (!taskPid) {
-    return { result: 'error', message: 'taskPid is required' }
+// Common validation logic for both spaces and tweets
+const validateSubmissionData = <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(
+  task: Task,
+  data: T,
+  contentId: string,
+  communityName: string
+) => {
+  const xData = task.type === 'space'
+    ? (data as ValidatedSpacesInfo).data?.find(s => s.id === contentId)
+    : (data as ValidatedTweetInfo).data?.find(t => t.id === contentId)
+
+  if (task.type === 'space') {
+    // Prepare data for validation
+    const spaceOrTweetData: ValidatedSpacesInfo = {
+      data: [xData as ValidatedSpacesInfo['data'][0]],
+      includes: data.includes!
+    }
+    return validateTaskData<ValidatedSpacesInfo>({
+      task,
+      data: spaceOrTweetData,
+      mode: 'update',
+      twitterVouchedIDs: [],
+      communityName,
+    })
+  } else {
+    // Prepare data for validation
+    const spaceOrTweetData: ValidatedTweetInfo = {
+      data: [xData as ValidatedTweetInfo['data'][0]],
+      includes: data.includes!
+    }
+    return validateTaskData<ValidatedTweetInfo>({
+      task,
+      data: spaceOrTweetData,
+      mode: 'update',
+      twitterVouchedIDs: [],
+      communityName,
+    })
+  }
+}
+
+// Save validated submission data
+const saveValidatedSubmission = async <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(
+  submission: SpaceSubmission | TweetSubmission,
+  validatedData: T,
+  task: Task,
+  wallet: any,
+  communityLogo: string
+) => {
+  const invites = (await getInvitesByInviter(submission.address, 'task')).invites
+  const validateStatus: SubmissionValidateStatus = submission.validateStatus === 'waiting_for_validation'
+    ? 'validated'
+    : 'revalidated'
+
+  const saveParams = {
+    taskPid: task.processID,
+    submissionId: submission.id,
+    submitterAddress: submission.address,
+    communityUuid: task.communityUuid,
+    wallet,
+    invites,
+    validateStatus,
   }
 
+  if (task.type === 'space') {
+    return saveSpaceTaskSubmitInfo({
+      ...saveParams,
+      spaceInfo: validatedData as ValidatedSpacesInfo,
+      communityLogo,
+    })
+  } else {
+    return saveTweetTaskSubmitInfo({
+      ...saveParams,
+      taskEndTime: task.endTime,
+      data: validatedData as ValidatedTweetInfo,
+    })
+  }
+}
+
+export const updateSubmissions = async <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(task: Task, data: T) => {
+  // Validate environment
   const { TWITTER_BEARER_TOKEN: token, WALLET_PATH: walletPath } = process.env
-  if (!token) {
-    return { result: 'error', message: 'TWITTER_BEARER_TOKEN is not set' }
+  if (!token) return { result: 'error', message: 'TWITTER_BEARER_TOKEN is not set' }
+  if (!walletPath) return { result: 'error', message: 'WALLET_PATH is not set' }
+
+  const wallet = JSON.parse(fs.readFileSync(walletPath, 'utf-8'))
+  const submissions = task.submissions
+  if (submissions.length <= 0) {
+    return { result: 'success', message: 'no submissions, no data to update.' }
   }
-  if (!walletPath) {
-    return { result: 'error', message: 'WALLET_PATH is not set' }
-  }
-  console.log('token = ', token)
 
-  const task = await getTask(taskPid)
-  if (!task) {
-    return { result: 'error', message: 'task not found' }
-  }
-  // console.log('updateSubmissions: task = ', task)
+  const community = await getCommunity(task.communityUuid)
+  if (!community) throw new Error('Community not found.')
 
-  const walletJson = fs.readFileSync(walletPath, 'utf-8')
-  const wallet = JSON.parse(walletJson)
+  await Promise.all(submissions.map(submission => {
+    try {
+      // Get content ID and data based on task type
+      const contentId = task.type === 'space'
+        ? getSpaceIds([submission.url])[0]
+        : getTweetIds([submission.url])[0]
 
-  const submissions = task.submissions// as AllSubmissionWithCalculatedBounties[]
-  switch (task.type) {
-    case 'space': {
-      if (submissions.length <= 0) {
-        return { result: 'success', message: 'no submissions, no data to update.' }
-      }
+      const xData = task.type === 'space'
+        ? (data as ValidatedSpacesInfo).data?.find(s => s.id === contentId)
+        : (data as ValidatedTweetInfo).data?.find(t => t.id === contentId)
 
-      const spaceIds = submissions.map(s => {
-        const matched = s.url.trim().match(SPACE_URL_REGEXP)
-        if (!matched || !matched[1]) {
-          return false
-        }
-        return matched[1]
-      }).filter(Boolean).join(',')
-
-      const spacesInfo = await getSpaces(spaceIds, token)
-
-      if (!spacesInfo || !spacesInfo.data || !spacesInfo.data.length || !spacesInfo.includes) {
-        console.error('Error fetching spaces:', spacesInfo)
-        throw new Error('Failed to validate space URL: fetch data failed.')
-      }
-      const community = await getCommunity(task.communityUuid)
-      if (!community) {
-        throw new Error('Community not found.')
-      }
-
-      await Promise.all(submissions.map(async s => {
-        const spaceId = getSpaceIds([s.url])[0]
-        const spaceData = spacesInfo.data?.find(si => si.id === spaceId)
-        if (!spaceData) {
+      if (!xData) {
+        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error') {
           return updateInvalidSubmission({
-            submissionId: s.id,
-            taskPid,
+            submissionId: submission.id,
+            taskPid: task.processID,
             wallet,
             validateStatus: 'validation_error',
-            validateError: 'Space not found from Twitter API.',
+            validateError: `${task.type === 'space' ? 'Space' : 'Tweet'} not found from Twitter API.`
           })
         }
-        const spaceInfo = {
-          data: [spaceData],
-          includes: spacesInfo.includes!,
-        }
-        let validatedSpaceInfo: ValidatedSpacesInfo
-        try {
-          validatedSpaceInfo = validateTaskData<ValidatedSpacesInfo>({
-            task,
-            data: spaceInfo,
-            mode: 'update',
-            twitterVouchedIDs: [],
-            communityName: community.name,
-          })
-        } catch (error) {
-          const validateError = error instanceof Error ? error.message : 'Unknown error'
+        return
+      }
+
+      let validatedData: ValidatedSpacesInfo | ValidatedTweetInfo
+      try{
+        validatedData = validateSubmissionData(task, data, contentId, community.name)
+      } catch (error) {
+        console.warn(`Error validating submission ${submission.id} task ${task.processID}:`, error)
+        const validateError = error instanceof Error ? error.message
+          : (typeof error === 'string' ? error : 'Unknown error.' )
+        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == 'invalid' || submission.validateStatus == undefined) {
           return updateInvalidSubmission({
-            submissionId: s.id,
-            taskPid,
+            submissionId: submission.id,
+            taskPid: task.processID,
             wallet,
             validateStatus: 'invalid',
             validateError,
           })
         }
+        return
+      }
 
-        // TODO getInvitesByInviters
-        const invites = (await getInvitesByInviter(s.address, 'task')).invites
+      if (validatedData) {
+        return saveValidatedSubmission(submission, validatedData, task, wallet, community.logo)
+      }
 
-        console.log('saveTweetTaskSubmitInfo, submission ID = ', s.id)
-        
-        return saveSpaceTaskSubmitInfo({
-          wallet,
-          submitterAddress: s.address,
-          spaceUrl: s.url,
-          spaceInfo: validatedSpaceInfo,
-          taskPid,
-          communityUuid: task.communityUuid,
-          communityLogo: community.logo,
-          invites,
-          mode: 'update',
-          submissionId: s.id,
-        })
-      }))
-
-      break
+    } catch (error) {
+      const validateError = error instanceof Error ? error.message : 'Unknown error'
+      return updateInvalidSubmission({
+        submissionId: submission.id,
+        taskPid: task.processID,
+        wallet,
+        validateStatus: 'validation_error',
+        validateError
+      })
     }
-    case 'promotion':
-    case 'bird':
-    case 'article': {
-      if (submissions.length <= 0) {
-        return { result: 'success', message: 'no submissions, no data to update.' }
-      }
+  }))
 
-      const tweetIds = submissions.map(s => {
-        const matched = s.url.trim().match(TWEET_URL_REGEXP)
+  return {
+    result: 'success',
+    message: `submissions of task ${task.processID} updated`
+  }
+}
 
-        if (!matched || !matched[1]) {
-          return false
-        }
-        return matched[1]
-      }).filter(Boolean).join(',')
+type SaveSpaceTaskSubmitInfoParams = {
+  taskPid: string
+  submissionId: number
+  submitterAddress: string
+  spaceInfo: ValidatedSpacesInfo
+  communityUuid: string
+  communityLogo: string
+  invites: InviteCodeInfo[]
+  wallet?: Parameters<typeof createDataItemSigner>[0]
+  validateStatus: Submission['validateStatus']
+  validateError?: string
+}
 
-      const tweets = await getTweets(tweetIds, token)
+/**
+ * update space task submission, only for server side validation(trigger by cron job or task owner)
+ */
+export const saveSpaceTaskSubmitInfo = async function ({
+  taskPid,
+  submissionId,
+  submitterAddress,
+  spaceInfo,
+  communityUuid,
+  communityLogo,
+  invites,
+  wallet,
+  validateStatus,
+  validateError
+}: SaveSpaceTaskSubmitInfoParams) {
+  const {
+    ended_at,
+    participant_count: participantCount,
+  } = spaceInfo.data[0]
 
-      if (!tweets || !tweets.data || !tweets.data.length || !tweets.includes) {
-        console.error('Error fetching tweets:', tweets)
-        throw new Error('Failed to validate tweet URL: fetch data failed.')
-      }
-
-      const community = await getCommunity(task.communityUuid)
-      if (!community) {
-        throw new Error('Community not found.')
-      }
-
-      await Promise.all(submissions.map(async s => {
-        const tweetId = getTweetIds([s.url])[0]
-        const tweetData = tweets.data?.find(t => t.id === tweetId)
-        if (!tweetData) {
-          // console.error('Tweet not found. tweetId = ', tweetId)
-          // throw new Error('Tweet not found.')
-          // TODO set submission status to validation error
-          console.log('Tweet not found, skip. tweetId = ', tweetId)
-          return updateInvalidSubmission({
-            submissionId: s.id,
-            taskPid,
-            wallet,
-            validateStatus: 'validation_error',
-            validateError: 'Tweet not found from Twitter API.',
-          })
-        }
-
-        const tweetInfo = {
-          data: [tweetData],
-          includes: tweets.includes!,
-        }
-
-        let validatedTweetInfo
-        try {
-          validatedTweetInfo = validateTaskData<ValidatedTweetInfo>({
-            task, data: tweetInfo, mode: 'update', twitterVouchedIDs: [], communityName: community.name,
-          })
-        } catch (error) {
-          console.error('Error validating tweet:', error)
-          const validateError = error instanceof Error ? error.message
-            : (typeof error === 'string' ? error : 'Unknown error' )
-          // set submission status to validation error
-          return updateInvalidSubmission({
-            submissionId: s.id,
-            taskPid,
-            wallet,
-            validateStatus: 'invalid',
-            validateError,
-          })
-        }
-        // TODO getInvitesByInviters
-        const invites = (await getInvitesByInviter(s.address, 'task')).invites
-
-        console.log('saveTweetTaskSubmitInfo, submission ID = ', s.id)
-        console.log('public metrics = ', validatedTweetInfo.data[0].public_metrics)
-        // TODO batch update
-        return saveTweetTaskSubmitInfo({
-          wallet,
-          submitterAddress: s.address,
-          taskEndTime: task.endTime,
-          data: validatedTweetInfo,
-          taskPid,
-          communityUuid: task.communityUuid,
-          invites,
-          mode: 'update',
-          url: s.url,
-          submissionId: s.id,
-        })
-      }))
-      break
-    }
-    default:
-      throw new Error('Invalid task type.')
+  if (!ended_at) {
+    throw new Error('Invalid space URL: space has not ended.')
   }
 
-  return { result: 'success', message: `submissions of task ${taskPid} updated` }
+  const spaceEndedAt = new Date(ended_at).getTime()
+  const validJoinStartAt = new Date(
+    spaceEndedAt - 24 * 60 * 60 * 1000,
+  ).getTime()
+
+  const hostID = spaceInfo.data[0].creator_id
+  console.log('spaceInfo', spaceInfo)
+  const host = spaceInfo.includes.users.find(user => user.id === hostID)
+  if (!host) {
+    throw new Error('Failed to get space host avatar.')
+  }
+
+  // avatar of space host
+  const userAvatar = host.profile_image_url.replace(/_(normal|bigger|mini).jpg$/, '.jpg')
+  
+  const ssim = userAvatar
+    ? await compareImages(arUrl(communityLogo, gateways.ario), userAvatar)
+    : 0
+  // console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
+  
+  // 品牌效应
+  const brandEffect = ssim && ssim >= 0.8 ? 10 : 0
+  // 听众
+  const audience = participantCount
+  // 邀请人数
+  const inviteCount = invites.filter(inviteInfo => {
+    return (
+      inviteInfo.inviterAddress === submitterAddress &&
+      inviteInfo.communityUuid === communityUuid &&
+      inviteInfo.type === 'task' &&
+      inviteInfo.taskPid === taskPid
+    )
+  }).reduce((total, inviteInfo) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const validInvitees = Object.entries<{ joinTime: number }>(inviteInfo.invitees).filter(([_, invitee]) => {
+      const { joinTime } = invitee
+      return joinTime < spaceEndedAt && joinTime > validJoinStartAt
+    })
+    total += validInvitees.length
+    return total
+  }, 0)
+
+  if (!submissionId) {
+    throw new Error('Submission ID is required')
+  }
+
+  if (validateStatus === 'validated') {
+    // from 'waiting_for_validation' to 'validated'
+    const spaceSubmission:Omit<SpaceSubmission, 'url'|'createTime'|'updateTime'|'score'|'taskPid'|'address'> = {
+      id: submissionId,
+      inviteCount,
+      audience,
+      brandEffect,
+      validateStatus,
+      validateTime: new Date().getTime()
+    }
+    await updateSubmission(spaceSubmission, taskPid, wallet)
+  } else if (validateStatus === 'revalidated') {
+    // from 'validated' to 'revalidated'
+    const spaceSubmission:Omit<SpaceSubmission, 'url'|'createTime'|'brandEffect'|'audience'|'score'|'taskPid'|'address'|'updateTime'> = {
+      id: submissionId,
+      inviteCount,
+      validateStatus,
+      validateTime: new Date().getTime()
+    }
+    if (validateError) {
+      spaceSubmission.validateError = validateError
+    }
+    
+    await updateSubmission(spaceSubmission, taskPid, wallet)
+  } else if (validateStatus === 'invalid' || validateStatus === 'validation_error') {
+    // from 'waiting_for_validation' to 'invalid' or 'validation_error'
+    await updateInvalidSubmission({submissionId, taskPid, wallet, validateStatus, validateError})
+  } else {
+    throw new Error('Invalid validate status')
+  }
+}
+
+type SaveTweetTaskSubmitInfoParams = {
+  taskPid: string,
+  submissionId: number,
+  submitterAddress: string,
+  taskEndTime: number,
+  data: ValidatedTweetInfo,
+  invites: InviteCodeInfo[],
+  communityUuid: string,
+  wallet?: Parameters<typeof createDataItemSigner>[0],
+  validateStatus: Submission['validateStatus'],
+  validateError?: string
+}
+/**
+ * update tweet task submission, only for server side validation(trigger by cron job or task owner)
+ */
+export const saveTweetTaskSubmitInfo = async function({
+  taskPid,
+  submissionId,
+  submitterAddress,
+  taskEndTime,
+  data,
+  invites,
+  communityUuid,
+  wallet,
+  validateStatus,
+  validateError
+}: SaveTweetTaskSubmitInfoParams) {
+  if (!submissionId) {
+    throw new Error('Submission ID is required')
+  }
+
+  console.log('save tweet task submit info')
+  const tweetInfo = data.data[0]
+  
+  const tweetCreateTime = new Date(tweetInfo.created_at).getTime()
+
+  // TODO pass invite count as a parameter
+  const inviteCount = invites.filter(inviteInfo => {
+    return (
+      inviteInfo.inviterAddress === submitterAddress &&
+      inviteInfo.communityUuid === communityUuid &&
+      inviteInfo.type === 'task' &&
+      inviteInfo.taskPid === taskPid
+    )
+  }).reduce((total, inviteInfo) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const validInvitees = Object.entries<{ joinTime: number }>(inviteInfo.invitees).filter(([_, invitee]) => {
+      const { joinTime } = invitee
+      return joinTime > tweetCreateTime && joinTime < taskEndTime
+    })
+    total += validInvitees.length
+    return total
+  }, 0)
+  
+  const tweetLength = wordCount(tweetInfo.note_tweet ? tweetInfo.note_tweet.text : tweetInfo.text)
+  const submission:Omit<TweetSubmission, 'url' | 'createTime'|'updateTime'|'validateError'|'validateTime'|'validator'> = {
+    id: submissionId,
+    taskPid,
+    address: submitterAddress,
+    buzz: tweetLength,
+    discuss: tweetInfo.public_metrics.reply_count,
+    identify: tweetInfo.public_metrics.quote_count + tweetInfo.public_metrics.retweet_count,
+    popularity: tweetInfo.public_metrics.like_count,
+    spread: tweetInfo.public_metrics.impression_count,
+    friends: inviteCount,
+    // TODO calculate score at server side or at AO
+    score: 0
+  }
+  if (validateStatus === 'validated') {
+    // from 'waiting_for_validation' to 'validated'
+    const updateSubmissionData: Omit<TweetSubmission, 'url' | 'createTime'|'address'|'updateTime'> = {
+      ...submission,
+      validateStatus,
+    }
+    await updateSubmission(updateSubmissionData, taskPid, wallet)
+  } else if (validateStatus === 'revalidated') {
+    // from 'validated' to 'revalidated'
+    const updateSubmissionData: Omit<TweetSubmission, 'url' | 'createTime'|'address'|'updateTime'> = {
+      ...submission,
+      validateStatus,
+      validateTime: new Date().getTime()
+    }
+    if (validateError) {
+      updateSubmissionData.validateError = validateError
+    }
+    
+    await updateSubmission(updateSubmissionData, taskPid, wallet)
+  } else if (validateStatus === 'invalid' || validateStatus === 'validation_error') {
+    // from 'waiting_for_validation' to 'invalid' or 'validation_error'
+    await updateInvalidSubmission({submissionId, taskPid, wallet, validateStatus, validateError})
+  } else {
+    throw new Error('Invalid validate status')
+  }
 }

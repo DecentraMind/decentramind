@@ -20,6 +20,10 @@ export function useTaskScoreCalculate<T extends AllSubmissionWithCalculatedBount
     const maxAudience = Math.max(...clone.map(item => item.audience))
   
     for (const submission of clone) {
+      if (submission.validateStatus && ['invalid', 'validation_error'].includes(submission.validateStatus)) {
+        submission.score = 0
+        continue
+      }
       let friendScore = 0
       if (maxInviteCount != 0) {
         friendScore = (submission.inviteCount / maxInviteCount) * 40
@@ -56,7 +60,11 @@ export function useTaskScoreCalculate<T extends AllSubmissionWithCalculatedBount
       const max = Math.max(...clone.map(item => item[fieldKey]))
       if (max != 0) {
         clone.forEach(item => {
-          item.score += (item[fieldKey] / max) * fieldPortion
+          if (item.validateStatus && ['invalid', 'validation_error'].includes(item.validateStatus)) {
+            item.score = 0
+          } else {
+            item.score += (item[fieldKey] / max) * fieldPortion
+          }
           console.log('score of ', item.address, fieldKey, {score: item.score})
         })
       }

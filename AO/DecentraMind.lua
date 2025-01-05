@@ -1,4 +1,4 @@
-Variant = '0.4.79'
+Variant = '0.4.83'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -90,7 +90,7 @@ MutedUsers = MutedUsers or {}
 --- @field url string|nil
 --- @field createTime number
 --- @field updateTime number
---- @field validateStatus string @Status of the submission, either 'waiting_for_validation', 'validated', 'invalid', 'validation_error'
+--- @field validateStatus string @Status of the submission, either 'waiting_for_validation', 'validated', 'invalid', 'validation_error', 'revalidated'
 --- @field validateError string|nil @Error message if the submission was invalidated
 --- @field validateTime number|nil @Timestamp when the submission was validated
 --- @field validator string|nil @Address of the validator
@@ -613,12 +613,15 @@ Actions = {
       if not Tasks[pid] then
         return u.replyError(msg, 'Task not found.')
       end
+      if submission.address ~= msg.From then
+        return u.replyError(msg, 'You are not the submitter of this submission.')
+      end
 
       assert(Tasks[pid].endTime > msg.Timestamp, 'The task has already ended.')
 
       --- for each task, every builder can submit only one submission
       for _, taskSubmission in pairs(Tasks[pid].submissions) do
-        if taskSubmission.address == msg.From then
+        if taskSubmission.address == msg.From and taskSubmission.validateStatus ~= 'invalid' then
           return u.replyError(msg, 'You have already submitted a submission for this task.')
         end
       end
@@ -629,10 +632,18 @@ Actions = {
       submission.createTime = msg.Timestamp
       submission.updateTime = msg.Timestamp
       submission.validateStatus = 'waiting_for_validation'
-      --- if task.type == 'space'
-      --- submission.brandEffect = 0
-      --- submission.inviteCount = 0
-      --- submission.audience = 0
+      if Tasks[pid].type == 'space' then
+        submission.brandEffect = 0
+        submission.inviteCount = 0
+        submission.audience = 0
+      elseif Tasks[pid].type == 'promotion' or Tasks[pid].type == 'bird' or Tasks[pid].type == 'article' then
+        submission.buzz = 0
+        submission.discuss = 0
+        submission.identify = 0
+        submission.popularity = 0
+        submission.spread = 0
+        submission.friends = 0
+      end
 
       table.insert(Tasks[pid].submissions, submission)
 
@@ -655,7 +666,7 @@ Actions = {
       local submission = json.decode(msg.Data)
 
       -- TODO allow community owner to update submission
-      assert(msg.From == Tasks[pid].ownerAddress or msg.From == Owner, 'You are not the owner of this task.')
+      assert(msg.From == Tasks[pid].ownerAddress or msg.From == Owner, 'You are not permitted to update this submission.')
       assert(Tasks[pid].submissions[id], 'Submission not found. pid: ' .. pid .. ', submission id: ' .. id)
 
       for key, value in pairs(submission) do
@@ -668,9 +679,10 @@ Actions = {
           --   end
           -- end
           Tasks[pid].submissions[id][key] = value
-          Tasks[pid].submissions[id].updateTime = msg.Timestamp
         end
       end
+      Tasks[pid].submissions[id].updateTime = msg.Timestamp
+      Tasks[pid].submissions[id].validator = msg.From
     end,
 
     StoreBountySendHistory = function(msg)
