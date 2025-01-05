@@ -51,13 +51,10 @@ const pageRows = computed(() => {
 // Selected submissions
 const selectedSubmissions = ref<AllSubmissionWithCalculatedBounties[]>([])
 
-watch(() => selectedSubmissions.value, (newVal) => {
-  emit('update:selectedSubmissions', newVal)
-}, { deep: true })
 
 const { showMessage } = $(notificationStore())
 
-watch(() => selectedSubmissions.value.length, () => {
+const selectSubmission = (submission: AllSubmissionWithCalculatedBounties, checked: boolean) => {
   if (!props.task) {
     showMessage(
       'Task data not ready, please try again later, or refresh this page.',
@@ -65,13 +62,23 @@ watch(() => selectedSubmissions.value.length, () => {
     return
   }
 
-  const maxSelection = props.task ? props.task.totalChances : 1
-  if (selectedSubmissions.value.length > maxSelection) {
-    showMessage(`Selected items exceed ${maxSelection}!`)
-    // If selection exceeds max, trim the excess selections
-    selectedSubmissions.value = selectedSubmissions.value.slice(0, maxSelection)
+  if (checked) {
+    const maxSelection = props.task ? props.task.totalChances : 1
+    if (selectedSubmissions.value.length + 1 > maxSelection) {
+      showMessage(`Selected items exceed total chances(${maxSelection})!`)
+      return
+    }
+
+    if (submission.validateStatus === 'invalid') {
+      showMessage('Invalid submission cannot be selected!')
+      return
+    }
+    
+    selectedSubmissions.value = [...selectedSubmissions.value, submission]
+  } else {
+    selectedSubmissions.value = selectedSubmissions.value.filter(s => s.id !== submission.id)
   }
-})
+}
 
 const lastUpdateTime = computed(() => {
   const lastUpdateTime = props.submissions.reduce((max, submission) => {
@@ -100,16 +107,25 @@ const lastUpdateTime = computed(() => {
     </div>
 
     <UTable
-      v-model="selectedSubmissions"
       :rows="pageRows"
-      :columns="getTaskTableColumns(task.type)"
+      :columns="getTaskTableColumns(task.type, !task.isSettled && isOwner)"
       :loading="isLoading"
-      :ui="{
-        checkbox: {
-          padding: task.isSettled || !isOwner ? 'hidden' : '',
-        },
-      }"
     >
+      <template #selectStatus-data="{ row }">
+        <!-- TODO: use a checkbox here if the checked status bug is fixed -->
+        <div
+          :class="[
+            'w-4 h-4 border rounded cursor-pointer',
+            row.validateStatus !== 'validated' && row.validateStatus !== 'revalidated' ? 'opacity-50 cursor-not-allowed' : '',
+            selectedSubmissions.find(s => s.id === row.id) ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-700'
+          ]"
+          @click="row.validateStatus === 'validated' || row.validateStatus === 'revalidated' ? selectSubmission(row, !selectedSubmissions.find(s => s.id === row.id)) : null"
+        >
+          <div v-if="selectedSubmissions.find(s => s.id === row.id)" class="w-full h-full flex items-center justify-center">
+            <UIcon name="i-heroicons-check" class="w-3 h-3 text-white" />
+          </div>
+        </div>
+      </template>
       <template #id-data="{ row }">
         {{ row.id }}
       </template>
