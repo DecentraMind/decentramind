@@ -23,9 +23,17 @@ export default defineTask({
     try {
       const tasks = taskPid ? [await getTask(taskPid)] : await getUnsettledTasks()
 
-      // separate tasks by type
-      const spaceTasks = tasks.filter(task => task.type === 'space')
-      const tweetTasks = tasks.filter(task => task.type === 'promotion' || task.type === 'bird' || task.type === 'article')
+      // separate tasks by type and filter for tasks with submissions updated before end time
+      const spaceTasks = tasks.filter(task => 
+        task.type === 'space' && 
+        task.submissions.length > 0 &&
+        Math.max(...task.submissions.map(s => s.updateTime)) < task.endTime
+      )
+      const tweetTasks = tasks.filter(task => 
+        (task.type === 'promotion' || task.type === 'bird' || task.type === 'article') &&
+        task.submissions.length > 0 &&
+        Math.max(...task.submissions.map(s => s.updateTime)) < task.endTime
+      )
 
       console.log('spaceTasks', spaceTasks.length)
       console.log('tweetTasks', tweetTasks.length)

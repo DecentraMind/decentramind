@@ -142,10 +142,10 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
       try{
         validatedData = validateSubmissionData(task, data, contentId, community.name)
       } catch (error) {
-        console.error('Error validating submission:', error)
+        console.warn(`Error validating submission ${submission.id} task ${task.processID}:`, error)
         const validateError = error instanceof Error ? error.message
           : (typeof error === 'string' ? error : 'Unknown error.' )
-        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == 'invalid') {
+        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == 'invalid' || submission.validateStatus == undefined) {
           return updateInvalidSubmission({
             submissionId: submission.id,
             taskPid: task.processID,
