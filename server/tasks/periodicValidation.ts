@@ -16,6 +16,8 @@ export default defineTask({
   },
 
   async run({ payload }) {
+    // test twitter task: rSGxdHYip8RnFJkD2UqXcKCJGiggfSKxP2XSvA-q5SE
+    // test space task: fzZCH0XaUiMqCqmcNO_6Z36UeQrkXx4wqBgpePPwioI
     const { taskPid } = payload as Payload
 
     try {
@@ -25,7 +27,13 @@ export default defineTask({
       const spaceTasks = tasks.filter(task => task.type === 'space')
       const tweetTasks = tasks.filter(task => task.type === 'promotion' || task.type === 'bird' || task.type === 'article')
 
-      await Promise.all([validateSpaceTasks(spaceTasks), validateTweetTasks(tweetTasks)])
+      console.log('spaceTasks', spaceTasks.length)
+      console.log('tweetTasks', tweetTasks.length)
+
+      await Promise.all([
+        validateSpaceTasks(spaceTasks),
+        validateTweetTasks(tweetTasks)
+      ])
 
       return { result: 'success' }
     } catch (error) {
@@ -54,6 +62,7 @@ async function validateSpaceTasks(spaceTasks: Task[]) {
   // console.log('taskPid2SpaceIdsMap', taskPid2SpaceIdsMap)
   const taskPid2SpaceInfo = await getByPid2IdsMap(taskPid2SpaceIdsMap, getSpaces)
 
+  // console.log('taskPid2SpaceInfo', taskPid2SpaceInfo)
   for (const task of spaceTasks) {
     console.log('periodic validation task', task.processID, `${task.submissions.length} submissions.`)
     const spaceInfo = taskPid2SpaceInfo[task.processID]

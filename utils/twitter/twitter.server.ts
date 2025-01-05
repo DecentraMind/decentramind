@@ -19,12 +19,12 @@ export async function getByPid2IdsMap<T extends TwitterSpacesInfo | TwitterTweet
     return {}
   }
 
+  const result = await getInfo(idsArray.join(','))
   const resultMap: Record<string, T> = Object.keys(ids).reduce((acc, pid) => {
-    acc[pid] = {data: [], includes: {}} as unknown as T
+    acc[pid] = {data: [], includes: result.includes} as unknown as T
     return acc
   }, {} as Record<string, T>)
 
-  const result = await getInfo(idsArray.join(','))
   if (!result || !result.data || !result.data.length) {
     if (result.errors) {
       console.warn('Failed to fetch space or tweet info: ', { ids, result, errors: result.errors })
@@ -155,7 +155,7 @@ export async function getTweets(ids: string | string[]) {
   
   for (const [index, resultChunk] of resultChunks.entries()) {
     console.log('tweet resultChunk ' + index)
-    console.log('resultChunk: ', resultChunk)
+    // console.log('resultChunk: ', resultChunk)
 
     // TODO: handle error
     // error example resultChunk: 
