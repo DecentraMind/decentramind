@@ -20,11 +20,14 @@ export function formatToLocale(isoString: string | number, locale: string = 'en-
   return new Intl.DateTimeFormat(locale, options).format(date).replace(/\sat\s/, ' ')
 }
 
-export function formatDate(timestamp: number): string {
+export function formatDate(
+  timestamp: number,
+  options: Intl.DateTimeFormatOptions = {}
+): string {
   if (!timestamp) return ''
   const date = new Date(timestamp)
 
-  return date.toLocaleString('sv-SE', {
+  const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -32,7 +35,9 @@ export function formatDate(timestamp: number): string {
     minute: '2-digit',
     second: '2-digit',
     hour12: false
-  })
+  }
+
+  return date.toLocaleString('sv-SE', { ...defaultOptions, ...options })
 }
 
 export function getLocalTimezone() {
