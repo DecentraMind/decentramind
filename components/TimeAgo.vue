@@ -17,7 +17,6 @@ const timeAgo = useTimeAgo(props.time, {
   max: 3600000,
   fullDateFormatter: (date: Date) => formatDate(date.getTime()).substring(10, 19)
 })
-console.log('timeAgo', props.time, props.msg)
 
 const localeTime = computed(() => formatDate(props.time))
 </script>
