@@ -164,8 +164,13 @@ export const inboxStore = defineStore('inboxStore', () => {
           { name: 'Index', value: String(index) },
         ],
       })
+      const message = getDryrunData(rz, 'MessageDetails.value')
+      if (message['App-Process'] && message['Authority']) {
+        // ignore spawn message that create the chat room process
+        return
+      }
       mailCache[process][index] = {
-        ...getDryrunData(rz, 'MessageDetails.value'),
+        ...message,
         index,
       }
 
