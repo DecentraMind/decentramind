@@ -10,6 +10,7 @@ const props = defineProps<{
   isOwner: boolean
   isLoading: boolean
   submissions: AllSubmissionWithCalculatedBounties[]
+  selectedSubmissions: AllSubmissionWithCalculatedBounties[]
 }>()
 
 const emit = defineEmits<{
@@ -49,8 +50,10 @@ const pageRows = computed(() => {
 })
 
 // Selected submissions
-const selectedSubmissions = ref<AllSubmissionWithCalculatedBounties[]>([])
-
+const selected = computed({
+  get: () => props.selectedSubmissions,
+  set: (value) => emit('update:selectedSubmissions', value)
+})
 
 const { showMessage } = $(notificationStore())
 
@@ -64,7 +67,7 @@ const selectSubmission = (submission: AllSubmissionWithCalculatedBounties, check
 
   if (checked) {
     const maxSelection = props.task ? props.task.totalChances : 1
-    if (selectedSubmissions.value.length + 1 > maxSelection) {
+    if (selected.value.length + 1 > maxSelection) {
       showMessage(`Selected items exceed total chances(${maxSelection})!`)
       return
     }
@@ -74,9 +77,9 @@ const selectSubmission = (submission: AllSubmissionWithCalculatedBounties, check
       return
     }
     
-    selectedSubmissions.value = [...selectedSubmissions.value, submission]
+    selected.value = [...selected.value, submission]
   } else {
-    selectedSubmissions.value = selectedSubmissions.value.filter(s => s.id !== submission.id)
+    selected.value = selected.value.filter(s => s.id !== submission.id)
   }
 }
 
@@ -117,11 +120,11 @@ const lastUpdateTime = computed(() => {
           :class="[
             'w-4 h-4 border rounded cursor-pointer',
             row.validateStatus !== 'validated' && row.validateStatus !== 'revalidated' ? 'opacity-50 cursor-not-allowed' : '',
-            selectedSubmissions.find(s => s.id === row.id) ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-700'
+            selected.find(s => s.id === row.id) ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-700'
           ]"
-          @click="row.validateStatus === 'validated' || row.validateStatus === 'revalidated' ? selectSubmission(row, !selectedSubmissions.find(s => s.id === row.id)) : null"
+          @click="row.validateStatus === 'validated' || row.validateStatus === 'revalidated' ? selectSubmission(row, !selected.find(s => s.id === row.id)) : null"
         >
-          <div v-if="selectedSubmissions.find(s => s.id === row.id)" class="w-full h-full flex items-center justify-center">
+          <div v-if="selected.find(s => s.id === row.id)" class="w-full h-full flex items-center justify-center">
             <UIcon name="i-heroicons-check" class="w-3 h-3 text-white" />
           </div>
         </div>
@@ -148,7 +151,7 @@ const lastUpdateTime = computed(() => {
         <p
           class="flex justify-start items-center"
           v-html="
-            task.isSettled || selectedSubmissions.find(s => s.id === row.id)
+            task.isSettled || selected.find(s => s.id === row.id)
               ? row.rewardHtml
               : '/'
           "
