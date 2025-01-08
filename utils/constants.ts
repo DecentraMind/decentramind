@@ -5,6 +5,7 @@ export const tradePlatforms: TradePlatform[] = [
   'Permaswap',
   'Binance',
   'Coinbase',
+  'Botega'
 ]
 
 type Token = {
@@ -53,6 +54,13 @@ export const tokens: Record<string, Token> = {
     processID: '1jdhi6SJkaY_Sb5u3btnNU8VVMb6XHMlkt4OZ4etvBM',
     denomination: 12,
     logo: 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
+  },
+  SEND: {
+    ticker: 'SEND',
+    label: 'Send',
+    processID: 'O2mmX6O7ZNUnRfE8pYtzTT2uH55dXrvIR8YeaOEsp9I',
+    denomination: 18,
+    logo: 'TSi43BNSWrFtEaa4uasu3Owmp4bQnGFXk9Wm_8bu0D4'
   },
   LLAMA : {
     ticker: 'LLAMA',

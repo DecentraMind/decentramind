@@ -152,7 +152,7 @@ export type Tokens = {
   }
 }
 
-export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase'
+export type TradePlatform = 'ArSwap' | 'Permaswap' | 'Binance' | 'Coinbase' | 'Botega'
 
 export type ChainNames = 'AO'
 export type SubmissionValidateStatus = 'waiting_for_validation' | 'validated' | 'invalid' | 'validation_error' | 'revalidated'
