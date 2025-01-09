@@ -820,19 +820,14 @@ const onClickShareToTwitter = () => {
                 />
               </div>
             </div>
-
-            <div
-              v-if="isJoined || isAdminOrOwner || runtimeConfig.public.debug"
-              class="mt-8"
-            >
-              <TaskSubmissionTable
-                v-model:selected-submissions="selectedSubmissions"
-                :task="task"
-                :is-owner="isOwner"
-                :is-loading="isLoading"
-                :submissions="submissions"
-              />
-            </div>
+            
+            <TaskSubmissionTable
+              v-model:selected-submissions="selectedSubmissions"
+              :task="task"
+              :is-owner="isOwner"
+              :is-loading="isLoading"
+              :submissions="submissions"
+            />
 
             <div v-if="!isLoading && isJoined" class="flex justify-center my-8">
               <div
