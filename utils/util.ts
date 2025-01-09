@@ -108,6 +108,7 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
   const tweetTableColumns = [
     idField,
     validateStatusField,
+    rewardHtmlField,
     addressField,
     urlField,
     {
@@ -140,14 +141,14 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
       key: 'friends',
       label: t('task.submission.fields.Friends'),
     },
-    scoreField,
-    rewardHtmlField
+    scoreField
   ]
 
   const taskTableColumns = {
     space: [
       idField,
       validateStatusField,
+      rewardHtmlField,
       addressField,
       {
         key: 'brandEffect',
@@ -168,14 +169,15 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
         rowClass: 'font-mono text-left',
       },
       urlField,
-      scoreField,
-      rewardHtmlField
+      scoreField
     ],
     promotion: tweetTableColumns,
     bird: tweetTableColumns,
     article: tweetTableColumns,
     invite: [
       idField,
+      validateStatusField,
+      rewardHtmlField,
       addressField,
       {
         key: 'inviteCount',
@@ -184,7 +186,6 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
         rowClass: 'font-mono text-left',
       },
       scoreField,
-      rewardHtmlField
     ],
   }
 
