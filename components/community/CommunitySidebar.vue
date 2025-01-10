@@ -184,7 +184,7 @@ const inviteUrl = $computed(() => {
             @click="isSettingModalOpen = true"
           />
         </div>
-        <UPopover v-if="inviteCode" mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full">
+        <UPopover v-if="inviteCode" mode="hover" :popper="{ placement: 'top' }" class="z-[60] w-full hidden">
           <UButton
             color="white"
             variant="ghost"

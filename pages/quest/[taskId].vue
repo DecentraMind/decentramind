@@ -295,7 +295,6 @@ async function onClickJoin() {
   isJoinModalOpen = false
   isJoinLoading = false
 }
-
 const tweetUrlForm = $ref({
   url: '',
 })
@@ -342,9 +341,11 @@ async function onSubmitTweetUrl() {
   }
 }
 
-const spaceUrl = $ref('')
 let submitSpaceUrlLoading = $ref(false)
 
+const spaceUrlForm = $ref({
+  url: '',
+})
 async function onSubmitSpaceUrl() {
   submitSpaceUrlLoading = true
 
@@ -364,7 +365,7 @@ async function onSubmitSpaceUrl() {
     const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'|'updateTime'> = {
       taskPid,
       address,
-      url: spaceUrl,
+      url: spaceUrlForm.url,
       // metrics and score will be overwritten by process side
       inviteCount: 0,
       audience: 0,
@@ -917,22 +918,26 @@ const onClickShareToTwitter = () => {
         </template>
         <div>
           <div v-if="task?.type === 'space'">
-            <UInput
-              v-model="spaceUrl"
-              :model-modifiers="{ trim: true }"
-              color="primary"
-              variant="outline"
-              :placeholder="$t(`task.form.space.placeholder`)"
-            />
-            <div class="flex justify-center mb-8 mt-12">
-              <UButton
-                :loading="submitSpaceUrlLoading"
-                :disabled="submitSpaceUrlLoading"
-                @click="onSubmitSpaceUrl"
-              >
-                {{ $t('Submit Quest') }}
-              </UButton>
-            </div>
+            <UForm :schema="spaceUrlSchema" :state="spaceUrlForm" class="mt-8">
+              <UFormGroup name="url">
+                <UInput
+                  v-model="spaceUrlForm.url"
+                  :model-modifiers="{ trim: true }"
+                  color="primary"
+                  variant="outline"
+                  :placeholder="$t(`task.form.space.placeholder`)"
+                />
+              </UFormGroup>
+              <div class="flex justify-center mb-8 mt-12">
+                <UButton
+                  :loading="submitSpaceUrlLoading"
+                  :disabled="submitSpaceUrlLoading"
+                  @click="onSubmitSpaceUrl"
+                >
+                  {{ $t('Submit Quest') }}
+                </UButton>
+              </div>
+            </UForm>
           </div>
 
           <UForm

@@ -121,7 +121,10 @@ export const getVouchData = async (address: string, method: string = 'X'): Promi
   return twitterVouchedIDs
 }
 
-/** get vouch data from gql endpoint, if it fails, try to get it from AO */
+/**
+ * get vouch data from gql endpoint, if it fails, try to get it from AO
+ * @returns twitterVouchedIDs string[] vouched handles for this address
+ */
 export const getVouchDataSafe = async (address: string, method: string = 'X'): Promise<string[]> => {
   try {
     return await getVouchDataGQL(address, method)
