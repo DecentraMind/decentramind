@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ARWEAVE_ID_REGEXP, maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber } from '~/utils'
+import { ARWEAVE_ID_REGEXP, maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber, SPACE_URL_REGEXP, TWEET_URL_REGEXP } from '~/utils'
 import type { FormError } from '#ui/types'
 import type { CommunitySetting, Task, TaskFormWithLink } from '~/types'
 
@@ -162,6 +162,14 @@ export const taskSchema = z.object({
 })
 
 export type TaskSchema = z.infer<typeof taskSchema>
+
+export const spaceUrlSchema = z.object({
+  url: z.string().url().refine((value) => {
+    return SPACE_URL_REGEXP.test(value)
+  }, { message: 'The URL must be a valid space URL like https://x.com/i/spaces/xxxxxxxxx' })
+})
+
+export type SpaceUrlSchema = z.infer<typeof spaceUrlSchema>
 
 export const tweetUrlSchema = z.object({
   url: z.string().url().refine((value) => {
