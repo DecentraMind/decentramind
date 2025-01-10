@@ -1,1 +1,1 @@
-export const GQL_ENDPOINT = 'https://arweave-search.goldsky.com/graphql'
+export const GQL_ENDPOINT = 'https://g8way.io/graphql'
