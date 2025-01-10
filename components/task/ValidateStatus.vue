@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { BadgeColor } from '#ui/types'
+
 type SubmissionValidateStatus = 'waiting_for_validation' | 'validated' | 'invalid' | 'validation_error' | 'revalidated'
 
 interface Props {
@@ -8,7 +10,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const statusConfig: Record<SubmissionValidateStatus, { icon: string; color: string; label: string; description: string }> = {
+const statusConfig: Record<SubmissionValidateStatus, { icon: string; color: BadgeColor; label: string; description: string }> = {
   waiting_for_validation: {
     icon: 'i-heroicons-clock',
     color: 'gray',
@@ -47,11 +49,16 @@ const isErrorStatus = computed(() => ['invalid', 'validation_error'].includes(pr
 
 <template>
   <UPopover mode="click" :popper="{ placement: 'right' }" class="w-full z-[60]">
-    <UIcon
+    <!-- <UIcon
       :name="currentStatus.icon"
       :class="`text-${currentStatus.color}-500`"
       class="w-5 h-5"
       :aria-label="currentStatus.label"
+    /> -->
+    <UBadge
+      :label="currentStatus.label"
+      :color="currentStatus.color"
+      variant="soft"
     />
     <template #panel>
       <div class="p-2 w-fit">
