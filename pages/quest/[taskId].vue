@@ -654,11 +654,22 @@ watch(
     try {
       const url = new URL(value)
       tweetUrlForm.url = url.origin + url.pathname
-    } catch (e) {
+    } catch (_) {
       console.error('Invalid URL.')
     }
   },
 )
+watch(() => spaceUrlForm.url, value => {
+  try {
+    // Only normalize if it's a complete URL
+    if (value && SPACE_URL_REGEXP.test(value)) {
+      const url = new URL(value)
+      spaceUrlForm.url = url.origin + url.pathname
+    }
+  } catch (_) {
+    // Silent error for incomplete URLs
+  }
+})
 
 const onClickCopyInviteCode = async () => {
   try {
@@ -687,6 +698,23 @@ const onClickShareToTwitter = () => {
     '_blank',
   )
 }
+
+const isValidSpaceUrl = computed(() => {
+  try {
+    spaceUrlSchema.parse({ url: spaceUrlForm.url })
+    return true
+  } catch {
+    return false
+  }
+})
+const isValidTweetUrl = computed(() => {
+  try {
+    tweetUrlSchema.parse({ url: tweetUrlForm.url })
+    return true
+  } catch {
+    return false
+  }
+})
 </script>
 
 <template>
@@ -918,8 +946,16 @@ const onClickShareToTwitter = () => {
         </template>
         <div>
           <div v-if="task?.type === 'space'">
-            <UForm :schema="spaceUrlSchema" :state="spaceUrlForm" class="mt-8">
-              <UFormGroup name="url">
+            <UForm
+              v-if="task?.type === 'space'"
+              :schema="spaceUrlSchema"
+              :state="spaceUrlForm"
+              class="mt-8"
+            >
+              <UFormGroup
+                name="url"
+                :label="$t(`task.form.space.label`)"
+              >
                 <UInput
                   v-model="spaceUrlForm.url"
                   :model-modifiers="{ trim: true }"
@@ -931,7 +967,7 @@ const onClickShareToTwitter = () => {
               <div class="flex justify-center mb-8 mt-12">
                 <UButton
                   :loading="submitSpaceUrlLoading"
-                  :disabled="submitSpaceUrlLoading"
+                  :disabled="submitSpaceUrlLoading || !isValidSpaceUrl"
                   @click="onSubmitSpaceUrl"
                 >
                   {{ $t('Submit Quest') }}
@@ -959,7 +995,7 @@ const onClickShareToTwitter = () => {
               <UButton
                 v-if="['promotion', 'bird', 'article'].includes(task.type)"
                 :loading="submitTweetUrlLoading"
-                :disabled="submitTweetUrlLoading"
+                :disabled="submitTweetUrlLoading || !isValidTweetUrl"
                 @click="onSubmitTweetUrl"
               >
                 {{ $t('Submit Quest') }}

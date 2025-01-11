@@ -132,16 +132,20 @@
     },
     "form": {
       "space": {
-        "placeholder": "Your Space URL"
+        "label": "Your Space URL",
+        "placeholder": "https://x.com/i/spaces/xxxxxxxxx"
       },
       "promotion": {
-        "placeholder": "Your Qoute URL"
+        "label": "Your Qoute URL",
+        "placeholder": "https://x.com/xxx/status/xxxxxx"
       },
       "bird": {
-        "placeholder": "Your Tweet URL"
+        "label": "Your Tweet URL",
+        "placeholder": "https://x.com/xxx/status/xxxxxx"
       },
       "article": {
-        "placeholder": "Your Twitter Article URL"
+        "label": "Your Twitter Article URL",
+        "placeholder": "https://x.com/xxx/status/xxxxxx"
       }
     },
     "fields": {
