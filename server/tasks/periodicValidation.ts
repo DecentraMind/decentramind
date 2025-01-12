@@ -55,6 +55,9 @@ async function validateSpaceTasks(spaceTasks: Task[]) {
   /** a map of task pid to space ids */
   const taskPid2SpaceIdsMap = spaceTasks.reduce((map, task) => {
     const spaceIds = task.submissions.map(s => {
+      if (s.validateStatus === 'invalid') {
+        return false
+      }
       const matched = s.url.trim().match(SPACE_URL_REGEXP)
       if (!matched || !matched[1]) {
         return false
@@ -97,6 +100,9 @@ async function validateTweetTasks(tweetTasks: Task[]) {
   /** a map of task pid to tweet ids */
   const taskPid2TweetIdsMap = tweetTasks.reduce((map, task) => {
     const tweetIds = task.submissions.map(s => {
+      if (s.validateStatus === 'invalid') {
+        return false
+      }
       const matched = s.url.trim().match(TWEET_URL_REGEXP)
       if (!matched || !matched[1]) {
         return false
