@@ -8,7 +8,6 @@ import type {
   InviteCodeInfo,
   AllSubmissionWithCalculatedBounties,
   TaskWithLink,
-  SubmissionUpdateResponse,
   SpaceSubmission,
   TweetSubmission,
 } from '~/types'
@@ -17,11 +16,10 @@ import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
 import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
-import { tweetUrlSchema } from '~/utils/schemas'
-import { useFetch } from '@vueuse/core'
-import { useSignature } from '~/composables/useSignature'
 import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
 import Bounties from '~/components/task/Bounties.vue'
+import SpaceSubmissionForm from '~/components/task/SpaceSubmissionForm.vue'
+import TweetSubmissionForm from '~/components/task/TweetSubmissionForm.vue'
 
 definePageMeta({
   ssr: false
@@ -295,13 +293,8 @@ async function onClickJoin() {
   isJoinModalOpen = false
   isJoinLoading = false
 }
-const tweetUrlForm = $ref({
-  url: '',
-})
 
-let submitTweetUrlLoading = $ref(false)
-async function onSubmitTweetUrl() {
-  submitTweetUrlLoading = true
+async function onSubmitTweetUrl(url: string) {
   try {
     if (!submissions || !invites || !communityInfo || !task) {
       throw new Error('Data loading not completed. Please wait or try refresh.')
@@ -318,7 +311,7 @@ async function onSubmitTweetUrl() {
     const tweetSubmission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'> = {
       taskPid,
       address,
-      url: tweetUrlForm.url,
+      url,
       // metrics and score will be overwritten by process side
       buzz: 0,
       discuss: 0,
@@ -336,19 +329,10 @@ async function onSubmitTweetUrl() {
   } catch (e) {
     console.error(e)
     showError('Submit failed. ', e as Error)
-  } finally {
-    submitTweetUrlLoading = false
   }
 }
 
-let submitSpaceUrlLoading = $ref(false)
-
-const spaceUrlForm = $ref({
-  url: '',
-})
-async function onSubmitSpaceUrl() {
-  submitSpaceUrlLoading = true
-
+async function onSubmitSpaceUrl(url: string) {
   try {
     if (!submissions || !invites || !communityInfo || !task) {
       throw new Error('Data loading not completed. Please wait or try refresh.')
@@ -365,7 +349,7 @@ async function onSubmitSpaceUrl() {
     const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'|'updateTime'> = {
       taskPid,
       address,
-      url: spaceUrlForm.url,
+      url,
       // metrics and score will be overwritten by process side
       inviteCount: 0,
       audience: 0,
@@ -380,8 +364,6 @@ async function onSubmitSpaceUrl() {
   } catch (e) {
     console.error(e)
     showError('Submit failed.', e as Error)
-  } finally {
-    submitSpaceUrlLoading = false
   }
 }
 
@@ -647,30 +629,6 @@ watch(
   },
 )
 
-// validate tweetUrlForm.url when it changes
-watch(
-  () => tweetUrlForm.url,
-  value => {
-    try {
-      const url = new URL(value)
-      tweetUrlForm.url = url.origin + url.pathname
-    } catch (_) {
-      console.error('Invalid URL.')
-    }
-  },
-)
-watch(() => spaceUrlForm.url, value => {
-  try {
-    // Only normalize if it's a complete URL
-    if (value && SPACE_URL_REGEXP.test(value)) {
-      const url = new URL(value)
-      spaceUrlForm.url = url.origin + url.pathname
-    }
-  } catch (_) {
-    // Silent error for incomplete URLs
-  }
-})
-
 const onClickCopyInviteCode = async () => {
   try {
     if (!task) return
@@ -694,27 +652,12 @@ const onClickShareToTwitter = () => {
   if (!inviteUrl || typeof window === 'undefined') return
 
   window.open(
-    `https://twitter.com/intent/tweet?text=Check%20out%20this%20community%20on%20DecentraMind!&url=${inviteUrl}`,
+    `https://x.com/intent/tweet?text=Check%20out%20this%20community%20on%20DecentraMind!&url=${inviteUrl}`,
     '_blank',
   )
 }
 
-const isValidSpaceUrl = computed(() => {
-  try {
-    spaceUrlSchema.parse({ url: spaceUrlForm.url })
-    return true
-  } catch {
-    return false
-  }
-})
-const isValidTweetUrl = computed(() => {
-  try {
-    tweetUrlSchema.parse({ url: tweetUrlForm.url })
-    return true
-  } catch {
-    return false
-  }
-})
+
 </script>
 
 <template>
@@ -945,63 +888,16 @@ const isValidTweetUrl = computed(() => {
           </div>
         </template>
         <div>
-          <div v-if="task?.type === 'space'">
-            <UForm
-              v-if="task?.type === 'space'"
-              :schema="spaceUrlSchema"
-              :state="spaceUrlForm"
-              class="mt-8"
-            >
-              <UFormGroup
-                name="url"
-                :label="$t(`task.form.space.label`)"
-              >
-                <UInput
-                  v-model="spaceUrlForm.url"
-                  :model-modifiers="{ trim: true }"
-                  color="primary"
-                  variant="outline"
-                  :placeholder="$t(`task.form.space.placeholder`)"
-                />
-              </UFormGroup>
-              <div class="flex justify-center mb-8 mt-12">
-                <UButton
-                  :loading="submitSpaceUrlLoading"
-                  :disabled="submitSpaceUrlLoading || !isValidSpaceUrl"
-                  @click="onSubmitSpaceUrl"
-                >
-                  {{ $t('Submit Quest') }}
-                </UButton>
-              </div>
-            </UForm>
-          </div>
+          <SpaceSubmissionForm
+            v-if="task?.type === 'space'"
+            @submit="onSubmitSpaceUrl"
+          />
 
-          <UForm
+          <TweetSubmissionForm
             v-if="task && ['promotion', 'bird', 'article'].includes(task?.type)"
-            :schema="tweetUrlSchema"
-            :state="tweetUrlForm"
-            class="mt-8"
-          >
-            <UFormGroup name="url">
-              <UInput
-                v-model="tweetUrlForm.url"
-                :model-modifiers="{ trim: true }"
-                color="primary"
-                variant="outline"
-                :placeholder="$t(`task.form.${task.type}.placeholder`)"
-              />
-            </UFormGroup>
-            <div class="flex justify-center mb-8 mt-12">
-              <UButton
-                v-if="['promotion', 'bird', 'article'].includes(task.type)"
-                :loading="submitTweetUrlLoading"
-                :disabled="submitTweetUrlLoading || !isValidTweetUrl"
-                @click="onSubmitTweetUrl"
-              >
-                {{ $t('Submit Quest') }}
-              </UButton>
-            </div>
-          </UForm>
+            :task-type="task?.type"
+            @submit="onSubmitTweetUrl"
+          />
         </div>
       </UCard>
     </UModal>

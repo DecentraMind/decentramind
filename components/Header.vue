@@ -7,7 +7,7 @@ const links = [
   },
   {
     label: 'Twitter',
-    to: 'https://twitter.com/decentramindio',
+    to: 'https://x.com/decentramindio',
     target: '_blank'
   },
 ]

@@ -68,6 +68,11 @@ async function validateSpaceTasks(spaceTasks: Task[]) {
   }, {} as Record<string, string[]>)
 
   // console.log('taskPid2SpaceIdsMap', taskPid2SpaceIdsMap)
+  if (Object.keys(taskPid2SpaceIdsMap).length === 0) {
+    console.log('No space tasks to validate')
+    return { result: 'success' }
+  }
+
   const taskPid2SpaceInfo = await getByPid2IdsMap(taskPid2SpaceIdsMap, getSpaces)
 
   // console.log('taskPid2SpaceInfo', taskPid2SpaceInfo)

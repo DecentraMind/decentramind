@@ -1,4 +1,4 @@
-Variant = '0.4.83'
+Variant = '0.4.84'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -621,7 +621,7 @@ Actions = {
 
       --- for each task, every builder can submit only one submission
       for _, taskSubmission in pairs(Tasks[pid].submissions) do
-        if taskSubmission.address == msg.From and taskSubmission.validateStatus ~= 'invalid' then
+        if taskSubmission.address == msg.From and (taskSubmission.validateStatus == 'validated' or taskSubmission.validateStatus == 'revalidated' or taskSubmission.validateStatus == 'waiting_for_validation') then
           return u.replyError(msg, 'You have already submitted a submission for this task.')
         end
       end
