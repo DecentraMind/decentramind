@@ -132,16 +132,22 @@
     },
     "form": {
       "space": {
-        "placeholder": "Your Space URL"
+        "label": "Your Space URL",
+        "placeholder": "Your Space URL",
+        "help": "Your space URL should be like https://x.com/i/spaces/xxxxxxxxx. You can get it from the right top corner of your space card."
       },
       "promotion": {
-        "placeholder": "Your Qoute URL"
+        "label": "Your Qoute URL",
+        "placeholder": "https://x.com/xxx/status/xxxxxx"
       },
       "bird": {
-        "placeholder": "Your Tweet URL"
+        "label": "Your Tweet URL",
+        "placeholder": "https://x.com/xxx/status/xxxxxx",
+        "help": "Please make sure your tweet can be publicly accessed."
       },
       "article": {
-        "placeholder": "Your Twitter Article URL"
+        "label": "Your Twitter Article URL",
+        "placeholder": "https://x.com/xxx/status/xxxxxx"
       }
     },
     "fields": {

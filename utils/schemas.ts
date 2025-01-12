@@ -164,17 +164,37 @@ export const taskSchema = z.object({
 export type TaskSchema = z.infer<typeof taskSchema>
 
 export const spaceUrlSchema = z.object({
-  url: z.string().url().refine((value) => {
-    return SPACE_URL_REGEXP.test(value)
-  }, { message: 'The URL must be a valid space URL like https://x.com/i/spaces/xxxxxxxxx' })
+  url: z.string()
+    .min(1, { message: 'URL is required' })
+    .refine((value) => {
+      try {
+        new URL(value)
+        return true
+      } catch {
+        return false
+      }
+    }, { message: 'Must be a valid URL like https://x.com/i/spaces/xxxxxxxxx' })
+    .refine((value) => {
+      return SPACE_URL_REGEXP.test(value)
+    }, { message: 'The URL must be a valid space URL like https://x.com/i/spaces/xxxxxxxxx' })
 })
 
 export type SpaceUrlSchema = z.infer<typeof spaceUrlSchema>
 
 export const tweetUrlSchema = z.object({
-  url: z.string().url().refine((value) => {
+  url: z.string()
+  .min(1, { message: 'URL is required' })
+  .refine((value) => {
+    try {
+      new URL(value)
+      return true
+    } catch {
+      return false
+    }
+  }, { message: 'Must be a valid URL like https://x.com/x/status/1234567890' })
+  .refine((value) => {
     return TWEET_URL_REGEXP.test(value)
-  }, { message: 'The URL must be a valid tweet URL like https://twitter.com/x/status/1234567890' })
+  }, { message: 'The URL must be a valid tweet URL like https://x.com/x/status/1234567890' })
 })
 export type TweetUrlSchema = z.infer<typeof tweetUrlSchema>
 
