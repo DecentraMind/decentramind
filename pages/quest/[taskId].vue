@@ -77,12 +77,6 @@ const isIng = $computed(() => {
   return task ? now.value > task.startTime && now.value < task.endTime : false
 })
 
-const taskRewardHtml = $computed(() => {
-  return task?.bounties
-    ? calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;')
-    : ''
-})
-
 const submittedBuilderCount = $computed(() => {
   return !task?.submissions
     ? ''
@@ -96,11 +90,6 @@ let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
 
 const isOwner = $computed(
   () => task?.ownerAddress === address || communityInfo?.owner === address,
-)
-
-const isAdminOrOwner = $computed(
-  () =>
-    task?.ownerAddress === address || communityInfo.admins.includes(address),
 )
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
