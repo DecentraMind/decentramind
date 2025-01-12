@@ -339,6 +339,13 @@ export type UploadResponse = {
   message: string
 }
 
+export type TwitterError = {
+  detail: string
+  title: string
+  type: string
+  resource_id: string
+}
+
 export type TwitterSpaceInfo = {
   data?: {
     id: string
@@ -359,11 +366,7 @@ export type TwitterSpaceInfo = {
       username: string
     }>
   }
-  errors?: {
-    detail: string
-    title: string
-    type: string
-  }[]
+  errors?: TwitterError[]
 }
 export type ValidatedSpaceInfo = {
   data: NonNullable<TwitterSpaceInfo['data']>,
@@ -389,11 +392,7 @@ export type TwitterSpacesInfo = {
       username: string
     }>
   }
-  errors?: {
-    detail: string
-    title: string
-    type: string
-  }[]
+  errors?: TwitterError[]
 }
 export type ValidatedSpacesInfo = {
   data: NonNullable<TwitterSpacesInfo['data']>,
@@ -438,11 +437,7 @@ export type TwitterTweetInfo = {
       username: string
     }[]
   }
-  errors?: {
-    detail: string
-    title: string
-    type: string
-  }[]
+  errors?: TwitterError[]
 }
 
 // TODO rename to ValidatedTweetsInfo

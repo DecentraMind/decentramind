@@ -168,46 +168,16 @@ onMounted(async () => {
       !task.isSettled &&
       isOwner
     ) {
-      // const { getSignature, error: signatureError } = useSignature()
-      // if (signatureError.value) {
-      //   throw new Error(
-      //     'Failed to update submissions, can\'t get signature: ' +
-      //       signatureError.value,
-      //   )
-      // }
-
-      // const { signature, address, publicKey, message } = await getSignature(
-      //   taskPid,
-      // )
-
-      // console.log('signature', signature, address)
-
-      // // validate and update task submissions at DecentraMind server
-      // const { data, error } = await useFetch('/api/updateTaskSubmissions', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     taskPid,
-      //     signature,
-      //     address,
-      //     publicKey,
-      //     message,
-      //   }),
-      // }).json<SubmissionUpdateResponse>()
-      // const submissionUpdateResponse = unref(data)
-
-      // if (error.value) {
-      //   console.error('updateTaskSubmissions error', {
-      //     data: data.value,
-      //     error: error.value,
-      //   })
-      //   throw new Error('Failed to update submissions: ' + error.value)
-      // }
-
-      // console.log('submissionUpdateResponse', submissionUpdateResponse)
-      // task = await getTask(taskPid, address)
+      // check if submission last update is greater than task.endTime
+      const lastUpdateTime = submissions.reduce((max, submission) => {
+        return Math.max(max, submission.updateTime)
+      }, 0)
+      console.log('lastUpdateTime', lastUpdateTime)
+      console.log('task.endTime', task.endTime)
+      if (lastUpdateTime < task.endTime) {
+        console.log('there are submissions are waiting for validation or need last update after task endTime, skip score calculation')
+        return
+      }
 
       const updatedSubmissions = useTaskScoreCalculate(
         task,

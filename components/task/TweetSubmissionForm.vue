@@ -41,8 +41,12 @@ async function onSubmitTweetUrl() {
 </script>
 
 <template>
-  <UForm :schema="tweetUrlSchema" :state="tweetUrlForm" class="mt-8">
-    <UFormGroup name="url">
+  <UForm :schema="tweetUrlSchema" :state="tweetUrlForm" class="mt-4">
+    <UFormGroup
+      name="url"
+      :label="$t(`task.form.${taskType}.label`)"
+      :help="$t(`task.form.bird.help`)"
+    >
       <UInput
         v-model="tweetUrlForm.url"
         :model-modifiers="{ trim: true }"
@@ -51,7 +55,7 @@ async function onSubmitTweetUrl() {
         :placeholder="$t(`task.form.${taskType}.placeholder`)"
       />
     </UFormGroup>
-    <div class="flex justify-center mb-8 mt-12">
+    <div class="flex justify-center my-8">
       <UButton
         :loading="submitTweetUrlLoading"
         :disabled="submitTweetUrlLoading || !isValidTweetUrl"

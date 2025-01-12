@@ -133,7 +133,8 @@
     "form": {
       "space": {
         "label": "Your Space URL",
-        "placeholder": "https://x.com/i/spaces/xxxxxxxxx"
+        "placeholder": "Your Space URL",
+        "help": "Your space URL should be like https://x.com/i/spaces/xxxxxxxxx. You can get it from the right top corner of your space card."
       },
       "promotion": {
         "label": "Your Qoute URL",
@@ -141,7 +142,8 @@
       },
       "bird": {
         "label": "Your Tweet URL",
-        "placeholder": "https://x.com/xxx/status/xxxxxx"
+        "placeholder": "https://x.com/xxx/status/xxxxxx",
+        "help": "Please make sure your tweet can be publicly accessed."
       },
       "article": {
         "label": "Your Twitter Article URL",

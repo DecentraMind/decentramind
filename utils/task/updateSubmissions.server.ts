@@ -6,7 +6,8 @@ import type {
   SpaceSubmission,
   TweetSubmission,
   InviteCodeInfo,
-  Submission
+  Submission,
+  TwitterError
 } from '~/types'
 import {
   getInvitesByInviter,
@@ -99,14 +100,23 @@ const saveValidatedSubmission = async <T extends ValidatedSpacesInfo | Validated
   }
 }
 
-export const updateSubmissions = async <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(task: Task, data: T) => {
+/**
+ * update all *not invalid* submissions of a task
+ */
+export const updateSubmissions = async <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(
+  task: Task,
+  data: T,
+  errors?: TwitterError[]
+) => {
   // Validate environment
   const { TWITTER_BEARER_TOKEN: token, WALLET_PATH: walletPath } = process.env
   if (!token) return { result: 'error', message: 'TWITTER_BEARER_TOKEN is not set' }
   if (!walletPath) return { result: 'error', message: 'WALLET_PATH is not set' }
 
   const wallet = JSON.parse(fs.readFileSync(walletPath, 'utf-8'))
-  const submissions = task.submissions
+
+  // filter out invalid submissions
+  const submissions = task.submissions.filter(submission => submission.validateStatus !== 'invalid')
   if (submissions.length <= 0) {
     return { result: 'success', message: 'no submissions, no data to update.' }
   }
@@ -124,9 +134,20 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
       const xData = task.type === 'space'
         ? (data as ValidatedSpacesInfo).data?.find(s => s.id === contentId)
         : (data as ValidatedTweetInfo).data?.find(t => t.id === contentId)
+      const relatedError = errors?.find(e => e.resource_id === contentId)
 
       if (!xData) {
         if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error') {
+          if (relatedError && relatedError.title === 'Not Found Error') {
+            // this tweet or space is deleted by Twitter or not publicly available
+            return updateInvalidSubmission({
+              submissionId: submission.id,
+              taskPid: task.processID,
+              wallet,
+              validateStatus: 'invalid',
+              validateError: relatedError.detail
+            })
+          }
           return updateInvalidSubmission({
             submissionId: submission.id,
             taskPid: task.processID,

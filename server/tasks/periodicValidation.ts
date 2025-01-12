@@ -19,6 +19,7 @@ export default defineTask({
     // test twitter task: rSGxdHYip8RnFJkD2UqXcKCJGiggfSKxP2XSvA-q5SE
     // test space task: fzZCH0XaUiMqCqmcNO_6Z36UeQrkXx4wqBgpePPwioI
     const { taskPid } = payload as Payload
+    console.log('====== periodic validation task started ======')
 
     try {
       const tasks = taskPid ? [await getTask(taskPid)] : await getUnsettledTasks()
@@ -47,6 +48,8 @@ export default defineTask({
     } catch (error) {
       console.error('Periodic validation failed:', error)
       throw error
+    } finally {
+      console.log('====== periodic validation task finished ======')
     }
   }
 })
@@ -92,7 +95,7 @@ async function validateSpaceTasks(spaceTasks: Task[]) {
       console.warn('Error fetching spaces:', { taskPid: task.processID, spaceIds: taskPid2SpaceIdsMap[task.processID], spaceInfo })
       // continue
     }
-    return updateSubmissions(task, spaceInfo as ValidatedSpacesInfo)
+    await updateSubmissions(task, spaceInfo as ValidatedSpacesInfo)
   }
 }
 
@@ -132,6 +135,7 @@ async function validateTweetTasks(tweetTasks: Task[]) {
       console.warn('Error fetching tweets.', { taskPid: task.processID, tweetIds: taskPid2TweetIdsMap[task.processID] })
       // continue
     }
-    await updateSubmissions<ValidatedTweetInfo>(task, tweetInfo as ValidatedTweetInfo)
+
+    await updateSubmissions<ValidatedTweetInfo>(task, tweetInfo as ValidatedTweetInfo, tweetInfo.errors)
   }
 }

@@ -37,8 +37,12 @@ async function onSubmitSpaceUrl() {
 </script>
 
 <template>
-  <UForm :schema="spaceUrlSchema" :state="spaceUrlForm" class="mt-8">
-    <UFormGroup name="url" :label="$t(`task.form.space.label`)">
+  <UForm :schema="spaceUrlSchema" :state="spaceUrlForm" class="mt-4">
+    <UFormGroup
+      name="url"
+      :label="$t(`task.form.space.label`)"
+      :help="$t(`task.form.space.help`)"
+    >
       <UInput
         v-model="spaceUrlForm.url"
         :model-modifiers="{ trim: true }"
@@ -47,7 +51,7 @@ async function onSubmitSpaceUrl() {
         :placeholder="$t(`task.form.space.placeholder`)"
       />
     </UFormGroup>
-    <div class="flex justify-center mb-8 mt-12">
+    <div class="flex justify-center my-8">
       <UButton
         :loading="submitSpaceUrlLoading"
         :disabled="submitSpaceUrlLoading || !isValidSpaceUrl"
