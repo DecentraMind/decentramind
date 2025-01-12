@@ -264,7 +264,9 @@ async function onClickJoin() {
   isJoinLoading = false
 }
 
+let submitTweetUrlLoading = $ref(false)
 async function onSubmitTweetUrl(url: string) {
+  submitTweetUrlLoading = true
   try {
     if (!submissions || !invites || !communityInfo || !task) {
       throw new Error('Data loading not completed. Please wait or try refresh.')
@@ -299,10 +301,14 @@ async function onSubmitTweetUrl(url: string) {
   } catch (e) {
     console.error(e)
     showError('Submit failed. ', e as Error)
+  } finally {
+    submitTweetUrlLoading = false
   }
 }
 
+let submitSpaceUrlLoading = $ref(false)
 async function onSubmitSpaceUrl(url: string) {
+  submitSpaceUrlLoading = true
   try {
     if (!submissions || !invites || !communityInfo || !task) {
       throw new Error('Data loading not completed. Please wait or try refresh.')
@@ -334,6 +340,8 @@ async function onSubmitSpaceUrl(url: string) {
   } catch (e) {
     console.error(e)
     showError('Submit failed.', e as Error)
+  } finally {
+    submitSpaceUrlLoading = false
   }
 }
 
@@ -860,11 +868,13 @@ const onClickShareToTwitter = () => {
         <div>
           <SpaceSubmissionForm
             v-if="task?.type === 'space'"
+            v-model:submit-space-url-loading="submitSpaceUrlLoading"
             @submit="onSubmitSpaceUrl"
           />
 
           <TweetSubmissionForm
             v-if="task && ['promotion', 'bird', 'article'].includes(task?.type)"
+            v-model:submit-tweet-url-loading="submitTweetUrlLoading"
             :task-type="task?.type"
             @submit="onSubmitTweetUrl"
           />
