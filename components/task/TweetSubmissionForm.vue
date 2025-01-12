@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { tweetUrlSchema } from '~/utils/schemas'
+import { computed } from 'vue'
 import type { Task } from '~/types'
+
 defineProps<{
   taskType: Task['type']
+  submitTweetUrlLoading: boolean
 }>()
+
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
   (e: 'submit', url: string): void
+  // eslint-disable-next-line no-unused-vars
+  (e: 'update:submitTweetUrlLoading', value: boolean): void
 }>()
 
 const tweetUrlForm = $ref({
   url: '',
 })
-
-let submitTweetUrlLoading = $ref(false)
 
 const isValidTweetUrl = computed(() => {
   try {
@@ -26,17 +30,14 @@ const isValidTweetUrl = computed(() => {
 })
 
 async function onSubmitTweetUrl() {
-  submitTweetUrlLoading = true
-  try {
-    // normalize url
-    if (tweetUrlForm.url && TWEET_URL_REGEXP.test(tweetUrlForm.url)) {
-      const url = new URL(tweetUrlForm.url)
-      tweetUrlForm.url = url.origin + url.pathname
-    }
-    emit('submit', tweetUrlForm.url)
-  } finally {
-    submitTweetUrlLoading = false
+  emit('update:submitTweetUrlLoading', true)
+  // normalize url
+  if (tweetUrlForm.url && TWEET_URL_REGEXP.test(tweetUrlForm.url)) {
+    const url = new URL(tweetUrlForm.url)
+    tweetUrlForm.url = url.origin + url.pathname
   }
+
+  emit('submit', tweetUrlForm.url)
 }
 </script>
 

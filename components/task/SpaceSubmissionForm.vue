@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { spaceUrlSchema } from '~/utils/schemas'
+import { computed } from 'vue'
+
+defineProps<{
+  submitSpaceUrlLoading: boolean
+}>()
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
-  (_e: 'submit', _url: string): void
+  (e: 'submit', url: string): void
+  // eslint-disable-next-line no-unused-vars
+  (e: 'update:submitSpaceUrlLoading', value: boolean): void
 }>()
 
 const spaceUrlForm = $ref({
   url: '',
 })
-
-let submitSpaceUrlLoading = $ref(false)
 
 const isValidSpaceUrl = computed(() => {
   try {
@@ -22,17 +27,14 @@ const isValidSpaceUrl = computed(() => {
 })
 
 async function onSubmitSpaceUrl() {
-  submitSpaceUrlLoading = true
-  try {
-    // normalize url
-    if (spaceUrlForm.url && SPACE_URL_REGEXP.test(spaceUrlForm.url)) {
-      const url = new URL(spaceUrlForm.url)
-      spaceUrlForm.url = url.origin + url.pathname
-    }
-    emit('submit', spaceUrlForm.url)
-  } finally {
-    submitSpaceUrlLoading = false
+  emit('update:submitSpaceUrlLoading', true)
+  // normalize url
+  if (spaceUrlForm.url && SPACE_URL_REGEXP.test(spaceUrlForm.url)) {
+    const url = new URL(spaceUrlForm.url)
+    spaceUrlForm.url = url.origin + url.pathname
   }
+  
+  emit('submit', spaceUrlForm.url)
 }
 </script>
 
