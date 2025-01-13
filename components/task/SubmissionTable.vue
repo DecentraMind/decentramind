@@ -5,6 +5,7 @@ import { maxTotalChances } from '~/utils/constants'
 import { formatDate } from '~/utils/time'
 import ValidateStatus from './ValidateStatus.vue'
 import Bounties from './Bounties.vue'
+import { cn } from '~/utils'
 
 const props = defineProps<{
   task: Task
@@ -93,7 +94,7 @@ const lastUpdateTime = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="mt-6">
     <div class="flex-center !justify-between gap-2 flex-row-reverse py-3.5 border-b border-gray-300 dark:border-gray-700">
       <ULink
         :to="`https://www.ao.link/#/entity/${task.processID}?tab=incoming`"
@@ -105,7 +106,7 @@ const lastUpdateTime = computed(() => {
         Transaction Book
       </ULink>
       <div :class="cn('flex items-center text-sm md:text-base', !isOwner && 'hidden')">
-        <div class="font-semibold mr-2">{{ $t('Submissions') }}</div>
+        <div class="font-semibold mr-2">{{ $t('Submissions') }}&nbsp;&nbsp;<span class="text-gray-300 text-sm mr-4">{{ submissions.length }}</span></div>
         <UInput v-model="searchKeyword" icon="heroicons:magnifying-glass" placeholder="Search..." />
       </div>
     </div>
