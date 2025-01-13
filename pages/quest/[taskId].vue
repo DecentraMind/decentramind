@@ -342,6 +342,9 @@ async function onSubmitSpaceUrl(url: string) {
 }
 
 const selectedSubmissions = $ref<AllSubmissionWithCalculatedBounties[]>([])
+const validatedSubmissions = $computed(() => {
+  return task?.submissions.filter(s => s.validateStatus === 'validated' || s.validateStatus === 'revalidated')
+})
 
 let sendBountyLoading = $ref(false)
 async function onClickSendBounty() {
@@ -356,7 +359,7 @@ async function onClickSendBounty() {
     return
   }
 
-  if (selectedSubmissions.length === 0 && task.submissions.length > 0) {
+  if (selectedSubmissions.length === 0 && validatedSubmissions && validatedSubmissions.length > 0) {
     alert('Please select at least one submission.')
     return
   }
@@ -539,14 +542,6 @@ async function onClickSendBounty() {
   } catch (e) {
     console.error('Failed to set task status to settled.')
     console.error(e)
-  }
-}
-
-function sendBountyBtnLabel() {
-  if (!submissions || submissions.length === 0 || !submissions) {
-    return 'Return Bounty'
-  } else {
-    return t('Send Bounty')
   }
 }
 
@@ -796,7 +791,7 @@ const onClickShareToTwitter = () => {
             >
               <UButton
                 color="white"
-                :label="sendBountyBtnLabel()"
+                :label="validatedSubmissions && validatedSubmissions.length === 0 ? $t('Return Bounty') : $t('Send Bounty')"
                 :loading="sendBountyLoading"
                 :disabled="sendBountyLoading"
                 @click="onClickSendBounty"
