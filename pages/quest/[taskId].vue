@@ -99,6 +99,29 @@ const submissions = $computed(
   () => task?.submissions as AllSubmissionWithCalculatedBounties[],
 )
 
+async function calculateAndUpdateScore(task: Task, submissions: AllSubmissionWithCalculatedBounties[]) {
+  // Check if submission last update is greater than task.endTime
+  const lastUpdateTime = submissions.reduce((max, submission) => {
+    return Math.max(max, submission.updateTime)
+  }, 0)
+  
+  if (lastUpdateTime < task.endTime) {
+    console.log('Submissions are waiting for validation or need last update after task endTime, skip score calculation')
+    return null
+  }
+
+  const updatedSubmissions = useTaskScoreCalculate(task, submissions)
+
+  // Save submission scores and set task.isScoreCalculated
+  const scores = updatedSubmissions.map(s => ({
+    id: s.id,
+    score: s.score,
+  }))
+  
+  await updateTaskScores(task.processID, scores)
+  return updatedSubmissions
+}
+
 let isLoading = $ref(true)
 onMounted(async () => {
   now = useClock(3000)
@@ -151,41 +174,22 @@ onMounted(async () => {
     })
     // console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
+
     if (
       (runtimeConfig.public.debug || !task.isScoreCalculated) &&
       now.value >= task.endTime &&
       !task.isSettled &&
       isOwner
     ) {
-      // check if submission last update is greater than task.endTime
-      const lastUpdateTime = submissions.reduce((max, submission) => {
-        return Math.max(max, submission.updateTime)
-      }, 0)
-      console.log('lastUpdateTime', lastUpdateTime)
-      console.log('task.endTime', task.endTime)
-      if (lastUpdateTime < task.endTime) {
-        console.log('there are submissions are waiting for validation or need last update after task endTime, skip score calculation')
-        return
-      }
-
-      const updatedSubmissions = useTaskScoreCalculate(
+      const updatedSubmissions = await calculateAndUpdateScore(
         task,
-        task.submissions as AllSubmissionWithCalculatedBounties[],
+        task.submissions as AllSubmissionWithCalculatedBounties[]
       )
-      console.log('score calculated submissions ', submissions)
-
-      // save submission scores and set task.isScoreCalculated
-      const scores = updatedSubmissions.map(s => {
-        return {
-          id: s.id,
-          score: s.score,
-        }
-      })
-      // TODO move this step to server
-      await updateTaskScores(taskPid, scores)
-      task.submissions = updatedSubmissions
-      // refetch task info
-      task = await getTask(taskPid, address)
+      if (updatedSubmissions) {
+        task.submissions = updatedSubmissions
+        // Refetch task info
+        task = await getTask(taskPid, address)
+      }
     }
 
     // console.log({ isSubmitted })
