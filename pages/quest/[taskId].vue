@@ -109,6 +109,10 @@ async function calculateAndUpdateScore(task: Task, submissions: AllSubmissionWit
     console.log('Submissions are waiting for validation or need last update after task endTime, skip score calculation')
     return null
   }
+  if (task.isScoreCalculated) {
+    console.log('Task is already score calculated, skip score calculation')
+    return null
+  }
 
   const updatedSubmissions = useTaskScoreCalculate(task, submissions)
 
@@ -186,7 +190,6 @@ onMounted(async () => {
         task.submissions as AllSubmissionWithCalculatedBounties[]
       )
       if (updatedSubmissions) {
-        task.submissions = updatedSubmissions
         // Refetch task info
         task = await getTask(taskPid, address)
       }

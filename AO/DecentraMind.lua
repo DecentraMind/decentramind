@@ -771,6 +771,8 @@ Actions = {
       u.replyData(msg, bounties)
     end,
 
+    -- update all submissions scores of a task
+    -- and set task.isScoreCalculated to true
     UpdateTaskScores = function(msg)
       local pid = msg.Tags.TaskPid
 

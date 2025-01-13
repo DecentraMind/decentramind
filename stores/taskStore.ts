@@ -169,6 +169,13 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
+  /**
+   * Update all submissions scores of a task
+   * and set task.isScoreCalculated to true
+   * @param taskPid 
+   * @param scores 
+   * @returns 
+   */
   const updateTaskScores = async (taskPid: string, scores: Scores) => {
     console.log('update task calculation scores', scores)
 
