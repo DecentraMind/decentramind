@@ -49,7 +49,7 @@ export async function getVouchDataGQL(address: string, method: string = 'X') {
   const data = await response.json()
   console.log('vouch data from gql endpoint:', data.data)
 
-  if (data.errors || data.errors.length > 0) {
+  if (data.errors && data.errors.length > 0) {
     console.error('Error fetching vouch data from gql endpoint:', data.errors)
     throw new Error('Error fetching vouch data from gql endpoint')
   }
@@ -128,7 +128,8 @@ export const getVouchData = async (address: string, method: string = 'X'): Promi
 export const getVouchDataSafe = async (address: string, method: string = 'X'): Promise<string[]> => {
   try {
     return await getVouchDataGQL(address, method)
-  } catch (_) {
+  } catch (e) {
+    console.warn('Failed to get vouch data from gql endpoint, trying to get it from AO', e)
     return await getVouchData(address, method)
   }
 }
