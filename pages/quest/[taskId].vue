@@ -166,16 +166,6 @@ onMounted(async () => {
 
     communityInfo = await getLocalCommunity(task.communityUuid)
     setCurrentCommunityUuid(communityInfo.uuid)
-
-    ;(task.submissions as AllSubmissionWithCalculatedBounties[]).forEach(s => {
-      s.rewardHtml = calcRewardHtml(
-        s.calculatedBounties,
-        true,
-        precisions,
-        'font-semibold',
-      ).join('&nbsp;+&nbsp;')
-      // console.log('rewardHtml', s.rewardHtml, s.calculatedBounties)
-    })
     // console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
 
 
@@ -583,17 +573,13 @@ watch(
       )
 
       submission.calculatedBounties = calculated as Task['bounties']
-      submission.rewardHtml = calcRewardHtml(
-        submission.calculatedBounties,
-        true,
-        precisions,
-        'font-semibold',
-      ).join('&nbsp;+&nbsp;')
     })
     console.log('calculated bounties')
     submissions.forEach(s => {
-      console.log(s.address)
-      console.table(s.calculatedBounties)
+      if (s.calculatedBounties.length > 0) {
+        console.log(s.address)
+        console.table(s.calculatedBounties)
+      }
     })
   },
 )

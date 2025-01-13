@@ -11,15 +11,16 @@ import {
 interface Props {
   bounties: Task['bounties']
   showLogo?: boolean
+  showPlus?: boolean
   precisions?: Map<string, number>
-  classNames?: string
+  class?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showLogo: true,
   class: 'font-medium',
-  precisions: undefined,
-  classNames: '',
+  showPlus: true,
+  precisions: undefined
 })
 
 const formattedBounties = computed(() => {
@@ -54,13 +55,21 @@ const formattedBounties = computed(() => {
 </script>
 
 <template>
-  <span
+  <div
     v-for="(bounty, index) in formattedBounties"
     :key="bounty.pid"
-    class="inline-flex items-center"
+    class="flex justify-start"
   >
-    <UPopover mode="hover" :popper="{ placement: 'top' }" class="w-full">
-      <span :class="classNames" :title="bounty.title">
+    <!-- + between bounties -->
+    <span v-if="index > 0 && props.showPlus" class="mx-2">+</span>
+    <UPopover
+      mode="hover"
+      :popper="{ placement: 'top' }"
+      :ui="{
+        trigger: 'flex justify-start items-center'
+      }"
+    >
+      <span :class="props.class" :title="bounty.title">
         {{ bounty.amount }} {{ bounty.tokenName }}
       </span>
       <img
@@ -75,7 +84,5 @@ const formattedBounties = computed(() => {
         </div>
       </template>
     </UPopover>
-    <!-- + between bounties -->
-    <span v-if="index < bounties.length - 1" class="mx-2">+</span>
-  </span>
+  </div>
 </template>

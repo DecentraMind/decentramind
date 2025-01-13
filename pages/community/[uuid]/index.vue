@@ -8,6 +8,7 @@ import CommunitySidebar from '~/components/community/CommunitySidebar.vue'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { useTaskStore } from '~/stores/taskStore'
 import TaskForm from '~/components/task/TaskForm.vue'
+import Bounties from '~/components/task/Bounties.vue'
 
 definePageMeta({
   ssr: false
@@ -289,7 +290,9 @@ const currentRightPage = $computed<PageSymbol>(() => {
                       <div>
                         <div>{{ $t('Bounty') }}</div>
                       </div>
-                      <div class="text-right" v-html="calcRewardHtml(task.bounties).join('<br>+')" />
+                      <div class="text-right">
+                        <Bounties :bounties="task.bounties" :show-logo="false" class="font-medium" :show-plus="false" />
+                      </div>
                     </div>
                   </div>
                 </template>

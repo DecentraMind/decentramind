@@ -253,11 +253,6 @@ export type TaskWithLink = Task & {
 
 type ExtraCalculatedFields = {
   calculatedBounties: Task['bounties']
-  /**
-   * html representation of calculatedBounties 
-   * bounty is not included in process reply,
-   * this field is calculated at client, only for client display */
-  rewardHtml?: string
 }
 export type SpaceSubmissionWithCalculatedBounties = SpaceSubmission & ExtraCalculatedFields
 

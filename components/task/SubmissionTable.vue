@@ -4,6 +4,7 @@ import type { AllSubmissionWithCalculatedBounties, SubmissionValidateStatus, Tas
 import { maxTotalChances } from '~/utils/constants'
 import { formatDate } from '~/utils/time'
 import ValidateStatus from './ValidateStatus.vue'
+import Bounties from './Bounties.vue'
 
 const props = defineProps<{
   task: Task
@@ -147,15 +148,10 @@ const lastUpdateTime = computed(() => {
       <template #score-data="{ row }">
         {{ task.isScoreCalculated ? row.score.toFixed(2) : '/' }}
       </template>
-      <template #rewardHtml-data="{ row }">
-        <p
-          class="flex justify-start items-center"
-          v-html="
-            task.isSettled || selected.find(s => s.id === row.id)
-              ? row.rewardHtml
-              : '/'
-          "
-        />
+      <template #bounty-data="{ row }">
+        <p v-if="task.isSettled || selected.find(s => s.id === row.id)" class="flex gap-2">
+          <Bounties :bounties="row.calculatedBounties" :show-logo="false" />
+        </p>
       </template>
     </UTable>
 

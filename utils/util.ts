@@ -91,8 +91,8 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
     class: 'text-left',
     rowClass: 'font-mono text-left',
   }
-  const rewardHtmlField = {
-    key: 'rewardHtml',
+  const bountyField = {
+    key: 'bounty',
     label: t('task.submission.fields.Bounty'),
     class: 'text-left',
     rowClass: 'font-mono pr-0',
@@ -108,7 +108,7 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
   const tweetTableColumns = [
     idField,
     validateStatusField,
-    rewardHtmlField,
+    bountyField,
     addressField,
     urlField,
     {
@@ -148,7 +148,7 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
     space: [
       idField,
       validateStatusField,
-      rewardHtmlField,
+      bountyField,
       addressField,
       {
         key: 'brandEffect',
@@ -177,7 +177,7 @@ export function getTaskTableColumns(taskType: Task['type'], showSelectStatus: bo
     invite: [
       idField,
       validateStatusField,
-      rewardHtmlField,
+      bountyField,
       addressField,
       {
         key: 'inviteCount',
