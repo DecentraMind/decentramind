@@ -621,18 +621,15 @@ const onClickShareToTwitter = () => {
     </UPage>
 
     <UModal v-model="isJoinModalOpen">
-      <UCard>
+      <UCard :ui="{ body: { base: 'px-3 sm:px-3' } }">
         <div class="space-y-2">
-          <div class="flex flex-col justify-center">
-            <div class="text-center">
-              <p
-                v-if="task"
-                v-html="
-                  $t(`task.joinModal.${task.type}`, { lineBreak: '<br>' })
-                "
-              />
-            </div>
-          </div>
+          <p
+            v-if="task"
+            class="text-center w-full"
+            v-html="
+              $t(`task.joinModal.${task.type}`, { lineBreak: '<br>' })
+            "
+          />
 
           <div class="flex justify-center">
             <UButton
