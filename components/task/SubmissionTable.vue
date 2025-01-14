@@ -91,6 +91,41 @@ const lastUpdateTime = computed(() => {
   }, 0)
   return lastUpdateTime
 })
+
+const validSubmissions = computed(() => 
+  pageRows.value.filter(row => 
+    row.validateStatus && VALID_SUBMISSION_STATUS.includes(row.validateStatus)
+  )
+)
+
+const allValidSelected = computed(() => 
+  validSubmissions.value.length > 0 && 
+  validSubmissions.value.every(submission => 
+    selected.value.some(s => s.id === submission.id)
+  )
+)
+
+const toggleSelectAll = () => {
+  if (allValidSelected.value) {
+    // Deselect all valid submissions from current page
+    selected.value = selected.value.filter(s => 
+      !validSubmissions.value.some(vs => vs.id === s.id)
+    )
+  } else {
+    // Select all valid submissions from current page
+    const newSelections = validSubmissions.value.filter(submission =>
+      !selected.value.some(s => s.id === submission.id)
+    )
+    
+    const maxSelection = props.task ? props.task.totalChances : 1
+    if (selected.value.length + newSelections.length > maxSelection) {
+      showMessage(`Cannot select all: would exceed total chances(${maxSelection})!`)
+      return
+    }
+    
+    selected.value = [...selected.value, ...newSelections]
+  }
+}
 </script>
 
 <template>
@@ -116,6 +151,19 @@ const lastUpdateTime = computed(() => {
       :columns="getTaskTableColumns(task.type, !task.isSettled && isOwner)"
       :loading="isLoading"
     >
+      <template #selectStatus-header>
+        <div
+          :class="[
+            'w-4 h-4 border rounded cursor-pointer',
+            allValidSelected ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-700'
+          ]"
+          @click="toggleSelectAll"
+        >
+          <div v-if="allValidSelected" class="w-full h-full flex items-center justify-center">
+            <UIcon name="i-heroicons-check" class="w-3 h-3 text-white" />
+          </div>
+        </div>
+      </template>
       <template #selectStatus-data="{ row }">
         <!-- TODO: use a checkbox here if the checked status bug is fixed -->
         <div

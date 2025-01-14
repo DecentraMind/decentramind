@@ -602,7 +602,7 @@ const onClickShareToTwitter = () => {
             >
               <UButton
                 :color="selectedSubmissions.length > 0 ? 'primary' : 'gray'"
-                :label="validatedSubmissions && validatedSubmissions.length === 0 ? $t('Return Bounty') : $t('Send Bounty')"
+                :label="validatedSubmissions && validatedSubmissions.length === 0 ? $t('Return Bounty') : $t('Send Bounty') + ' (' + selectedSubmissions.length + ')'"
                 :disabled="isBountyConfirmModalOpen"
                 @click="onClickSendBounty"
               />
