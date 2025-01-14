@@ -269,7 +269,11 @@ const onConfirm = async () => {
           <div v-for="[key, recipientBounties] in bountyGroups" :key="key" class="border rounded-lg p-4">
             <div class="flex items-center justify-between mb-2">
               <div class="flex justify-between w-full">
-                <span class="font-medium">{{ shortString(key.split('@')[0]) }}</span>
+                <p class="font-medium">
+                  {{ shortString(key.split('@')[0]) }}&emsp;
+                  <span v-if="key.split('@')[0] === decentraMindReceiver" class="text-gray-400 text-sm mr-4">DecentraMind</span>
+                  <span v-if="key.split('@')[0] === task.ownerAddress" class="text-gray-400 text-sm mr-4">Task Owner</span>
+                </p>
                 <UBadge v-if="key.split('@')[1] === 'refund'" color="green" variant="subtle">
                   {{ $t('task.Refund') }}
                 </UBadge>
