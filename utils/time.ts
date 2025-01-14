@@ -20,6 +20,23 @@ export function formatToLocale(isoString: string | number, locale: string = 'en-
   return new Intl.DateTimeFormat(locale, options).format(date).replace(/\sat\s/, ' ')
 }
 
+/**
+ * Format the date like 3/14/2025
+ * @param timestamp 
+ * @returns 
+ */
+export function formatEnglishDate(timestamp: number) {
+  const date = new Date(timestamp)
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  }
+
+  return new Intl.DateTimeFormat('en-US', options).format(date).replace(/\sat\s/, ' ')
+}
+
 export function formatDate(
   timestamp: number,
   options: Intl.DateTimeFormatOptions = {}

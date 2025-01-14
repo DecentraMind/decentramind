@@ -4,7 +4,7 @@ import { cn, shortString } from '~/utils'
 import TimeAgo from '../TimeAgo.vue'
 import Loading from '../Loading.vue'
 import audioFile from '@/assets/notify.mp3'
-import { formatDate } from '~/utils/time'
+import { formatEnglishDate } from '~/utils/time'
 
 const notifySound = new Audio(audioFile)
 
@@ -27,7 +27,7 @@ const groupedMessages = $computed(() => {
   const groups: { date: string; messages: MailCache[] }[] = []
   
   sortedMessages.forEach((message) => {
-    const messageDate = formatDate(message.Timestamp).substring(0, 10)
+    const messageDate = formatEnglishDate(message.Timestamp)
     const lastGroup = groups[groups.length - 1]
     
     if (!lastGroup || lastGroup.date !== messageDate) {
