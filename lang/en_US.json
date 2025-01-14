@@ -176,6 +176,9 @@
     "public": "Open Mission Area",
     "reward": "Awarded",
     "sum": "Amount",
+    "Confirm and send": "Confirm and send",
+    "Refund": "Refund",
+    "Fee": "Fee",
     "joinModal": {
       "space": "Thank you for your support.{lineBreak}Please follow the rules of the quest and submit the URL of your space.",
       "promotion": "Thank you for your support.{lineBreak}Please follow the rules of the quest and submit the your quote URL.",

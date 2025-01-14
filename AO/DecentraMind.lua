@@ -1,4 +1,4 @@
-Variant = '0.4.85'
+Variant = '0.4.86'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -111,7 +111,6 @@ TasksByCommunity = TasksByCommunity or {}
 --- @field tokenProcessID string
 --- @field amount number
 --- @field quantity string BitInt string of bounty quantity. Human readable amount = quantity / Math.pow(10, token.denomination)
---- @field tokenName string
 --- @field comunityUuid string
 --- @field communityName string
 --- @field taskName string
@@ -771,6 +770,8 @@ Actions = {
       u.replyData(msg, bounties)
     end,
 
+    -- update all submissions scores of a task
+    -- and set task.isScoreCalculated to true
     UpdateTaskScores = function(msg)
       local pid = msg.Tags.TaskPid
 
@@ -808,6 +809,30 @@ Actions = {
       end
 
       Tasks[pid].submissions = json.decode(msg.Data)
+    end,
+
+    UpdateTaskSubmissionBounties = function(msg)
+      local pid = msg.Tags.TaskPid
+      --- @type Submission[]
+      local submissions = json.decode(msg.Data)
+
+      if not Tasks[pid] then
+        return u.replyError(msg, 'Task not found.')
+      end
+
+      for _, submission in pairs(Tasks[pid].submissions) do
+        local find = u.findIndex(submissions, function(s)
+          return s.id == submission.id
+        end)
+        -- if this submission is in the submissions array, update the calculatedBounties
+        if find then
+          submission.calculatedBounties = submissions[find].calculatedBounties
+        end
+        -- if this submission is not in the submissions array, remove the calculatedBounties
+        if not find then
+          submission.calculatedBounties = nil
+        end
+      end
     end
   },
 

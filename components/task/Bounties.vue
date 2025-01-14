@@ -11,16 +11,28 @@ import {
 interface Props {
   bounties: Task['bounties']
   showLogo?: boolean
+  showPlus?: boolean
   precisions?: Map<string, number>
-  classNames?: string
+  class?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showLogo: true,
   class: 'font-medium',
-  precisions: undefined,
-  classNames: '',
+  showPlus: true,
+  precisions: undefined
 })
+
+const defaultPrecisions = $computed(() =>
+  props.bounties.reduce((carry, bounty) => {
+    const fractionalLength = fractionalPart(bounty.amount).length
+    carry.set(
+      bounty.tokenProcessID,
+      bounty.amount < 1 ? fractionalLength + 1 : 2,
+    )
+    return carry
+  }, new Map<string, number>()),
+)
 
 const formattedBounties = computed(() => {
   return props.bounties
@@ -40,11 +52,13 @@ const formattedBounties = computed(() => {
         console.error('quantity undefined. try fix or delete task')
       }
 
-      const precision = props.precisions?.get(bounty.tokenProcessID) || 2
+      const precision = props.precisions
+        ? props.precisions.get(bounty.tokenProcessID) || 2
+        : defaultPrecisions.get(bounty.tokenProcessID)
 
       return {
         pid: bounty.tokenProcessID,
-        amount: bounty.amount.toFixed(precision),
+        amount: BigInt(0) === quantity ? '0' : bounty.amount.toFixed(precision),
         tokenName: bounty.tokenName,
         logo: props.showLogo && logo ? arUrl(logo, gateways.ario) : null,
         title: bigInt2Float(BigInt(quantity), denomination) + '',
@@ -54,13 +68,21 @@ const formattedBounties = computed(() => {
 </script>
 
 <template>
-  <span
+  <div
     v-for="(bounty, index) in formattedBounties"
     :key="bounty.pid"
-    class="inline-flex items-center"
+    class="flex justify-start"
   >
-    <UPopover mode="hover" :popper="{ placement: 'top' }" class="w-full">
-      <span :class="classNames" :title="bounty.title">
+    <!-- + between bounties -->
+    <span v-if="index > 0 && props.showPlus" class="mx-2">+</span>
+    <UPopover
+      mode="hover"
+      :popper="{ placement: 'top' }"
+      :ui="{
+        trigger: 'flex justify-start items-center'
+      }"
+    >
+      <span :class="props.class" :title="bounty.title">
         {{ bounty.amount }} {{ bounty.tokenName }}
       </span>
       <img
@@ -75,7 +97,5 @@ const formattedBounties = computed(() => {
         </div>
       </template>
     </UPopover>
-    <!-- + between bounties -->
-    <span v-if="index < bounties.length - 1" class="mx-2">+</span>
-  </span>
+  </div>
 </template>

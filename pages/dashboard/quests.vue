@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { BountySendHistory, Task } from '~/types'
-import { tokensByProcessID, calcRewardHtml } from '~/utils'
+import { tokensByProcessID } from '~/utils'
 import { useTaskStore } from '~/stores/taskStore'
+import Bounties from '~/components/task/Bounties.vue'
 
 const questColumns = [
   {
@@ -10,7 +11,7 @@ const questColumns = [
     class: 'w-60',
   },
   {
-    key: 'rewardHtml',
+    key: 'bounties',
     label: 'Amount',
     class: 'w-20',
   },
@@ -49,7 +50,7 @@ type Categorized = {
   sum: { [tokenProcessID: string]: sumRow }
 }
 
-let publishedTasks = $ref<Array<Task & { rewardHtml: string }>>([])
+let publishedTasks = $ref<Array<Task>>([])
 
 let awarded = $ref<Categorized>({
   taskId2BountiesMap: {},
@@ -58,16 +59,17 @@ let awarded = $ref<Categorized>({
 
 type questRow = {
   name: string // quest name
-  rewardHtml: string // reward html
+  bounties: Task['bounties']
   communityName: string
 }
 const awardedBounties = $computed<questRow[]>(() => {
   const results = [] as questRow[]
+  // eslint-disable-next-line no-unused-vars
   for (const [_, bounties] of Object.entries(awarded.taskId2BountiesMap)) {
     
     const result = {
       name: bounties[0].taskName,
-      rewardHtml: calcRewardHtml(bounties as unknown as Task['bounties'], true).join('&nbsp;+&nbsp;'),
+      bounties: bounties as unknown as Task['bounties'],
       communityName: joinedCommunities.find(community => community.uuid == bounties[0].communityUuid)?.name || '',
     }
     results.push(result)
@@ -78,7 +80,7 @@ const awardedBounties = $computed<questRow[]>(() => {
 const publishedTasksRows = $computed(() => {
   console.log('published rows', publishedTasks, pageC, pageCount)
   return publishedTasks.slice((pageC - 1) * pageCount, pageC * pageCount).map(task => {
-    const res = {...task} as Task & { rewardHtml: string, communityName: string }
+    const res = {...task} as Task & { communityName: string }
     res.communityName = joinedCommunities.find(community => community.uuid == task.communityUuid)?.name || ''
     return res
   })
@@ -120,11 +122,7 @@ onMounted(async () => {
   setCurrentCommunityUuid(null)
   try {
     const { awarded: awardedBounties } = await getBountiesByAddress(address)
-    publishedTasks = (await getTasksByOwner(address) as unknown as Array<Task & { rewardHtml: string }>).map(task => {
-      task.rewardHtml =
-        calcRewardHtml(task.bounties, true).join('&nbsp;+&nbsp;')
-      return task
-    })
+    publishedTasks = await getTasksByOwner(address)
     // console.log({ publishedTasks, awardedBounties })
 
     awarded = categorize(awardedBounties)
@@ -188,7 +186,7 @@ function categorize(bounties: BountySendHistory[]) {
 </script>
 
 <template>
-  <UDashboardPanelContent class="pb-24">
+  <UDashboardPanelContent class="pb-10">
     <UCard>
       <template #header>
         <UBadge variant="soft" size="lg"> Public Quests </UBadge>
@@ -216,8 +214,10 @@ function categorize(bounties: BountySendHistory[]) {
             sort-mode="manual"
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           >
-            <template #rewardHtml-data="{ row }">
-              <p class="flex justify-start items-center" v-html="row.rewardHtml" />
+            <template #bounties-data="{ row }">
+              <div class="flex flex-col gap-y-1">
+                <Bounties :bounties="row.bounties" :show-plus="false" />
+              </div>
             </template>
           </UTable>
           <div class="flex justify-between mt-2 pt-3.5">
@@ -261,8 +261,10 @@ function categorize(bounties: BountySendHistory[]) {
             sort-mode="manual"
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           >
-            <template #rewardHtml-data="{ row }">
-              <p class="flex justify-start items-center" v-html="row.rewardHtml" />
+            <template #bounties-data="{ row }">
+              <div class="flex flex-col gap-y-2">
+                <Bounties :bounties="row.bounties" :show-plus="false" />
+              </div>
             </template>
           </UTable>
           <div class="flex justify-between mt-2 pt-3.5">

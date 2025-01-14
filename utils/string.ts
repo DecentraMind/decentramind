@@ -1,6 +1,3 @@
-import type { Task } from '~/types'
-import { tokensByProcessID, bigInt2Float } from '~/utils'
-
 export function createUuid() {
   const str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   return str.replace(/[xy]/g, function (c) {
@@ -43,40 +40,6 @@ export function toBase62(num: number) {
       num = Math.floor(num / 62)
   }
   return result
-}
-
-/**
- * calculate the reward html with logo image for a task
- * TODO remove this function and replace with <Bounties />
- */
-export function calcRewardHtml(bounties: Task['bounties'], showLogo = false, precisions?: Map<string, number>, classes = 'font-medium') {
-  return bounties.reduce((carry, bounty) => {
-    if (!bounty.tokenName || !bounty.amount) return carry
-
-    const token = tokensByProcessID[bounty.tokenProcessID]
-    if (!token) {
-      throw Error('Token info not found.')
-    }
-    const { logo, denomination } = token
-
-    // TODO add zod type validation on ao reply data, and don't need do validatio here
-    // TODO this is only for old data format which have no quantity, remove this if old data removed
-    if (bounty.quantity === undefined) {
-      bounty.quantity = float2BigInt(bounty.amount, denomination)
-      console.error('quantity undefiend. try fix or delete task')
-    }
-    
-    const precision = precisions?.get(bounty.tokenProcessID) || 2
-
-    carry.push(
-      `<span class=${classes} title="${bigInt2Float(BigInt(bounty.quantity), denomination)}">${bounty.amount.toFixed(precision)} ${bounty.tokenName}</span>${
-        showLogo && logo
-        ? '<img src="' + arUrl(logo, gateways.ario) + '" class="w-6 h-6 rounded-full border border-gray-200 ml-1 mr-2">'
-        : ''
-      }`
-    )
-    return carry
-  }, [] as string[])
 }
 
 /**
