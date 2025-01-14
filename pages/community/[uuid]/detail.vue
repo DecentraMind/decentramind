@@ -49,8 +49,14 @@ let isLoadingRankings = $ref(true)
 const loadRanks = async () => {
   try {
     const bounties = await getBountiesByCommunityID(communityID)
-    console.log({bounties})
-    return bounties.reduce((ranks, bounty) => {
+    // First deduplicate bounties by recipient and taskPid
+    const uniqueBounties = bounties.filter((bounty, index) => 
+      bounties.findIndex(b => 
+        b.recipient === bounty.recipient && b.taskPid === bounty.taskPid
+      ) === index
+    )
+
+    return uniqueBounties.reduce((ranks, bounty) => {
       if (bounty.recipient === decentraMindReceiver) return ranks
 
       const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
