@@ -23,6 +23,17 @@ const props = withDefaults(defineProps<Props>(), {
   precisions: undefined
 })
 
+const defaultPrecisions = $computed(() =>
+  props.bounties.reduce((carry, bounty) => {
+    const fractionalLength = fractionalPart(bounty.amount).length
+    carry.set(
+      bounty.tokenProcessID,
+      bounty.amount < 1 ? fractionalLength + 1 : 2,
+    )
+    return carry
+  }, new Map<string, number>()),
+)
+
 const formattedBounties = computed(() => {
   return props.bounties
     .filter(bounty => bounty.tokenName && bounty.amount)
@@ -41,11 +52,13 @@ const formattedBounties = computed(() => {
         console.error('quantity undefined. try fix or delete task')
       }
 
-      const precision = props.precisions?.get(bounty.tokenProcessID) || 2
+      const precision = props.precisions
+        ? props.precisions.get(bounty.tokenProcessID) || 2
+        : defaultPrecisions.get(bounty.tokenProcessID)
 
       return {
         pid: bounty.tokenProcessID,
-        amount: bounty.amount.toFixed(precision),
+        amount: BigInt(0) === quantity ? '0' : bounty.amount.toFixed(precision),
         tokenName: bounty.tokenName,
         logo: props.showLogo && logo ? arUrl(logo, gateways.ario) : null,
         title: bigInt2Float(BigInt(quantity), denomination) + '',

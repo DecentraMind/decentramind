@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getTaskTableColumns } from '~/utils'
 import type { AllSubmissionWithCalculatedBounties, SubmissionValidateStatus, Task } from '~/types'
-import { maxTotalChances } from '~/utils/constants'
+import { maxTotalChances, VALID_SUBMISSION_STATUS } from '~/utils/constants'
 import { formatDate } from '~/utils/time'
 import ValidateStatus from './ValidateStatus.vue'
 import Bounties from './Bounties.vue'
@@ -121,10 +121,10 @@ const lastUpdateTime = computed(() => {
         <div
           :class="[
             'w-4 h-4 border rounded cursor-pointer',
-            row.validateStatus !== 'validated' && row.validateStatus !== 'revalidated' ? 'opacity-50 cursor-not-allowed' : '',
+            row.validateStatus && !VALID_SUBMISSION_STATUS.includes(row.validateStatus) ? 'opacity-50 cursor-not-allowed' : '',
             selected.find(s => s.id === row.id) ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-700'
           ]"
-          @click="row.validateStatus === 'validated' || row.validateStatus === 'revalidated' ? selectSubmission(row, !selected.find(s => s.id === row.id)) : null"
+          @click="row.validateStatus && VALID_SUBMISSION_STATUS.includes(row.validateStatus) ? selectSubmission(row, !selected.find(s => s.id === row.id)) : null"
         >
           <div v-if="selected.find(s => s.id === row.id)" class="w-full h-full flex items-center justify-center">
             <UIcon name="i-heroicons-check" class="w-3 h-3 text-white" />
@@ -136,6 +136,7 @@ const lastUpdateTime = computed(() => {
       </template>
       <template #validateStatus-data="{ row }">
         <ValidateStatus
+          v-if="row.validateStatus"
           :status="row.validateStatus as SubmissionValidateStatus"
           :error="row.validateError"
         />

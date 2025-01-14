@@ -1,4 +1,4 @@
-import type { ChainNames, TradePlatform } from '~/types'
+import type { ChainNames, SubmissionValidateStatus, TradePlatform } from '~/types'
 
 export const tradePlatforms: TradePlatform[] = [
   'ArSwap',
@@ -144,6 +144,7 @@ export const tokenOptions = tokenNames.map((value) => {
 export const tokenProcessIDs = tokenNames.reduce((carry, name) => {
   carry[name] = tokens[name].processID
   return carry
+// eslint-disable-next-line no-unused-vars
 }, {} as { [key in TokenName]: string })
 
 export const tokenProcesses = Object.values(tokenProcessIDs)
@@ -156,6 +157,7 @@ export const tokensByProcessID = tokenNames.reduce((carry, name) => {
 export const denominations = tokenNames.reduce((carry, name) => {
   carry[name] = Math.pow(10, tokens[name].denomination)
   return carry
+// eslint-disable-next-line no-unused-vars
 }, {} as { [key in TokenName]: number })
 
 export type CommunityToken = {
@@ -245,3 +247,5 @@ export const maxFetchSpaceIds = 100
 export const maxFetchTweetIds = 100
 
 export const VOUCH_SITE_URL = 'https://vouch.zeabur.app'
+
+export const VALID_SUBMISSION_STATUS = ['validated', 'revalidated'] as SubmissionValidateStatus[]

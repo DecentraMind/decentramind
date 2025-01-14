@@ -272,7 +272,6 @@ export type Bounty = {
 }
 
 export type BountySendHistory = Bounty & {
-  tokenName: string
   communityUuid: string
   communityName: string
   taskName: string

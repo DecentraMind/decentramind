@@ -3,15 +3,13 @@ import { useTaskStore } from '~/stores/taskStore'
 import { calcBounties, formatToLocale, fractionalPart } from '~/utils'
 import type {
   Task,
-  Bounty,
-  BountySendHistory,
   InviteCodeInfo,
   AllSubmissionWithCalculatedBounties,
   TaskWithLink,
   SpaceSubmission,
   TweetSubmission,
 } from '~/types'
-import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
+import { VALID_SUBMISSION_STATUS } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
 import { watch } from 'vue'
 import { useClock } from '~/composables/useClock'
@@ -20,6 +18,7 @@ import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
 import Bounties from '~/components/task/Bounties.vue'
 import SpaceSubmissionForm from '~/components/task/SpaceSubmissionForm.vue'
 import TweetSubmissionForm from '~/components/task/TweetSubmissionForm.vue'
+import BountySendConfirmModal from '~/components/task/BountySendConfirmModal.vue'
 
 definePageMeta({
   ssr: false
@@ -30,13 +29,8 @@ const runtimeConfig = useRuntimeConfig()
 
 let now: Ref<number>
 
-const { t } = useI18n()
-
 const {
-  storeBounty,
-  sendBounty,
   getInvitesByInviter,
-  updateTaskSubmissions,
   updateTaskScores,
   getTask,
   joinTask,
@@ -59,9 +53,17 @@ const taskPid = $computed(() => route.params.taskId) as string
 
 let task = $ref<Task>()
 
-const isSubmitted = $computed(
+/**
+ * if the user already has valid submission or waiting submission, the user can't submit again
+ */
+const canSubmit = $computed(
   () =>
-    submissions.findIndex(submission => submission.address === address) > -1,
+    submissions
+      .filter(
+        submission => submission.validateStatus
+        && (VALID_SUBMISSION_STATUS.includes(submission.validateStatus) || submission.validateStatus === 'waiting_for_validation')
+      )
+      .findIndex(submission => submission.address === address) === -1,
 )
 const isJoined = $computed(() => {
   // console.log('task', task)
@@ -185,7 +187,7 @@ onMounted(async () => {
       }
     }
 
-    // console.log({ isSubmitted })
+    // console.log({ canSubmit })
   } catch (e) {
     console.error(e)
     // TODO show a page size error overlay and reload button
@@ -262,8 +264,8 @@ async function onSubmitTweetUrl(url: string) {
       throw new Error('You are not vouched.')
     }
 
-    if (isSubmitted && !runtimeConfig.public.debug) {
-      throw new Error('You have submitted this quest.')
+    if (!canSubmit && !runtimeConfig.public.debug) {
+      throw new Error('You already have a valid submission or waiting submission.')
     }
     
     const tweetSubmission:Omit<TweetSubmission, 'id'|'createTime'|'updateTime'> = {
@@ -304,8 +306,8 @@ async function onSubmitSpaceUrl(url: string) {
       throw new Error('You are not vouched.')
     }
 
-    if (isSubmitted && !runtimeConfig.public.debug) {
-      throw new Error('You have submitted this quest.')
+    if (!canSubmit && !runtimeConfig.public.debug) {
+      throw new Error('You already have a valid submission or waiting submission.')
     }
 
     const spaceSubmission:Omit<SpaceSubmission, 'id'|'createTime'|'updateTime'> = {
@@ -333,10 +335,10 @@ async function onSubmitSpaceUrl(url: string) {
 
 const selectedSubmissions = $ref<AllSubmissionWithCalculatedBounties[]>([])
 const validatedSubmissions = $computed(() => {
-  return task?.submissions.filter(s => s.validateStatus === 'validated' || s.validateStatus === 'revalidated')
+  return task?.submissions.filter(s => s.validateStatus && VALID_SUBMISSION_STATUS.includes(s.validateStatus))
 })
 
-let sendBountyLoading = $ref(false)
+let isBountyConfirmModalOpen = $ref(false)
 async function onClickSendBounty() {
   if (!task || !submissions || !communityInfo) {
     showError('Data loading does not completed. Please wait or try refresh.')
@@ -355,184 +357,8 @@ async function onClickSendBounty() {
   }
   console.log('selectedSubmissions', selectedSubmissions)
 
-  sendBountyLoading = true
-
-  /** bounties to send */
-  const bountiesToSend: Bounty[] = []
-  let sendBountyResult = false
-  try {
-    const selectedTotalScore = selectedSubmissions.reduce(
-      (total, submission) => {
-        total += submission.score
-        return total
-      },
-      0,
-    )
-    console.group('Bounty calculating')
-    console.log({ selected: selectedSubmissions })
-    // submissions
-    //   .map(s => {
-    //     return s.calculatedBounties
-    //   })
-    //   .forEach(i => console.table(i))
-
-    selectedSubmissions.forEach(submission => {
-      const calculated = calcBounties(
-        submission,
-        selectedTotalScore,
-        selectedSubmissions.length,
-        task!.bounties,
-      )
-
-      submission.calculatedBounties = calculated as Task['bounties']
-    })
-
-    console.log('calculated bounties')
-    selectedSubmissions.forEach(s => {
-      console.log(s.address, 'calculated bounties:')
-      console.table(s.calculatedBounties)
-    })
-    console.groupEnd()
-
-    // save calculatedBounties
-    // TODO save calculatedBounties of selected submissions only
-    await updateTaskSubmissions(taskPid, submissions)
-
-    /** bounties that should send back to the task owner */
-    const refundMap = {} as Record<string, Bounty>
-    // initialize refoundMap
-    for (const taskBounty of task.bounties) {
-      const { tokenProcessID: pid } = taskBounty
-      if (!refundMap[pid]) {
-        refundMap[pid] = {
-          taskPid,
-          sender: task!.ownerAddress,
-          recipient: task!.ownerAddress,
-          tokenProcessID: pid,
-          amount: 0,
-          quantity: BigInt(0),
-        }
-      }
-      refundMap[pid].amount += taskBounty.amount
-      refundMap[pid].quantity += BigInt(taskBounty.quantity)
-    }
-
-    // set decentraMind service charge quantity
-    const dmQuantityMap = {} as Record<string, bigint>
-    for (const [pid, returnBounty] of Object.entries(refundMap)) {
-      if (!dmQuantityMap[pid]) {
-        dmQuantityMap[pid] =
-          (returnBounty.quantity * BigInt(DM_BOUNTY_CHARGE_PERCENT)) /
-          BigInt(100)
-      }
-    }
-
-    // add selected submission's bounty to bountiesToSend
-    const selectedSubmissionIds = selectedSubmissions.map(
-      submission => submission.id,
-    )
-    submissions
-      .filter(submission => selectedSubmissionIds.includes(submission.id))
-      .forEach(submission => {
-        submission.calculatedBounties.forEach(bounty => {
-          const pid = bounty.tokenProcessID
-          const bountyData = {
-            taskPid,
-            sender: task!.ownerAddress,
-            recipient: submission.address,
-            tokenProcessID: pid,
-            amount: bounty.amount,
-            quantity: bounty.quantity,
-          }
-
-          // update refoundMap
-          refundMap[pid].amount -= bounty.amount
-          refundMap[pid].quantity -= BigInt(bounty.quantity)
-
-          bountiesToSend.push(bountyData)
-        })
-      })
-
-    for (const [pid, returnBounty] of Object.entries(refundMap)) {
-      // add DecentraMind bounty service charges if submissions.length > 0
-      if (submissions.length) {
-        const quantity = dmQuantityMap[pid]
-
-        // to avoid total quantity greater than available number, you have to correct the quantity
-        const correctQuantity =
-          quantity > returnBounty.quantity ? returnBounty.quantity : quantity
-        const denomination = tokensByProcessID[pid].denomination
-        const correctAmount = bigInt2Float(correctQuantity, denomination)
-        bountiesToSend.push({
-          taskPid,
-          sender: task!.ownerAddress,
-          recipient: decentraMindReceiver,
-          tokenProcessID: pid,
-          amount: correctAmount,
-          quantity: correctQuantity,
-        })
-
-        refundMap[pid].amount -= correctAmount
-        refundMap[pid].quantity -= BigInt(correctQuantity)
-      } else {
-        bountiesToSend.push(returnBounty)
-      }
-    }
-
-    // add refundMap to bountiesToSend
-    bountiesToSend.push(...Object.values(refundMap))
-
-    console.log('bounties to send:', {
-      bounties: bountiesToSend,
-      submissions,
-      refundMap: refundMap,
-    })
-
-    sendBountyResult = await sendBounty(task.processID, bountiesToSend)
-
-    if (!selectedSubmissions.length) {
-      showSuccess('The bounty has been returned!')
-    } else {
-      showSuccess(
-        'Your bounties have been sent. You can view them in the Transaction Book.',
-      )
-    }
-  } catch (e) {
-    console.error(e)
-    showError('Send bounty failed.', e as Error)
-  } finally {
-    sendBountyLoading = false
-  }
-
-  if (!sendBountyResult) {
-    return
-  }
-  // disable send bounty button to avoid double send
-  task.isSettled = true
-
-  try {
-    const sentBounties: BountySendHistory[] = []
-    for (const bounty of bountiesToSend as BountySendHistory[]) {
-      const sent = {
-        ...bounty,
-        tokenName: bounty.tokenName,
-        communityUuid: communityInfo.uuid,
-        communityName: communityInfo.name,
-        taskName: task.name,
-      }
-      sentBounties.push(sent)
-    }
-
-    await retry({
-      fn: async () => {
-        return await storeBounty(task!.processID, sentBounties)
-      },
-      maxAttempts: 3,
-    })
-  } catch (e) {
-    console.error('Failed to set task status to settled.')
-    console.error(e)
-  }
+  isBountyConfirmModalOpen = true
+  return
 }
 
 const precisions = $computed(() =>
@@ -758,11 +584,10 @@ const onClickShareToTwitter = () => {
 
             <div v-if="!isLoading && isJoined" class="flex justify-center my-8">
               <div
-                v-if="isIng && (!isSubmitted || runtimeConfig.public.debug)"
+                v-if="isIng && (canSubmit || runtimeConfig.public.debug)"
                 class="mx-4"
               >
                 <UButton
-                  color="white"
                   :label="$t('Submit Quest')"
                   @click="openSubmitModal"
                 />
@@ -776,10 +601,9 @@ const onClickShareToTwitter = () => {
               class="flex-center"
             >
               <UButton
-                color="white"
+                :color="selectedSubmissions.length > 0 ? 'primary' : 'gray'"
                 :label="validatedSubmissions && validatedSubmissions.length === 0 ? $t('Return Bounty') : $t('Send Bounty')"
-                :loading="sendBountyLoading"
-                :disabled="sendBountyLoading"
+                :disabled="isBountyConfirmModalOpen"
                 @click="onClickSendBounty"
               />
             </div>
@@ -858,6 +682,18 @@ const onClickShareToTwitter = () => {
         </div>
       </UCard>
     </UModal>
+
+    <BountySendConfirmModal
+      v-if="task"
+      v-model="isBountyConfirmModalOpen"
+      :task="task"
+      :selected-submissions="selectedSubmissions"
+      :community-info="communityInfo"
+      @success="
+        task.isSettled = true;
+        isBountyConfirmModalOpen = false
+      "
+    />
 
     <UModal v-model="isInviteModalOpen">
       <UCard>

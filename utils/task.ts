@@ -111,6 +111,27 @@ export const updateTaskSubmissions = async (taskPid: string, submissions: AllSub
   })
 }
 
+/**
+ * update task submission bounties
+ * @param taskPid 
+ * @param submissions
+ * @returns 
+ */
+export const updateTaskSubmissionBounties = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  console.log('update task submission bounties', submissions)
+  if (!globalThis.window?.arweaveWallet && !wallet) {
+    throw new Error('Wallet is required to update task submission bounties')
+  }
+  return await messageResultCheck({
+    process: taskManagerProcessID,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+    tags: [
+      { name: 'Action', value: 'UpdateTaskSubmissionBounties' },
+      { name: 'TaskPid', value: taskPid }
+    ],
+    data: JSON.stringify(submissions, bigintReplacer)
+  })
+}
 
 /**
  * update invalid or validation error submission
