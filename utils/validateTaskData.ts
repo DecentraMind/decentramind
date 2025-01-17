@@ -96,9 +96,13 @@ const validateTweetBirdData = ({ task, data, mode, twitterVouchedIDs, communityN
     throw new Error(`Invalid tweet URL: tweet text length is less than ${minBirdTweetTextLength}.`)
   }
 
-  if (!tweetInfo.data[0].text.toLowerCase().includes(communityName.toLowerCase())) {
-    throw new Error(`Invalid tweet URL: tweet text does not include community name ${communityName}.`)
+  if (!tweetInfo.data[0].text.toLowerCase().includes('decentramind.club/i/')) {
+    throw new Error('Invalid tweet URL: tweet text does not include invite link.')
   }
+
+  // if (!tweetInfo.data[0].text.toLowerCase().includes(communityName.toLowerCase())) {
+  //   throw new Error(`Invalid tweet URL: tweet text does not include community name ${communityName}.`)
+  // }
 
   return tweetInfo
 }
@@ -118,9 +122,13 @@ const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs, communi
     throw new Error(`Invalid tweet URL: article text length is less than ${minArticleTextLength}.`)
   }
 
-  if (!tweetInfo.data[0].note_tweet?.text?.toLowerCase().includes(communityName.toLowerCase())) {
-    throw new Error(`Invalid tweet URL: article text does not include community name ${communityName}.`)
+  if (!tweetInfo.data[0].note_tweet?.text?.toLowerCase().includes('decentramind.club/i/')) {
+    throw new Error('Invalid tweet URL: article text does not include invite link.')
   }
+
+  // if (!tweetInfo.data[0].note_tweet?.text?.toLowerCase().includes(communityName.toLowerCase())) {
+  //   throw new Error(`Invalid tweet URL: article text does not include community name ${communityName}.`)
+  // }
 
   return tweetInfo
 }

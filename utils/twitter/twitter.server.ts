@@ -67,6 +67,9 @@ export async function getByPid2IdsMap<T extends TwitterSpacesInfo | TwitterTweet
  * @returns spaces info
  */
 export async function getSpaces(ids: string | string[]) {
+  if (!ids) {
+    throw new Error('No space ids provided.')
+  }
   // split ids to chunks
   const idsArray = Array.isArray(ids) ? ids : ids.split(',')
 
@@ -131,6 +134,9 @@ export async function getSpaces(ids: string | string[]) {
  * @returns tweets info
  */
 export async function getTweets(ids: string | string[]) {
+  if (!ids) {
+    throw new Error('No tweet ids provided.')
+  }
   // split ids to chunks
   const idsArray = Array.isArray(ids) ? ids : ids.split(',')
   const chunks = chunk(idsArray, maxFetchTweetIds)

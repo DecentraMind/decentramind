@@ -52,6 +52,7 @@ export const mockSpaceInfo: ValidatedSpacesInfo = {
 export const mockImcompleteSpaceInfo: TwitterSpacesInfo = {
   data: mockSpaceInfo.data,
   errors: [{
+    resource_id: '1234',
     detail: 'Could not find user with creator_id: [1234].',
     title: 'Not Found Error',
     type: 'https://api.twitter.com/2/problems/resource-not-found'
@@ -61,6 +62,7 @@ export const mockImcompleteSpaceInfo: TwitterSpacesInfo = {
 export const mockSpaceInfoWithTwitterApiError: TwitterSpacesInfo = {
   ...mockSpaceInfo,
   errors: [{
+    resource_id: '1234',
     detail: 'Could not find user with creator_id: [1234].',
     title: 'Not Found Error',
     type: 'https://api.twitter.com/2/problems/resource-not-found'
@@ -95,7 +97,7 @@ export const mockBaseTweetInfo: ValidatedTweetInfo = {
     id: '1234',
     author_id: '123456',
     created_at: '2024-01-01T10:00:00Z',
-    text: 'testCommunity text text long long long long long long long long long long long long long long long long enough',
+    text: 'https://decentramind.club/i/abcdefg testCommunity text text long long long long long long long long long long long long long long long long enough',
     public_metrics: {
       retweet_count: 10,
       reply_count: 10,
@@ -119,6 +121,7 @@ export const mockBaseTweetInfo: ValidatedTweetInfo = {
 export const mockImcompleteTweetInfo: TwitterTweetInfo = {
   data: { ...mockBaseTweetInfo.data },
   errors: [{
+    resource_id: '1234',
     detail: 'Could not find user with creator_id: [1234].',
     title: 'Not Found Error',
     type: 'https://api.twitter.com/2/problems/resource-not-found'
@@ -128,6 +131,7 @@ export const mockImcompleteTweetInfo: TwitterTweetInfo = {
 export const mockBaseTweetInfoWithTwitterApiError: TwitterTweetInfo = {
   ...mockBaseTweetInfo,
   errors: [{
+    resource_id: '1234',
     detail: 'Could not find user with creator_id: [1234].',
     title: 'Not Found Error',
     type: 'https://api.twitter.com/2/problems/resource-not-found'
@@ -150,13 +154,21 @@ export const mockBaseTweetInfoWithShortText: ValidatedTweetInfo = {
   }]
 }
 
-export const mockBaseTweetInfoWithoutCommunityName: ValidatedTweetInfo = {
+export const mockBaseTweetInfoWithoutInviteLink: ValidatedTweetInfo = {
   ...mockBaseTweetInfo,
   data: [{
     ...mockBaseTweetInfo.data[0],
-    text: mockBaseTweetInfo.data[0].text.replace('testCommunity', 'otherCommunity')
+    text: mockBaseTweetInfo.data[0].text.replace('decentramind.club/i/', '')
   }]
 }
+
+// export const mockBaseTweetInfoWithoutCommunityName: ValidatedTweetInfo = {
+//   ...mockBaseTweetInfo,
+//   data: [{
+//     ...mockBaseTweetInfo.data[0],
+//     text: mockBaseTweetInfo.data[0].text.replace('testCommunity', 'otherCommunity')
+//   }]
+// }
 
 export const mockPromotionTask: TaskWithLink = {
   ...baseTask,
@@ -201,7 +213,7 @@ export const mockArticleTweetInfo: ValidatedTweetInfo = {
   data: [{
     ...mockBaseTweetInfo.data![0],
     note_tweet: {
-      text: '[摘要]：本文提出了一种完全通过点对点技术实现的电子现金系统，它使得在线支付能够直接由一方发起并支付给另外一方，中间不需要通过任何的金融机构。\n\n1⃣简介\n\n互联网上的贸易，几乎都需要借助金融机构作为可资信赖的第三方来处理电子支付信息。虽然这类系统在绝大多数情况下都运作良好，但是这类系统仍然内生性地受制于“基于信用的模式”的弱点。this is a testCommunity article.'
+      text: 'https://decentramind.club/i/abcdefg [摘要]：本文提出了一种完全通过点对点技术实现的电子现金系统，它使得在线支付能够直接由一方发起并支付给另外一方，中间不需要通过任何的金融机构。\n\n1⃣简介\n\n互联网上的贸易，几乎都需要借助金融机构作为可资信赖的第三方来处理电子支付信息。虽然这类系统在绝大多数情况下都运作良好，但是这类系统仍然内生性地受制于“基于信用的模式”的弱点。this is a testCommunity article.'
     }
   }]
 }
@@ -233,6 +245,14 @@ export const mockArticleTweetInfoWithShortText: ValidatedTweetInfo = {
   }]
 }
 
+export const mockArticleTweetInfoWithoutInviteLink: ValidatedTweetInfo = {
+  ...mockArticleTweetInfo,
+  data: [{
+    ...mockArticleTweetInfo.data[0],
+    note_tweet: { text: mockArticleTweetInfo.data[0].note_tweet!.text.replace('https://decentramind.club/i/', '') }
+  }]
+}
+
 export const mockArticleTweetInfoWithoutCommunityName: ValidatedTweetInfo = {
   ...mockArticleTweetInfo,
   data: [{
@@ -257,6 +277,7 @@ export const mockSingleSpacesSuccessResponse1: TwitterSpacesInfo = {
       state: 'ended'
     }
   ],
+  errors: [],
   includes: {
     users: [
       {
@@ -298,6 +319,7 @@ export const mockSingleSpacesSuccessResponse2: TwitterSpacesInfo = {
       started_at: '2024-03-27T12:50:54.000Z'
     }
   ],
+  errors: [],
   includes: {
     users: [
       {
@@ -316,6 +338,7 @@ export const mockMultipleSpacesSuccessResponse: TwitterSpacesInfo = {
     ...mockSingleSpacesSuccessResponse1.data!,
     ...mockSingleSpacesSuccessResponse2.data!
   ],
+  errors: [],
   includes: {
     users: [
       ...mockSingleSpacesSuccessResponse1.includes!.users!,
@@ -339,6 +362,7 @@ export const mockTweetsResponse1: TwitterTweetInfo = {
       impression_count: 0
     }
   }],
+  errors: [],
   includes: {
     users: [{
       id: '32423987987',
@@ -367,6 +391,7 @@ export const mockTweetsResponse2: TwitterTweetInfo = {
       text: '🎊We launched its video tutorial series!'
     }
   ],
+  errors: [],
   includes: {
     users: [
       {
@@ -382,6 +407,7 @@ export const mockTweetsResponse2: TwitterTweetInfo = {
 
 export const mockMultipleTweetsResponse: TwitterTweetInfo = {
   data: [...mockTweetsResponse1.data!, ...mockTweetsResponse2.data!],
+  errors: [],
   includes: {
     users: [...mockTweetsResponse1.includes!.users!, ...mockTweetsResponse2.includes!.users!]
   }

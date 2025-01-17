@@ -63,6 +63,10 @@ describe('twitter.server', () => {
       expect(result).toEqual(mockMultipleSpacesSuccessResponse)
     })
 
+    it('should throw error if no space ids provided', async () => {
+      await expect(getSpaces('')).rejects.toThrow('No space ids provided.')
+    })
+
     it('should handle API errors', async () => {
       // TODO: Implement this test
     })
