@@ -206,7 +206,7 @@ const toggleSelectAll = () => {
     </UTable>
 
     <div class="flex justify-between items-center mt-2">
-      <div class="text-sm text-gray-500">Last Update: {{ formatDate(lastUpdateTime) }}</div>
+      <div v-if="lastUpdateTime" class="text-sm text-gray-500">Last Update: {{ formatDate(lastUpdateTime) }}</div>
       <UPagination
         v-model="page"
         :page-count="pageSize"
