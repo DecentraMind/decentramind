@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import validateTaskData from './validateTaskData'
 import { minSpaceLiveLength, minBirdTweetTextLength, minArticleTextLength } from '@/utils/constants'
-import { mockBaseTweetInfo, mockBaseTweetTask, mockSpaceInfo, mockSpaceTask, mockSpaceInfoNotEnded, mockSpaceInfoLastsLessThanMinSpaceLiveLength, mockBaseTweetInfoCreatedBeforeTaskStartTime, mockBaseTweetInfoWithShortText, mockArticleTask, mockArticleTweetInfo, mockArticleTypeTweetInfo, mockArticleTweetInfoCreatedBeforeTaskStartTime, mockPromotionTask, mockPromotionTweetInfo, mockPromotionWrongReferencedTweetInfo, mockPromotionTweetInfoCreatedBeforeTaskStartTime, mockArticleTweetInfoWithShortText, mockArticleTweetInfoWithoutCommunityName, mockBaseTweetInfoWithoutCommunityName } from '~/tests/data'
+import { mockBaseTweetInfo, mockBaseTweetTask, mockSpaceInfo, mockSpaceTask, mockSpaceInfoNotEnded, mockSpaceInfoLastsLessThanMinSpaceLiveLength, mockBaseTweetInfoCreatedBeforeTaskStartTime, mockBaseTweetInfoWithShortText, mockArticleTask, mockArticleTweetInfo, mockArticleTypeTweetInfo, mockArticleTweetInfoCreatedBeforeTaskStartTime, mockPromotionTask, mockPromotionTweetInfo, mockPromotionWrongReferencedTweetInfo, mockPromotionTweetInfoCreatedBeforeTaskStartTime, mockArticleTweetInfoWithShortText, mockBaseTweetInfoWithoutInviteLink, mockArticleTweetInfoWithoutInviteLink } from '~/tests/data'
 
 describe('useTaskValidation', () => {
 
@@ -161,15 +161,25 @@ describe('useTaskValidation', () => {
         })).toThrowError('article is not supported for bird quest.')
       })
 
-      it('should reject if the tweet text does not include community name', async () => {
+      it('should reject if the tweet text does not include invite link', async () => {
         expect(() => validateTaskData({
           task: mockBaseTweetTask,
-          data: mockBaseTweetInfoWithoutCommunityName,
+          data: mockBaseTweetInfoWithoutInviteLink,
           mode: 'add',
           twitterVouchedIDs: ['testuser'],
           communityName: 'testCommunity'
-        })).toThrowError('tweet text does not include community name testCommunity')
+        })).toThrowError('Invalid tweet URL: tweet text does not include invite link.')
       })
+
+      // it('should reject if the tweet text does not include community name', async () => {
+      //   expect(() => validateTaskData({
+      //     task: mockBaseTweetTask,
+      //     data: mockBaseTweetInfoWithoutCommunityName,
+      //     mode: 'add',
+      //     twitterVouchedIDs: ['testuser'],
+      //     communityName: 'testCommunity'
+      //   })).toThrowError('tweet text does not include community name testCommunity')
+      // })
     })
 
     describe('validateTweetPromotionUrl', () => {
@@ -247,15 +257,25 @@ describe('useTaskValidation', () => {
         })).toThrowError(`article text length is less than ${minArticleTextLength}`)
       })
 
-      it('should reject if the article text does not include community name', async () => {
+      it('should reject if the tweet text does not include invite link', async () => {
         expect(() => validateTaskData({
           task: mockArticleTask,
-          data: mockArticleTweetInfoWithoutCommunityName,
+          data: mockArticleTweetInfoWithoutInviteLink,
           mode: 'add',
           twitterVouchedIDs: ['testuser'],
           communityName: 'testCommunity'
-        })).toThrowError('article text does not include community name testCommunity')
+        })).toThrowError('Invalid tweet URL: article text does not include invite link.')
       })
+
+      // it('should reject if the article text does not include community name', async () => {
+      //   expect(() => validateTaskData({
+      //     task: mockArticleTask,
+      //     data: mockArticleTweetInfoWithoutCommunityName,
+      //     mode: 'add',
+      //     twitterVouchedIDs: ['testuser'],
+      //     communityName: 'testCommunity'
+      //   })).toThrowError('article text does not include community name testCommunity')
+      // })
     })
   })
 })

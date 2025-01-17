@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRefs } from 'vue'
+import { toRefs, computed } from 'vue'
 import type { Community } from '~/types/index'
 import { getDomain, getHandle, getTextRenderWidth, cn } from '~/utils'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
@@ -8,7 +8,13 @@ import BaseField from '~/components/fields/BaseField.vue'
 const props = defineProps<{
   community?: Community
   address: string
+  isExpanded: boolean
 }>()
+
+const emit = defineEmits<{
+  'update:isExpanded': [value: boolean]
+}>()
+
 const { community, address } = $(toRefs(props))
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
@@ -53,7 +59,7 @@ const copyText = async () => {
     if (!textToCopy) return
     await navigator.clipboard.writeText(textToCopy.innerText)
     showSuccess('Copied!')
-  } catch (err) {
+  } catch (_) {
     showError('Copy failed.')
   }
 }
@@ -87,13 +93,27 @@ const inviteUrl = $computed(() => {
   return typeof window !== 'undefined' ? `${window.location.origin}/i/${inviteCode}` : ''
 })
 
+// Create a computed property to handle the two-way binding
+const expanded = computed({
+  get: () => props.isExpanded,
+  set: (value) => emit('update:isExpanded', value)
+})
+
 </script>
 <template>
-  <UDashboardPanel :width="384" class="w-96" collapsible>
+  <UDashboardPanel
+    id="community-sidebar"
+    v-model="expanded"
+    :width="384"
+    class="w-96 lg:w-96 ppp"
+    collapsible
+    :ui="{ slideover: 'w-96 max-w-96' }"
+  >
     <UDashboardSidebar
       v-if="community"
       class="pb-2"
       :ui="{
+        wrapper: 'w-96 max-w-96',
         container: 'py-0 gap-y-0 h-screen',
         header: 'px-0',
         body: 'pb-2',
@@ -101,7 +121,26 @@ const inviteUrl = $computed(() => {
       }"
     >
       <template #header>
-        <img :src="getCommunityBannerUrl(community.banner)" :alt="community.name" class="object-cover w-full h-52">
+        <div class="relative">
+          <img :src="getCommunityBannerUrl(community.banner)" :alt="community.name" class="object-cover w-full h-52">
+        </div>
+
+        <!-- collapse button -->
+        <div class="fixed w-96 h-5 z-[10000000]">
+          <Transition
+            enter-active-class="transition-opacity duration-700 ease-in"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+          >
+            <UButton
+              v-if="expanded"
+              variant="soft"
+              icon="i-heroicons-chevron-double-left"
+              class="absolute top-2 right-2 z-[10000000]"
+              @click="emit('update:isExpanded', false)"
+            />
+          </Transition>
+        </div>
       </template>
 
       <div class="pb-4">
