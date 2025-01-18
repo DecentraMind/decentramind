@@ -120,7 +120,7 @@ async function validateTweetTasks(tweetTasks: Task[]) {
 
   console.log('taskPid2TweetIdsMap', taskPid2TweetIdsMap)
   const taskPid2TweetInfo = await getByPid2IdsMap(taskPid2TweetIdsMap, getTweets)
-  console.log('taskPid2TweetInfo', taskPid2TweetInfo)
+  // console.log('taskPid2TweetInfo', JSON.stringify(taskPid2TweetInfo))
 
   for (const task of tweetTasks) {
     console.log('periodic validation task', task.processID, `${task.submissions.length} submissions.`)

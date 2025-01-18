@@ -143,7 +143,7 @@ export async function getTweets(ids: string | string[]) {
   console.log('tweet ids chunks: ', chunks.length)
 
   const resultChunks = await Promise.all(chunks.map(chunk => {
-    const url = 'https://api.twitter.com/2/tweets?ids=' + chunk.join(',') + '&tweet.fields=referenced_tweets,created_at,public_metrics,note_tweet&expansions=author_id&user.fields=created_at,profile_image_url'
+    const url = 'https://api.twitter.com/2/tweets?ids=' + chunk.join(',') + '&tweet.fields=entities,referenced_tweets,created_at,public_metrics,note_tweet&expansions=author_id&user.fields=created_at,profile_image_url'
     
     console.log('fetch tweets from twitter api: ' + url)
     return $fetch<TwitterTweetInfo>(url, {

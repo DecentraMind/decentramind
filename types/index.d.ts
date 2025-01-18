@@ -398,6 +398,20 @@ export type TwitterTweetInfo = {
     author_id: string
     created_at: string
     id: string
+    entities?: {
+      urls?: {
+        start: number
+        end: number
+        // the transformed t.co url like "https://t.co/bre7olKIvN"
+        url: string
+        // real full url like "https://decentramind.club/i/ix6pkPV6"
+        expanded_url: string
+        // display url like "decentramind.club/i/ix6pkPV6"
+        display_url: string
+        // unwound url like "https://decentramind.club/i/ix6pkPV6"
+        unwound_url: string
+      }[]
+    }
     /** infomation for Tweets longer than 280 characters */
     note_tweet?: {
       text: string

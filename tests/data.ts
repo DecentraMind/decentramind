@@ -162,6 +162,23 @@ export const mockBaseTweetInfoWithoutInviteLink: ValidatedTweetInfo = {
   }]
 }
 
+export const mockBaseTweetInfoWithInviteLinkInEntities: ValidatedTweetInfo = {
+  ...mockBaseTweetInfo,
+  data: [{
+    ...mockBaseTweetInfo.data[0],
+    entities: {
+      urls: [{
+        unwound_url: 'https://decentramind.club/i/ix6pkPV6',
+        start: 0,
+        end: 10,
+        url: 'https://t.co/bre7olKIvN',
+        expanded_url: 'https://decentramind.club/i/ix6pkPV6',
+        display_url: 'decentramind.club/i/ix6pkPV6'
+      }]
+    }
+  }]
+}
+
 // export const mockBaseTweetInfoWithoutCommunityName: ValidatedTweetInfo = {
 //   ...mockBaseTweetInfo,
 //   data: [{
@@ -250,6 +267,23 @@ export const mockArticleTweetInfoWithoutInviteLink: ValidatedTweetInfo = {
   data: [{
     ...mockArticleTweetInfo.data[0],
     note_tweet: { text: mockArticleTweetInfo.data[0].note_tweet!.text.replace('https://decentramind.club/i/', '') }
+  }]
+}
+
+export const mockArticleTweetInfoWithInviteLinkInEntities: ValidatedTweetInfo = {
+  ...mockArticleTweetInfo,
+  data: [{
+    ...mockArticleTweetInfo.data[0],
+    entities: {
+      urls: [{
+        unwound_url: 'https://decentramind.club/i/ix6pkPV6',
+        start: 0,
+        end: 10,
+        url: 'https://t.co/bre7olKIvN',
+        expanded_url: 'https://decentramind.club/i/ix6pkPV6',
+        display_url: 'decentramind.club/i/ix6pkPV6'
+      }]
+    }
   }]
 }
 
