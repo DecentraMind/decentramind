@@ -584,10 +584,16 @@ const onClickShareToTwitter = () => {
 
             <div v-if="!isLoading && isJoined" class="flex justify-center my-8">
               <div
-                v-if="isIng && (canSubmit || runtimeConfig.public.debug)"
+                v-if="isIng"
                 class="mx-4"
               >
                 <UButton
+                  v-if="canSubmit"
+                  :label="$t('Submit Quest')"
+                  @click="openSubmitModal"
+                />
+                <UButton
+                  v-if="!canSubmit && runtimeConfig.public.debug"
                   :label="$t('Submit Quest')"
                   @click="openSubmitModal"
                 />
