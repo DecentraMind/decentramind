@@ -2,8 +2,8 @@ import { connect, createDataItemSigner } from '@permaweb/aoconnect'
 import { get } from 'lodash-es'
 
 const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect({
-  MU_URL: 'https://mu.ar-io.dev',
-  CU_URL: 'https://cu.ar-io.dev',
+  MU_URL: 'https://mu.ao-testnet.xyz',
+  CU_URL: 'https://cu.ao-testnet.xyz',
   // If GATEWAY_URL is set but GRAPHQL_URL is not set, then the GATEWAY_URL provided MUST have a /graphql endpoint that serves the Arweave Gateway GraphQL Server. ie. https://arweave.net/graphql
   GATEWAY_URL: 'https://g8way.io',
 })
