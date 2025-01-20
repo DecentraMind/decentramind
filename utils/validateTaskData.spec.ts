@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import validateTaskData from './validateTaskData'
 import { minSpaceLiveLength, minBirdTweetTextLength, minArticleTextLength } from '@/utils/constants'
-import { mockBaseTweetInfo, mockBaseTweetTask, mockSpaceInfo, mockSpaceTask, mockSpaceInfoNotEnded, mockSpaceInfoLastsLessThanMinSpaceLiveLength, mockBaseTweetInfoCreatedBeforeTaskStartTime, mockBaseTweetInfoWithShortText, mockArticleTask, mockArticleTweetInfo, mockArticleTypeTweetInfo, mockArticleTweetInfoCreatedBeforeTaskStartTime, mockPromotionTask, mockPromotionTweetInfo, mockPromotionWrongReferencedTweetInfo, mockPromotionTweetInfoCreatedBeforeTaskStartTime, mockArticleTweetInfoWithShortText, mockBaseTweetInfoWithoutInviteLink, mockArticleTweetInfoWithoutInviteLink, mockArticleTweetInfoWithInviteLinkInEntities, mockBaseTweetInfoWithInviteLinkInEntities } from '~/tests/data'
+import { mockBaseTweetInfo, mockBaseTweetTask, mockSpaceInfo, mockSpaceTask, mockSpaceInfoNotEnded, mockSpaceInfoLastsLessThanMinSpaceLiveLength, mockBaseTweetInfoCreatedBeforeTaskStartTime, mockBaseTweetInfoWithShortText, mockArticleTask, mockArticleTweetInfo, mockArticleTypeTweetInfo, mockArticleTweetInfoCreatedBeforeTaskStartTime, mockPromotionTask, mockPromotionTweetInfo, mockPromotionWrongReferencedTweetInfo, mockPromotionTweetInfoCreatedBeforeTaskStartTime, mockArticleTweetInfoWithShortText, mockBaseTweetInfoNoInviteLinkNoCommunityName, mockArticleTweetInfoNoInviteLinkNoCommunityName, mockArticleTweetInfoWithInviteLinkInEntities, mockBaseTweetInfoWithInviteLinkInEntities, mockArticleNoteTweetInfoWithInviteLinkInEntities, mockBaseNoteTweetInfoWithInviteLinkInEntities } from '~/tests/data'
 
 describe('useTaskValidation', () => {
 
@@ -141,14 +141,14 @@ describe('useTaskValidation', () => {
     })
 
     describe('validateBirdTweetUrl', () => {
-      it(`should reject if the tweet text length is less than ${minBirdTweetTextLength}`, async () => {
+      it(`should reject if the tweet text is less than ${minBirdTweetTextLength} words`, async () => {
         expect(() => validateTaskData({
           task: mockBaseTweetTask,
           data: mockBaseTweetInfoWithShortText,
           mode: 'add',
           twitterVouchedIDs: ['testuser'],
           communityName: 'testCommunity'
-        })).toThrowError(`tweet text length is less than ${minBirdTweetTextLength}`)
+        })).toThrowError(`tweet text is less than ${minBirdTweetTextLength} words`)
       })
 
       it('should reject if the tweet is an article', async () => {
@@ -171,14 +171,24 @@ describe('useTaskValidation', () => {
         })).toEqual(mockBaseTweetInfoWithInviteLinkInEntities)
       })
 
-      it('should reject if the tweet text and entities does not include invite link', async () => {
-        expect(() => validateTaskData({
+      it('should pass if the note_tweet.entities includes invite link', async () => {
+        expect(validateTaskData({
           task: mockBaseTweetTask,
-          data: mockBaseTweetInfoWithoutInviteLink,
+          data: mockBaseNoteTweetInfoWithInviteLinkInEntities,
           mode: 'add',
           twitterVouchedIDs: ['testuser'],
           communityName: 'testCommunity'
-        })).toThrowError('Invalid tweet URL: tweet does not include invite link.')
+        })).toEqual(mockBaseNoteTweetInfoWithInviteLinkInEntities)
+      })
+
+      it('should reject if the tweet text and entities does not include invite link or community name', async () => {
+        expect(() => validateTaskData({
+          task: mockBaseTweetTask,
+          data: mockBaseTweetInfoNoInviteLinkNoCommunityName,
+          mode: 'add',
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
+        })).toThrowError('Invalid tweet URL: tweet does not include invite link or community name.')
       })
 
       // it('should reject if the tweet text does not include community name', async () => {
@@ -257,14 +267,14 @@ describe('useTaskValidation', () => {
         })).toThrowError('created before task start time')
       })
 
-      it(`should reject if the article text length is less than ${minArticleTextLength}`, async () => {
+      it(`should reject if the article text is less than ${minArticleTextLength} words`, async () => {
         expect(() => validateTaskData({
           task: mockArticleTask,
           data: mockArticleTweetInfoWithShortText,
           mode: 'add',
           twitterVouchedIDs: ['testuser'],
           communityName: 'testCommunity'
-        })).toThrowError(`article text length is less than ${minArticleTextLength}`)
+        })).toThrowError(`text length is less than ${minArticleTextLength} words`)
       })
 
       it('should pass if the tweet text not include invite link but entities includes invite link', async () => {
@@ -277,14 +287,24 @@ describe('useTaskValidation', () => {
         })).toEqual(mockArticleTweetInfoWithInviteLinkInEntities)
       })
 
-      it('should reject if the tweet text and entities does not include invite link', async () => {
-        expect(() => validateTaskData({
+      it('should pass if the note_tweet.entities includes invite link', async () => {
+        expect(validateTaskData({
           task: mockArticleTask,
-          data: mockArticleTweetInfoWithoutInviteLink,
+          data: mockArticleNoteTweetInfoWithInviteLinkInEntities,
           mode: 'add',
           twitterVouchedIDs: ['testuser'],
           communityName: 'testCommunity'
-        })).toThrowError('Invalid tweet URL: article does not include invite link.')
+        })).toEqual(mockArticleNoteTweetInfoWithInviteLinkInEntities)
+      })
+
+      it('should reject if the tweet text and entities does not include invite link or community name', async () => {
+        expect(() => validateTaskData({
+          task: mockArticleTask,
+          data: mockArticleTweetInfoNoInviteLinkNoCommunityName,
+          mode: 'add',
+          twitterVouchedIDs: ['testuser'],
+          communityName: 'testCommunity'
+        })).toThrowError('Invalid tweet URL: article does not include invite link or community name.')
       })
 
       // it('should reject if the article text does not include community name', async () => {

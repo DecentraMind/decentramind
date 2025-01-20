@@ -154,11 +154,11 @@ export const mockBaseTweetInfoWithShortText: ValidatedTweetInfo = {
   }]
 }
 
-export const mockBaseTweetInfoWithoutInviteLink: ValidatedTweetInfo = {
+export const mockBaseTweetInfoNoInviteLinkNoCommunityName: ValidatedTweetInfo = {
   ...mockBaseTweetInfo,
   data: [{
     ...mockBaseTweetInfo.data[0],
-    text: mockBaseTweetInfo.data[0].text.replace('decentramind.club/i/', '')
+    text: mockBaseTweetInfo.data[0].text.replace('decentramind.club/i/', '').replace('testCommunity', '')
   }]
 }
 
@@ -175,6 +175,25 @@ export const mockBaseTweetInfoWithInviteLinkInEntities: ValidatedTweetInfo = {
         expanded_url: 'https://decentramind.club/i/ix6pkPV6',
         display_url: 'decentramind.club/i/ix6pkPV6'
       }]
+    }
+  }]
+}
+
+export const mockBaseNoteTweetInfoWithInviteLinkInEntities: ValidatedTweetInfo = {
+  ...mockBaseTweetInfo,
+  data: [{
+    ...mockBaseTweetInfo.data[0],
+    note_tweet: {
+      text: '[摘要]：本文提出了一种完全通过点对点技术实现的电子现金系统，它使得在线支付能够直接由一方发起并支付给另外一方，中间不需要通过任何的金融机构。\n\n1⃣简介\n\n互联网上的贸易，几乎都需要借助金融机构作为可资信赖的第三方来处理电子支付信息。虽然这类系统在绝大多数情况下都运作良好，但是这类系统仍然内生性地受制于“基于信用的模式”的弱点。',
+      entities: {
+        urls: [{
+          start: 0,
+          end: 10,
+          url: 'https://t.co/bre7olKIvN',
+          expanded_url: 'https://decentramind.club/i/ix6pkPV6',
+          display_url: 'decentramind.club/i/ix6pkPV6'
+        }]
+      }
     }
   }]
 }
@@ -262,11 +281,11 @@ export const mockArticleTweetInfoWithShortText: ValidatedTweetInfo = {
   }]
 }
 
-export const mockArticleTweetInfoWithoutInviteLink: ValidatedTweetInfo = {
+export const mockArticleTweetInfoNoInviteLinkNoCommunityName: ValidatedTweetInfo = {
   ...mockArticleTweetInfo,
   data: [{
     ...mockArticleTweetInfo.data[0],
-    note_tweet: { text: mockArticleTweetInfo.data[0].note_tweet!.text.replace('https://decentramind.club/i/', '') }
+    note_tweet: { text: mockArticleTweetInfo.data[0].note_tweet!.text.replace('https://decentramind.club/i/', '').replace('testCommunity', '') }
   }]
 }
 
@@ -283,6 +302,26 @@ export const mockArticleTweetInfoWithInviteLinkInEntities: ValidatedTweetInfo = 
         expanded_url: 'https://decentramind.club/i/ix6pkPV6',
         display_url: 'decentramind.club/i/ix6pkPV6'
       }]
+    }
+  }]
+}
+
+export const mockArticleNoteTweetInfoWithInviteLinkInEntities: ValidatedTweetInfo = {
+  ...mockArticleTweetInfo,
+  data: [{
+    ...mockArticleTweetInfo.data[0],
+    note_tweet: {
+      text: mockArticleTweetInfo.data[0].note_tweet!.text,
+      entities: {
+        urls: [{
+          unwound_url: 'https://decentramind.club/i/ix6pkPV6',
+          start: 0,
+          end: 10,
+          url: 'https://t.co/bre7olKIvN',
+          expanded_url: 'https://decentramind.club/i/ix6pkPV6',
+          display_url: 'decentramind.club/i/ix6pkPV6'
+        }]
+      }
     }
   }]
 }
