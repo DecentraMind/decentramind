@@ -93,23 +93,41 @@ const validateTweetBirdData = ({ task, data, mode, twitterVouchedIDs, communityN
   }
 
   if (wordCount(tweetInfo.data[0].text) < minBirdTweetTextLength) {
-    throw new Error(`Invalid tweet URL: tweet text length is less than ${minBirdTweetTextLength}.`)
+    throw new Error(`Invalid tweet URL: tweet text is less than ${minBirdTweetTextLength} words.`)
   }
 
-  if (!includesInviteLink(tweetInfo.data[0].text, tweetInfo.data[0].entities)) {
-    throw new Error('Invalid tweet URL: tweet does not include invite link.')
+  let text = tweetInfo.data[0].text
+  let entities = tweetInfo.data[0].entities
+  if (tweetInfo.data[0].note_tweet?.text) {
+    text = tweetInfo.data[0].note_tweet.text
+    entities = tweetInfo.data[0].note_tweet.entities
   }
 
-  // if (!tweetInfo.data[0].text.toLowerCase().includes(communityName.toLowerCase())) {
-  //   throw new Error(`Invalid tweet URL: tweet text does not include community name ${communityName}.`)
-  // }
+  if (wordCount(text) < minBirdTweetTextLength) {
+    throw new Error(`Invalid tweet URL: tweet text is less than ${minBirdTweetTextLength} words.`)
+  }
+
+  if (!includesInviteLink(text, entities?.urls)
+    && !includesCommunityName(text, communityName)
+  ) {
+    console.error(`Invalid tweet URL: tweet ${tweetInfo.data[0].id} does not include invite link or community name.`, {
+      text,
+      urls: JSON.stringify(entities?.urls),
+      communityName
+    })
+    throw new Error('Invalid tweet URL: tweet does not include invite link or community name.')
+  }
 
   return tweetInfo
 }
 
-function includesInviteLink(text: string, entities?: NonNullable<TwitterTweetInfo['data']>[number]['entities']) {
+function includesInviteLink(text: string, urls?: NonNullable<NonNullable<TwitterTweetInfo['data']>[number]['entities']>['urls']) {
   return text.toLowerCase().includes('decentramind.club/i/')
-    || entities?.urls?.find(url => url.unwound_url.includes('decentramind.club/i/'))
+    || urls?.find(url => url.expanded_url?.includes('decentramind.club/i/'))
+}
+
+function includesCommunityName(text: string, communityName: string) {
+  return text.toLowerCase().includes(communityName.toLowerCase())
 }
 
 const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs, communityName }: TaskValidationParams<ValidatedTweetInfo>) => {
@@ -124,16 +142,16 @@ const validateTweetArticleData = ({ task, data, mode, twitterVouchedIDs, communi
   }
 
   if (wordCount(tweetInfo.data[0].note_tweet?.text ?? '') < minArticleTextLength) {
-    throw new Error(`Invalid tweet URL: article text length is less than ${minArticleTextLength}.`)
+    throw new Error(`Invalid tweet URL: text length is less than ${minArticleTextLength} words.`)
   }
 
-  if (!includesInviteLink(tweetInfo.data[0].note_tweet?.text ?? '', tweetInfo.data[0].entities)) {
-    throw new Error('Invalid tweet URL: article does not include invite link.')
+  const text = tweetInfo.data[0].note_tweet?.text ?? tweetInfo.data[0].text
+  const entities = tweetInfo.data[0].note_tweet?.entities ?? tweetInfo.data[0].entities
+  if (!includesInviteLink(text, entities?.urls)
+    && !includesCommunityName(text, communityName)
+  ) {
+    throw new Error('Invalid tweet URL: article does not include invite link or community name.')
   }
-
-  // if (!tweetInfo.data[0].note_tweet?.text?.toLowerCase().includes(communityName.toLowerCase())) {
-  //   throw new Error(`Invalid tweet URL: article text does not include community name ${communityName}.`)
-  // }
 
   return tweetInfo
 }
