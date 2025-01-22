@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { VOUCH_SITE_URL } from '~/utils/constants'
-
+import { shortString } from '~/utils/string'
 const { connectExtensionWallet, connectOthentWallet, registerOrLogin, updateVouchData, twitterVouched, twitterVouchedIDs } = $(aoStore())
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 let { isLoginModalOpen, address } = $(aoStore())
@@ -14,6 +14,16 @@ let loginWallet = $ref<LoginWallet | null>(null)
 
 type LoginStep = 'connecting' | 'vouching' | 'logging'
 let loginStep = $ref<LoginStep>('connecting')
+
+let activeAddress = $ref('')
+const updateActiveAddress = async () => {
+  try {
+    activeAddress = await window.arweaveWallet.getActiveAddress()
+  } catch (error) {
+    console.error('Failed to get active address:', error)
+    activeAddress = ''
+  }
+}
 
 let isLoggingIn = $ref(false)
 let isLoginSuccess = $ref(false)
@@ -63,6 +73,7 @@ const onClickConnect = async (wallet: LoginWallet) => {
       throw new Error('Invalid login wallet')
     }
     if (await connectFunction()) {
+      await updateActiveAddress()
       loginStep = 'vouching'
       await checkVouch(false)
     }
@@ -73,6 +84,11 @@ const onClickConnect = async (wallet: LoginWallet) => {
     loginWallet = null
   }
 }
+onMounted(() => {
+  if (window.arweaveWallet) {
+    updateActiveAddress()
+  }
+})
 
 let isCheckingVouch = $ref(false)
 let isCheckVouchSuccess = $ref(false)
@@ -165,6 +181,7 @@ const onClose = () => {
       </template>
 
       <template v-if="!isCheckingVouch">
+        <p class="text-center w-full text-sm text-gray-500 dark:text-gray-400 mb-4">Your address {{ shortString(activeAddress) }} is not vouched.</p>
         <div v-if="isCheckVouchSuccess" class="w-full flex-center gap-x-4">
           <UButton
             color="gray"
