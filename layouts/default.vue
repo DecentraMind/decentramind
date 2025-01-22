@@ -95,12 +95,12 @@ const afterLogin = async () => {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel :width="80" class="w-20">
+    <UDashboardPanel class="w-12 sm:w-20 lg:w-20">
       <UDashboardSidebar
         :ui="{
           wrapper: 'bg-gray-100',
           body: 'px-0 py-0 gap-y-0',
-          header: 'flex-center',
+          header: 'flex-center px-0',
           footer: 'px-0 gap-x-0 justify-center'
         }"
       >
@@ -125,7 +125,7 @@ const afterLogin = async () => {
             <UButton
               to="/discovery"
               variant="ghost"
-              class="w-16 h-16 p-0 hover:bg-transparent border-0 rounded-full text-white transition duration-300 ease-in-out transform"
+              class="w-full px-1 py-0 hover:bg-transparent border-0 rounded-full text-white transition duration-300 ease-in-out transform bbbbb"
             >
               <img :src="arUrl(exploreLogo)" class="h-full w-full scale-110">
             </UButton>
@@ -139,7 +139,7 @@ const afterLogin = async () => {
 
         <UDivider />
 
-        <div class="overflow-y-auto h-full px-2 pb-2" style="-ms-overflow-style: none; scrollbar-width: none;">
+        <div class="overflow-y-auto h-full px-1 sm:px-2 pb-2" style="-ms-overflow-style: none; scrollbar-width: none;">
           <div
             v-for="community in joinedCommunities"
             :key="community.uuid"
@@ -176,7 +176,7 @@ const afterLogin = async () => {
                   )"
                 />
 
-                <CuteRadius :width="64" :height="64">
+                <CuteRadius>
                   <img
                     :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
                     class="w-full h-full object-cover bg-white"
@@ -216,10 +216,10 @@ const afterLogin = async () => {
           <UPopover mode="hover" :to="userInfo && address ? '/settings' : '#'">
             <UButton variant="ghost" @click="userInfo && address ? router.push('/settings') : isLoginModalOpen = true">
               <template v-if="!userInfo || !address">
-                <ArAvatar :src="defaultUserAvatar" alt="User Settings" size="2xl" />
+                <ArAvatar :src="defaultUserAvatar" alt="User Settings" class="w-full h-full" avatar-class="w-10 h-10 sm:w-16 sm:h-16" :ui="{ size: {sm: 'w-10 h-10 sm:w-16 sm:h-16'} }" />
               </template>
               <template v-else>
-                <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" size="2xl" />
+                <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" class="w-full h-full" avatar-class="w-10 h-10 sm:w-16 sm:h-16" :ui="{ size: {sm: 'w-10 h-10 sm:w-16 sm:h-16'} }" />
               </template>
             </UButton>
           </UPopover>
