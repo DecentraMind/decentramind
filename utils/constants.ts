@@ -62,6 +62,13 @@ export const tokens: Record<string, Token> = {
     denomination: 18,
     logo: 'TSi43BNSWrFtEaa4uasu3Owmp4bQnGFXk9Wm_8bu0D4'
   },
+  NOKIT: {
+    ticker: 'NOKIT',
+    label: 'Nobility Kitty',
+    processID: 'ulnt9PbkX6m8NSp53osR5eCpHQkZq27JYO0OkzM7n0c',
+    denomination: 18,
+    logo: 'imj-OW6zv264ZEgjWodi5Dg7iR38N0wuSmxrlUZyUV4'
+  },
   LLAMA : {
     ticker: 'LLAMA',
     label: 'Llama Coin',
