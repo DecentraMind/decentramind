@@ -95,7 +95,7 @@ const afterLogin = async () => {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel class="w-12 sm:w-20 lg:w-20">
+    <UDashboardPanel class="w-12 sm:w-20" :ui="{border:'lg:w-20'}">
       <UDashboardSidebar
         :ui="{
           wrapper: 'bg-gray-100',
