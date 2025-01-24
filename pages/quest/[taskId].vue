@@ -442,7 +442,7 @@ const onClickShareToTwitter = () => {
 </script>
 
 <template>
-  <div class="h-screen overflow-y-auto">
+  <UDashboardPage class="h-screen overflow-y-auto">
     <div
       v-if="isLoading"
       class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
@@ -454,7 +454,7 @@ const onClickShareToTwitter = () => {
       />
     </div>
 
-    <UPage v-if="!isLoading" class="overflow-y-auto h-full w-[calc(100%-80px)] lg:w-full">
+    <UPage v-if="!isLoading" class="overflow-y-auto h-full lg:w-full">
       <div class="w-full overflow-y-auto h-full">
         <NuxtLink
           v-if="task && isJoinedCommunity"
@@ -729,5 +729,5 @@ const onClickShareToTwitter = () => {
         </div>
       </UCard>
     </UModal>
-  </div>
+  </UDashboardPage>
 </template>

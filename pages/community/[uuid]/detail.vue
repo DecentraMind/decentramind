@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="h-screen">
+  <UDashboardPage class="h-screen">
     <div v-if="isLoading" class="absolute top-0 left-0 w-full h-full flex-center">
       <UIcon
         name="svg-spinners:blocks-scale"
@@ -336,5 +336,5 @@ onBeforeUnmount(() => {
         </UPageBody>
       </UPage>
     </div>
-  </div>
+  </UDashboardPage>
 </template>
