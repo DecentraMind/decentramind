@@ -498,8 +498,8 @@ const onClickShareToTwitter = () => {
                   {{ task.timezone }}
                 </div>
               </div> -->
-              <div class="flex">
-                <div class="font-semibold w-44 shrink-0">
+              <div class="xs:flex xs:justify-start">
+                <div class="font-semibold w-44 shrink-0 mb-2">
                   <div>{{ $t('Time') }}</div>
                 </div>
                 <div>
@@ -507,16 +507,16 @@ const onClickShareToTwitter = () => {
                   {{ formatToLocale(task.endTime) }}
                 </div>
               </div>
-              <div class="flex justify-start">
-                <div class="font-semibold w-44 shrink-0">
+              <div class="xs:flex xs:justify-start">
+                <div class="font-semibold w-44 shrink-0 mb-2">
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div class="flex-center">
+                <div class="xs:flex-center">
                   <Bounties v-if="task.bounties" :bounties="task.bounties" :precisions="precisions" />
                 </div>
               </div>
-              <div class="flex justify-start">
-                <div class="font-semibold w-44 shrink-0">
+              <div class="xs:flex xs:justify-start">
+                <div class="font-semibold w-44 shrink-0 mb-2">
                   <div>{{ $t('Total Chances') }}</div>
                 </div>
                 <div>
@@ -524,8 +524,8 @@ const onClickShareToTwitter = () => {
                 </div>
               </div>
 
-              <div v-if="task.type === 'promotion'" class="flex justify-start">
-                <div class="font-semibold w-44 shrink-0">
+              <div v-if="task.type === 'promotion'" class="xs:flex xs:justify-start">
+                <div class="font-semibold w-44 shrink-0 mb-2">
                   <div>{{ $t('task.fields.Promotion Quest Link') }}</div>
                 </div>
                 <div>
@@ -533,8 +533,8 @@ const onClickShareToTwitter = () => {
                 </div>
               </div>
 
-              <div class="flex justify-start">
-                <div class="font-semibold w-44 shrink-0">
+              <div class="xs:flex xs:justify-start">
+                <div class="font-semibold w-44 shrink-0 mb-2">
                   <div>{{ $t('builders now') }}</div>
                 </div>
                 <div>
