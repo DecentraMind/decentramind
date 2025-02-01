@@ -1,4 +1,5 @@
 import type { SpaceSubmissionWithCalculatedBounties, Task, TweetSubmissionWithCalculatedBounties, TweetSubmission, AllSubmissionWithCalculatedBounties } from '~/types'
+import { cloneDeep } from 'lodash-es'
 
 export function useTaskScoreCalculate<T extends AllSubmissionWithCalculatedBounties[]>(task: Task, submissions: T) {
   switch (task.type) {
@@ -15,7 +16,7 @@ export function useTaskScoreCalculate<T extends AllSubmissionWithCalculatedBount
   }
 
   function calcSpaceScore(submissions: SpaceSubmissionWithCalculatedBounties[]) {
-    const clone = useCloneDeep(submissions)
+    const clone = cloneDeep(submissions)
     const maxInviteCount = Math.max(...clone.map(item => item.inviteCount))
     const maxAudience = Math.max(...clone.map(item => item.audience))
   
@@ -49,7 +50,7 @@ export function useTaskScoreCalculate<T extends AllSubmissionWithCalculatedBount
     submissions: TweetSubmissionWithCalculatedBounties[],
     portion: Record<keyof Pick<TweetSubmission, 'buzz' | 'discuss' | 'identify' | 'popularity' | 'spread' | 'friends'>, number>
   ) {
-    const clone = useCloneDeep(submissions)
+    const clone = cloneDeep(submissions)
     clone.forEach(item => {
       item.score = 0
     })

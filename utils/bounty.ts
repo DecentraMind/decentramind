@@ -2,7 +2,9 @@ import type {
   AllSubmissionWithCalculatedBounties,
   Task
 } from '~/types'
-import { DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
+import { DM_BOUNTY_CHARGE_PERCENT, tokensByProcessID } from '~/utils/constants'
+import { float2BigInt } from '~/utils/int'
+import { cloneDeep } from 'lodash-es'
 
 export function calcBounties(submission: AllSubmissionWithCalculatedBounties, selectedTotalScore: number, selectedSubmissionsLength: number, taskBounties: Task['bounties']) {
   const { score, address } = submission
@@ -11,10 +13,10 @@ export function calcBounties(submission: AllSubmissionWithCalculatedBounties, se
     throw new Error('Submission\'s score can not greater than selected total score.')
   }
 
-  return useCloneDeep(taskBounties).map((bounty) => {
-    if (!bounty.tokenName) return
+  return cloneDeep(taskBounties).map((bounty) => {
+    if (!bounty.tokenProcessID) return
 
-    const token = tokens[bounty.tokenName as TokenName]
+    const token = tokensByProcessID[bounty.tokenProcessID]
     if (!token) {
       throw new Error(`Bounty token ${bounty.tokenName} not supported.`)
     }
@@ -27,8 +29,6 @@ export function calcBounties(submission: AllSubmissionWithCalculatedBounties, se
     }
     // console.log(`${label} total bounty: ${taskBounty.amount} ${taskBounty.quantity}`)
 
-    // don't use bountyToSend.toFixed here, otherwise the total amount will be rounded incorrectly
-    // Instead, we multiply by 10000 to shift the decimal point, then floor to remove fractional part, and finally divide by 10000 to get the correct decimal value
     let amountToSend = 0
     if (selectedTotalScore > 0) {
       amountToSend = (score / selectedTotalScore * taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100))

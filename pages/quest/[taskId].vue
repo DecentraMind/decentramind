@@ -361,17 +361,6 @@ async function onClickSendBounty() {
   return
 }
 
-const precisions = $computed(() =>
-  task?.bounties.reduce((carry, bounty) => {
-    const fractionalLength = fractionalPart(bounty.amount).length
-    carry.set(
-      bounty.tokenProcessID,
-      bounty.amount < 1 ? fractionalLength + 2 : 2,
-    )
-    return carry
-  }, new Map<string, number>()),
-)
-
 // update calculatedBounties when selectedSubmissions changes
 watch(
   () => selectedSubmissions.length,
@@ -512,7 +501,7 @@ const onClickShareToTwitter = () => {
                   <div>{{ $t('Bounty') }}</div>
                 </div>
                 <div class="xs:flex-center">
-                  <Bounties v-if="task.bounties" :bounties="task.bounties" :precisions="precisions" />
+                  <Bounties v-if="task.bounties" :bounties="task.bounties" />
                 </div>
               </div>
               <div class="xs:flex xs:justify-start">
