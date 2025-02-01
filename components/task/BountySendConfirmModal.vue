@@ -108,8 +108,9 @@ const bountiesToSend = computed(() => {
       }
 
       // update refoundMap
-      refundMap[pid].amount -= bounty.amount
       refundMap[pid].quantity -= BigInt(bounty.quantity)
+      const denomination = tokensByProcessID[pid].denomination
+      refundMap[pid].amount = bigInt2Float(refundMap[pid].quantity, denomination)
 
       bounties.push(bountyData)
     })
@@ -135,8 +136,8 @@ const bountiesToSend = computed(() => {
         type: 'fee' as BountySendType,
       })
 
-      refundMap[pid].amount -= correctAmount
       refundMap[pid].quantity -= BigInt(correctQuantity)
+      refundMap[pid].amount = bigInt2Float(refundMap[pid].quantity, denomination)
     } else {
       bounties.push(returnBounty)
     }
@@ -147,7 +148,40 @@ const bountiesToSend = computed(() => {
   for (const refundBounty of refundBounties) {
     // don't use refundBounty.amount to filter here, the amount may be like 0.000000000000034
     if (refundBounty.quantity > BigInt(0)) {
+      console.log('refundBounty quantity is greater than 0', refundBounty)
       bounties.push(refundBounty)
+    } else {
+      console.log('refundBounty quantity is smaller than 0', refundBounty)
+    
+      refundBounty.quantity = BigInt(0)
+      refundBounty.amount = 0
+      // if refund quantity is smaller than 0, set the refund bounty to 0 and minus the amount from the fee
+      const feeBounty = bounties.find(bounty => bounty.type === 'fee' && bounty.recipient === refundBounty.recipient)
+      if (feeBounty) {
+        feeBounty.quantity += refundBounty.quantity
+        const denomination = tokensByProcessID[feeBounty.tokenProcessID].denomination
+        feeBounty.amount = bigInt2Float(feeBounty.quantity, denomination)
+      }
+    }
+  }
+
+  // check if sum of all quantity is equal to total quantity
+  const totalQuantityMap = {} as Record<string, bigint>
+  for (const bounty of bounties) {
+    if (!totalQuantityMap[bounty.tokenProcessID]) {
+      totalQuantityMap[bounty.tokenProcessID] = BigInt(0)
+    }
+    totalQuantityMap[bounty.tokenProcessID] += bounty.quantity
+  }
+
+  for (const [pid, quantity] of Object.entries(totalQuantityMap)) {
+    const totalQuantity = props.task.bounties.find(bounty => bounty.tokenProcessID === pid)?.quantity
+    if (quantity.toString() !== totalQuantity?.toString()) {
+      console.error('Total quantity is not equal to the sum of all quantity.')
+      console.error('pid = ', pid)
+      console.error('quantity = ', quantity)
+      console.error('totalQuantity = ', totalQuantity)
+      throw new Error('Total quantity is not equal to the sum of all quantity.')
     }
   }
 
@@ -236,6 +270,21 @@ const onConfirm = async () => {
     emit('update:modelValue', false)
   }
 }
+
+const precisions = $computed(() =>
+  props.task.bounties.reduce((carry, bounty) => {
+    const token = tokensByProcessID[bounty.tokenProcessID]
+    if (!token) {
+      return carry
+    }
+    const denomination = token.denomination
+    carry.set(
+      bounty.tokenProcessID,
+      denomination <= 6 ? 6 : 8,
+    )
+    return carry
+  }, new Map<string, number>()),
+)
 </script>
 
 <template>
@@ -291,8 +340,8 @@ const onConfirm = async () => {
                 </UBadge>
               </div>
             </div>
-            <div class="flex">
-              <Bounties :bounties="transformBounties(recipientBounties)" />
+            <div class="flex flex-col gap-2">
+              <Bounties :bounties="transformBounties(recipientBounties)" :show-plus="false" :precisions="precisions" />
             </div>
           </div>
         </div>

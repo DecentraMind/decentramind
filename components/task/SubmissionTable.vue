@@ -126,6 +126,16 @@ const toggleSelectAll = () => {
     selected.value = [...selected.value, ...newSelections]
   }
 }
+
+const precisions = $computed(() =>
+  props.task.bounties.reduce((carry, bounty) => {
+    carry.set(
+      bounty.tokenProcessID,
+      2,
+    )
+    return carry
+  }, new Map<string, number>()),
+)
 </script>
 
 <template>
@@ -200,7 +210,7 @@ const toggleSelectAll = () => {
       </template>
       <template #bounty-data="{ row }">
         <p v-if="task.isSettled || selected.find(s => s.id === row.id)" class="flex gap-2">
-          <Bounties :bounties="row.calculatedBounties" :show-logo="false" />
+          <Bounties :bounties="row.calculatedBounties" :show-logo="false" :precisions="precisions" />
         </p>
       </template>
     </UTable>
