@@ -227,10 +227,10 @@ const afterLogin = async () => {
       </UDashboardSidebar>
     </UDashboardPanel>
 
-    <div v-if="isLoading || isUserInfoLoading" class="flex-center w-full h-full">
+    <UDashboardPage v-if="isLoading || isUserInfoLoading" class="flex-center w-full h-full">
       <UIcon name="svg-spinners:blocks-scale" dynamic class="w-16 h-16 opacity-50" />
-    </div>
-    <div v-else-if="communityListError || (address && !isUserInfoLoading && userInfoError)" class="flex-col-center h-full w-full">
+    </UDashboardPage>
+    <UDashboardPage v-else-if="communityListError || (address && !isUserInfoLoading && userInfoError)" class="flex-col-center h-full w-full">
       <UCard>
         <div class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
           <div class="flex-col-center gap-y-4">
@@ -239,11 +239,9 @@ const afterLogin = async () => {
           </div>
         </div>
       </UCard>
-    </div>
+    </UDashboardPage>
 
-    <main v-else class="w-full">
-      <slot />
-    </main>
+    <slot v-else />
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
       <div v-if="!userInfo?.canCreateCommunity" class="flex-center text-center whitespace-pre-line text-xl text-gray-500">

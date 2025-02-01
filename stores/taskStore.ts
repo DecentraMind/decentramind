@@ -3,7 +3,7 @@ import {
   result,
   message,
   dryrun, spawn
-} from '@permaweb/aoconnect'
+} from '~/utils/ao'
 
 import { defineStore } from 'pinia'
 import type { Bounty, Task, TaskForm, Scores, BountySendHistory, InviteCodeInfo, Community } from '~/types'
@@ -15,6 +15,7 @@ import { getTask, updateTaskSubmissions, submitTask, getInvitesByInviter } from 
 
 export const useTaskStore = defineStore('task', () => {
   const taskManagerProcessID = DM_PROCESS_ID
+  const isCreateTaskModalOpen = $ref(false)
 
   const createTask = async (data: TaskForm, communityName: string) => {
     // create a task process，then add process ID to task info
@@ -313,7 +314,9 @@ export const useTaskStore = defineStore('task', () => {
 
     // TODO move this to communityStore
     // getInvitesByInviter,
-    createTaskInviteCode, getInviteByCode, getInvitesByInviter
+    createTaskInviteCode, getInviteByCode, getInvitesByInviter,
+
+    isCreateTaskModalOpen
   }
 })
 
