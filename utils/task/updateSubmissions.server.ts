@@ -250,7 +250,9 @@ export const saveSpaceTaskSubmitInfo = async function ({
   }
 
   // avatar of space host
-  const userAvatar = host.profile_image_url.replace(/_(normal|bigger|mini).jpg$/, '.jpg')
+  // e.g. https://pbs.twimg.com/profile_images/1879741694465454080/468EsS2u_normal.png
+  // e.g. https://pbs.twimg.com/profile_images/1881670048193945600/H-FWznAE_normal.jpg
+  const userAvatar = host.profile_image_url.replace(/_(normal|bigger|mini)(\.[^.]+)$/, '$2')
   
   const ssim = userAvatar
     ? await compareImages(arUrl(communityLogo, gateways.ario), userAvatar)
