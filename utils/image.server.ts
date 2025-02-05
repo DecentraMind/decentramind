@@ -29,10 +29,10 @@ export const getImageData = async (url: string, width?: number, height?: number)
   } as ImageData
 }
 
-export const compareImages = async (communityAvatar: string, twitterAvatar: string) => {
-  const twitterImageData = await getImageData(twitterAvatar, 100, 100)
-  const communityImageData = await getImageData(communityAvatar, 100, 100)
-  const { mssim } = ssim(twitterImageData, communityImageData)
+export const compareImages = async (aUrl: string, bUrl: string) => {
+  const aImageData = await getImageData(aUrl, 100, 100)
+  const bImageData = await getImageData(bUrl, 100, 100)
+  const { mssim } = ssim(aImageData, bImageData)
 
   console.log('mssim = ' + mssim)
   return mssim
