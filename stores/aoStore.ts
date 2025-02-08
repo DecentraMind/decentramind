@@ -88,13 +88,12 @@ export const aoStore = defineStore('aoStore', () => {
     return allowedPermissions.some((permission) => permissions.includes(permission))
   }
 
-  /** ArConnect browser extension login */
+  /** Wander browser extension login */
   const connectExtensionWallet = async () => {
     if (!window.arweaveWallet) {
       console.error('window.arweaveWallet not found.')
-      alert('Please install Arweave Wallet or use Othent to continue')
-      // TODO redirect to https://arconnect.io if in mobile
-      window.location.href = 'https://chromewebstore.google.com/detail/arconnect/einnioafmpimabjcddiinlhmijaionap'
+      alert('Please install Wander Wallet to continue')
+      window.location.href = 'https://www.wander.app'
       return false
     }
     await window.arweaveWallet.connect(permissions)
