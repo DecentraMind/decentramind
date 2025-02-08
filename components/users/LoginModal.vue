@@ -147,7 +147,7 @@ const onClose = () => {
       <div class="flex justify-center space-x-3">
         <UButton variant="outline" :loading="loginWallet === 'extension'" :disabled="!!loginWallet" @click="onClickConnect('extension')">
           <UAvatar
-            src="/wallet/Wander.svg"
+            src="/wallet/wander.svg"
             size="3xs"
             :ui="{
               rounded: 'rounded-none',
