@@ -138,7 +138,10 @@ onMounted(async () => {
     </div>
 
     <Teleport to="#top-right-button">
-      <AddTaskDropdown @click-create-task="(type: Task['type']) => { createTaskType = type; isCreateTaskModalOpen = true }" />
+      <AddTaskDropdown
+        v-if="community && isAdminOrOwner"
+        @click-create-task="(type: Task['type']) => { createTaskType = type; isCreateTaskModalOpen = true }"
+      />
     </Teleport>
 
     <UModal v-model="isCreateTaskModalOpen">
