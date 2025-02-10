@@ -44,7 +44,7 @@ export const tokens: Record<string, Token> = {
   AO: {
     ticker: 'AO',
     label: 'AO',
-    processID: 'm3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w',
+    processID: '0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc',
     denomination: 12,
     logo: 'UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE'
   },
