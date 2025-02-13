@@ -106,7 +106,6 @@ onMounted(async () => {
             <div class="space-y-6">
               <!-- Pending Members Section -->
               <PrivatePendingMembers
-                :members="pendingMembers"
                 :questions="questions"
                 :uuid="uuid"
                 @update:members="pendingMembers = $event"
@@ -115,6 +114,7 @@ onMounted(async () => {
               <!-- Current Members Section -->
               <PrivateCurrentMembers
                 :members="currentMembers"
+                :uuid="uuid"
                 @remove="removeMember"
               />
 

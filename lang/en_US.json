@@ -248,6 +248,7 @@
         "remove": "Remove"
       },
       "fields": {
+        "applicant": "Applicant",
         "name": "Name",
         "address": "Address",
         "action": "Action",

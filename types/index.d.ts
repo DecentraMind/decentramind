@@ -324,6 +324,8 @@ export type CommunityMember = UserInfoWithAddress & {
   inviteCode?: string
   inviterAddress?: string
   inviterName?: string
+  /** timestamp when the private area application is approved, if it is not undefined, the invitee can access the private area */
+  privateUnlockTime?: number
 }
 
 export type UploadResponse = {
@@ -491,4 +493,11 @@ export interface TaskValidationParams<T extends ValidatedSpacesInfo | ValidatedT
 export type SubmissionUpdateResponse = {
   result: 'success' | 'error'
   message: string
+}
+
+export type PrivateApplication = {
+  address: string
+  name: string
+  avatar: string
+  answers: string[]
 }

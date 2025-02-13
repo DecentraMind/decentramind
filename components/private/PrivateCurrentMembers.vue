@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { UserInfoWithAddress } from '~/types'
+import { getPrivateUnlockMembers } from '~/utils/community/community'
 
-defineProps<{
+const props = defineProps<{
   members: UserInfoWithAddress[]
+  uuid: string
 }>()
 
 const emit = defineEmits<{
@@ -10,6 +12,21 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const privateUnlockMembers = ref<string[]>([])
+
+// Load private unlock members when component is mounted
+onMounted(async () => {
+  try {
+    privateUnlockMembers.value = await getPrivateUnlockMembers(props.uuid)
+  } catch (error) {
+    console.error('Error loading private unlock members:', error)
+  }
+})
+
+// Computed current members with private access
+const currentMembers = computed(() => 
+  props.members.filter(member => privateUnlockMembers.value.includes(member.address))
+)
 
 const memberColumns = [
   {
@@ -42,7 +59,7 @@ const memberColumns = [
       {{ t('private.members.current') }}
     </h4>
     <UTable
-      :rows="members"
+      :rows="currentMembers"
       :columns="memberColumns"
     >
       <template #actions-data="{ row }">

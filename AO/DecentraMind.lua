@@ -1,4 +1,4 @@
-Variant = '0.4.90'
+Variant = '0.4.92'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -135,6 +135,7 @@ InviteCodesByInviterByCommunityUuid = InviteCodesByInviterByCommunityUuid or {}
 ---@class UserCommunity
 ---@field joinTime number
 ---@field inviteCode string|nil if the invitee is not invited by others, the inviteCode is nil
+---@field privateUnlockTime number|nil @Timestamp when the private area application is approved, use this field to check if the invitee can access the private area
 
 ---@type table<string, table<string, UserCommunity>> This is user-communities relation. Invite Codes by invitee address and community uuid. This index is used for querying user's joined communities.
 UserCommunities = UserCommunities or {}
@@ -481,7 +482,69 @@ Actions = {
 
       AnswersByCommunityUuidByAddress[uuid][address] = answers
     end,
-    
+
+    GetApplications = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local applications = {}
+      for address, answers in pairs(AnswersByCommunityUuidByAddress[uuid]) do
+        local user = Users[address]
+        if not user then
+          goto nextApplication
+        end
+
+        table.insert(applications, {
+          address = address,
+          name = user.name,
+          avatar = user.avatar,
+          answers = answers
+        })
+
+        ::nextApplication::
+      end
+      u.replyData(msg, applications)
+    end,
+
+    ApproveOrRejectApplication = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local address = msg.Tags.Address
+      local operation = msg.Tags.Operation
+
+      -- only owner or admins can approve application
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      if msg.From ~= community.owner then
+        return u.replyError(msg, 'You are not the owner.')
+      end
+
+      if not AnswersByCommunityUuidByAddress[uuid] or not AnswersByCommunityUuidByAddress[uuid][address] then
+        return u.replyError(msg, 'Application not found.')
+      end
+
+      if operation == 'approve' then
+        AnswersByCommunityUuidByAddress[uuid][address] = nil
+        UserCommunities[address][uuid].privateUnlockTime = msg.Timestamp
+        u.replyData(msg, 'Application approved.')
+      elseif operation == 'reject' then
+        AnswersByCommunityUuidByAddress[uuid][address] = nil
+        u.replyData(msg, 'Application rejected.')
+      else
+        return u.replyError(msg, 'Invalid operation.')
+      end
+    end,
+
+    GetPrivateUnlockMembers = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local members = {}
+      for address, userCommunity in pairs(UserCommunities) do
+        if userCommunity[uuid] and userCommunity[uuid].privateUnlockTime then
+          table.insert(members, address)
+        end
+      end
+      u.replyData(msg, members)
+    end,
   },
 
   Tasks = {
@@ -945,6 +1008,7 @@ Actions = {
           communityUsers[address].muted = false
 
           communityUsers[address].joinTime = inviteInfo[uuid].joinTime
+          communityUsers[address].privateUnlockTime = inviteInfo[uuid].privateUnlockTime
           if inviteInfo[uuid].inviteCode and Invites[inviteInfo[uuid].inviteCode] then
             communityUsers[address].inviteCode = inviteInfo[uuid].inviteCode
             communityUsers[address].inviterAddress = Invites[inviteInfo[uuid].inviteCode].inviterAddress

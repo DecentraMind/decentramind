@@ -163,6 +163,7 @@
         "remove": "移出"
       },
       "fields": {
+        "applicant": "申请人",
         "name": "名称",
         "address": "地址",
         "action": "操作",

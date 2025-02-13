@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Community } from '~/types'
+import type { Community, PrivateApplication } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
@@ -70,6 +70,58 @@ export const submitAnswers = async (uuid: string, answers: string[], wallet?: Pa
     process: communityProcessID,
     tags,
     data: JSON.stringify(answers),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Get members who have access to private area
+ * @param uuid - The UUID of the community
+ * @returns Array of member addresses who have private area access
+ */
+export const getPrivateUnlockMembers = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetPrivateUnlockMembers' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<string[]>({
+    process: communityProcessID,
+    tags
+  })
+}
+
+/**
+ * Get pending applications for private area
+ * @param uuid - The UUID of the community
+ * @returns Array of applicant addresses
+ */
+export const getApplications = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetApplications' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<PrivateApplication[]>({
+    process: communityProcessID,
+    tags
+  })
+}
+
+/**
+ * Approve or reject a pending application for private area
+ * @param uuid - The UUID of the community
+ * @param address - The address of the applicant
+ * @param action - Whether to approve or reject the application
+ */
+export const approveOrRejectApplication = async (uuid: string, address: string, operation: 'approve' | 'reject', wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'ApproveOrRejectApplication' },
+    { name: 'CommunityUuid', value: uuid },
+    { name: 'Address', value: address },
+    { name: 'Operation', value: operation }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
   })
 }
