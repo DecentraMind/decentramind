@@ -117,7 +117,7 @@
       "invite": "Start a Invite Quest"
     },
     "rules": {
-      "space": "1 You will help the community to do a Twitter Space by using your Twitter account.\n2 Please use the community’s logo as your avatar of vouched twitter account before you start your space and keep it until 15 mins after you return back your space’s URL.\n3 Please pin your invitation link of this quest when you doing it.",
+      "space": "1 You will help the community to do a Twitter Space by using your Twitter account.\n2 Please use the community's logo as your avatar of vouched twitter account before you start your space and keep it until 15 mins after you return back your space's URL.\n3 Please pin your invitation link of this quest when you doing it.",
       "promotion": "1 Please quote the promotion quest link with your comment.\n2 Don't forget to add your quest invitation link to your comment.\n3 Please put your quote twitter URL back after that.",
       "bird": "1 Please write a tweet for the community.\n2 Please try your best to write your tweet about the community in the language you like, if you write a good tweet you could get more bounty.\n3 Please add the quest invitation link to your tweet.\n4 Please put back the URL of your tweet after that.",
       "article": "1 Please write a long tweet for the community and make sure you have Twitter Blue.\n2 Please try your best to write your tweet about the community in the language you like, if you write a good read you could get more bounty.\n3 Please add the quest invitation link to your tweet.\n4 Please put back URL of your long tweet after that.",
@@ -187,7 +187,7 @@
       "invite": "Click Here and Join Us!"
     }
   },
-  "taskRule": "1 You will help the community to do a Twitter space by using your Twitter account.\n2 Please use the community’s logo as your avatar of linked account before you start your space and keep it until 15 mins after you return back your space’s URL.\n3 Please pin your invitation link of this quest when you doing it.",
+  "taskRule": "1 You will help the community to do a Twitter space by using your Twitter account.\n2 Please use the community's logo as your avatar of linked account before you start your space and keep it until 15 mins after you return back your space's URL.\n3 Please pin your invitation link of this quest when you doing it.",
   "Terms of Service": "Terms of Service",
   "Thread Quest": "Thread Quest",
   "Time": "Time",
@@ -218,5 +218,41 @@
   "wallet.token": "Token Application",
   "wallet.withdraw": "withdraw",
   "yes": "yes",
-  "Save": "Save"
+  "Save": "Save",
+
+  "private": {
+    "area": {
+      "title": "Private Area",
+      "description": "Welcome to the private area",
+      "management": "Private Area Management"
+    },
+    "members": {
+      "title": "Member Management",
+      "pending": "Pending Members",
+      "current": "Current Members",
+      "history": "Member History",
+      "approve": "Approve",
+      "reject": "Reject",
+      "remove": "Remove",
+      "search": "Search by name or address",
+      "actions": {
+        "add": "Add",
+        "remove": "Remove"
+      },
+      "fields": {
+        "name": "Name",
+        "address": "Address",
+        "action": "Action",
+        "admin": "Admin",
+        "member": "Member",
+        "time": "Time"
+      }
+    },
+    "questions": {
+      "title": "Questions",
+      "add": "Add Question",
+      "placeholder": "Enter question",
+      "remove": "Remove Question"
+    }
+  }
 }
