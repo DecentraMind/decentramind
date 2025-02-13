@@ -139,7 +139,9 @@
     "area": {
       "title": "非公开协作区",
       "description": "欢迎来到非公开协作区",
-      "management": "非公开协作区管理"
+      "management": "非公开协作区管理",
+      "noQuestionsWarning": "请添加非公开协作区申请问题",
+      "addQuestions": "添加问题"
     },
     "members": {
       "title": "成员管理",
@@ -150,6 +152,7 @@
       "reject": "拒绝",
       "remove": "移除",
       "search": "搜索成员",
+      "viewApplication": "查看申请",
       "actions": {
         "add": "加入",
         "remove": "移出"
@@ -160,7 +163,11 @@
         "action": "操作",
         "admin": "管理员",
         "member": "成员",
-        "time": "时间"
+        "time": "时间",
+        "actions": "操作"
+      },
+      "application": {
+        "title": "申请详情"
       }
     },
     "questions": {

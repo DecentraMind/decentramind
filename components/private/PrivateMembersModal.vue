@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { UserInfoWithAddress } from '~/types'
 
-defineProps<{
+const props = defineProps<{
   modelValue: boolean
   uuid: string
+  defaultTab?: string
 }>()
 
 const emit = defineEmits<{
@@ -25,7 +26,14 @@ const modalTabs = [
   }
 ]
 
-const searchQuery = ref('')
+// Get the default index based on the defaultTab prop
+const defaultIndex = computed(() => {
+  if (!props.defaultTab) return 0
+  const index = modalTabs.findIndex(tab => tab.name === props.defaultTab)
+  return index === -1 ? 0 : index
+})
+
+const activeTab = ref(0)
 
 // State for members
 const pendingMembers = ref<UserInfoWithAddress[]>([])
@@ -39,57 +47,6 @@ const memberHistory = ref<{
 
 // Questions state
 const questions = ref<string[]>([])
-
-// Table columns
-const memberColumns = [
-  {
-    key: 'avatar',
-    label: '',
-    render: (user: UserInfoWithAddress) => h('img', {
-      src: user.avatar,
-      alt: user.name,
-      class: 'w-8 h-8 rounded-full'
-    })
-  },
-  {
-    key: 'name',
-    label: t('private.members.fields.name')
-  },
-  {
-    key: 'address',
-    label: t('private.members.fields.address')
-  }
-]
-
-interface HistoryRow {
-  action: 'add' | 'remove'
-  admin: string
-  member: string
-  timestamp: number
-}
-
-const historyColumns = [
-  {
-    key: 'action',
-    label: t('private.members.fields.action')
-  },
-  {
-    key: 'admin',
-    label: t('private.members.fields.admin')
-  },
-  {
-    key: 'member',
-    label: t('private.members.fields.member')
-  },
-  {
-    key: 'timestamp',
-    label: t('private.members.fields.time'),
-    render: (row: HistoryRow) => {
-      const date = new Date(row.timestamp)
-      return date.toLocaleString()
-    }
-  }
-]
 
 // Member management functions
 function approveMember(member: UserInfoWithAddress) {
@@ -107,18 +64,11 @@ function removeMember(member: UserInfoWithAddress) {
   console.log('Remove member:', member)
 }
 
-// Computed filtered members
-const filteredPendingMembers = computed(() => {
-  if (!searchQuery.value) return pendingMembers.value
-  const lowerCaseQuery = searchQuery.value.toLowerCase()
-  return pendingMembers.value.filter(member => 
-    member.name.toLowerCase().includes(lowerCaseQuery) || 
-    member.address.toLowerCase().includes(lowerCaseQuery)
-  )
-})
-
 // Load data
 onMounted(async () => {
+  // Set initial active tab
+  activeTab.value = defaultIndex.value
+
   // TODO: Load actual data from the backend
   // This is just mock data for now
   pendingMembers.value = []
@@ -153,77 +103,31 @@ onMounted(async () => {
       </template>
 
       <!-- Tabs -->
-      <UTabs :items="modalTabs">
+      <UTabs
+        v-model="activeTab"
+        :items="modalTabs"
+        :default-index="defaultIndex"
+      >
         <template #members>
           <div class="space-y-6">
             <!-- Pending Members Section -->
-            <div>
-              <h4 class="font-medium mb-2">
-                {{ t('private.members.pending') }}
-              </h4>
-              <UTable
-                :rows="filteredPendingMembers"
-                :columns="memberColumns"
-              >
-                <template #search>
-                  <UInput
-                    v-model="searchQuery"
-                    :placeholder="t('private.members.search')"
-                    icon="i-heroicons-magnifying-glass-20-solid"
-                  />
-                </template>
-                <template #actions-data="{ row }">
-                  <UButton
-                    color="primary"
-                    size="xs"
-                    @click="approveMember(row)"
-                  >
-                    {{ t('private.members.approve') }}
-                  </UButton>
-                  <UButton
-                    color="red"
-                    variant="soft"
-                    size="xs"
-                    @click="rejectMember(row)"
-                  >
-                    {{ t('private.members.reject') }}
-                  </UButton>
-                </template>
-              </UTable>
-            </div>
+            <PrivatePendingMembers
+              :members="pendingMembers"
+              :questions="questions"
+              @approve="approveMember"
+              @reject="rejectMember"
+            />
 
             <!-- Current Members Section -->
-            <div>
-              <h4 class="font-medium mb-2">
-                {{ t('private.members.current') }}
-              </h4>
-              <UTable
-                :rows="currentMembers"
-                :columns="memberColumns"
-              >
-                <template #actions-data="{ row }">
-                  <UButton
-                    color="red"
-                    variant="soft"
-                    size="xs"
-                    @click="removeMember(row)"
-                  >
-                    {{ t('private.members.remove') }}
-                  </UButton>
-                </template>
-              </UTable>
-            </div>
+            <PrivateCurrentMembers
+              :members="currentMembers"
+              @remove="removeMember"
+            />
 
             <!-- Member History Section -->
-            <div>
-              <h4 class="font-medium mb-2">
-                {{ t('private.members.history') }}
-              </h4>
-              <UTable
-                :rows="memberHistory"
-                :columns="historyColumns"
-              />
-            </div>
+            <PrivateMemberHistory
+              :history="memberHistory"
+            />
           </div>
         </template>
 

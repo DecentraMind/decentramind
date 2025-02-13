@@ -224,7 +224,9 @@
     "area": {
       "title": "Private Area",
       "description": "Welcome to the private area",
-      "management": "Private Area Management"
+      "management": "Private Area Management",
+      "noQuestionsWarning": "Please add private area application questions",
+      "addQuestions": "Add Questions"
     },
     "members": {
       "title": "Member Management",
@@ -235,6 +237,7 @@
       "reject": "Reject",
       "remove": "Remove",
       "search": "Search by name or address",
+      "viewApplication": "View Application",
       "actions": {
         "add": "Add",
         "remove": "Remove"
@@ -245,7 +248,11 @@
         "action": "Action",
         "admin": "Admin",
         "member": "Member",
-        "time": "Time"
+        "time": "Time",
+        "actions": "Actions"
+      },
+      "application": {
+        "title": "Application Details"
       }
     },
     "questions": {

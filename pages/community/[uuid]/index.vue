@@ -148,6 +148,8 @@ const showSidebar = ref(false)
         />
         <PrivateHome
           v-if="community && selectedTaskVisibleType === 1 && runtimeConfig.public.debug"
+          :is-admin="isAdminOrOwner"
+          :uuid="uuid"
         />
       </div>
 
