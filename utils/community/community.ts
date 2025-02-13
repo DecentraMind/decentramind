@@ -1,8 +1,8 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
 import type { Community } from '~/types'
-import { dryrunResultParsed } from '~/utils/ao'
+import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
 
-const aoCommunityProcessID = DM_PROCESS_ID
+const communityProcessID = DM_PROCESS_ID
 
 /**
  * Get information about a specific community
@@ -19,7 +19,7 @@ export const getCommunity = async (uuid: string, address?: string) => {
     tags.push({ name: 'userAddress', value: address })
   }
   return await dryrunResultParsed({
-    process: aoCommunityProcessID,
+    process: communityProcessID,
     tags
   }) as Community
 }
@@ -34,5 +34,42 @@ export const getQuestions = async (uuid: string) => {
     { name: 'Action', value: 'GetQuestions' },
     { name: 'CommunityUuid', value: uuid }
   ]
-  return await dryrunResultParsed({ process: aoCommunityProcessID, tags }) as string[]
+  return await dryrunResultParsed({ process: communityProcessID, tags }) as string[]
+}
+
+/**
+ * Update questions of a specific community
+ * @param uuid - The UUID of the community
+ * @param questions - The new questions to save
+ */
+export const updateQuestions = async (uuid: string, questions: string[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  console.log('updateQuestions', uuid, JSON.stringify(questions))
+  const tags = [
+    { name: 'Action', value: 'UpdateQuestions' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    data: JSON.stringify(questions),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Submit answers for private area application
+ * @param uuid - The UUID of the community
+ * @param answers - Array of answers to the application questions
+ */
+export const submitAnswers = async (uuid: string, answers: string[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'SubmitAnswers' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    data: JSON.stringify(answers),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
 }

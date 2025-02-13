@@ -1,4 +1,4 @@
-Variant = '0.4.89'
+Variant = '0.4.90'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -465,6 +465,11 @@ Actions = {
         return u.replyError(msg, 'You have not joined the community.')
       end
 
+      -- if applicant has already submitted answers, return
+      if AnswersByCommunityUuidByAddress[uuid] and AnswersByCommunityUuidByAddress[uuid][address] then
+        return u.replyError(msg, 'You have already submitted answers, please wait for approval.')
+      end
+
       -- applicant must answer all questions
       if #answers ~= #QuestionsByCommunityUuid[uuid] then
         return u.replyError(msg, 'You must answer all questions.')
@@ -476,6 +481,7 @@ Actions = {
 
       AnswersByCommunityUuidByAddress[uuid][address] = answers
     end,
+    
   },
 
   Tasks = {

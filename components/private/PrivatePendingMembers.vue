@@ -1,19 +1,23 @@
 <script setup lang="ts">
 import type { UserInfoWithAddress } from '~/types'
+import { dryrunResultParsed } from '~/utils/ao'
+import { DM_PROCESS_ID } from '~/utils/processID'
 
 const props = defineProps<{
   members: UserInfoWithAddress[]
   questions: string[]
+  uuid: string
 }>()
 
 const emit = defineEmits<{
-  'approve': [member: UserInfoWithAddress]
-  'reject': [member: UserInfoWithAddress]
+  'update:members': [members: UserInfoWithAddress[]]
 }>()
 
 const { t } = useI18n()
+const { showSuccess, showError } = $(notificationStore())
 
 const searchQuery = ref('')
+const isProcessing = ref(false)
 
 // Application details modal state
 const isApplicationModalOpen = ref(false)
@@ -22,13 +26,73 @@ const selectedApplication = ref<{
   answers: string[]
 } | null>(null)
 
-function viewApplication(member: UserInfoWithAddress) {
-  // TODO: Load actual application answers from backend
-  selectedApplication.value = {
-    member,
-    answers: ['Mock answer 1', 'Mock answer 2'] // This should be replaced with actual data
+async function viewApplication(member: UserInfoWithAddress) {
+  try {
+    const tags = [
+      { name: 'Action', value: 'GetAnswers' },
+      { name: 'CommunityUuid', value: props.uuid },
+      { name: 'Address', value: member.address }
+    ]
+    const answers = await dryrunResultParsed({
+      process: DM_PROCESS_ID,
+      tags
+    }) as string[]
+
+    selectedApplication.value = {
+      member,
+      answers: answers || []
+    }
+    isApplicationModalOpen.value = true
+  } catch (error) {
+    console.error('Error loading application answers:', error)
+    showError('Failed to load application answers', error as Error)
   }
-  isApplicationModalOpen.value = true
+}
+
+async function approveMember(member: UserInfoWithAddress) {
+  try {
+    isProcessing.value = true
+    const tags = [
+      { name: 'Action', value: 'ApproveMember' },
+      { name: 'CommunityUuid', value: props.uuid },
+      { name: 'Address', value: member.address }
+    ]
+    await dryrunResultParsed({
+      process: DM_PROCESS_ID,
+      tags
+    })
+    showSuccess(t('Member approved successfully'))
+    emit('update:members', props.members.filter(m => m.address !== member.address))
+  } catch (error) {
+    console.error('Error approving member:', error)
+    showError('Failed to approve member', error as Error)
+  } finally {
+    isProcessing.value = false
+    isApplicationModalOpen.value = false
+  }
+}
+
+async function rejectMember(member: UserInfoWithAddress) {
+  try {
+    isProcessing.value = true
+    const tags = [
+      { name: 'Action', value: 'RejectMember' },
+      { name: 'CommunityUuid', value: props.uuid },
+      { name: 'Address', value: member.address }
+    ]
+    await dryrunResultParsed({
+      process: DM_PROCESS_ID,
+      tags
+    })
+    showSuccess(t('Member rejected successfully'))
+    emit('update:members', props.members.filter(m => m.address !== member.address))
+  } catch (error) {
+    console.error('Error rejecting member:', error)
+    showError('Failed to reject member', error as Error)
+  } finally {
+    isProcessing.value = false
+    isApplicationModalOpen.value = false
+  }
 }
 
 const memberColumns = [
@@ -74,6 +138,7 @@ const filteredMembers = computed(() => {
     <UTable
       :rows="filteredMembers"
       :columns="memberColumns"
+      class="px-4"
     >
       <template #search>
         <UInput
@@ -96,7 +161,9 @@ const filteredMembers = computed(() => {
         <UButton
           color="primary"
           size="xs"
-          @click="emit('approve', row)"
+          :loading="isProcessing"
+          :disabled="isProcessing"
+          @click="approveMember(row)"
         >
           {{ t('private.members.approve') }}
         </UButton>
@@ -104,7 +171,9 @@ const filteredMembers = computed(() => {
           color="red"
           variant="soft"
           size="xs"
-          @click="emit('reject', row)"
+          :loading="isProcessing"
+          :disabled="isProcessing"
+          @click="rejectMember(row)"
         >
           {{ t('private.members.reject') }}
         </UButton>
@@ -163,13 +232,17 @@ const filteredMembers = computed(() => {
             <UButton
               color="red"
               variant="soft"
-              @click="emit('reject', selectedApplication.member)"
+              :loading="isProcessing"
+              :disabled="isProcessing"
+              @click="rejectMember(selectedApplication.member)"
             >
               {{ t('private.members.reject') }}
             </UButton>
             <UButton
               color="primary"
-              @click="emit('approve', selectedApplication.member)"
+              :loading="isProcessing"
+              :disabled="isProcessing"
+              @click="approveMember(selectedApplication.member)"
             >
               {{ t('private.members.approve') }}
             </UButton>

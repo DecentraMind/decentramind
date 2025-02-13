@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UserInfoWithAddress } from '~/types'
+import { getQuestions } from '~/utils/community/community'
 
 const props = defineProps<{
   modelValue: boolean
@@ -49,16 +50,6 @@ const memberHistory = ref<{
 const questions = ref<string[]>([])
 
 // Member management functions
-function approveMember(member: UserInfoWithAddress) {
-  // TODO: Implement approve member logic
-  console.log('Approve member:', member)
-}
-
-function rejectMember(member: UserInfoWithAddress) {
-  // TODO: Implement reject member logic
-  console.log('Reject member:', member)
-}
-
 function removeMember(member: UserInfoWithAddress) {
   // TODO: Implement remove member logic
   console.log('Remove member:', member)
@@ -69,12 +60,14 @@ onMounted(async () => {
   // Set initial active tab
   activeTab.value = defaultIndex.value
 
+  // Load questions
+  questions.value = await getQuestions(props.uuid) || []
+
   // TODO: Load actual data from the backend
   // This is just mock data for now
   pendingMembers.value = []
   currentMembers.value = []
   memberHistory.value = []
-  questions.value = []
 })
 </script>
 
@@ -109,54 +102,34 @@ onMounted(async () => {
         :default-index="defaultIndex"
       >
         <template #members>
-          <div class="space-y-6">
-            <!-- Pending Members Section -->
-            <PrivatePendingMembers
-              :members="pendingMembers"
-              :questions="questions"
-              @approve="approveMember"
-              @reject="rejectMember"
-            />
+          <UCard>
+            <div class="space-y-6">
+              <!-- Pending Members Section -->
+              <PrivatePendingMembers
+                :members="pendingMembers"
+                :questions="questions"
+                :uuid="uuid"
+                @update:members="pendingMembers = $event"
+              />
 
-            <!-- Current Members Section -->
-            <PrivateCurrentMembers
-              :members="currentMembers"
-              @remove="removeMember"
-            />
+              <!-- Current Members Section -->
+              <PrivateCurrentMembers
+                :members="currentMembers"
+                @remove="removeMember"
+              />
 
-            <!-- Member History Section -->
-            <PrivateMemberHistory
-              :history="memberHistory"
-            />
-          </div>
+              <!-- Member History Section -->
+              <PrivateMemberHistory
+                :history="memberHistory"
+              />
+            </div>
+          </UCard>
         </template>
 
         <template #questions>
-          <div class="space-y-4">
-            <div
-              v-for="(question, index) in questions"
-              :key="index"
-              class="flex items-center space-x-2"
-            >
-              <UInput
-                v-model="questions[index]"
-                :placeholder="t('private.questions.placeholder')"
-              />
-              <UButton
-                color="red"
-                variant="soft"
-                icon="i-heroicons-trash"
-                @click="questions.splice(index, 1)"
-              />
-            </div>
-            <UButton
-              color="gray"
-              variant="soft"
-              @click="questions.push('')"
-            >
-              {{ t('private.questions.add') }}
-            </UButton>
-          </div>
+          <UCard>
+            <PrivateQuestions :uuid="uuid" />
+          </UCard>
         </template>
       </UTabs>
     </UCard>

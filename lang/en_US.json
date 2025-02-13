@@ -226,7 +226,12 @@
       "description": "Welcome to the private area",
       "management": "Private Area Management",
       "noQuestionsWarning": "Please add private area application questions",
-      "addQuestions": "Add Questions"
+      "addQuestions": "Add Questions",
+      "application": "Apply to Join Private Area",
+      "applicationTitle": "Private Area Application",
+      "applicationDescription": "Please answer all questions below to apply for private area access.",
+      "answerPlaceholder": "Enter your answer here...",
+      "applicationSubmitted": "Your application has been submitted successfully, please wait for approval."
     },
     "members": {
       "title": "Member Management",
@@ -259,7 +264,10 @@
       "title": "Questions",
       "add": "Add Question",
       "placeholder": "Enter question",
-      "remove": "Remove Question"
+      "remove": "Remove Question",
+      "question": "Question",
+      "saved": "Questions saved successfully",
+      "description": "Set questions for private area application. Members need to answer these questions to apply."
     }
   }
 }
