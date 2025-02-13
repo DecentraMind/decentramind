@@ -1,4 +1,4 @@
-Variant = '0.4.88'
+Variant = '0.4.89'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -433,7 +433,7 @@ Actions = {
 
     GetQuestions = function(msg)
       local questions = QuestionsByCommunityUuid[msg.Tags.CommunityUuid]
-      u.replyData(msg, questions)
+      u.replyData(msg, questions or {})
     end,
 
     UpdateQuestions = function(msg)
