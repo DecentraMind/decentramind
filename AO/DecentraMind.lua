@@ -1,4 +1,4 @@
-Variant = '0.4.86'
+Variant = '0.4.88'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -139,6 +139,11 @@ InviteCodesByInviterByCommunityUuid = InviteCodesByInviterByCommunityUuid or {}
 ---@type table<string, table<string, UserCommunity>> This is user-communities relation. Invite Codes by invitee address and community uuid. This index is used for querying user's joined communities.
 UserCommunities = UserCommunities or {}
 
+---@type table<string, string[]> Questions that need to be answered when applying to join a community's private area, indexed by community uuid
+QuestionsByCommunityUuid = QuestionsByCommunityUuid or {}
+
+---@type table<string, table<string, string[]>> Answers by community uuid and address, indexed by community uuid and applicant address
+AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 
 ---@param type string 'task' | 'community'
 ---@param address string
@@ -424,6 +429,52 @@ Actions = {
       end
 
       UserCommunities[address][uuid] = nil
+    end,
+
+    GetQuestions = function(msg)
+      local questions = QuestionsByCommunityUuid[msg.Tags.CommunityUuid]
+      u.replyData(msg, questions)
+    end,
+
+    UpdateQuestions = function(msg)
+      local questions = json.decode(msg.Data)
+      local uuid = msg.Tags.CommunityUuid
+
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+
+      QuestionsByCommunityUuid[uuid] = questions
+    end,
+
+    -- save answers to community
+    SubmitAnswers = function(msg)
+      local answers = json.decode(msg.Data)
+      local uuid = msg.Tags.CommunityUuid
+      local address = msg.From
+
+      if not QuestionsByCommunityUuid[uuid] then
+        return u.replyError(msg, 'Questions not found.')
+      end
+
+      -- applicant must join the community
+      if not UserCommunities[address] or not UserCommunities[address][uuid] then
+        return u.replyError(msg, 'You have not joined the community.')
+      end
+
+      -- applicant must answer all questions
+      if #answers ~= #QuestionsByCommunityUuid[uuid] then
+        return u.replyError(msg, 'You must answer all questions.')
+      end
+
+      if not AnswersByCommunityUuidByAddress[uuid] then
+        AnswersByCommunityUuidByAddress[uuid] = {}
+      end
+
+      AnswersByCommunityUuidByAddress[uuid][address] = answers
     end,
   },
 
