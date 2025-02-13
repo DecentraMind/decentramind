@@ -540,11 +540,37 @@ Actions = {
       local members = {}
       for address, userCommunity in pairs(UserCommunities) do
         if userCommunity[uuid] and userCommunity[uuid].privateUnlockTime then
-          table.insert(members, address)
+          local user = Users[address]
+          if not user then
+            goto nextMember
+          end
+          user.address = address
+          table.insert(members, user)
+
+          ::nextMember::
         end
       end
       u.replyData(msg, members)
     end,
+
+    RemovePrivateUnlockMember = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local address = msg.Tags.Address
+
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      -- only owner or admins can remove private unlock member
+      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+
+      if not UserCommunities[address] or not UserCommunities[address][uuid] then
+        return u.replyError(msg, 'The address is not a member of this community.')
+      end
+
+      UserCommunities[address][uuid].privateUnlockTime = nil
+    end
   },
 
   Tasks = {

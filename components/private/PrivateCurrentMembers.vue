@@ -1,50 +1,54 @@
 <script setup lang="ts">
 import type { UserInfoWithAddress } from '~/types'
-import { getPrivateUnlockMembers } from '~/utils/community/community'
+import { getPrivateUnlockMembers, removePrivateUnlockMember } from '~/utils/community/community'
 
 const props = defineProps<{
-  members: UserInfoWithAddress[]
   uuid: string
 }>()
 
 const emit = defineEmits<{
-  'remove': [member: UserInfoWithAddress]
+  'memberUpdated': []
 }>()
 
 const { t } = useI18n()
-const privateUnlockMembers = ref<string[]>([])
+const { showSuccess, showError } = $(notificationStore())
+
+let privateUnlockMembers = $ref<Awaited<ReturnType<typeof getPrivateUnlockMembers>>>([])
+let isLoading = $ref(false)
+const removingMembers = ref(new Set<string>())
 
 // Load private unlock members when component is mounted
 onMounted(async () => {
+  isLoading = true
   try {
-    privateUnlockMembers.value = await getPrivateUnlockMembers(props.uuid)
+    privateUnlockMembers = await getPrivateUnlockMembers(props.uuid)
   } catch (error) {
     console.error('Error loading private unlock members:', error)
+  } finally {
+    isLoading = false
   }
 })
 
-// Computed current members with private access
-const currentMembers = computed(() => 
-  props.members.filter(member => privateUnlockMembers.value.includes(member.address))
-)
+async function handleRemoveMember(member: UserInfoWithAddress) {
+  try {
+    removingMembers.value.add(member.address)
+    await removePrivateUnlockMember(props.uuid, member.address)
+    // Remove the member from local array
+    privateUnlockMembers = privateUnlockMembers.filter(m => m.address !== member.address)
+    showSuccess(t('Member removed successfully'))
+    emit('memberUpdated')
+  } catch (error) {
+    console.error('Error removing member:', error)
+    showError('Failed to remove member')
+  } finally {
+    removingMembers.value.delete(member.address)
+  }
+}
 
 const memberColumns = [
   {
-    key: 'avatar',
-    label: '',
-    render: (user: UserInfoWithAddress) => h('img', {
-      src: user.avatar,
-      alt: user.name,
-      class: 'w-8 h-8 rounded-full'
-    })
-  },
-  {
-    key: 'name',
-    label: t('private.members.fields.name')
-  },
-  {
-    key: 'address',
-    label: t('private.members.fields.address')
+    key: 'member',
+    label: t('private.members.fields.member'),
   },
   {
     key: 'actions',
@@ -59,18 +63,38 @@ const memberColumns = [
       {{ t('private.members.current') }}
     </h4>
     <UTable
-      :rows="currentMembers"
+      :rows="privateUnlockMembers"
       :columns="memberColumns"
+      :loading="isLoading"
     >
+      <template #member-data="{ row }">
+        <div class="flex items-center space-x-2">
+          <ArAvatar
+            :src="row.avatar"
+            :alt="row.name"
+            class="w-6 h-6"
+          />
+          <b>{{ row.name }}</b>
+          <span>{{ shortString(row.address) }}</span>
+        </div>
+      </template>
       <template #actions-data="{ row }">
-        <UButton
-          color="red"
-          variant="soft"
-          size="xs"
-          @click="emit('remove', row)"
+        <Confirm
+          :title="t('Remove Member')"
+          :body="t('Are you sure you want to remove this member from the private area?')"
+          :confirm-btn-text="t('Remove')"
+          :on-confirm="() => handleRemoveMember(row)"
         >
-          {{ t('private.members.remove') }}
-        </UButton>
+          <UButton
+            color="red"
+            variant="soft"
+            size="xs"
+            :loading="removingMembers.has(row.address)"
+            :disabled="removingMembers.has(row.address)"
+          >
+            {{ t('private.members.remove') }}
+          </UButton>
+        </Confirm>
       </template>
     </UTable>
   </div>

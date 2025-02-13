@@ -13,6 +13,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'handled': []
+  'reload': []
 }>()
 
 const { t } = useI18n()
@@ -32,6 +33,7 @@ async function handleMember(address: string, action: 'approve' | 'reject') {
     await approveOrRejectApplication(props.uuid, address, action)
     showSuccess(t(action === 'approve' ? 'Member approved successfully' : 'Member rejected successfully'))
     emit('handled')
+    emit('reload')
   } catch (error) {
     console.error('Error handling member:', error)
     showError('Failed to handle member', error as Error)

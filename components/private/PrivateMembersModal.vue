@@ -36,24 +36,7 @@ const defaultIndex = computed(() => {
 
 const activeTab = ref(0)
 
-// State for members
-const pendingMembers = ref<UserInfoWithAddress[]>([])
-const currentMembers = ref<UserInfoWithAddress[]>([])
-const memberHistory = ref<{
-  action: 'add' | 'remove'
-  admin: string
-  member: string
-  timestamp: number
-}[]>([])
-
-// Questions state
 const questions = ref<string[]>([])
-
-// Member management functions
-function removeMember(member: UserInfoWithAddress) {
-  // TODO: Implement remove member logic
-  console.log('Remove member:', member)
-}
 
 // Load data
 onMounted(async () => {
@@ -63,12 +46,12 @@ onMounted(async () => {
   // Load questions
   questions.value = await getQuestions(props.uuid) || []
 
-  // TODO: Load actual data from the backend
-  // This is just mock data for now
-  pendingMembers.value = []
-  currentMembers.value = []
-  memberHistory.value = []
+  await loadMemberData()
 })
+
+async function loadMemberData() {
+  
+}
 </script>
 
 <template>
@@ -108,19 +91,19 @@ onMounted(async () => {
               <PrivatePendingMembers
                 :questions="questions"
                 :uuid="uuid"
-                @update:members="pendingMembers = $event"
+                @member-updated="loadMemberData"
               />
 
               <!-- Current Members Section -->
               <PrivateCurrentMembers
-                :members="currentMembers"
                 :uuid="uuid"
-                @remove="removeMember"
+                @member-updated="loadMemberData"
               />
 
               <!-- Member History Section -->
               <PrivateMemberHistory
-                :history="memberHistory"
+                :uuid="uuid"
+                @member-updated="loadMemberData"
               />
             </div>
           </UCard>

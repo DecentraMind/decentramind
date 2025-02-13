@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Community, PrivateApplication } from '~/types'
+import type { Community, PrivateApplication, UserInfo } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
@@ -84,7 +84,7 @@ export const getPrivateUnlockMembers = async (uuid: string) => {
     { name: 'Action', value: 'GetPrivateUnlockMembers' },
     { name: 'CommunityUuid', value: uuid }
   ]
-  return await dryrunResultParsed<string[]>({
+  return await dryrunResultParsed<Array<UserInfo & { address: string }>>({
     process: communityProcessID,
     tags
   })
@@ -118,6 +118,24 @@ export const approveOrRejectApplication = async (uuid: string, address: string, 
     { name: 'CommunityUuid', value: uuid },
     { name: 'Address', value: address },
     { name: 'Operation', value: operation }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Remove a member's private area access
+ * @param uuid - The UUID of the community
+ * @param address - The address of the member to remove
+ */
+export const removePrivateUnlockMember = async (uuid: string, address: string, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'RemovePrivateUnlockMember' },
+    { name: 'CommunityUuid', value: uuid },
+    { name: 'Address', value: address }
   ]
   return await messageResultCheck({
     process: communityProcessID,
