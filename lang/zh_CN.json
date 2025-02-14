@@ -153,6 +153,7 @@
       "pending": "待加入成员",
       "current": "当前成员",
       "history": "成员历史",
+      "removeHistory": "移除记录",
       "approve": "批准",
       "reject": "拒绝",
       "remove": "移除",
@@ -170,7 +171,8 @@
         "admin": "管理员",
         "member": "成员",
         "time": "时间",
-        "actions": "操作"
+        "actions": "操作",
+        "reason": "原因"
       },
       "application": {
         "title": "申请详情"

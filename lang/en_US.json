@@ -238,6 +238,7 @@
       "pending": "Pending Members",
       "current": "Current Members",
       "history": "Member History",
+      "removeHistory": "Remove History",
       "approve": "Approve",
       "reject": "Reject",
       "remove": "Remove",
@@ -255,7 +256,8 @@
         "admin": "Admin",
         "member": "Member",
         "time": "Time",
-        "actions": "Actions"
+        "actions": "Actions",
+        "reason": "Reason"
       },
       "application": {
         "title": "Application Details"

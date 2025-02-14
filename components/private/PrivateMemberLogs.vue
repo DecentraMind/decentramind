@@ -23,6 +23,10 @@ const logColumns = [
     label: t('private.members.fields.member')
   },
   {
+    key: 'reason',
+    label: t('private.members.fields.reason')
+  },
+  {
     key: 'timestamp',
     label: t('private.members.fields.time')
   }
@@ -33,7 +37,7 @@ let isLoading = $ref(false)
 onMounted(async () => {
   isLoading = true
   try {
-    logs = await getLogs(props.uuid)
+    logs = (await getLogs(props.uuid)).filter(log => log.operation === 'removePrivateMember')
   } catch (error) {
     console.error('Error loading logs:', error)
   } finally {
@@ -45,7 +49,7 @@ onMounted(async () => {
 <template>
   <div>
     <h4 class="font-medium mb-2">
-      {{ t('private.members.history') }}
+      {{ t('private.members.removeHistory') }}
     </h4>
     <UTable
       :rows="logs"
@@ -75,6 +79,9 @@ onMounted(async () => {
           <b>{{ row.params.name }}</b>
           <span>{{ shortString(row.params.address) }}</span>
         </div>
+      </template>
+      <template #reason-data="{ row }">
+        {{ row.params.reason }}
       </template>
       <template #timestamp-data="{ row }">
         {{ formatDate(row.timestamp) }}

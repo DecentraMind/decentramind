@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import type { UserInfoWithAddress } from '~/types'
 import { getQuestions } from '~/utils/community/community'
+import PrivatePendingMembers from './PrivatePendingMembers.vue'
+import PrivateCurrentMembers from './PrivateCurrentMembers.vue'
+import PrivateMemberLogs from './PrivateMemberLogs.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -101,7 +103,7 @@ async function loadMemberData() {
               />
 
               <!-- Member History Section -->
-              <PrivateMemberHistory
+              <PrivateMemberLogs
                 :uuid="uuid"
                 @member-updated="loadMemberData"
               />
