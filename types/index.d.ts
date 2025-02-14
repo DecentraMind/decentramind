@@ -501,3 +501,13 @@ export type PrivateApplication = {
   avatar: string
   answers: string[]
 }
+
+export type Log = {
+  operation: string
+  communityUuid: string
+  operator: string
+  operatorName?: string
+  operatorAvatar?: string
+  params: Record<string, any>
+  timestamp: number
+}

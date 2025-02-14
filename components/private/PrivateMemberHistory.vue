@@ -1,18 +1,15 @@
 <script setup lang="ts">
-interface HistoryRow {
-  action: 'add' | 'remove'
-  admin: string
-  member: string
-  timestamp: number
-}
+import type { Log } from '~/types'
+import { getLogs } from '~/utils/community/community'
+import { formatDate } from '~/utils/time'
 
-defineProps<{
-  history: HistoryRow[]
+const props = defineProps<{
+  uuid: string
 }>()
 
 const { t } = useI18n()
 
-const historyColumns = [
+const logColumns = [
   {
     key: 'action',
     label: t('private.members.fields.action')
@@ -27,13 +24,22 @@ const historyColumns = [
   },
   {
     key: 'timestamp',
-    label: t('private.members.fields.time'),
-    render: (row: HistoryRow) => {
-      const date = new Date(row.timestamp)
-      return date.toLocaleString()
-    }
+    label: t('private.members.fields.time')
   }
 ]
+
+let logs = $ref<Log[]>([])
+let isLoading = $ref(false)
+onMounted(async () => {
+  isLoading = true
+  try {
+    logs = await getLogs(props.uuid)
+  } catch (error) {
+    console.error('Error loading logs:', error)
+  } finally {
+    isLoading = false
+  }
+})
 </script>
 
 <template>
@@ -42,8 +48,37 @@ const historyColumns = [
       {{ t('private.members.history') }}
     </h4>
     <UTable
-      :rows="history"
-      :columns="historyColumns"
-    />
+      :rows="logs"
+      :columns="logColumns"
+      :loading="isLoading"
+    >
+      <template #action-data="{ row }">
+        {{ row.operation }}
+      </template>
+      <template #admin-data="{ row }">
+        <div class="flex items-center space-x-2">
+          <ArAvatar
+            :src="row.operatorAvatar"
+            :alt="row.operatorName"
+            class="w-6 h-6"
+          />
+          <b>{{ row.operatorName }}</b>
+        </div>
+      </template>
+      <template #member-data="{ row }">
+        <div class="flex items-center space-x-2">
+          <ArAvatar
+            :src="row.params.avatar"
+            :alt="row.params.name"
+            class="w-6 h-6"
+          />
+          <b>{{ row.params.name }}</b>
+          <span>{{ shortString(row.params.address) }}</span>
+        </div>
+      </template>
+      <template #timestamp-data="{ row }">
+        {{ formatDate(row.timestamp) }}
+      </template>
+    </UTable>
   </div>
 </template> 

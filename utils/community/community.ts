@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Community, PrivateApplication, UserInfo } from '~/types'
+import type { Community, Log, PrivateApplication, UserInfo } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
@@ -131,15 +131,32 @@ export const approveOrRejectApplication = async (uuid: string, address: string, 
  * @param uuid - The UUID of the community
  * @param address - The address of the member to remove
  */
-export const removePrivateUnlockMember = async (uuid: string, address: string, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const removePrivateUnlockMember = async (uuid: string, address: string, reason: string, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
   const tags = [
     { name: 'Action', value: 'RemovePrivateUnlockMember' },
     { name: 'CommunityUuid', value: uuid },
-    { name: 'Address', value: address }
+    { name: 'Address', value: address },
+    { name: 'Reason', value: reason }
   ]
   return await messageResultCheck({
     process: communityProcessID,
     tags,
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Get logs for a specific community
+ * @param uuid - The UUID of the community
+ * @returns Array of logs
+ */
+export const getLogs = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetLogs' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<Log[]>({
+    process: communityProcessID,
+    tags
   })
 }

@@ -146,6 +146,19 @@ QuestionsByCommunityUuid = QuestionsByCommunityUuid or {}
 ---@type table<string, table<string, string[]>> Answers by community uuid and address, indexed by community uuid and applicant address
 AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 
+---@class Log
+---@field operation string 'approveToPrivate' | 'rejectToPrivate' | 'removePrivateMember'
+---@field communityUuid string
+---@field operator string
+---@field params table<string, any>
+---@field timestamp number
+
+---@type table<string, Log[]> Logs by community uuid, indexed by community uuid
+Logs = Logs or {}
+
+---@type table<string, number[]> Logs indexes by community uuid
+LogsByCommunityUuid = LogsByCommunityUuid or {}
+
 ---@param type string 'task' | 'community'
 ---@param address string
 ---@param pidOrCommunityUuid string
@@ -217,6 +230,18 @@ local function registerUser(address, createdAt, avatar, name)
       canCreateCommunity = false
     }
   end
+end
+
+local function addLog(operation, communityUuid, operator, params, timestamp)
+  table.insert(Logs, {
+    operation = operation,
+    communityUuid = communityUuid,
+    operator = operator,
+    params = params,
+    timestamp = timestamp
+  })
+  LogsByCommunityUuid[communityUuid] = LogsByCommunityUuid[communityUuid] or {}
+  table.insert(LogsByCommunityUuid[communityUuid], #Logs)
 end
 
 Actions = {
@@ -526,9 +551,13 @@ Actions = {
       if operation == 'approve' then
         AnswersByCommunityUuidByAddress[uuid][address] = nil
         UserCommunities[address][uuid].privateUnlockTime = msg.Timestamp
+        addLog('approveToPrivate', uuid, msg.From, { address = address }, msg.Timestamp)
         u.replyData(msg, 'Application approved.')
       elseif operation == 'reject' then
         AnswersByCommunityUuidByAddress[uuid][address] = nil
+        addLog('rejectToPrivate', uuid, msg.From, { address = address }, msg.Timestamp)
+        LogsByCommunityUuid[uuid] = LogsByCommunityUuid[uuid] or {}
+        table.insert(LogsByCommunityUuid[uuid], #Logs)
         u.replyData(msg, 'Application rejected.')
       else
         return u.replyError(msg, 'Invalid operation.')
@@ -556,6 +585,7 @@ Actions = {
     RemovePrivateUnlockMember = function(msg)
       local uuid = msg.Tags.CommunityUuid
       local address = msg.Tags.Address
+      local reason = msg.Tags.Reason
 
       local community = Communities[uuid]
       if not community then
@@ -570,6 +600,30 @@ Actions = {
       end
 
       UserCommunities[address][uuid].privateUnlockTime = nil
+      addLog('removePrivateMember', uuid, msg.From, { address = address, reason = reason }, msg.Timestamp)
+    end,
+
+    GetLogs = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local logs = LogsByCommunityUuid[uuid]
+      if not logs then
+        return u.replyData(msg, '[]')
+      end
+      local result = {}
+      for i = #logs, 1, -1 do
+        local logIndex = logs[i]
+        local log = Logs[logIndex]
+        if Users[log.operator] then
+          log.operatorName = Users[log.operator].name
+          log.operatorAvatar = Users[log.operator].avatar
+        end
+        if log.params.address and Users[log.params.address] then
+          log.params.name = Users[log.params.address].name
+          log.params.avatar = Users[log.params.address].avatar
+        end
+        table.insert(result, log)
+      end
+      u.replyData(msg, result)
     end
   },
 
