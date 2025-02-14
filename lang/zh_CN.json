@@ -159,9 +159,9 @@
       "remove": "移除",
       "search": "搜索成员",
       "viewApplication": "查看申请",
-      "actions": {
-        "add": "加入",
-        "remove": "移出"
+      "logOperations": {
+        "approveToPrivate": "批准",
+        "removePrivateMember": "移除"
       },
       "fields": {
         "applicant": "申请人",

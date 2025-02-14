@@ -57,7 +57,7 @@ onMounted(async () => {
       :loading="isLoading"
     >
       <template #action-data="{ row }">
-        {{ row.operation }}
+        {{ t(`private.members.logOperations.${row.operation}`) }}
       </template>
       <template #admin-data="{ row }">
         <div class="flex items-center space-x-2">

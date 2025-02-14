@@ -244,9 +244,9 @@
       "remove": "Remove",
       "search": "Search by name or address",
       "viewApplication": "View Application",
-      "actions": {
-        "add": "Add",
-        "remove": "Remove"
+      "logOperations": {
+        "approveToPrivate": "Approve",
+        "removePrivateMember": "Remove"
       },
       "fields": {
         "applicant": "Applicant",
