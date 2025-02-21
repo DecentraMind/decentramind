@@ -278,6 +278,7 @@ Actions = {
       local copy = u.deepCopy(Communities[uuid])
       copy.isJoined = true
       copy.joinTime = msg.Timestamp
+      copy.privateUnlockTime = nil
       u.replyData(msg, json.encode(copy))
     end,
 
@@ -295,6 +296,10 @@ Actions = {
 
           if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
             copy.inviteCode = InviteCodesByInviterByCommunityUuid[address][uuid]
+          end
+
+          if UserCommunities[address][uuid].privateUnlockTime then
+            copy.privateUnlockTime = UserCommunities[address][uuid].privateUnlockTime
           end
         end
         table.insert(communities, copy)
@@ -320,6 +325,10 @@ Actions = {
 
         if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
           copy.inviteCode = InviteCodesByInviterByCommunityUuid[address][uuid]
+        end
+
+        if UserCommunities[address][uuid].privateUnlockTime then
+          copy.privateUnlockTime = UserCommunities[address][uuid].privateUnlockTime
         end
       end
 
@@ -528,6 +537,10 @@ Actions = {
     GetApplications = function(msg)
       local uuid = msg.Tags.CommunityUuid
       local applications = {}
+      if not AnswersByCommunityUuidByAddress[uuid] then
+        u.replyData(msg, '[]')
+        return
+      end
       for address, answers in pairs(AnswersByCommunityUuidByAddress[uuid]) do
         local user = Users[address]
         if not user then

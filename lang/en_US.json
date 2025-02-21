@@ -281,7 +281,8 @@
       "remove": "Remove Question",
       "question": "Question",
       "saved": "Questions saved successfully",
-      "description": "Set questions for private area application. Members need to answer these questions to apply."
+      "description": "Set questions for private area application. Members need to answer these questions to apply.",
+      "enableToSetQuestions": "Enable Private Area Application to set questions."
     }
   }
 }

@@ -108,7 +108,7 @@ export type Community = {
 
   isJoined: boolean
   joinTime?: number
-  
+  privateUnlockTime?: number
   inviteCode?: string
 
   admins: string[]

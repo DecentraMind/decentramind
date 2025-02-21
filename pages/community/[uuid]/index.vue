@@ -151,6 +151,7 @@ const showSidebar = ref(false)
           :is-owner="community.owner === address"
           :is-applicable="community.isPrivateApplicable"
           :uuid="uuid"
+          :joined="!!community.privateUnlockTime"
         />
       </div>
 

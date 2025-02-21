@@ -82,52 +82,61 @@ async function updateApplicable(value: boolean) {
         </div>
       </div>
     </template>
+
     <Loading v-if="isLoading" class="h-32" />
-    <template v-else-if="isApplicable">
+    <!-- questions setting -->
+    <template v-else>
       <hr class="my-4">
-      <label class="block text-sm font-medium text-gray-700">
-        {{ t('private.questions.description') }}
-      </label>
-      <div
-        v-for="(question, index) in questions"
-        :key="index"
-        class="space-y-1"
-      >
-        <label class="block text-sm font-medium text-gray-700">
-          {{ t('private.questions.question') }} {{ index + 1 }}
-        </label>
-        <div class="flex items-center space-x-2">
-          <UInput
-            v-model.trim="questions[index]"
-            :placeholder="t('private.questions.placeholder')"
-            class="flex-1"
-          />
-          <UButton
-            v-if="questions.length > 1"
-            color="red"
-            variant="soft"
-            icon="i-heroicons-trash"
-            @click="questions.splice(index, 1)"
-          />
+      <div v-if="!isApplicable">
+        <div class="flex items-center justify-center gap-3 mt-4 text-gray-500">
+          <p>{{ t('private.questions.enableToSetQuestions') }}</p>
         </div>
       </div>
-      <div class="flex justify-between">
-        <UButton
-          color="gray"
-          variant="soft"
-          @click="questions.push('')"
+      <template v-else>
+        <label class="block text-sm font-medium text-gray-700">
+          {{ t('private.questions.description') }}
+        </label>
+        <div
+          v-for="(question, index) in questions"
+          :key="index"
+          class="space-y-1"
         >
-          {{ t('private.questions.add') }}
-        </UButton>
-        <UButton
-          color="primary"
-          :loading="isSaving"
-          :disabled="isSaving"
-          @click="saveQuestions"
-        >
-          {{ t('Save') }}
-        </UButton>
-      </div>
+          <label class="block text-sm font-medium text-gray-700">
+            {{ t('private.questions.question') }} {{ index + 1 }}
+          </label>
+          <div class="flex items-center space-x-2">
+            <UInput
+              v-model.trim="questions[index]"
+              :placeholder="t('private.questions.placeholder')"
+              class="flex-1"
+            />
+            <UButton
+              v-if="questions.length > 1"
+              color="red"
+              variant="soft"
+              icon="i-heroicons-trash"
+              @click="questions.splice(index, 1)"
+            />
+          </div>
+        </div>
+        <div class="flex justify-between">
+          <UButton
+            color="gray"
+            variant="soft"
+            @click="questions.push('')"
+          >
+            {{ t('private.questions.add') }}
+          </UButton>
+          <UButton
+            color="primary"
+            :loading="isSaving"
+            :disabled="isSaving"
+            @click="saveQuestions"
+          >
+            {{ t('Save') }}
+          </UButton>
+        </div>
+      </template>
     </template>
   </div>
 </template> 
