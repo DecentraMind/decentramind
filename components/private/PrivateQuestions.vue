@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { getQuestions, updateQuestions } from '~/utils/community/community'
+import { communityStore } from '~/stores/communityStore'
+
+const { updateIsPrivateApplicable } = $(communityStore())
 
 const props = defineProps<{
   uuid: string
+  showApplicableSetting: boolean
+  isApplicable: boolean
 }>()
 
 const { t } = useI18n()
@@ -11,6 +16,7 @@ const { showSuccess, showError } = $(notificationStore())
 const questions = ref<string[]>([])
 const isSaving = ref(false)
 const isLoading = ref(true)
+let isSettingApplicable = $ref(false)
 
 // Load questions when component is mounted
 onMounted(async () => {
@@ -38,12 +44,42 @@ async function saveQuestions() {
     isSaving.value = false
   }
 }
+
+async function updateApplicable(value: boolean) {
+  try {
+    isSettingApplicable = true
+    await updateIsPrivateApplicable(props.uuid, value)
+  } catch (error) {
+    console.error('Error updating applicable:', error)
+    showError('Failed to update applicable', error as Error)
+  } finally {
+    isSettingApplicable = false
+  }
+}
 </script>
 
 <template>
   <div class="space-y-4">
+    <template v-if="props.showApplicableSetting">
+      <div class="flex items-start flex-col space-y-2">
+        <label class="block text-sm font-semibold text-gray-700">
+          {{ t('private.applicable.label') }}
+        </label>
+        <div class="flex items-center space-x-2">
+          {{ isApplicable ? t('private.applicable.status.enabled') : t('private.applicable.status.disabled') }}
+          <UButton
+            :loading="isSettingApplicable"
+            :disabled="isSettingApplicable"
+            @click="updateApplicable(!isApplicable)"
+          >
+            {{ isApplicable ? t('private.applicable.disable') : t('private.applicable.enable') }}
+          </UButton>
+        </div>
+      </div>
+    </template>
     <Loading v-if="isLoading" class="h-32" />
-    <template v-else>
+    <template v-else-if="isApplicable">
+      <hr class="my-4">
       <label class="block text-sm font-medium text-gray-700">
         {{ t('private.questions.description') }}
       </label>

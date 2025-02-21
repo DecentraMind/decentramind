@@ -112,6 +112,8 @@ export type Community = {
   inviteCode?: string
 
   admins: string[]
+  /** Whether community members can apply to join the private area */
+  isPrivateApplicable: boolean
 }
 
 /**

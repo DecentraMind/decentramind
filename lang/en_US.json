@@ -221,6 +221,15 @@
   "Save": "Save",
 
   "private": {
+    "applicable": {
+      "label": "Private Area Applicable",
+      "enable": "Enable",
+      "disable": "Disable",
+      "status": {
+        "enabled": "Builders can apply to join the private area currently.",
+        "disabled": "Builders can't apply to join the private area currently."
+      }
+    },
     "area": {
       "title": "Private Area",
       "description": "Welcome to the private area",

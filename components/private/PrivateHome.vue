@@ -3,8 +3,12 @@ import { getQuestions } from '~/utils/community/community'
 
 withDefaults(defineProps<{
   isAdmin?: boolean
+  isOwner?: boolean
+  isApplicable?: boolean
 }>(), {
-  isAdmin: false
+  isAdmin: false,
+  isOwner: false,
+  isApplicable: false
 })
 
 const isMembersModalOpen = ref(false)
@@ -75,6 +79,8 @@ function openMembersModal(tab: string = 'members') {
       v-model="isMembersModalOpen"
       :uuid="uuid"
       :default-tab="defaultTab"
+      :show-applicable-setting="isOwner"
+      :is-applicable="isApplicable"
     />
 
     <PrivateApplicationModal

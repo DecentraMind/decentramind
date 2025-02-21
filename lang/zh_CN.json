@@ -136,6 +136,15 @@
   "Save": "保存",
 
   "private": {
+    "applicable": {
+      "label": "非公开协作区加入申请",
+      "enable": "启用",
+      "disable": "禁用",
+      "status": {
+        "enabled": "当前非公开协作区可申请",
+        "disabled": "当前非公开协作区不可申请"
+      }
+    },
     "area": {
       "title": "非公开协作区",
       "description": "欢迎来到非公开协作区",

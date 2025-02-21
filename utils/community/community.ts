@@ -25,6 +25,24 @@ export const getCommunity = async (uuid: string, address?: string) => {
 }
 
 /**
+ * Update the private applicable status of a specific community
+ * @param uuid - The UUID of the community
+ * @param applicable - The new private applicable status
+ */
+export const updatePrivateApplicable = async (uuid: string, applicable: boolean, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'UpdateIsPrivateApplicable' },
+    { name: 'CommunityUuid', value: uuid },
+    { name: 'Applicable', value: applicable.toString() }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
  * Get questions of a specific community
  * @param uuid - The UUID of the community
  * @returns The questions

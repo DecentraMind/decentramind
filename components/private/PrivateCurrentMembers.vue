@@ -71,7 +71,7 @@ const memberColumns = [
 
 <template>
   <div>
-    <h4 class="font-medium mb-2">
+    <h4 class="font-semibold mb-2">
       {{ t('private.members.current') }}
     </h4>
     <UTable

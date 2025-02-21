@@ -27,6 +27,7 @@ ValidVouchers = {
 ---@field name string
 ---@field desc string introduction
 ---@field admins string[]
+---@field isPrivateApplicable boolean @Whether community members can apply to join the private area
 
 --- @type table<string, Community> Communities indexed by community's uuid
 Communities = Communities or {}
@@ -457,9 +458,19 @@ Actions = {
       UserCommunities[address][uuid] = nil
     end,
 
-    GetQuestions = function(msg)
-      local questions = QuestionsByCommunityUuid[msg.Tags.CommunityUuid]
-      u.replyData(msg, questions or {})
+    UpdateIsPrivateApplicable = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local applicable = string.lower(msg.Tags.Applicable)
+      assert(applicable == "true" or applicable == "false", 'Invalid applicable value.')
+
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      assert(msg.From == community.owner, 'You are not the owner of this community.')
+
+      community.isPrivateApplicable = applicable == "true"
     end,
 
     UpdateQuestions = function(msg)

@@ -8,6 +8,8 @@ const props = defineProps<{
   modelValue: boolean
   uuid: string
   defaultTab?: string
+  showApplicableSetting?: boolean
+  isApplicable: boolean
 }>()
 
 const emit = defineEmits<{
@@ -113,7 +115,11 @@ async function loadMemberData() {
 
         <template #questions>
           <UCard>
-            <PrivateQuestions :uuid="uuid" />
+            <PrivateQuestions
+              :uuid="uuid"
+              :show-applicable-setting="!!showApplicableSetting"
+              :is-applicable="isApplicable"
+            />
           </UCard>
         </template>
       </UTabs>
