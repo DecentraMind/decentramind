@@ -471,6 +471,12 @@ Actions = {
       assert(msg.From == community.owner, 'You are not the owner of this community.')
 
       community.isPrivateApplicable = applicable == "true"
+
+      local haveQuestions = QuestionsByCommunityUuid[uuid] and #QuestionsByCommunityUuid[uuid] > 0
+      if community.isPrivateApplicable and not haveQuestions then
+        -- add one default question
+        QuestionsByCommunityUuid[uuid] = { 'Why do you want to join this private area?' }
+      end
     end,
 
     UpdateQuestions = function(msg)

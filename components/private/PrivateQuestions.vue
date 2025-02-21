@@ -20,16 +20,7 @@ let isSettingApplicable = $ref(false)
 
 // Load questions when component is mounted
 onMounted(async () => {
-  try {
-    const loadedQuestions = await getQuestions(props.uuid)
-    questions.value = loadedQuestions && loadedQuestions.length > 0 ? loadedQuestions : ['']
-  } catch (error) {
-    console.error('Error loading questions:', error)
-    showError('Failed to load questions', error as Error)
-    questions.value = ['']
-  } finally {
-    isLoading.value = false
-  }
+  await loadQuestions()
 })
 
 async function saveQuestions() {
@@ -42,6 +33,20 @@ async function saveQuestions() {
     showError('Failed to save questions', error as Error)
   } finally {
     isSaving.value = false
+  }
+}
+
+async function loadQuestions() {
+  try {
+    isLoading.value = true
+    const loadedQuestions = await getQuestions(props.uuid)
+    questions.value = loadedQuestions && loadedQuestions.length > 0 ? loadedQuestions : ['']
+  } catch (error) {
+    console.error('Error loading questions:', error)
+    showError('Failed to load questions', error as Error)
+    questions.value = ['']
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -70,7 +75,7 @@ async function updateApplicable(value: boolean) {
           <UButton
             :loading="isSettingApplicable"
             :disabled="isSettingApplicable"
-            @click="updateApplicable(!isApplicable)"
+            @click="updateApplicable(!isApplicable).then(() => loadQuestions())"
           >
             {{ isApplicable ? t('private.applicable.disable') : t('private.applicable.enable') }}
           </UButton>
@@ -98,6 +103,7 @@ async function updateApplicable(value: boolean) {
             class="flex-1"
           />
           <UButton
+            v-if="questions.length > 1"
             color="red"
             variant="soft"
             icon="i-heroicons-trash"

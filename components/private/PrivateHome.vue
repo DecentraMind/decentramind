@@ -38,8 +38,15 @@ function openMembersModal(tab: string = 'members') {
 <template>
   <UPage>
     <div class="flex flex-col items-center justify-center min-h-screen">
-      <h1 class="text-2xl font-bold mb-4">{{ $t('private.area.title') }}</h1>
-      <p class="text-gray-600">{{ $t('private.area.description') }}</p>
+      <h2 class="text-2xl font-bold mb-4">
+        <UIcon
+          name="heroicons:lock-closed"
+          class="w-10 h-10"
+          :title="$t('private.area.title')"
+        />
+      </h2>
+      <p v-if="isApplicable" class="text-gray-600">{{ $t('private.area.descriptionApplicable') }}</p>
+      <p v-else class="text-gray-600">{{ $t('private.area.descriptionNotApplicable') }}</p>
 
       <!-- application button for users not approved to join private area -->
       <UButton
