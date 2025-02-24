@@ -53,6 +53,7 @@ const bountiesToSend = computed(() => {
       selectedTotalScore,
       props.selectedSubmissions.length,
       props.task.bounties,
+      props.task.totalChances,
     )
     submission.calculatedBounties = calculated as Task['bounties']
   })

@@ -385,6 +385,7 @@ watch(
         selectedTotalScore,
         selectedSubmissions.length,
         task!.bounties,
+        task!.totalChances,
       )
 
       submission.calculatedBounties = calculated as Task['bounties']

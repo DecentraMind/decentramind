@@ -6,7 +6,7 @@ import { DM_BOUNTY_CHARGE_PERCENT, tokensByProcessID } from '~/utils/constants'
 import { float2BigInt } from '~/utils/int'
 import { cloneDeep } from 'lodash-es'
 
-export function calcBounties(submission: AllSubmissionWithCalculatedBounties, selectedTotalScore: number, selectedSubmissionsLength: number, taskBounties: Task['bounties']) {
+export function calcBounties(submission: AllSubmissionWithCalculatedBounties, selectedTotalScore: number, selectedSubmissionsLength: number, taskBounties: Task['bounties'], totalChances: number) {
   const { score, address } = submission
 
   if (score > selectedTotalScore) {
@@ -29,12 +29,15 @@ export function calcBounties(submission: AllSubmissionWithCalculatedBounties, se
     }
     // console.log(`${label} total bounty: ${taskBounty.amount} ${taskBounty.quantity}`)
 
+    /** total amount to send to all submitters, after deducting the DM charge, and multiplied by the selected submissions length / total chances */
+    const totalAmountToSend = taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100) * selectedSubmissionsLength / totalChances
+
     let amountToSend = 0
     if (selectedTotalScore > 0) {
-      amountToSend = (score / selectedTotalScore * taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100))
+      amountToSend = (score / selectedTotalScore * totalAmountToSend)
     } else {
       // if selectedTotalScore is 0, then split the bounty to all submissions equally
-      amountToSend = taskBounty.amount * (1 - DM_BOUNTY_CHARGE_PERCENT/100) / selectedSubmissionsLength
+      amountToSend = totalAmountToSend / selectedSubmissionsLength
     }
     bounty.quantity = float2BigInt(Number(amountToSend.toFixed(denomination-1)), denomination)
     bounty.amount = amountToSend
