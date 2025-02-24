@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Community, Log, PrivateApplication, UserInfo } from '~/types'
+import type { Community, Log, PrivateApplication, PrivateAreaConfig, UserInfo } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
@@ -174,6 +174,22 @@ export const getLogs = async (uuid: string) => {
     { name: 'CommunityUuid', value: uuid }
   ]
   return await dryrunResultParsed<Log[]>({
+    process: communityProcessID,
+    tags
+  })
+}
+
+/**
+ * Get the private area config for a specific community
+ * @param uuid - The UUID of the community
+ * @returns The private area config
+ */
+export const getPrivateAreaConfig = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetPrivateAreaConfig' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<PrivateAreaConfig>({
     process: communityProcessID,
     tags
   })

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getQuestions } from '~/utils/community/community'
+import PrivateIndex from './PrivateIndex.vue'
 
 const props = withDefaults(defineProps<{
   isAdmin?: boolean
@@ -53,10 +54,8 @@ function openMembersModal(tab: string = 'members') {
           class="w-16 h-16 opacity-50"
         />
       </div>
-      <div v-else class="h-full">
-        <div v-if="showIndex">
-          index
-        </div>
+      <div v-else class="h-full w-full">
+        <PrivateIndex v-if="showIndex" :uuid="uuid" />
         <div v-else class="h-full flex flex-col items-center justify-center">
           <h2 class="text-2xl font-bold mb-4">
             <UIcon

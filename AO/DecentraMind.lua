@@ -1,4 +1,4 @@
-Variant = '0.4.93'
+Variant = '0.5.94'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -146,6 +146,30 @@ QuestionsByCommunityUuid = QuestionsByCommunityUuid or {}
 
 ---@type table<string, table<string, string[]>> Answers by community uuid and address, indexed by community uuid and applicant address
 AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
+
+---@class Page
+---@field title string @Title of the private area page
+---@field content string @Content of the private area page
+
+---@class PrivateTask
+---@field title string @Title of the private task
+---@field description string @Description of the private task
+---@field budgets TaskBounty[] @Budgets of the private task
+---@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_settlement' | 'settled'
+---@field createdAt number @Creation time of the private task
+---@field updatedAt number @Update time of the private task
+
+---@class Board
+---@field title string @Title of the private task board
+---@field tasks PrivateTask[] @Tasks of the private task board
+
+---@class PrivateAreaConfig
+---@field pagesAreaTitle string @Title of the private area
+---@field pages Page[] @Pages of the private area
+---@field boards Board[] @Boards of the private area
+
+---@type table<string, PrivateAreaConfig> Private area config, indexed by community uuid
+PrivateAreaConfig = PrivateAreaConfig or {}
 
 ---@class Log
 ---@field operation string 'approveToPrivate' | 'rejectToPrivate' | 'removePrivateMember'
@@ -488,6 +512,11 @@ Actions = {
       end
     end,
 
+    GetQuestions = function(msg)
+      local questions = QuestionsByCommunityUuid[msg.Tags.CommunityUuid]
+      u.replyData(msg, questions or {})
+    end,
+
     UpdateQuestions = function(msg)
       local questions = json.decode(msg.Data)
       local uuid = msg.Tags.CommunityUuid
@@ -631,6 +660,41 @@ Actions = {
 
       UserCommunities[address][uuid].privateUnlockTime = nil
       addLog('removePrivateMember', uuid, msg.From, { address = address, reason = reason }, msg.Timestamp)
+    end,
+
+    GetPrivateAreaConfig = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local config = PrivateAreaConfig[uuid]
+      u.replyData(msg, config or {
+        pagesAreaTitle = 'Private Area',
+        pages = {},
+        boards = {}
+      })
+    end,
+
+    UpdatePrivateAreaConfig = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local config = json.decode(msg.Data)
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+
+      if config.pagesAreaTitle then
+        PrivateAreaConfig[uuid].pagesAreaTitle = config.pagesAreaTitle
+      end
+
+      if config.pages then
+        PrivateAreaConfig[uuid].pages = config.pages
+      end
+
+      if config.boards then
+        PrivateAreaConfig[uuid].boards = config.boards
+      end
+
+      u.replyData(msg, 'Private area config updated.')
     end,
 
     GetLogs = function(msg)

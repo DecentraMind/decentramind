@@ -513,3 +513,28 @@ export type Log = {
   params: Record<string, any>
   timestamp: number
 }
+
+export type Page = {
+  title: string
+  content: string
+}
+
+export type PrivateTask = {
+  title: string
+  description: string
+  budgets: Task['bounties']
+  status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_settlement' | 'settled'
+  createdAt: number
+  updatedAt: number
+}
+
+export type Board = {
+  title: string
+  tasks: PrivateTask[]
+}
+
+export type PrivateAreaConfig = {
+  pagesAreaTitle: string
+  pages: Page[]
+  boards: Board[]
+}
