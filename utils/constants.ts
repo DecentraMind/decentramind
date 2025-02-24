@@ -135,6 +135,13 @@ if (import.meta.env.VITE_PUBLIC_TEST_TOKEN) {
     denomination: 12,
     logo: 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
   }
+  tokens['testDM'] = {
+    ticker: 'DM',
+    label: 'DM',
+    processID: 'RhWfpwx7o7_aMAiZzUVvHGcIFPYDW8B4SqqOc56sqPQ',
+    denomination: 12,
+    logo: 'rZbcNfx8UumPfzZJxXHlwXt7f_kxbO1_dcFbL_i0obg'
+  }
 }
 
 export type TokenName = keyof typeof tokens
