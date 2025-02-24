@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTaskStore } from '~/stores/taskStore'
-import { calcBounties, formatToLocale, fractionalPart } from '~/utils'
+import { calcBounties, formatToLocale } from '~/utils'
 import type {
   Task,
   InviteCodeInfo,
