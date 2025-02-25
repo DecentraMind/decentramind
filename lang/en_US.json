@@ -7,6 +7,14 @@
   "By signing up, you agree to our {0}": "By signing up, you agree to our {0}",
   "Chain Type": "Chain Type",
   "community": {
+    "admin": {
+      "enable": "Enable Community Creation",
+      "title": "Admin Panel",
+      "selectUser": "Select a user",
+      "selectPlaceholder": "Click to select or search by address/name",
+      "enableCreation": "Enable",
+      "enableCreationDescription": "Grant the permission to create community to the selected address."
+    },
     "after": "you can complete that later",
     "banner": "Banner",
     "banner.submit": "Click to upload banner (recommended size xxx)",

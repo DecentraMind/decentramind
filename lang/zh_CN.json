@@ -7,6 +7,14 @@
   "By signing up, you agree to our {0}": "注册即表示您同意我们的{0}。",
   "Chain Type": "链",
   "community": {
+    "admin": {
+      "enable": "授权创建社区",
+      "title": "管理员面板",
+      "selectUser": "选择一个用户",
+      "selectPlaceholder": "点击选择或搜索地址/名称",
+      "enableCreation": "授权",
+      "enableCreationDescription": "授予选定地址创建社区的权限。"
+    },
     "after": "以下内容可以创建后填写",
     "banner": "Banner",
     "banner.submit": "点击上传 banner(建议尺寸xxx)",
