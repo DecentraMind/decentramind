@@ -55,6 +55,13 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
   },
+  NAB: {
+    ticker: 'NAB',
+    label: 'Number Always Bigger',
+    processID: 'OsK9Vgjxo0ypX_HLz2iJJuh4hp3I80yA9KArsJjIloU',
+    denomination: 8,
+    logo: 'LQ4crOHN9qO6JsLNs253AaTch6MgAMbM8PKqBxs4hgI'
+  },
   MINT: {
     ticker: 'MINT',
     label: 'MINT',
