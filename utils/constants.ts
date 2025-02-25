@@ -62,6 +62,13 @@ export const tokens: Record<string, Token> = {
     denomination: 18,
     logo: 'TSi43BNSWrFtEaa4uasu3Owmp4bQnGFXk9Wm_8bu0D4'
   },
+  MINT: {
+    ticker: 'MINT',
+    label: 'MINT',
+    processID: 'SWQx44W-1iMwGFBSHlC3lStCq3Z7O2WZrx9quLeZOu0',
+    denomination: 8,
+    logo: 'P9EWU8qgkvM95Y-HTp8U36i9_2ZzKx3kWtJduCEIKgk'
+  },
   NOKIT: {
     ticker: 'NOKIT',
     label: 'Nobility Kitty',
