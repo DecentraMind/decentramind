@@ -133,5 +133,71 @@
   "WebsiteOfCommunityDetail": "网站",
   "Welcome": "欢迎",
   "yes": "是",
-  "Save": "保存"
+  "Save": "保存",
+
+  "private": {
+    "applicable": {
+      "label": "非公开协作区加入申请",
+      "enable": "启用",
+      "disable": "禁用",
+      "status": {
+        "enabled": "当前非公开协作区可申请",
+        "disabled": "当前非公开协作区不可申请"
+      }
+    },
+    "area": {
+      "title": "非公开协作区",
+      "descriptionNotApplicable": "协作区可浏览，但不支持申请加入哦！",
+      "descriptionApplicable": "协作区可浏览，也支持申请加入哦！",
+      "management": "非公开协作区管理",
+      "noQuestionsWarning": "请添加非公开协作区申请问题",
+      "addQuestions": "添加问题",
+      "view": "点击浏览",
+      "application": "申请加入",
+      "applicationTitle": "非公开协作区申请",
+      "applicationDescription": "请回答以下所有问题以申请加入非公开协作区。",
+      "answerPlaceholder": "在此输入您的答案...",
+      "applicationSubmitted": "您的申请已成功提交，请等待审核。"
+    },
+    "members": {
+      "title": "成员管理",
+      "pending": "待加入成员",
+      "current": "当前成员",
+      "history": "成员历史",
+      "removeHistory": "移除记录",
+      "approve": "批准",
+      "reject": "拒绝",
+      "remove": "移除",
+      "search": "搜索成员",
+      "viewApplication": "查看申请",
+      "logOperations": {
+        "approveToPrivate": "批准",
+        "removePrivateMember": "移除"
+      },
+      "fields": {
+        "applicant": "申请人",
+        "name": "名称",
+        "address": "地址",
+        "action": "操作",
+        "admin": "管理员",
+        "member": "成员",
+        "time": "时间",
+        "actions": "操作",
+        "reason": "原因"
+      },
+      "application": {
+        "title": "申请详情"
+      }
+    },
+    "questions": {
+      "title": "问题设置",
+      "add": "添加问题",
+      "placeholder": "输入问题",
+      "remove": "删除问题",
+      "question": "问题",
+      "saved": "问题保存成功",
+      "description": "设置非公开协作区申请问题。成员需要回答这些问题才能申请加入。",
+      "enableToSetQuestions": "启用非公开协作区申请后，即可设置问题。"
+    }
+  }
 }

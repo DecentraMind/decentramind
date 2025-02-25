@@ -108,10 +108,12 @@ export type Community = {
 
   isJoined: boolean
   joinTime?: number
-  
+  privateUnlockTime?: number
   inviteCode?: string
 
   admins: string[]
+  /** Whether community members can apply to join the private area */
+  isPrivateApplicable: boolean
 }
 
 /**
@@ -324,6 +326,8 @@ export type CommunityMember = UserInfoWithAddress & {
   inviteCode?: string
   inviterAddress?: string
   inviterName?: string
+  /** timestamp when the private area application is approved, if it is not undefined, the invitee can access the private area */
+  privateUnlockTime?: number
 }
 
 export type UploadResponse = {
@@ -491,4 +495,46 @@ export interface TaskValidationParams<T extends ValidatedSpacesInfo | ValidatedT
 export type SubmissionUpdateResponse = {
   result: 'success' | 'error'
   message: string
+}
+
+export type PrivateApplication = {
+  address: string
+  name: string
+  avatar: string
+  answers: string[]
+}
+
+export type Log = {
+  operation: string
+  communityUuid: string
+  operator: string
+  operatorName?: string
+  operatorAvatar?: string
+  params: Record<string, any>
+  timestamp: number
+}
+
+export type Page = {
+  title: string
+  content: string
+}
+
+export type PrivateTask = {
+  title: string
+  description: string
+  budgets: Task['bounties']
+  status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_settlement' | 'settled'
+  createdAt: number
+  updatedAt: number
+}
+
+export type Board = {
+  title: string
+  tasks: PrivateTask[]
+}
+
+export type PrivateAreaConfig = {
+  pagesAreaTitle: string
+  pages: Page[]
+  boards: Board[]
 }

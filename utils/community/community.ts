@@ -1,10 +1,15 @@
-
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Community } from '~/types'
-import { dryrunResultParsed } from '~/utils/ao'
+import type { Community, Log, PrivateApplication, PrivateAreaConfig, UserInfo } from '~/types'
+import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
 
-const aoCommunityProcessID = DM_PROCESS_ID
-// Getting information about a specific community
+const communityProcessID = DM_PROCESS_ID
+
+/**
+ * Get information about a specific community
+ * @param uuid - The UUID of the community
+ * @param address - The address of the user
+ * @returns The community information
+ */
 export const getCommunity = async (uuid: string, address?: string) => {
   const tags = [
     { name: 'Action', value: 'GetCommunity' },
@@ -14,7 +19,178 @@ export const getCommunity = async (uuid: string, address?: string) => {
     tags.push({ name: 'userAddress', value: address })
   }
   return await dryrunResultParsed({
-    process: aoCommunityProcessID,
+    process: communityProcessID,
     tags
   }) as Community
+}
+
+/**
+ * Update the private applicable status of a specific community
+ * @param uuid - The UUID of the community
+ * @param applicable - The new private applicable status
+ */
+export const updatePrivateApplicable = async (uuid: string, applicable: boolean, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'UpdateIsPrivateApplicable' },
+    { name: 'CommunityUuid', value: uuid },
+    { name: 'Applicable', value: applicable.toString() }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Get questions of a specific community
+ * @param uuid - The UUID of the community
+ * @returns The questions
+ */
+export const getQuestions = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetQuestions' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed({ process: communityProcessID, tags }) as string[]
+}
+
+/**
+ * Update questions of a specific community
+ * @param uuid - The UUID of the community
+ * @param questions - The new questions to save
+ */
+export const updateQuestions = async (uuid: string, questions: string[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  console.log('updateQuestions', uuid, JSON.stringify(questions))
+  const tags = [
+    { name: 'Action', value: 'UpdateQuestions' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    data: JSON.stringify(questions),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Submit answers for private area application
+ * @param uuid - The UUID of the community
+ * @param answers - Array of answers to the application questions
+ */
+export const submitAnswers = async (uuid: string, answers: string[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'SubmitAnswers' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    data: JSON.stringify(answers),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Get members who have access to private area
+ * @param uuid - The UUID of the community
+ * @returns Array of member addresses who have private area access
+ */
+export const getPrivateUnlockMembers = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetPrivateUnlockMembers' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<Array<UserInfo & { address: string }>>({
+    process: communityProcessID,
+    tags
+  })
+}
+
+/**
+ * Get pending applications for private area
+ * @param uuid - The UUID of the community
+ * @returns Array of applicant addresses
+ */
+export const getApplications = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetApplications' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<PrivateApplication[]>({
+    process: communityProcessID,
+    tags
+  })
+}
+
+/**
+ * Approve or reject a pending application for private area
+ * @param uuid - The UUID of the community
+ * @param address - The address of the applicant
+ * @param action - Whether to approve or reject the application
+ */
+export const approveOrRejectApplication = async (uuid: string, address: string, operation: 'approve' | 'reject', wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'ApproveOrRejectApplication' },
+    { name: 'CommunityUuid', value: uuid },
+    { name: 'Address', value: address },
+    { name: 'Operation', value: operation }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Remove a member's private area access
+ * @param uuid - The UUID of the community
+ * @param address - The address of the member to remove
+ */
+export const removePrivateUnlockMember = async (uuid: string, address: string, reason: string, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'RemovePrivateUnlockMember' },
+    { name: 'CommunityUuid', value: uuid },
+    { name: 'Address', value: address },
+    { name: 'Reason', value: reason }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+/**
+ * Get logs for a specific community
+ * @param uuid - The UUID of the community
+ * @returns Array of logs
+ */
+export const getLogs = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetLogs' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<Log[]>({
+    process: communityProcessID,
+    tags
+  })
+}
+
+/**
+ * Get the private area config for a specific community
+ * @param uuid - The UUID of the community
+ * @returns The private area config
+ */
+export const getPrivateAreaConfig = async (uuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetPrivateAreaConfig' },
+    { name: 'CommunityUuid', value: uuid }
+  ]
+  return await dryrunResultParsed<PrivateAreaConfig>({
+    process: communityProcessID,
+    tags
+  })
 }

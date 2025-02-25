@@ -42,8 +42,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(arweave@1.15.5)(axios@1.7.7)(warp-arbundles@1.0.4)
       '@permaweb/aoconnect':
-        specifier: ^0.0.67
-        version: 0.0.67
+        specifier: ^0.0.69
+        version: 0.0.69
       '@pinia/nuxt':
         specifier: ^0.5.1
         version: 0.5.5(magicast@0.3.5)(rollup@4.24.0)(typescript@5.6.3)(vue@3.5.12(typescript@5.6.3))
@@ -1584,8 +1584,8 @@ packages:
     resolution: {integrity: sha512-b0UYSTgnLMIYLScrfNBgcqK7ZMmd78L3J0Jz4RIsIq2P5PtkdRqQ7fYqLlltg7bD1f3dvl4TkO1925ED4ei7LA==}
     engines: {node: '>=18'}
 
-  '@permaweb/aoconnect@0.0.67':
-    resolution: {integrity: sha512-DxTGeL6a/YFH5ND+792F25VdIop7Na6akd3fRjy7WjReb+aRnInF8nswoa/OKzf+p+NOJJJHZqOIQjtFmb0zYg==}
+  '@permaweb/aoconnect@0.0.69':
+    resolution: {integrity: sha512-JHGTHeP3zO1ZAuONBGRFHLsMV2Ba3hFkspyYMjhHmNaxXISpYOFX/L2/G8eBd9WIcTBmUdGVL19xPRnRtdyaNw==}
     engines: {node: '>=18'}
 
   '@permaweb/protocol-tag-utils@0.0.2':
@@ -9522,10 +9522,11 @@ snapshots:
       ramda: 0.30.1
       zod: 3.24.1
 
-  '@permaweb/aoconnect@0.0.67':
+  '@permaweb/aoconnect@0.0.69':
     dependencies:
       '@permaweb/ao-scheduler-utils': 0.0.25
       '@permaweb/protocol-tag-utils': 0.0.2
+      base64url: 3.0.1
       buffer: 6.0.3
       debug: 4.4.0
       http-message-signatures: 1.0.4

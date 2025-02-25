@@ -14,7 +14,7 @@ import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
-import { getCommunity as getCommunityAO } from '~/utils/community/community'
+import { getCommunity as getCommunityAO, updatePrivateApplicable } from '~/utils/community/community'
 
 export const communityStore = defineStore('communityStore', () => {
   const aoCommunityProcessID = DM_PROCESS_ID
@@ -494,6 +494,11 @@ export const communityStore = defineStore('communityStore', () => {
     currentCommunityUserMap = users
   }
 
+  async function updateIsPrivateApplicable(uuid: string, applicable: boolean) {
+    await updatePrivateApplicable(uuid, applicable)
+    updateLocalCommunity(uuid, 'isPrivateApplicable', applicable)
+  }
+
 
   return $$({
     communityList,
@@ -524,6 +529,7 @@ export const communityStore = defineStore('communityStore', () => {
     currentCommunityUserMap,
     getCommunity,
     clearCommunityData,
+    updateIsPrivateApplicable
   })
 })
 

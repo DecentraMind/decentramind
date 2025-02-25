@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTaskStore } from '~/stores/taskStore'
-import { calcBounties, formatToLocale, fractionalPart } from '~/utils'
+import { calcBounties, formatToLocale } from '~/utils'
 import type {
   Task,
   InviteCodeInfo,
@@ -385,6 +385,7 @@ watch(
         selectedTotalScore,
         selectedSubmissions.length,
         task!.bounties,
+        task!.totalChances,
       )
 
       submission.calculatedBounties = calculated as Task['bounties']

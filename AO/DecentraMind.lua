@@ -1,4 +1,4 @@
-Variant = '0.4.86'
+Variant = '0.5.94'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -27,6 +27,7 @@ ValidVouchers = {
 ---@field name string
 ---@field desc string introduction
 ---@field admins string[]
+---@field isPrivateApplicable boolean @Whether community members can apply to join the private area
 
 --- @type table<string, Community> Communities indexed by community's uuid
 Communities = Communities or {}
@@ -135,10 +136,53 @@ InviteCodesByInviterByCommunityUuid = InviteCodesByInviterByCommunityUuid or {}
 ---@class UserCommunity
 ---@field joinTime number
 ---@field inviteCode string|nil if the invitee is not invited by others, the inviteCode is nil
+---@field privateUnlockTime number|nil @Timestamp when the private area application is approved, use this field to check if the invitee can access the private area
 
 ---@type table<string, table<string, UserCommunity>> This is user-communities relation. Invite Codes by invitee address and community uuid. This index is used for querying user's joined communities.
 UserCommunities = UserCommunities or {}
 
+---@type table<string, string[]> Questions that need to be answered when applying to join a community's private area, indexed by community uuid
+QuestionsByCommunityUuid = QuestionsByCommunityUuid or {}
+
+---@type table<string, table<string, string[]>> Answers by community uuid and address, indexed by community uuid and applicant address
+AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
+
+---@class Page
+---@field title string @Title of the private area page
+---@field content string @Content of the private area page
+
+---@class PrivateTask
+---@field title string @Title of the private task
+---@field description string @Description of the private task
+---@field budgets TaskBounty[] @Budgets of the private task
+---@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_settlement' | 'settled'
+---@field createdAt number @Creation time of the private task
+---@field updatedAt number @Update time of the private task
+
+---@class Board
+---@field title string @Title of the private task board
+---@field tasks PrivateTask[] @Tasks of the private task board
+
+---@class PrivateAreaConfig
+---@field pagesAreaTitle string @Title of the private area
+---@field pages Page[] @Pages of the private area
+---@field boards Board[] @Boards of the private area
+
+---@type table<string, PrivateAreaConfig> Private area config, indexed by community uuid
+PrivateAreaConfig = PrivateAreaConfig or {}
+
+---@class Log
+---@field operation string 'approveToPrivate' | 'rejectToPrivate' | 'removePrivateMember'
+---@field communityUuid string
+---@field operator string
+---@field params table<string, any>
+---@field timestamp number
+
+---@type table<string, Log[]> Logs by community uuid, indexed by community uuid
+Logs = Logs or {}
+
+---@type table<string, number[]> Logs indexes by community uuid
+LogsByCommunityUuid = LogsByCommunityUuid or {}
 
 ---@param type string 'task' | 'community'
 ---@param address string
@@ -213,6 +257,18 @@ local function registerUser(address, createdAt, avatar, name)
   end
 end
 
+local function addLog(operation, communityUuid, operator, params, timestamp)
+  table.insert(Logs, {
+    operation = operation,
+    communityUuid = communityUuid,
+    operator = operator,
+    params = params,
+    timestamp = timestamp
+  })
+  LogsByCommunityUuid[communityUuid] = LogsByCommunityUuid[communityUuid] or {}
+  table.insert(LogsByCommunityUuid[communityUuid], #Logs)
+end
+
 Actions = {
   Community = {
     CreateCommunity = function(msg)
@@ -246,6 +302,7 @@ Actions = {
       local copy = u.deepCopy(Communities[uuid])
       copy.isJoined = true
       copy.joinTime = msg.Timestamp
+      copy.privateUnlockTime = nil
       u.replyData(msg, json.encode(copy))
     end,
 
@@ -263,6 +320,10 @@ Actions = {
 
           if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
             copy.inviteCode = InviteCodesByInviterByCommunityUuid[address][uuid]
+          end
+
+          if UserCommunities[address][uuid].privateUnlockTime then
+            copy.privateUnlockTime = UserCommunities[address][uuid].privateUnlockTime
           end
         end
         table.insert(communities, copy)
@@ -288,6 +349,10 @@ Actions = {
 
         if InviteCodesByInviterByCommunityUuid[address] and InviteCodesByInviterByCommunityUuid[address][uuid] then
           copy.inviteCode = InviteCodesByInviterByCommunityUuid[address][uuid]
+        end
+
+        if UserCommunities[address][uuid].privateUnlockTime then
+          copy.privateUnlockTime = UserCommunities[address][uuid].privateUnlockTime
         end
       end
 
@@ -425,6 +490,235 @@ Actions = {
 
       UserCommunities[address][uuid] = nil
     end,
+
+    UpdateIsPrivateApplicable = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local applicable = string.lower(msg.Tags.Applicable)
+      assert(applicable == "true" or applicable == "false", 'Invalid applicable value.')
+
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      assert(msg.From == community.owner, 'You are not the owner of this community.')
+
+      community.isPrivateApplicable = applicable == "true"
+
+      local haveQuestions = QuestionsByCommunityUuid[uuid] and #QuestionsByCommunityUuid[uuid] > 0
+      if community.isPrivateApplicable and not haveQuestions then
+        -- add one default question
+        QuestionsByCommunityUuid[uuid] = { 'Why do you want to join this private area?' }
+      end
+    end,
+
+    GetQuestions = function(msg)
+      local questions = QuestionsByCommunityUuid[msg.Tags.CommunityUuid]
+      u.replyData(msg, questions or {})
+    end,
+
+    UpdateQuestions = function(msg)
+      local questions = json.decode(msg.Data)
+      local uuid = msg.Tags.CommunityUuid
+
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+
+      QuestionsByCommunityUuid[uuid] = questions
+    end,
+
+    -- save answers to community
+    SubmitAnswers = function(msg)
+      local answers = json.decode(msg.Data)
+      local uuid = msg.Tags.CommunityUuid
+      local address = msg.From
+
+      if not QuestionsByCommunityUuid[uuid] then
+        return u.replyError(msg, 'Questions not found.')
+      end
+
+      -- applicant must join the community
+      if not UserCommunities[address] or not UserCommunities[address][uuid] then
+        return u.replyError(msg, 'You have not joined the community.')
+      end
+
+      -- if applicant has already submitted answers, return
+      if AnswersByCommunityUuidByAddress[uuid] and AnswersByCommunityUuidByAddress[uuid][address] then
+        return u.replyError(msg, 'You have already submitted answers, please wait for approval.')
+      end
+
+      -- applicant must answer all questions
+      if #answers ~= #QuestionsByCommunityUuid[uuid] then
+        return u.replyError(msg, 'You must answer all questions.')
+      end
+
+      if not AnswersByCommunityUuidByAddress[uuid] then
+        AnswersByCommunityUuidByAddress[uuid] = {}
+      end
+
+      AnswersByCommunityUuidByAddress[uuid][address] = answers
+    end,
+
+    GetApplications = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local applications = {}
+      if not AnswersByCommunityUuidByAddress[uuid] then
+        u.replyData(msg, '[]')
+        return
+      end
+      for address, answers in pairs(AnswersByCommunityUuidByAddress[uuid]) do
+        local user = Users[address]
+        if not user then
+          goto nextApplication
+        end
+
+        table.insert(applications, {
+          address = address,
+          name = user.name,
+          avatar = user.avatar,
+          answers = answers
+        })
+
+        ::nextApplication::
+      end
+      u.replyData(msg, applications)
+    end,
+
+    ApproveOrRejectApplication = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local address = msg.Tags.Address
+      local operation = msg.Tags.Operation
+
+      -- only owner or admins can approve application
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      if msg.From ~= community.owner then
+        return u.replyError(msg, 'You are not the owner.')
+      end
+
+      if not AnswersByCommunityUuidByAddress[uuid] or not AnswersByCommunityUuidByAddress[uuid][address] then
+        return u.replyError(msg, 'Application not found.')
+      end
+
+      if operation == 'approve' then
+        AnswersByCommunityUuidByAddress[uuid][address] = nil
+        UserCommunities[address][uuid].privateUnlockTime = msg.Timestamp
+        addLog('approveToPrivate', uuid, msg.From, { address = address }, msg.Timestamp)
+        u.replyData(msg, 'Application approved.')
+      elseif operation == 'reject' then
+        AnswersByCommunityUuidByAddress[uuid][address] = nil
+        addLog('rejectToPrivate', uuid, msg.From, { address = address }, msg.Timestamp)
+        LogsByCommunityUuid[uuid] = LogsByCommunityUuid[uuid] or {}
+        table.insert(LogsByCommunityUuid[uuid], #Logs)
+        u.replyData(msg, 'Application rejected.')
+      else
+        return u.replyError(msg, 'Invalid operation.')
+      end
+    end,
+
+    GetPrivateUnlockMembers = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local members = {}
+      for address, userCommunity in pairs(UserCommunities) do
+        if userCommunity[uuid] and userCommunity[uuid].privateUnlockTime then
+          local user = Users[address]
+          if not user then
+            goto nextMember
+          end
+          user.address = address
+          table.insert(members, user)
+
+          ::nextMember::
+        end
+      end
+      u.replyData(msg, members)
+    end,
+
+    RemovePrivateUnlockMember = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local address = msg.Tags.Address
+      local reason = msg.Tags.Reason
+
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      -- only owner or admins can remove private unlock member
+      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+
+      if not UserCommunities[address] or not UserCommunities[address][uuid] then
+        return u.replyError(msg, 'The address is not a member of this community.')
+      end
+
+      UserCommunities[address][uuid].privateUnlockTime = nil
+      addLog('removePrivateMember', uuid, msg.From, { address = address, reason = reason }, msg.Timestamp)
+    end,
+
+    GetPrivateAreaConfig = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local config = PrivateAreaConfig[uuid]
+      u.replyData(msg, config or {
+        pagesAreaTitle = 'Private Area',
+        pages = {},
+        boards = {}
+      })
+    end,
+
+    UpdatePrivateAreaConfig = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local config = json.decode(msg.Data)
+      local community = Communities[uuid]
+      if not community then
+        return u.replyError(msg, 'Community not found.')
+      end
+
+      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+
+      if config.pagesAreaTitle then
+        PrivateAreaConfig[uuid].pagesAreaTitle = config.pagesAreaTitle
+      end
+
+      if config.pages then
+        PrivateAreaConfig[uuid].pages = config.pages
+      end
+
+      if config.boards then
+        PrivateAreaConfig[uuid].boards = config.boards
+      end
+
+      u.replyData(msg, 'Private area config updated.')
+    end,
+
+    GetLogs = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      local logs = LogsByCommunityUuid[uuid]
+      if not logs then
+        return u.replyData(msg, '[]')
+      end
+      local result = {}
+      for i = #logs, 1, -1 do
+        local logIndex = logs[i]
+        local log = Logs[logIndex]
+        if Users[log.operator] then
+          log.operatorName = Users[log.operator].name
+          log.operatorAvatar = Users[log.operator].avatar
+        end
+        if log.params.address and Users[log.params.address] then
+          log.params.name = Users[log.params.address].name
+          log.params.avatar = Users[log.params.address].avatar
+        end
+        table.insert(result, log)
+      end
+      u.replyData(msg, result)
+    end
   },
 
   Tasks = {
@@ -888,6 +1182,7 @@ Actions = {
           communityUsers[address].muted = false
 
           communityUsers[address].joinTime = inviteInfo[uuid].joinTime
+          communityUsers[address].privateUnlockTime = inviteInfo[uuid].privateUnlockTime
           if inviteInfo[uuid].inviteCode and Invites[inviteInfo[uuid].inviteCode] then
             communityUsers[address].inviteCode = inviteInfo[uuid].inviteCode
             communityUsers[address].inviterAddress = Invites[inviteInfo[uuid].inviteCode].inviterAddress

@@ -55,6 +55,13 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
   },
+  MINT: {
+    ticker: 'MINT',
+    label: 'MINT',
+    processID: 'SWQx44W-1iMwGFBSHlC3lStCq3Z7O2WZrx9quLeZOu0',
+    denomination: 8,
+    logo: 'P9EWU8qgkvM95Y-HTp8U36i9_2ZzKx3kWtJduCEIKgk'
+  },
   SEND: {
     ticker: 'SEND',
     label: 'Send',
@@ -134,6 +141,13 @@ if (import.meta.env.VITE_PUBLIC_TEST_TOKEN) {
     processID: '4JDIOsjRpAhOdI7P1olLJLmLc090DlxbEQ5xZLZ7NJw',
     denomination: 12,
     logo: 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
+  }
+  tokens['testDM'] = {
+    ticker: 'DM',
+    label: 'DM',
+    processID: 'RhWfpwx7o7_aMAiZzUVvHGcIFPYDW8B4SqqOc56sqPQ',
+    denomination: 12,
+    logo: 'rZbcNfx8UumPfzZJxXHlwXt7f_kxbO1_dcFbL_i0obg'
   }
 }
 
