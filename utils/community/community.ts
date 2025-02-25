@@ -194,3 +194,19 @@ export const getPrivateAreaConfig = async (uuid: string) => {
     tags
   })
 }
+
+/**
+ * Enable community creation for a specific address
+ * @param address - The address to enable community creation for
+ */
+export const enableCommunityCreation = async (address: string, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  const tags = [
+    { name: 'Action', value: 'EnableCommunityCreation' },
+    { name: 'Address', value: address }
+  ]
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}

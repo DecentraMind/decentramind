@@ -223,6 +223,19 @@ const onUpdateModelValue = (value: boolean) => {
 
 const onConfirm = async () => {
   isLoading = true
+
+  // console.log('bountiesToSend', bountiesToSend.value)
+  // sumup the quantity of all bounties, group by tokenProcessID
+  // const totalQuantityMap = {} as Record<string, bigint>
+  // for (const bounty of bountiesToSend.value) {
+  //   if (!totalQuantityMap[bounty.tokenProcessID]) {
+  //     totalQuantityMap[bounty.tokenProcessID] = BigInt(0)
+  //   }
+  //   totalQuantityMap[bounty.tokenProcessID] += bounty.quantity
+  // }
+  // console.log('totalQuantityMap', totalQuantityMap)
+  // isLoading = false
+  
   try {
     await updateTaskSubmissionBounties(props.task.processID, props.selectedSubmissions)
     const sendBountyResult = await sendBounty(props.task.processID, bountiesToSend.value)

@@ -1,4 +1,4 @@
-Variant = '0.5.94'
+Variant = '0.5.95'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -9,6 +9,7 @@ ValidVouchers = {
   'N29ZBiXqWtQK-COOJh9ZQrnMV2btE8XoBy8vyApVYWw', -- DecentraMind voucher
   'Ax_uXyLQBPZSQ15movzv9-O1mDo30khslqN64qD27Z8' -- VouchDAO voucher
 }
+DM_SUPER_ADMIN = 'fk8kHzwZ8mQUq31RmZkzBwZK7_jYQAXyX5WNoGYp8z8'
 
 ---@class Community
 ---@field uuid string
@@ -1216,6 +1217,18 @@ Actions = {
       Users[address] = user
     end,
 
+    EnableCommunityCreation = function(msg)
+      local address = msg.Tags.Address
+      local isPermitted = msg.From == Owner or msg.From == DM_SUPER_ADMIN
+      if not isPermitted then
+        return u.replyError(msg, 'You are not permitted to enable community creation.')
+      end
+      if not Users[address] then
+        return u.replyError(msg, 'User not found.')
+      end
+
+      Users[address].canCreateCommunity = true
+    end,
   },
 
   Invites = {
