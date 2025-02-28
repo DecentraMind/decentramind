@@ -59,8 +59,9 @@ const addBoard = async () => {
     </div>
     <UButton
       v-if="isAdmin"
+      size="xs"
       variant="solid"
-      class="mt-4"
+      class="mt-8"
       icon="i-heroicons-plus"
       @click="addBoard"
     >

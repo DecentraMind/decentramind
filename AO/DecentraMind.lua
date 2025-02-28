@@ -159,6 +159,9 @@ AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 ---@field description string @Description of the private task
 ---@field budgets TaskBounty[] @Budgets of the private task
 ---@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+---@field startAt number @Start time of the private task
+---@field endAt number @End time of the private task
+---@field executionResult string @Execution result of the private task, editable when status is 'executing'
 ---@field createdAt number @Creation time of the private task
 ---@field updatedAt number @Update time of the private task
 

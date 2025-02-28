@@ -254,6 +254,14 @@
       "addBoard": "Add a Kanban"
     },
     "task": {
+      "add": "Add Proposal",
+      "fields": {
+        "title": "Task Name",
+        "timeRange": "Task Period",
+        "description": "Task Proposal Content",
+        "participantsAndBudgets": "Participants and Budgets",
+        "executionResult": "Task Execution Result"
+      },
       "status": {
         "proposal": "Proposal",
         "auditing": "Auditing",

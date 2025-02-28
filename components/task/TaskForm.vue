@@ -234,7 +234,6 @@ onMounted(() => {
             :name="`bounties[${index}].amount`"
             type="number"
             placeholder="Amount"
-            :model-modifiers="{ number: true }"
             :ui="{ base: 'w-24' }"
           />
 

@@ -526,6 +526,9 @@ export type PrivateTask = {
   description: string
   budgets: Task['bounties']
   status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+  startAt: number
+  endAt: number
+  executionResult: string
   createdAt: number
   updatedAt: number
 }

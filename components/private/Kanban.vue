@@ -2,6 +2,7 @@
 import type { ButtonColor } from '#ui/types'
 import type { BoardWithTasks, PrivateTask } from '~/types'
 import Bounties from '@/components/task/Bounties.vue'
+import ProposalModal from './ProposalModal.vue'
 
 const props = defineProps<{
   data: BoardWithTasks
@@ -12,8 +13,8 @@ const statusColorMap: Record<string, ButtonColor> = {
   proposal: 'gray',
   auditing: 'blue',
   executing: 'green',
-  waiting_for_settlement: 'yellow',
-  settled: 'red'
+  waiting_for_settlement: 'orange',
+  settled: 'pink'
 }
 const taskGroups = computed(() => {
   return statuses.reduce((acc, status) => {
@@ -22,9 +23,15 @@ const taskGroups = computed(() => {
   }, {} as Record<string, PrivateTask[]>)
 })
 
+const isProposalModalOpen = ref(false)
+
 onMounted(async () => {
   console.log(props.data)
 })
+
+const fetchTasks = () => {
+  console.log('fetch tasks')
+}
 </script>
 
 <template>
@@ -41,7 +48,13 @@ onMounted(async () => {
             <Bounties :bounties="task.budgets" :show-logo="false" />
           </div>
         </div>
+
+        <div v-if="status === 'proposal'">
+          <UButton variant="ghost" icon="i-heroicons-plus" :label="$t('private.task.add')" class="w-full" @click="isProposalModalOpen = true" />
+        </div>
       </div>
     </div>
+
+    <ProposalModal v-model="isProposalModalOpen" :board-uuid="data.uuid" @proposal-added="fetchTasks" />
   </div>
 </template>
