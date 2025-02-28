@@ -165,7 +165,18 @@
       "applicationTitle": "非公开协作区申请",
       "applicationDescription": "请回答以下所有问题以申请加入非公开协作区。",
       "answerPlaceholder": "在此输入您的答案...",
-      "applicationSubmitted": "您的申请已成功提交，请等待审核。"
+      "applicationSubmitted": "您的申请已成功提交，请等待审核。",
+      "addBoard": "添加看板"
+    },
+    "task": {
+      "status": {
+        "proposal": "提案中",
+        "auditing": "提案审核中",
+        "executing": "执行中",
+        "waiting_for_validation": "执行结果审核中",
+        "waiting_for_settlement": "奖励待发放",
+        "settled": "任务结束"
+      }
     },
     "members": {
       "title": "成员管理",

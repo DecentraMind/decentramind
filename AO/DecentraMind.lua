@@ -1,4 +1,4 @@
-Variant = '0.5.95'
+Variant = '0.5.96'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -149,20 +149,22 @@ QuestionsByCommunityUuid = QuestionsByCommunityUuid or {}
 AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 
 ---@class Page
+---@field uuid string @UUID of the private area page
 ---@field title string @Title of the private area page
 ---@field content string @Content of the private area page
 
 ---@class PrivateTask
+---@field uuid string @UUID of the private task
 ---@field title string @Title of the private task
 ---@field description string @Description of the private task
 ---@field budgets TaskBounty[] @Budgets of the private task
----@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_settlement' | 'settled'
+---@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
 ---@field createdAt number @Creation time of the private task
 ---@field updatedAt number @Update time of the private task
 
 ---@class Board
+---@field uuid string @UUID of the private task board
 ---@field title string @Title of the private task board
----@field tasks PrivateTask[] @Tasks of the private task board
 
 ---@class PrivateAreaConfig
 ---@field pagesAreaTitle string @Title of the private area
@@ -171,6 +173,13 @@ AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 
 ---@type table<string, PrivateAreaConfig> Private area config, indexed by community uuid
 PrivateAreaConfig = PrivateAreaConfig or {}
+
+
+--- @type table<string, PrivateTask> @private tasks table using private task's uuid as key
+PrivateTasks = PrivateTasks or {}
+--- @type table<string, string[]> @private tasks uuid table using board's uuid as key
+PrivateTasksByBoardUuid = PrivateTasksByBoardUuid or {}
+
 
 ---@class Log
 ---@field operation string 'approveToPrivate' | 'rejectToPrivate' | 'removePrivateMember'
@@ -665,12 +674,22 @@ Actions = {
 
     GetPrivateAreaConfig = function(msg)
       local uuid = msg.Tags.CommunityUuid
-      local config = PrivateAreaConfig[uuid]
-      u.replyData(msg, config or {
+      local copy = u.deepCopy(PrivateAreaConfig[uuid] or {
         pagesAreaTitle = 'Private Area',
         pages = {},
         boards = {}
       })
+
+      for _, board in pairs(copy.boards) do
+        board.tasks = {}
+        if PrivateTasksByBoardUuid[board.uuid] then
+          for _, task in pairs(PrivateTasksByBoardUuid[board.uuid]) do
+            table.insert(board.tasks, PrivateTasks[task])
+          end
+        end
+      end
+
+      u.replyData(msg, copy)
     end,
 
     UpdatePrivateAreaConfig = function(msg)
@@ -682,6 +701,14 @@ Actions = {
       end
 
       assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+
+      if not PrivateAreaConfig[uuid] then
+        PrivateAreaConfig[uuid] = {
+          pagesAreaTitle = 'Private Area',
+          pages = {},
+          boards = {}
+        }
+      end
 
       if config.pagesAreaTitle then
         PrivateAreaConfig[uuid].pagesAreaTitle = config.pagesAreaTitle
@@ -695,7 +722,18 @@ Actions = {
         PrivateAreaConfig[uuid].boards = config.boards
       end
 
-      u.replyData(msg, 'Private area config updated.')
+      ---@type PrivateAreaConfig
+      local copy = u.deepCopy(PrivateAreaConfig[uuid])
+
+      for _, board in pairs(copy.boards) do
+        board.tasks = {}
+        if PrivateTasksByBoardUuid[board.uuid] then
+          for _, task in pairs(PrivateTasksByBoardUuid[board.uuid]) do
+            table.insert(board.tasks, PrivateTasks[task])
+          end
+        end
+      end
+      u.replyData(msg, copy)
     end,
 
     GetLogs = function(msg)

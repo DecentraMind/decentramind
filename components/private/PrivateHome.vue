@@ -55,7 +55,7 @@ function openMembersModal(tab: string = 'members') {
         />
       </div>
       <div v-else class="h-full w-full">
-        <PrivateIndex v-if="showIndex" :uuid="uuid" />
+        <PrivateIndex v-if="showIndex" :is-admin="isAdmin" :uuid="uuid" />
         <div v-else class="h-full flex flex-col items-center justify-center">
           <h2 class="text-2xl font-bold mb-4">
             <UIcon

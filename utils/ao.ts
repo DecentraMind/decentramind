@@ -81,8 +81,8 @@ export async function messageResult<T>(messageParams: SendMessageArgs) {
   return extractResult<T>(res)
 }
 
-export async function messageResultParsed(messageParams: SendMessageArgs) {
-  return JSON.parse(await messageResult<string>(messageParams))
+export async function messageResultParsed<T>(messageParams: SendMessageArgs) {
+  return JSON.parse(await messageResult<string>(messageParams)) as T
 }
 
 export async function dryrunResult<T>(messageParams: DryrunInput) {

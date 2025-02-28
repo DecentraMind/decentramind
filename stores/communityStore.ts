@@ -9,7 +9,7 @@ import {
   messageResult,
   messageResultParsed
 } from '~/utils/ao'
-import type { Community, CommunityMember, CommunitySetting, CreateToken, UserInfo } from '~/types'
+import type { Community, CommunityMember, CommunitySetting, CreateToken, PrivateAreaConfig, UserInfo } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
@@ -499,6 +499,16 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, 'isPrivateApplicable', applicable)
   }
 
+  async function updatePrivateAreaConfig(uuid: string, config: PrivateAreaConfig) {
+    const jsonString = JSON.stringify(config)
+    return await messageResultParsed<PrivateAreaConfig>({
+      process: aoCommunityProcessID,
+      tags: [{ name: 'Action', value: 'UpdatePrivateAreaConfig' }, { name: 'CommunityUuid', value: uuid }],
+      data: jsonString,
+      signer: createDataItemSigner(window.arweaveWallet),
+    })
+  }
+
 
   return $$({
     communityList,
@@ -529,7 +539,8 @@ export const communityStore = defineStore('communityStore', () => {
     currentCommunityUserMap,
     getCommunity,
     clearCommunityData,
-    updateIsPrivateApplicable
+    updateIsPrivateApplicable,
+    updatePrivateAreaConfig
   })
 })
 
