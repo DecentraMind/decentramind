@@ -25,9 +25,16 @@ async function onTaskCreated() {
 
 let tasks = $ref<Task[]>([])
 let isLoading = $ref(true)
+
+// Check if target element exists for teleport
+const targetExists = ref(false)
+
 onMounted(async () => {
   try {
     tasks = await getTasksByCommunityUuid(props.community.uuid)
+    
+    // Check if target element exists
+    targetExists.value = !!document.getElementById('top-right-button')
   }
   catch (e) {
     console.error('Error loading tasks:', e)
@@ -137,12 +144,14 @@ onMounted(async () => {
       </div>
     </div>
 
-    <Teleport to="#top-right-button">
-      <AddTaskDropdown
-        v-if="community && isAdminOrOwner"
-        @click-create-task="(type: Task['type']) => { createTaskType = type; isCreateTaskModalOpen = true }"
-      />
-    </Teleport>
+    <ClientOnly>
+      <Teleport to="#top-right-button" :disabled="!targetExists">
+        <AddTaskDropdown
+          v-if="community && isAdminOrOwner && !isLoading"
+          @click-create-task="(type: Task['type']) => { createTaskType = type; isCreateTaskModalOpen = true }"
+        />
+      </Teleport>
+    </ClientOnly>
 
     <UModal v-model="isCreateTaskModalOpen">
       <UCard :ui="{ base: 'sm:min-w-[36rem] sm:max-w-full' }">
