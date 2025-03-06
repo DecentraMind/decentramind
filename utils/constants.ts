@@ -270,6 +270,7 @@ export const maxCommunityBannerDimension = {
 export const minArticleTextLength = 100
 export const minBirdTweetTextLength = 20
 export const minSpaceLiveLength = 15
+export const minSSIM = 0.5
 
 export const maxFetchSpaceIds = 100
 export const maxFetchTweetIds = 100

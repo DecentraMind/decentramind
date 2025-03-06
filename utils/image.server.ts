@@ -13,10 +13,11 @@ export const getImageData = async (url: string, width?: number, height?: number)
       position: 'center'
     })
   }
+  console.log('getImageData from URL', url)
 
   // Extract raw pixels in RGBA format
   const { data, info } = await sharpInstance
-    .ensureAlpha()
+    .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true })
 
@@ -25,15 +26,15 @@ export const getImageData = async (url: string, width?: number, height?: number)
     data: new Uint8ClampedArray(data),
     width: info.width,
     height: info.height,
-    colorSpace: 'srgb'
+    // colorSpace: 'srgb'
   } as ImageData
 }
 
 export const compareImages = async (aUrl: string, bUrl: string) => {
-  const aImageData = await getImageData(aUrl, 100, 100)
-  const bImageData = await getImageData(bUrl, 100, 100)
+  const aImageData = await getImageData(aUrl, 500, 500)
+  const bImageData = await getImageData(bUrl, 500, 500)
   const { mssim } = ssim(aImageData, bImageData)
 
-  console.log('mssim = ' + mssim)
+  console.log({ aUrl, bUrl, mssim })
   return mssim
 }
