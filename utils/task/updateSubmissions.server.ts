@@ -20,7 +20,7 @@ import fs from 'fs'
 import { getCommunity } from '~/utils/community/community'
 import { compareImages } from '~/utils/image.server'
 import { gateways, arUrl } from '~/utils/arAssets'
-import { createDataItemSigner, wordCount } from '~/utils'
+import { createDataItemSigner, wordCount, minSSIM } from '~/utils'
 
 // Common validation logic for both spaces and tweets
 const validateSubmissionData = <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(
@@ -260,7 +260,7 @@ export const saveSpaceTaskSubmitInfo = async function ({
   // console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
   
   // 品牌效应
-  const brandEffect = ssim && ssim >= 0.8 ? 10 : 0
+  const brandEffect = ssim && ssim >= minSSIM ? 10 : 0
   // 听众
   const audience = participantCount
   // 邀请人数

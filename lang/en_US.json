@@ -250,7 +250,26 @@
       "applicationTitle": "Private Area Application",
       "applicationDescription": "Please answer all questions below to apply for private area access.",
       "answerPlaceholder": "Enter your answer here...",
-      "applicationSubmitted": "Your application has been submitted successfully, please wait for approval."
+      "applicationSubmitted": "Your application has been submitted successfully, please wait for approval.",
+      "addBoard": "Add a Kanban"
+    },
+    "task": {
+      "add": "Add Proposal",
+      "fields": {
+        "title": "Task Name",
+        "timeRange": "Task Period",
+        "description": "Task Proposal Content",
+        "participantsAndBudgets": "Participants and Budgets",
+        "executionResult": "Task Execution Result"
+      },
+      "status": {
+        "proposal": "Proposal",
+        "auditing": "Auditing",
+        "executing": "Executing",
+        "waiting_for_validation": "Validating",
+        "waiting_for_settlement": "Waiting for Settlement",
+        "settled": "Settled"
+      }
     },
     "members": {
       "title": "Member Management",

@@ -19,6 +19,7 @@ const { showError } = $(notificationStore())
 const listBottom = $ref<HTMLDivElement>()
 
 const listTop = ref<HTMLElement | null>(null)
+let stopObserver: (() => void) | undefined
 
 onMounted(async () => {
   await loadInboxList(chatID, 10, false)
@@ -31,16 +32,18 @@ onMounted(async () => {
       await loadInboxList(chatID, 10, false)
     }
   )
+  
+  stopObserver = stop
+})
 
-  onUnmounted(() => {
-    stop()
-  })
+onUnmounted(() => {
+  if (stopObserver) {
+    stopObserver()
+  }
 })
 
 let msg = $ref('')
 let isSubmitting = $ref(false)
-
-const loadedItemsCount = $computed(() => mailCache && mailCache[chatID] ? Object.keys(mailCache[chatID]).length : 0)
 
 const scrollToBottom = () => {
   console.log('scrollToBottom')

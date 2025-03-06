@@ -515,26 +515,35 @@ export type Log = {
 }
 
 export type Page = {
+  uuid: string
   title: string
   content: string
 }
 
 export type PrivateTask = {
+  uuid: string
   title: string
   description: string
   budgets: Task['bounties']
-  status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_settlement' | 'settled'
+  status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+  startAt: number
+  endAt: number
+  executionResult: string
   createdAt: number
   updatedAt: number
 }
 
 export type Board = {
+  uuid: string
   title: string
+}
+
+export type BoardWithTasks = Board & {
   tasks: PrivateTask[]
 }
 
 export type PrivateAreaConfig = {
   pagesAreaTitle: string
   pages: Page[]
-  boards: Board[]
+  boards: BoardWithTasks[]
 }
