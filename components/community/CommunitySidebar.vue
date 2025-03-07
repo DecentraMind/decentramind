@@ -105,7 +105,7 @@ const expanded = computed({
     id="community-sidebar"
     v-model="expanded"
     :width="384"
-    class="w-96 lg:w-96 ppp"
+    class="w-96 lg:w-96 overflow-x-hidden"
     collapsible
     :ui="{ slideover: 'w-96 max-w-96' }"
   >
