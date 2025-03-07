@@ -90,7 +90,7 @@ onMounted(async () => {
 
     <div v-if="tasks.length" class="mx-auto w-full">
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-4 xl:gap-10"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 xl:gap-10"
       >
         <UBlogPost
           v-for="task in tasks"
