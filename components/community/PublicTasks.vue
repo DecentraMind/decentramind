@@ -5,7 +5,7 @@ import AddTaskDropdown from '~/components/task/AddTaskDropdown.vue'
 import Bounties from '~/components/task/Bounties.vue'
 
 const taskStore = useTaskStore()
-const { getTasksByCommunityUuid } = taskStore
+const { getOrFetchTasksByCommunityUuid, refreshCommunityTasks, isLoadingCommunityTasks } = taskStore
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
@@ -19,29 +19,35 @@ const createTaskType = $ref<Task['type']>('space')
 let isCreateTaskModalOpen = $ref(false)
 async function onTaskCreated() {
   isCreateTaskModalOpen = false
-  tasks = await getTasksByCommunityUuid(props.community.uuid)
-  console.log('tasks loaded:', tasks)
+  await refreshCommunityTasks(props.community.uuid)
 }
 
-let tasks = $ref<Task[]>([])
-let isLoading = $ref(true)
+// get cached tasks by computed property
+const tasks = computed(() => {
+  const communityTasks = taskStore.taskCacheMap[props.community.uuid]?.tasks || []
+  return communityTasks
+})
 
-// Check if target element exists for teleport
+// get loading status by computed property
+const isLoading = computed(() => {
+  return isLoadingCommunityTasks(props.community.uuid)
+})
+
+// check if target element exists
 const targetExists = ref(false)
 
 onMounted(async () => {
   try {
-    tasks = await getTasksByCommunityUuid(props.community.uuid)
+    // get tasks, if cached, not reload
+    await getOrFetchTasksByCommunityUuid(props.community.uuid)
+    console.log('tasks cache: ', taskStore.taskCacheMap.value)
     
-    // Check if target element exists
+    // check if target element exists
     targetExists.value = !!document.getElementById('top-right-button')
   }
   catch (e) {
     console.error('Error loading tasks:', e)
     showError('Loading tasks data error.', e as Error)
-  }
-  finally {
-    isLoading = false
   }
 })
 </script>
@@ -78,7 +84,7 @@ onMounted(async () => {
     </div>
 
     <div
-      v-if="isLoading"
+      v-if="isLoading && !tasks.length"
       class="absolute top-0 right-0 w-full h-full flex justify-center items-center"
     >
       <UIcon
