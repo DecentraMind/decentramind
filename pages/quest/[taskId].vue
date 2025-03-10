@@ -501,9 +501,7 @@ const onClickShareToTwitter = () => {
                 <div class="font-semibold w-44 shrink-0 mb-2">
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div class="xs:flex-center">
-                  <Bounties v-if="task.bounties" :bounties="task.bounties" />
-                </div>
+                <Bounties v-if="task.bounties" :bounties="task.bounties" />
               </div>
               <div class="xs:flex xs:justify-start">
                 <div class="font-semibold w-44 shrink-0 mb-2">

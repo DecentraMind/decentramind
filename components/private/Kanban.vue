@@ -45,7 +45,7 @@ const fetchTasks = () => {
           <div class="font-medium">{{ task.title }}</div>
           <div class="flex flex-row items-center justify-start gap-2">
             <span class="text-gray-500">Budgets</span>
-            <Bounties :bounties="task.budgets" :show-logo="false" />
+            <Bounties :bounties="task.budgets" :show-logo="false" wrapper-class="flex flex-col items-end" />
           </div>
         </div>
 

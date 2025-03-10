@@ -215,9 +215,7 @@ function categorize(bounties: BountySendHistory[]) {
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           >
             <template #bounties-data="{ row }">
-              <div class="flex flex-col gap-y-1">
-                <Bounties :bounties="row.bounties" :show-plus="false" />
-              </div>
+              <Bounties :bounties="row.bounties" :show-plus="false" wrapper-class="flex flex-col gap-y-1" />
             </template>
           </UTable>
           <div class="flex justify-between mt-2 pt-3.5">
@@ -262,9 +260,7 @@ function categorize(bounties: BountySendHistory[]) {
             :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
           >
             <template #bounties-data="{ row }">
-              <div class="flex flex-col gap-y-2">
-                <Bounties :bounties="row.bounties" :show-plus="false" />
-              </div>
+              <Bounties :bounties="row.bounties" :show-plus="false" wrapper-class="flex flex-col gap-y-2" />
             </template>
           </UTable>
           <div class="flex justify-between mt-2 pt-3.5">

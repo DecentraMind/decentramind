@@ -14,13 +14,15 @@ interface Props {
   showPlus?: boolean
   precisions?: Map<string, number>
   class?: string
+  wrapperClass?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showLogo: true,
   class: 'font-medium',
   showPlus: true,
-  precisions: undefined
+  precisions: undefined,
+  wrapperClass: 'flex justify-start flex-wrap'
 })
 
 const defaultPrecisions = $computed(() =>
@@ -68,34 +70,37 @@ const formattedBounties = computed(() => {
 </script>
 
 <template>
-  <div
-    v-for="(bounty, index) in formattedBounties"
-    :key="bounty.pid"
-    class="flex justify-start"
-  >
-    <!-- + between bounties -->
-    <span v-if="index > 0 && props.showPlus" class="mx-2">+</span>
-    <UPopover
-      mode="hover"
-      :popper="{ placement: 'top' }"
-      :ui="{
-        trigger: 'flex justify-start items-center'
-      }"
+  <div :class="props.wrapperClass">
+    <div
+      v-for="(bounty, index) in formattedBounties"
+      :key="bounty.pid"
+      :data-bounty-token-pid="bounty.pid"
+      class="flex justify-start"
     >
-      <span :class="props.class" :title="bounty.title">
-        {{ bounty.amount }} {{ bounty.tokenName }}
-      </span>
-      <img
-        v-if="bounty.logo"
-        :src="bounty.logo"
-        class="w-6 h-6 rounded-full border border-gray-200 ml-1"
-        alt=""
+      <!-- + between bounties -->
+      <span v-if="index > 0 && props.showPlus" class="mx-2">+</span>
+      <UPopover
+        mode="hover"
+        :popper="{ placement: 'top' }"
+        :ui="{
+          trigger: 'flex justify-start items-center'
+        }"
       >
-      <template #panel>
-        <div class="p-2 w-fit">
-          {{ bounty.pid }}
-        </div>
-      </template>
-    </UPopover>
+        <span :class="props.class + ' whitespace-nowrap'" :title="bounty.title">
+          {{ bounty.amount }} {{ bounty.tokenName }}
+        </span>
+        <img
+          v-if="bounty.logo"
+          :src="bounty.logo"
+          class="w-6 h-6 rounded-full border border-gray-200 ml-1"
+          alt=""
+        >
+        <template #panel>
+          <div class="p-2 w-fit">
+            {{ bounty.pid }}
+          </div>
+        </template>
+      </UPopover>
+    </div>
   </div>
 </template>
