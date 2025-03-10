@@ -134,9 +134,8 @@ onMounted(async () => {
                 <div>
                   <div>{{ $t('Bounty') }}</div>
                 </div>
-                <div class="text-right">
-                  <Bounties :bounties="task.bounties" :show-logo="false" class="font-medium" :show-plus="false" />
-                </div>
+                
+                <Bounties :bounties="task.bounties" :show-logo="false" class="font-medium" :show-plus="false" wrapper-class="flex flex-col items-end" />
               </div>
             </div>
           </template>
