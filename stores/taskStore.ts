@@ -13,12 +13,28 @@ import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 import { getTask, updateTaskSubmissions, submitTask, getInvitesByInviter } from '~/utils/task'
 
+// task cache related interfaces and variables
+export interface TaskCache {
+  tasks: Task[]
+  timestamp: number
+  loading: boolean
+}
+
 export const useTaskStore = defineStore('task', () => {
   const taskManagerProcessID = DM_PROCESS_ID
   const isCreateTaskModalOpen = $ref(false)
 
+  // task cache, save by community UUID
+  const taskCacheMap = ref<Record<string, TaskCache>>({})
+  
+  // whether there are pending requests
+  const pendingRequests = ref<Record<string, Promise<Task[]> | undefined>>({})
+  
+  // cache expiry time (30 minutes)
+  const CACHE_EXPIRY_TIME = 30 * 60 * 1000
+
   const createTask = async (data: TaskForm, communityName: string) => {
-    // create a task process，then add process ID to task info
+    // create a task process, then add process ID to task info
     const taskProcessID = await spawn({
       module: moduleID,
       scheduler: schedulerID,
@@ -117,7 +133,68 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
 
-  const getTasksByCommunityUuid = async (communityUuid: string) => {
+  // get tasks of a community, with cache mechanism
+  const getOrFetchTasksByCommunityUuid = async (communityUuid: string, forceRefresh = false): Promise<Task[]> => {
+    // check if there is valid cache data and not expired
+    const hasValidCache = taskCacheMap.value[communityUuid] && 
+                         (Date.now() - taskCacheMap.value[communityUuid].timestamp < CACHE_EXPIRY_TIME) &&
+                         !forceRefresh
+    
+    console.log('hasValidCache:', hasValidCache)
+    
+    // if there is valid cache and not force refresh, return cached data
+    if (hasValidCache) {
+      console.log('Returning cached data for:', communityUuid)
+      return taskCacheMap.value[communityUuid].tasks
+    }
+    
+    // if there is a pending request, reuse it
+    if (pendingRequests.value[communityUuid]) {
+      console.log('Reusing pending request for:', communityUuid)
+      return pendingRequests.value[communityUuid] as Promise<Task[]>
+    }
+    
+    // initialize cache entry or update status to loading
+    if (!taskCacheMap.value[communityUuid]) {
+      console.log('Initializing cache entry for:', communityUuid)
+      taskCacheMap.value[communityUuid] = {
+        tasks: [],
+        timestamp: 0,
+        loading: true
+      }
+    } else {
+      console.log('Updating loading state for:', communityUuid)
+      taskCacheMap.value[communityUuid].loading = true
+    }
+    
+    // create a new request
+    console.log('Creating new request for:', communityUuid)
+    const fetchPromise = fetchTasksByCommunityUuid(communityUuid)
+      .then(tasks => {
+        // update cache
+        taskCacheMap.value[communityUuid] = {
+          tasks,
+          timestamp: Date.now(),
+          loading: false
+        }
+        // clean request reference
+        delete pendingRequests.value[communityUuid]
+        return tasks
+      })
+      .catch(error => {
+        // handle error
+        taskCacheMap.value[communityUuid].loading = false
+        delete pendingRequests.value[communityUuid]
+        throw error
+      })
+    
+    // store request for possible reuse
+    pendingRequests.value[communityUuid] = fetchPromise
+    return fetchPromise
+  }
+  
+  // original get tasks method, without cache
+  const fetchTasksByCommunityUuid = async (communityUuid: string): Promise<Task[]> => {
     if(!communityUuid) {
       throw new Error('communityUuid is required.')
     }
@@ -142,6 +219,32 @@ export const useTaskStore = defineStore('task', () => {
       }, new Set()).size
       return task
     })
+  }
+  
+  // manually refresh tasks of a community
+  const refreshCommunityTasks = (communityUuid: string) => {
+    return getOrFetchTasksByCommunityUuid(communityUuid, true)
+  }
+  
+  // refresh cache after task creation
+  const refreshAfterTaskCreation = (communityUuid: string, newTask: Task) => {
+    // if there is cache, update it
+    if (taskCacheMap.value[communityUuid]) {
+      taskCacheMap.value[communityUuid].tasks = [
+        newTask,
+        ...taskCacheMap.value[communityUuid].tasks
+      ]
+      taskCacheMap.value[communityUuid].timestamp = Date.now()
+    }
+  }
+  
+  const clearTaskCache = () => {
+    taskCacheMap.value = {}
+  }
+  
+  // check if the tasks of a community are loading
+  const isLoadingCommunityTasks = (communityUuid: string) => {
+    return taskCacheMap.value[communityUuid]?.loading || false
   }
 
   const getTasksByOwner = async (address: string) => {
@@ -302,7 +405,7 @@ export const useTaskStore = defineStore('task', () => {
   
 
   return {
-    createTask, getTask, getTasksByCommunityUuid, getTasksByOwner,
+    createTask, getTask, getOrFetchTasksByCommunityUuid, getTasksByOwner,
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
@@ -316,7 +419,12 @@ export const useTaskStore = defineStore('task', () => {
     // getInvitesByInviter,
     createTaskInviteCode, getInviteByCode, getInvitesByInviter,
 
-    isCreateTaskModalOpen
+    isCreateTaskModalOpen,
+    refreshCommunityTasks,
+    refreshAfterTaskCreation,
+    clearTaskCache,
+    isLoadingCommunityTasks,
+    taskCacheMap
   }
 })
 
