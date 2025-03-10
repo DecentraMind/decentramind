@@ -489,8 +489,8 @@ const onClickShareToTwitter = () => {
                 </div>
               </div> -->
               <div class="xs:flex xs:justify-start">
-                <div class="font-semibold w-44 shrink-0 mb-2">
-                  <div>{{ $t('Time') }}</div>
+                <div class="font-semibold w-44 shrink-0 mb-2 whitespace-nowrap">
+                  {{ $t('Time') }}
                 </div>
                 <div>
                   {{ formatToLocale(task.startTime) }} -
@@ -498,14 +498,14 @@ const onClickShareToTwitter = () => {
                 </div>
               </div>
               <div class="xs:flex xs:justify-start">
-                <div class="font-semibold w-44 shrink-0 mb-2">
-                  <div>{{ $t('Bounty') }}</div>
+                <div class="font-semibold w-44 shrink-0 mb-2 whitespace-nowrap">
+                  {{ $t('Bounty') }}
                 </div>
                 <Bounties v-if="task.bounties" :bounties="task.bounties" />
               </div>
               <div class="xs:flex xs:justify-start">
-                <div class="font-semibold w-44 shrink-0 mb-2">
-                  <div>{{ $t('Total Chances') }}</div>
+                <div class="font-semibold w-44 shrink-0 mb-2 whitespace-nowrap">
+                  {{ $t('Total Chances') }}
                 </div>
                 <div>
                   {{ task.totalChances }}
@@ -513,17 +513,17 @@ const onClickShareToTwitter = () => {
               </div>
 
               <div v-if="task.type === 'promotion'" class="xs:flex xs:justify-start">
-                <div class="font-semibold w-44 shrink-0 mb-2">
-                  <div>{{ $t('task.fields.Promotion Quest Link') }}</div>
+                <div class="font-semibold w-44 shrink-0 mb-2 whitespace-nowrap">
+                  {{ $t('task.fields.Promotion Quest Link') }}
                 </div>
-                <div>
-                  {{ (task as TaskWithLink).link }}
+                <div v-if="(task as TaskWithLink).link" class="break-all">
+                  <a :href="(task as TaskWithLink).link" target="_blank" class="hover:text-primary-500">{{ (task as TaskWithLink).link }}</a>
                 </div>
               </div>
 
               <div class="xs:flex xs:justify-start">
-                <div class="font-semibold w-44 shrink-0 mb-2">
-                  <div>{{ $t('builders now') }}</div>
+                <div class="font-semibold w-44 shrink-0 mb-2 whitespace-nowrap">
+                  {{ $t('builders now') }}
                 </div>
                 <div>
                   {{ isLoading ? '' : submittedBuilderCount }}
@@ -531,7 +531,7 @@ const onClickShareToTwitter = () => {
               </div>
 
               <div>
-                <p class="font-semibold mb-2">
+                <p class="font-semibold w-44 shrink-0 mb-2 whitespace-nowrap">
                   {{ $t('Rules of the Quest') }}
                 </p>
                 <p class="leading-8 whitespace-pre-line">
@@ -603,7 +603,7 @@ const onClickShareToTwitter = () => {
             </div>
 
             <div class="mt-8">
-              <h4 class="font-semibold mb-2">{{ $t('Rules of Judgment') }}</h4>
+              <h4 class="font-semibold w-44 shrink-0 mb-2 whitespace-nowrap">{{ $t('Rules of Judgment') }}</h4>
               <p
                 class="leading-6 text-gray-400 text-sm"
                 v-html="$t(`task.judgment.${task.type}`).replace(/\n/g, '<br>')"
