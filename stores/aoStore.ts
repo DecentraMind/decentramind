@@ -5,7 +5,7 @@ import { DM_PROCESS_ID } from '~/utils/processID'
 import Arweave from 'arweave'
 import type { Tag } from 'arweave/node/lib/transaction'
 import type { AoTag } from '~/types'
-import { getVouchDataSafe } from '~/utils/user/vouch.client'
+import { getVouchData } from '~/utils/user/vouch.client'
 
 const aoCommunityProcessID = DM_PROCESS_ID
 
@@ -196,7 +196,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (!activeAddress) {
       throw new Error('No address specified.')
     }
-    twitterVouchedIDs = await getVouchDataSafe(activeAddress, 'X')
+    twitterVouchedIDs = await getVouchData(activeAddress, 'X')
 
     if (twitterVouchedIDs.length === 0) {
       console.log('No valid Identifiers found in Vouchers.')
