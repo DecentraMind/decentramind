@@ -45,7 +45,7 @@ type sumRow = {
 }
 type Categorized = {
   taskId2BountiesMap: {
-    [taskPid: string]:  BountySendHistory[]
+    [taskPid: string]: (BountySendHistory & { tokenName: string })[]
   }
   sum: { [tokenProcessID: string]: sumRow }
 }
@@ -133,7 +133,7 @@ onMounted(async () => {
     
       if (index === -1) {
         acc.push({
-          label: bounty.tokenName || tokensByProcessID[bounty.tokenProcessID].label,
+          label: tokensByProcessID[bounty.tokenProcessID].label,
           tokenProcessID: bounty.tokenProcessID,
           sum: bounty.amount,
         })
@@ -163,8 +163,7 @@ function categorize(bounties: BountySendHistory[]) {
 
   for (const bounty of bounties) {
     const { tokenProcessID, amount } = bounty
-    const tokenName =
-      bounty.tokenName || tokensByProcessID[tokenProcessID].label
+    const tokenName = tokensByProcessID[tokenProcessID].label
     const taskId2BountiesMap = categorized.taskId2BountiesMap
     if (!taskId2BountiesMap[bounty.taskPid]) {
       taskId2BountiesMap[bounty.taskPid] = []
