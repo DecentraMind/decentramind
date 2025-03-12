@@ -23,13 +23,13 @@ export function shortString(str: string, startLength: number = 6, endLength: num
  */
 export function getDomain(url: string) {
   if (!url) return ''
-  return url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+  return url.replace(/^https?:\/\//i, '').replace(/\/.*$/, '')
 }
 
 export function getHandle(url: string) {
   if (!url) return ''
   const handle = url.match(/\/([^/?#]+)\/?$/)?.[1]
-  return handle ? `${handle}` : url.replace(/https?:\/\//, '')
+  return handle ? `${handle}` : url.replace(/https?:\/\//i, '')
 }
 
 export function toBase62(num: number) {
