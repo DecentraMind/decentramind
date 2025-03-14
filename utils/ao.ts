@@ -4,6 +4,7 @@ import { get } from 'lodash-es'
 const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect({
   // MU_URL: 'https://mu.ao-testnet.xyz',
   // CU_URL: 'https://cu131.ao-testnet.xyz',
+  MODE: 'legacy',
   // If GATEWAY_URL is set but GRAPHQL_URL is not set, then the GATEWAY_URL provided MUST have a /graphql endpoint that serves the Arweave Gateway GraphQL Server. ie. https://arweave.net/graphql
   GATEWAY_URL: 'https://g8way.io',
 })
@@ -21,19 +22,20 @@ export type MessageInput = {
   Id?: string;
   Owner?: string;
 }
+
 export type DryrunInput = MessageInput & {
   [x: string]: any;
 }
 
 // TODO import Types.signer from @permaweb/aoconnect/dist/dal.d.ts
 type Signer = (_: {
-  data: any;
-  tags: { name: string; value: any }[];
+  data?: any;
+  tags?: { name?: string; value?: any }[];
   target?: string;
   anchor?: string;
 }) => Promise<{
-  id: string;
-  raw: any;
+  id?: string;
+  raw?: any;
 }>
 
 export type SendMessageArgs = {
@@ -66,32 +68,58 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
  * Send message to AO, then get result, check if error exists
  */
 export async function messageResultCheck(messageParams: SendMessageArgs) {
-  const messageId = await message(messageParams)
-  const res = await result({ process: messageParams.process, message: messageId })
-  // console.log('check result', res)
-  return checkResult(res)
+  try {
+    const messageId = await message(messageParams)
+    const res = await result({ process: messageParams.process, message: messageId })
+    // console.log('check result', res)
+    return checkResult(res)
+  } catch (error) {
+    console.error('Failed to messageResultCheck', error)
+    throw error
+  }
 }
 
 /**
  * Send message to AO, then get result, check if error exists, then extract data from result
  */
 export async function messageResult<T>(messageParams: SendMessageArgs) {
-  const messageId = await message(messageParams)
-  const res = await result({ process: messageParams.process, message: messageId })
-  return extractResult<T>(res)
+  try {
+    const messageId = await message(messageParams)
+    const res = await result({ process: messageParams.process, message: messageId })
+    return extractResult<T>(res)
+  } catch (error) {
+    console.error('Failed to messageResult:', error)
+    throw error
+  }
 }
 
 export async function messageResultParsed<T>(messageParams: SendMessageArgs) {
-  return JSON.parse(await messageResult<string>(messageParams)) as T
+  try {
+    return JSON.parse(await messageResult<string>(messageParams)) as T
+  } catch (error) {
+    console.error('Failed to parse message result:', error)
+    return null
+  }
 }
 
 export async function dryrunResult<T>(messageParams: DryrunInput) {
-  const result = await dryrun(messageParams)
-  return extractResult<T>(result)
+  try {
+    const result = await dryrun(messageParams)
+    return extractResult<T>(result)
+  } catch (error) {
+    console.error('Failed to dryrun:', error)
+    console.log('messageParams', messageParams)
+    throw error
+  }
 }
 
 export async function dryrunResultParsed<T>(messageParams: DryrunInput) {
-  return JSON.parse(await dryrunResult<string>(messageParams)) as T
+  try {
+    return JSON.parse(await dryrunResult<string>(messageParams)) as T
+  } catch (error) {
+    console.error('Failed to parse dryrun result:', error)
+    return null
+  }
 }
 
 /**
@@ -103,7 +131,7 @@ export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
   checkResult(result)
 
   if (!result?.Messages?.[0]?.Data) {
-    console.error('Failed to extract data from result.Messages', result)
+    console.error('Failed to extract data from result.Messages:', result)
     if (result.Output?.print) {
       console.error(result.Output.data)
     }
