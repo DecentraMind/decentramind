@@ -10,6 +10,8 @@ export const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 /**
  * This function will attempt to run fn multiple times until fn successfully return
  * or reaches args.maxAttempts.
