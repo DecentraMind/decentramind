@@ -2,7 +2,7 @@ import { defineTask } from '#imports'
 import { getTask, getUnsettledTasks } from '~/utils/task'
 import { updateSubmissions } from '~/utils/task/updateSubmissions.server'
 import { Task, ValidatedSpacesInfo, ValidatedTweetInfo } from '~/types'
-import { SPACE_URL_REGEXP, TWEET_URL_REGEXP } from '~/utils'
+import { delay, SPACE_URL_REGEXP, TWEET_URL_REGEXP } from '~/utils'
 import { getByPid2IdsMap, getSpaces, getTweets } from '~/utils/twitter/twitter.server'
 
 type Payload = {
@@ -96,6 +96,7 @@ async function validateSpaceTasks(spaceTasks: Task[]) {
       // continue
     }
     await updateSubmissions(task, spaceInfo as ValidatedSpacesInfo)
+    await delay(1000)
   }
 }
 
@@ -137,5 +138,6 @@ async function validateTweetTasks(tweetTasks: Task[]) {
     }
 
     await updateSubmissions<ValidatedTweetInfo>(task, tweetInfo as ValidatedTweetInfo, tweetInfo.errors)
+    await delay(1000)
   }
 }
