@@ -66,7 +66,7 @@ const refetch = async () => {
 </script>
 
 <template>
-  <div class="relative bg-grid h-screen">
+  <div class="relative bg-grid h-screen w-full">
     <TopNav class="sticky top-0 z-10" />
     <div class="h-[calc(100vh-var(--header-height)-1rem)] overflow-y-auto">
       <div
