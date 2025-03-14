@@ -8,17 +8,10 @@ let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 
 const {
   communityList,
-  isCommunityListLoading,
-  communityListError,
   loadCommunityList,
   joinCommunity,
   setCurrentCommunityUuid,
 } = $(communityStore())
-const {
-  isLoading: isUserInfoLoading,
-  error: userInfoError,
-  refetchUserInfo,
-} = $(useUserInfo())
 
 const { showError, showSuccess } = $(notificationStore())
 
@@ -58,10 +51,6 @@ const joinToCommunity = async (uuid: string, name: string) => {
   } finally {
     joinLoading = false
   }
-}
-
-const refetch = async () => {
-  await Promise.race([loadCommunityList(address), refetchUserInfo()])
 }
 </script>
 
@@ -142,31 +131,6 @@ const refetch = async () => {
             </div>
           </template>
         </UBlogPost>
-      </div>
-      <div v-else class="flex-col-center h-full">
-        <div v-if="isCommunityListLoading || isUserInfoLoading">
-          <UIcon
-            name="svg-spinners:blocks-scale"
-            dynamic
-            class="w-16 h-16 opacity-50"
-          />
-        </div>
-        <UCard v-else>
-          <div
-            class="flex-center text-center whitespace-pre-line text-xl text-gray-500"
-          >
-            <div
-              v-if="communityListError || userInfoError"
-              class="flex-col-center gap-y-4"
-            >
-              <p>Failed to load data.</p>
-              <UButton variant="soft" class="block" @click="refetch()">
-                Retry
-              </UButton>
-            </div>
-            <p v-else>Nothing here，please create the first community.</p>
-          </div>
-        </UCard>
       </div>
 
       <UModal v-model="joinLoading">

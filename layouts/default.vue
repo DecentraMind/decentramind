@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { arUrl, defaultCommunityLogo, defaultUserAvatar, exploreLogo } from '~/utils/arAssets'
-import { cn } from '~/utils/util'
+import { cn, delay } from '~/utils/util'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 import LoginModal from '~/components/users/LoginModal.vue'
 import VouchModal from '~/components/users/VouchModal.vue'
@@ -36,10 +36,13 @@ onMounted(async () => {
       }
       addSwitchListener()
 
-      await Promise.all([
-        updateVouchData(),
-        loadCommunityList(address)
-      ])
+      // don't use Promise.all, because CU may return 429 error
+      // await Promise.all([
+      //   updateVouchData(),
+      //   loadCommunityList(address)
+      // ])
+      await updateVouchData()
+      await loadCommunityList(address)
 
       if (!twitterVouched) {
         // TODO remove vouch modal from this layout if all users are vouched
@@ -57,10 +60,9 @@ onMounted(async () => {
 const refetch = async () => {
   isLoading = true
   try {
-    await Promise.race([
-      loadCommunityList(address),
-      refetchUserInfo()
-    ])
+    await loadCommunityList(address)
+    await delay(1000)
+    await refetchUserInfo()
   } catch (error) {
     console.error('Error refetching data:', error)
   } finally {
