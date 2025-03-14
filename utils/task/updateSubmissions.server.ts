@@ -21,6 +21,7 @@ import { getCommunity } from '~/utils/community/community'
 import { compareImages } from '~/utils/image.server'
 import { gateways, arUrl } from '~/utils/arAssets'
 import { createDataItemSigner, wordCount, minSSIM } from '~/utils'
+import { delay } from '~/utils/util'
 
 // Common validation logic for both spaces and tweets
 const validateSubmissionData = <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(
@@ -124,7 +125,8 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
   const community = await getCommunity(task.communityUuid)
   if (!community) throw new Error('Community not found.')
 
-  await Promise.all(submissions.map(submission => {
+  // 使用顺序调用替代并发 Promise.all
+  for (const submission of submissions) {
     try {
       // Get content ID and data based on task type
       const contentId = task.type === 'space'
@@ -140,23 +142,24 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
         if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error') {
           if (relatedError && relatedError.title === 'Not Found Error') {
             // this tweet or space is deleted by Twitter or not publicly available
-            return updateInvalidSubmission({
+            await updateInvalidSubmission({
               submissionId: submission.id,
               taskPid: task.processID,
               wallet,
               validateStatus: 'invalid',
               validateError: relatedError.detail
             })
+          } else {
+            await updateInvalidSubmission({
+              submissionId: submission.id,
+              taskPid: task.processID,
+              wallet,
+              validateStatus: 'validation_error',
+              validateError: `${task.type === 'space' ? 'Space' : 'Tweet'} not found from Twitter API.`
+            })
           }
-          return updateInvalidSubmission({
-            submissionId: submission.id,
-            taskPid: task.processID,
-            wallet,
-            validateStatus: 'validation_error',
-            validateError: `${task.type === 'space' ? 'Space' : 'Tweet'} not found from Twitter API.`
-          })
         }
-        return
+        continue
       }
 
       let validatedData: ValidatedSpacesInfo | ValidatedTweetInfo
@@ -167,7 +170,7 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
         const validateError = error instanceof Error ? error.message
           : (typeof error === 'string' ? error : 'Unknown error.' )
         if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == 'invalid' || submission.validateStatus == undefined) {
-          return updateInvalidSubmission({
+          await updateInvalidSubmission({
             submissionId: submission.id,
             taskPid: task.processID,
             wallet,
@@ -175,16 +178,16 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
             validateError,
           })
         }
-        return
+        continue
       }
 
       if (validatedData) {
-        return saveValidatedSubmission(submission, validatedData, task, wallet, community.logo)
+        await saveValidatedSubmission(submission, validatedData, task, wallet, community.logo)
       }
 
     } catch (error) {
       const validateError = error instanceof Error ? error.message : 'Unknown error'
-      return updateInvalidSubmission({
+      await updateInvalidSubmission({
         submissionId: submission.id,
         taskPid: task.processID,
         wallet,
@@ -192,7 +195,10 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
         validateError
       })
     }
-  }))
+    
+    // add 1 second delay after each submission processing to prevent AO calculation unit overload
+    await delay(1000)
+  }
 
   return {
     result: 'success',
