@@ -29,14 +29,9 @@
     "@vue-macros/nuxt": "^1.9.27",
     "@vueuse/nuxt": "^10.9.0",
     "arweave": "^1.14.4",
-    "axios": "^1.7.4",
-    "base64-arraybuffer": "^1.0.2",
     "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
     "echarts": "^5.5.0",
-    "global-agent": "^3.0.0",
     "lodash-es": "^4.17.21",
-    "needle": "^3.3.1",
     "nuxt": "^3.13.2",
     "nuxt-gtag": "^2.0.5",
     "nuxt-lodash": "^2.5.3",
@@ -44,8 +39,6 @@
     "pinia": "^2.1.7",
     "sharp": "^0.33.5",
     "ssim.js": "^3.5.0",
-    "twitter-api-sdk": "^1.2.1",
-    "v-calendar": "^3.1.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {

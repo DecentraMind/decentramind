@@ -16,15 +16,6 @@ export interface User {
   location: string
 }
 
-export interface Mail {
-  id: number
-  unread?: boolean
-  from: User
-  subject: string
-  body: string
-  date: string
-}
-
 type MailCache = {
   id: number
   isPending: boolean
