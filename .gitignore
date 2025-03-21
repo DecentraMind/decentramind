@@ -29,3 +29,4 @@ logs
 
 AO/aos
 *.code-workspace
+submissionStateMachine.ts
