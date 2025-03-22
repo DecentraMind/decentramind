@@ -27,27 +27,7 @@ export type DryrunInput = MessageInput & {
   [x: string]: any;
 }
 
-// TODO import Types.signer from @permaweb/aoconnect/dist/dal.d.ts
-type Signer = (_: {
-  data?: any;
-  tags?: { name?: string; value?: any }[];
-  target?: string;
-  anchor?: string;
-}) => Promise<{
-  id?: string;
-  raw?: any;
-}>
-
-export type SendMessageArgs = {
-  process: string;
-  data?: string;
-  tags?: {
-      name: string;
-      value: string;
-  }[];
-  anchor?: string;
-  signer: Signer;
-}
+export type SendMessageArgs = Parameters<typeof message>[0]
 
 export function checkResult(res: Awaited<ReturnType<typeof result>>) {
   if (res.Error) {

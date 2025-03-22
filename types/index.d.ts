@@ -1,5 +1,7 @@
 import type { Avatar } from '#ui/types'
 
+/// <reference types="arconnect" />
+
 export type AoTag = {
   name: string
   value: string
