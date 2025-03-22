@@ -1,7 +1,8 @@
 import { connect, createDataItemSigner } from '@permaweb/aoconnect'
 import { get } from 'lodash-es'
+import { retry } from '~/utils/util'
 
-const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect({
+const { result, results, message, spawn, monitor, unmonitor, dryrun: originalDryrun } = connect({
   // MU_URL: 'https://mu.ao-testnet.xyz',
   // CU_URL: 'https://cu131.ao-testnet.xyz',
   MODE: 'legacy',
@@ -9,27 +10,31 @@ const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect(
   GATEWAY_URL: 'https://g8way.io',
 })
 
+export type DryrunInput = Parameters<typeof originalDryrun>[0]
+export type DryrunOutput = Awaited<ReturnType<typeof originalDryrun>>
+export type ResultInput = Parameters<typeof result>[0]
+export type ResultOutput = Awaited<ReturnType<typeof result>>
+export type MessageInput = Parameters<typeof message>[0]
+
+/**
+ * dryrun wrapper with retry.
+ * @param messageParams 
+ * @returns 
+ */
+const dryrun = async (messageParams: DryrunInput) => {
+  return retry({
+    fn: () => originalDryrun(messageParams),
+    maxAttempts: 3,
+    interval: 500
+  })
+}
+
 export { result, results, message, spawn, monitor, unmonitor, dryrun, createDataItemSigner }
 
-export type MessageInput = {
-  process: string;
-  data?: any;
-  tags?: {
-    name: string;
-    value: string;
-  }[];
-  anchor?: string;
-  Id?: string;
-  Owner?: string;
-}
-
-export type DryrunInput = MessageInput & {
-  [x: string]: any;
-}
-
-export type SendMessageArgs = Parameters<typeof message>[0]
-
-export function checkResult(res: Awaited<ReturnType<typeof result>>) {
+export function checkResult(res: DryrunOutput | ResultOutput | undefined) {
+  if (!res) {
+    throw new Error('No result')
+  }
   if (res.Error) {
     throw new Error(res.Error)
   }
@@ -47,7 +52,7 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
 /**
  * Send message to AO, then get result, check if error exists
  */
-export async function messageResultCheck(messageParams: SendMessageArgs) {
+export async function messageResultCheck(messageParams: MessageInput) {
   try {
     const messageId = await message(messageParams)
     const res = await result({ process: messageParams.process, message: messageId })
@@ -62,7 +67,7 @@ export async function messageResultCheck(messageParams: SendMessageArgs) {
 /**
  * Send message to AO, then get result, check if error exists, then extract data from result
  */
-export async function messageResult<T>(messageParams: SendMessageArgs) {
+export async function messageResult<T>(messageParams: MessageInput) {
   try {
     const messageId = await message(messageParams)
     const res = await result({ process: messageParams.process, message: messageId })
@@ -73,7 +78,7 @@ export async function messageResult<T>(messageParams: SendMessageArgs) {
   }
 }
 
-export async function messageResultParsed<T>(messageParams: SendMessageArgs) {
+export async function messageResultParsed<T>(messageParams: MessageInput) {
   try {
     return JSON.parse(await messageResult<string>(messageParams)) as T
   } catch (error) {
@@ -104,19 +109,19 @@ export async function dryrunResultParsed<T>(messageParams: DryrunInput) {
 
 /**
  * Get data from dryrun/result() return value
- * @param result dryrun result
+ * @param res dryrun/result() return value
  * @returns
  */
-export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
-  checkResult(result)
+export function extractResult<T>(res: DryrunOutput | ResultOutput | undefined) {
+  checkResult(res)
 
-  if (!result?.Messages?.[0]?.Data) {
-    console.error('Failed to extract data from result.Messages:', result)
-    if (result.Output?.print) {
-      console.error(result.Output.data)
+  if (!res?.Messages?.[0]?.Data) {
+    console.error('Failed to extract data from result.Messages:', res)
+    if (res!.Output?.print) {
+      console.error(res!.Output.data)
     }
     throw new Error('Failed to extract data from result.Messages.')
   }
 
-  return result.Messages[0].Data as T
+  return res.Messages[0].Data as T
 }
