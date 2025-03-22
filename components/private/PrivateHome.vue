@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getQuestions } from '~/utils/community/community'
 import PrivateIndex from './PrivateIndex.vue'
+import PrivateManagementModal from './PrivateManagementModal.vue'
 
 const props = withDefaults(defineProps<{
   isAdmin?: boolean
@@ -14,7 +15,7 @@ const props = withDefaults(defineProps<{
   joined: false
 })
 
-const isMembersModalOpen = ref(false)
+const isManagementModalOpen = ref(false)
 const isApplicationModalOpen = ref(false)
 const defaultTab = ref('members')
 let showIndex = $ref(false)
@@ -37,7 +38,7 @@ onMounted(async () => {
 
 function openMembersModal(tab: string = 'members') {
   defaultTab.value = tab
-  isMembersModalOpen.value = true
+  isManagementModalOpen.value = true
 }
 </script>
 
@@ -110,8 +111,8 @@ function openMembersModal(tab: string = 'members') {
       />
     </Teleport>
 
-    <PrivateMembersModal
-      v-model="isMembersModalOpen"
+    <PrivateManagementModal
+      v-model="isManagementModalOpen"
       :uuid="uuid"
       :default-tab="defaultTab"
       :show-applicable-setting="isOwner"

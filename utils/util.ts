@@ -27,12 +27,12 @@ export async function retry<T>(args: {
   let triedTimes = 1
   while (triedTimes <= maxTimes) {
     try {
-      console.info(`Attempt ${triedTimes}, max ${maxTimes}`)
+      // console.info(`Attempt ${triedTimes}, max ${maxTimes}`)
       const res = await fn()
-      console.info(`Attempt ${triedTimes} success, return value: `, res)
+      // console.info(`Attempt ${triedTimes} success, return value: `, res)
       return res
     } catch (error) {
-      console.info(`Attempt ${triedTimes} failed:`, error)
+      // console.info(`Attempt ${triedTimes} failed:`, error)
 
       if (triedTimes === maxTimes) {
         console.error('Max retries reached. Operation failed.' + error)

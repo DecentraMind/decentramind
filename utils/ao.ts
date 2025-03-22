@@ -21,17 +21,21 @@ export type MessageInput = Parameters<typeof message>[0]
  * @param messageParams 
  * @returns 
  */
-const dryrun = async (messageParams: DryrunInput) => {
-  return retry({
+const dryrun = async (messageParams: DryrunInput): Promise<DryrunOutput> => {
+  const res = await retry({
     fn: () => originalDryrun(messageParams),
     maxAttempts: 3,
     interval: 500
   })
+  if (!res) {
+    throw new Error('Dryrun failed.')
+  }
+  return res
 }
 
 export { result, results, message, spawn, monitor, unmonitor, dryrun, createDataItemSigner }
 
-export function checkResult(res: DryrunOutput | ResultOutput | undefined) {
+export function checkResult(res: DryrunOutput | ResultOutput) {
   if (!res) {
     throw new Error('No result')
   }
@@ -83,7 +87,7 @@ export async function messageResultParsed<T>(messageParams: MessageInput) {
     return JSON.parse(await messageResult<string>(messageParams)) as T
   } catch (error) {
     console.error('Failed to parse message result:', error)
-    return null
+    throw error
   }
 }
 
@@ -103,7 +107,7 @@ export async function dryrunResultParsed<T>(messageParams: DryrunInput) {
     return JSON.parse(await dryrunResult<string>(messageParams)) as T
   } catch (error) {
     console.error('Failed to parse dryrun result:', error)
-    return null
+    throw error
   }
 }
 
@@ -112,7 +116,7 @@ export async function dryrunResultParsed<T>(messageParams: DryrunInput) {
  * @param res dryrun/result() return value
  * @returns
  */
-export function extractResult<T>(res: DryrunOutput | ResultOutput | undefined) {
+export function extractResult<T>(res: DryrunOutput | ResultOutput) {
   checkResult(res)
 
   if (!res?.Messages?.[0]?.Data) {

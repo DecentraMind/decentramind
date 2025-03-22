@@ -4,6 +4,7 @@ import Bounties from './Bounties.vue'
 import { tokensByProcessID, calcBounties, bigInt2Float, shortString } from '~/utils'
 import { decentraMindReceiver, DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 import { updateTaskSubmissionBounties } from '~/utils/task'
+import { retry } from '~/utils/util'
 
 const props = defineProps<{
   modelValue: boolean

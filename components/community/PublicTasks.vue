@@ -23,10 +23,7 @@ async function onTaskCreated() {
 }
 
 // get cached tasks by computed property
-const tasks = computed(() => {
-  const communityTasks = taskStore.taskCacheMap[props.community.uuid]?.tasks || []
-  return communityTasks
-})
+let tasks = $ref<Task[]>([])
 
 // get loading status by computed property
 const isLoading = computed(() => {
@@ -39,8 +36,7 @@ const targetExists = ref(false)
 onMounted(async () => {
   try {
     // get tasks, if cached, not reload
-    await getOrFetchTasksByCommunityUuid(props.community.uuid)
-    console.log('tasks cache: ', taskStore.taskCacheMap.value)
+    tasks = await getOrFetchTasksByCommunityUuid(props.community.uuid)
     
     // check if target element exists
     targetExists.value = !!document.getElementById('top-right-button')
