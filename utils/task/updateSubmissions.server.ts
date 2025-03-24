@@ -20,8 +20,10 @@ import fs from 'fs'
 import { getCommunity } from '~/utils/community/community'
 import { compareImages } from '~/utils/image.server'
 import { gateways, arUrl } from '~/utils/arAssets'
-import { createDataItemSigner, wordCount, minSSIM } from '~/utils'
+import { wordCount } from '~/utils/string'
 import { delay } from '~/utils/util'
+import type { Wallet } from '~/utils/ao'
+import { minSSIM } from '~/utils/constants'
 
 // Common validation logic for both spaces and tweets
 const validateSubmissionData = <T extends ValidatedSpacesInfo | ValidatedTweetInfo>(
@@ -214,7 +216,7 @@ type SaveSpaceTaskSubmitInfoParams = {
   communityUuid: string
   communityLogo: string
   invites: InviteCodeInfo[]
-  wallet?: Parameters<typeof createDataItemSigner>[0]
+  wallet?: Wallet
   validateStatus: Submission['validateStatus']
   validateError?: string
 }
@@ -331,7 +333,7 @@ type SaveTweetTaskSubmitInfoParams = {
   data: ValidatedTweetInfo,
   invites: InviteCodeInfo[],
   communityUuid: string,
-  wallet?: Parameters<typeof createDataItemSigner>[0],
+  wallet?: Wallet,
   validateStatus: Submission['validateStatus'],
   validateError?: string
 }

@@ -1,4 +1,4 @@
-import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner, dryrunResultParsed } from '~/utils/ao'
+import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner, dryrunResultParsed, type Wallet } from '~/utils/ao'
 import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, RelatedUserMap, Submission } from '~/types'
 import { extractResult } from '~/utils'
 import { DM_PROCESS_ID } from '~/utils/processID'
@@ -6,6 +6,7 @@ import { cloneDeep } from 'lodash-es'
 import { bigintReplacer } from '~/utils/int'
 
 const taskManagerProcessID = DM_PROCESS_ID
+
 export async function getTask(taskPid: string, address?: string): Promise<Task> {
   if (!taskPid) {
     throw new Error('Task process ID is required to get task info.')
@@ -97,7 +98,7 @@ export async function getUnsettledTasksByCommunityUuid(communityUuid: string) {
 export const updateSubmission = async (
   submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime' | 'validateTime' | 'validator'>>,
   taskPid: string,
-  wallet?: Parameters<typeof createDataItemSigner>[0]
+  wallet?: Wallet
 ) => {
   console.log('update submission', { taskPid, submission: submission.id, validateStatus: submission.validateStatus })
   
@@ -122,7 +123,7 @@ export const updateSubmission = async (
  * @param submissions 
  * @returns 
  */
-export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Wallet) => {
   console.log('update task submissions', submissions)
   if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
@@ -144,7 +145,7 @@ export const updateTaskSubmissions = async (taskPid: string, submissions: AllSub
  * @param submissions
  * @returns 
  */
-export const updateTaskSubmissionBounties = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const updateTaskSubmissionBounties = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Wallet) => {
   console.log('update task submission bounties', submissions)
   if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to update task submission bounties')
@@ -163,7 +164,7 @@ export const updateTaskSubmissionBounties = async (taskPid: string, submissions:
 /**
  * update invalid or validation error submission
  */
-export const updateInvalidSubmission = async function({submissionId, taskPid, wallet, validateStatus, validateError}: {submissionId: number, taskPid: string, wallet?: Parameters<typeof createDataItemSigner>[0], validateStatus: Submission['validateStatus'], validateError?: string}) {
+export const updateInvalidSubmission = async function({submissionId, taskPid, wallet, validateStatus, validateError}: {submissionId: number, taskPid: string, wallet?: Wallet, validateStatus: Submission['validateStatus'], validateError?: string}) {
   if (!validateStatus || !['invalid', 'validation_error'].includes(validateStatus)) {
     throw new Error('Invalid validate status')
   }
@@ -182,7 +183,7 @@ export const updateInvalidSubmission = async function({submissionId, taskPid, wa
  * @returns 
  */
 export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTime'|'updateTime'>, 
-  wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  wallet?: Wallet) => {
   if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
   }

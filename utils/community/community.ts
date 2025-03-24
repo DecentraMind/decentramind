@@ -1,6 +1,6 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
 import type { Community, Log, PrivateApplication, PrivateAreaConfig, PrivateTask, PrivateUnlockMember } from '~/types'
-import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
+import { dryrunResultParsed, messageResultCheck, createDataItemSigner, type Wallet } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
 
@@ -29,7 +29,7 @@ export const getCommunity = async (uuid: string, address?: string) => {
  * @param uuid - The UUID of the community
  * @param applicable - The new private applicable status
  */
-export const updatePrivateApplicable = async (uuid: string, applicable: boolean, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const updatePrivateApplicable = async (uuid: string, applicable: boolean, wallet?: Wallet) => {
   const tags = [
     { name: 'Action', value: 'UpdateIsPrivateApplicable' },
     { name: 'CommunityUuid', value: uuid },
@@ -60,7 +60,7 @@ export const getQuestions = async (uuid: string) => {
  * @param uuid - The UUID of the community
  * @param questions - The new questions to save
  */
-export const updateQuestions = async (uuid: string, questions: string[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const updateQuestions = async (uuid: string, questions: string[], wallet?: Wallet) => {
   console.log('updateQuestions', uuid, JSON.stringify(questions))
   const tags = [
     { name: 'Action', value: 'UpdateQuestions' },
@@ -79,7 +79,7 @@ export const updateQuestions = async (uuid: string, questions: string[], wallet?
  * @param uuid - The UUID of the community
  * @param answers - Array of answers to the application questions
  */
-export const submitAnswers = async (uuid: string, answers: string[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const submitAnswers = async (uuid: string, answers: string[], wallet?: Wallet) => {
   const tags = [
     { name: 'Action', value: 'SubmitAnswers' },
     { name: 'CommunityUuid', value: uuid }
@@ -130,7 +130,7 @@ export const getApplications = async (uuid: string) => {
  * @param address - The address of the applicant
  * @param action - Whether to approve or reject the application
  */
-export const approveOrRejectApplication = async (uuid: string, address: string, operation: 'approve' | 'reject', wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const approveOrRejectApplication = async (uuid: string, address: string, operation: 'approve' | 'reject', wallet?: Wallet) => {
   const tags = [
     { name: 'Action', value: 'ApproveOrRejectApplication' },
     { name: 'CommunityUuid', value: uuid },
@@ -149,7 +149,7 @@ export const approveOrRejectApplication = async (uuid: string, address: string, 
  * @param uuid - The UUID of the community
  * @param address - The address of the member to remove
  */
-export const removePrivateUnlockMember = async (uuid: string, address: string, reason: string, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const removePrivateUnlockMember = async (uuid: string, address: string, reason: string, wallet?: Wallet) => {
   const tags = [
     { name: 'Action', value: 'RemovePrivateUnlockMember' },
     { name: 'CommunityUuid', value: uuid },
@@ -199,7 +199,7 @@ export const getPrivateAreaConfig = async (uuid: string) => {
  * Enable community creation for a specific address
  * @param address - The address to enable community creation for
  */
-export const enableCommunityCreation = async (address: string, wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const enableCommunityCreation = async (address: string, wallet?: Wallet) => {
   const tags = [
     { name: 'Action', value: 'EnableCommunityCreation' },
     { name: 'Address', value: address }
@@ -211,7 +211,7 @@ export const enableCommunityCreation = async (address: string, wallet?: Paramete
   })
 }
 
-export async function updatePrivateAreaConfig(communityUuid: string, config: PrivateAreaConfig, wallet?: Parameters<typeof createDataItemSigner>[0]) {
+export async function updatePrivateAreaConfig(communityUuid: string, config: PrivateAreaConfig, wallet?: Wallet) {
   const jsonString = JSON.stringify(config)
   return await messageResultParsed<PrivateAreaConfig>({
     process: communityProcessID,
@@ -221,7 +221,7 @@ export async function updatePrivateAreaConfig(communityUuid: string, config: Pri
   })
 }
 
-export async function addPrivateTask(communityUuid: string, task: PrivateTask, wallet?: Parameters<typeof createDataItemSigner>[0]) {
+export async function addPrivateTask(communityUuid: string, task: PrivateTask, wallet?: Wallet) {
   const jsonString = JSON.stringify(task)
   return await messageResultParsed<PrivateTask>({
     process: communityProcessID,

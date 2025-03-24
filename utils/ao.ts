@@ -15,6 +15,7 @@ export type DryrunOutput = Awaited<ReturnType<typeof originalDryrun>>
 export type ResultInput = Parameters<typeof result>[0]
 export type ResultOutput = Awaited<ReturnType<typeof result>>
 export type MessageInput = Parameters<typeof message>[0]
+export type Wallet = Parameters<typeof createDataItemSigner>[0]
 
 /**
  * dryrun wrapper with retry.
