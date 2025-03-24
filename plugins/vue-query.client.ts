@@ -1,4 +1,5 @@
 import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
+import { experimental_createPersister } from '@tanstack/query-persist-client-core'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const queryClient = new QueryClient({
@@ -8,6 +9,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         refetchOnWindowFocus: false,
         retry: 3,
         retryDelay: 500,
+        persister: experimental_createPersister({
+          storage: globalThis.window.localStorage,
+          maxAge: 1000 * 60 * 60 * 12, // 12 hours
+        }),
       },
     },
   })

@@ -44,6 +44,9 @@ importers:
       '@pinia/nuxt':
         specifier: ^0.5.1
         version: 0.5.5(magicast@0.3.5)(rollup@4.24.0)(typescript@5.6.3)(vue@3.5.12(typescript@5.6.3))
+      '@tanstack/query-persist-client-core':
+        specifier: ^5.69.0
+        version: 5.69.0
       '@tanstack/vue-query':
         specifier: ^5.69.0
         version: 5.69.0(vue@3.5.12(typescript@5.6.3))
@@ -2234,6 +2237,9 @@ packages:
 
   '@tanstack/query-core@5.69.0':
     resolution: {integrity: sha512-Kn410jq6vs1P8Nm+ZsRj9H+U3C0kjuEkYLxbiCyn3MDEiYor1j2DGVULqAz62SLZtUZ/e9Xt6xMXiJ3NJ65WyQ==}
+
+  '@tanstack/query-persist-client-core@5.69.0':
+    resolution: {integrity: sha512-OisxDgcDH0ajswGBA+TXXSn5uzll1EaCB6/MQH+2+t4JqR/qq5TS8nh6A7pas/GBFB01kNpgKRYmZp0tkKVtOg==}
 
   '@tanstack/virtual-core@3.10.8':
     resolution: {integrity: sha512-PBu00mtt95jbKFi6Llk9aik8bnR3tR/oQP1o3TSi+iG//+Q2RTIzCEgKkHG8BB86kxMNW6O8wku+Lmi+QFR6jA==}
@@ -10555,6 +10561,10 @@ snapshots:
       remove-accents: 0.5.0
 
   '@tanstack/query-core@5.69.0': {}
+
+  '@tanstack/query-persist-client-core@5.69.0':
+    dependencies:
+      '@tanstack/query-core': 5.69.0
 
   '@tanstack/virtual-core@3.10.8': {}
 
