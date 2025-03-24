@@ -41,6 +41,33 @@ export async function getTask(taskPid: string, address?: string): Promise<Task> 
   return task
 }
 
+export const getTasksByCommunityUuid = async (communityUuid: string): Promise<Task[]> => {
+  if(!communityUuid) {
+    throw new Error('communityUuid is required.')
+  }
+
+  const res = await dryrun({
+    process: taskManagerProcessID,
+    tags: [
+      { name: 'Action', value: 'GetTasksByCommunityUuid' },
+      { name: 'CommunityUuid', value: communityUuid },
+    ],
+  })
+
+  const resp = extractResult<string>(res)
+  const tasks = JSON.parse(resp) as Task[]
+
+  return tasks.sort((a, b) => {
+    return a.createTime >= b.createTime ? -1 : 1
+  }).map(task => {
+    // TODO this is a temp fix of submittersCount, remove this if TaskManger process reply correct submittersCount
+    task.submittersCount = task.submissions.reduce((set, submission) => {
+      return set.add(submission.address) 
+    }, new Set()).size
+    return task
+  })
+}
+
 /**
  * Get tasks that are not settled
  */

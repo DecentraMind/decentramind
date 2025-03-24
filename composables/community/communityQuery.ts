@@ -1,23 +1,7 @@
-import { useMutation, useQuery, type UseQueryOptions } from '@tanstack/vue-query'
+import { useMutation } from '@tanstack/vue-query'
 import type { PrivateAreaConfig, PrivateTask } from '~/types'
 import { addPrivateTask, getApplications, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, updatePrivateAreaConfig } from '~/utils/community/community'
-
-function createQueryComposable<TArgs, TResult>(
-  queryKey: string[],
-  queryFn: (_: TArgs) => Promise<TResult>
-) {
-  return (args: TArgs, options?: Partial<UseQueryOptions<TResult>> & { additionalKeys?: string[] }) => {
-    const serializedArgs = args instanceof Object 
-    ? JSON.stringify(args) 
-    : String(args)
-    return useQuery<TResult>({
-      queryKey: [...queryKey, serializedArgs, ...(options?.additionalKeys || [])],
-      queryFn: () => queryFn(args),
-      enabled: true,
-      ...options
-    })
-  }
-}
+import { createQueryComposable } from '~/utils/query.client'
 
 export const useApplicationsByCommunityQuery = createQueryComposable(['community', 'applications'], getApplications)
 

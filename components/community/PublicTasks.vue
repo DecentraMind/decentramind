@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import type { Community, Task } from '~/types'
-import { useTaskStore } from '~/stores/taskStore'
 import AddTaskDropdown from '~/components/task/AddTaskDropdown.vue'
 import Bounties from '~/components/task/Bounties.vue'
+import { useTasksByCommunityUuidQuery } from '~/composables/tasks/taskQuery'
 
-const taskStore = useTaskStore()
-const { getOrFetchTasksByCommunityUuid, refreshCommunityTasks, isLoadingCommunityTasks } = taskStore
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
@@ -17,34 +15,25 @@ const props = defineProps<{
 const createTaskType = $ref<Task['type']>('space')
 
 let isCreateTaskModalOpen = $ref(false)
-async function onTaskCreated() {
-  isCreateTaskModalOpen = false
-  await refreshCommunityTasks(props.community.uuid)
-}
 
 // get cached tasks by computed property
-let tasks = $ref<Task[]>([])
-
-// get loading status by computed property
-const isLoading = computed(() => {
-  return isLoadingCommunityTasks(props.community.uuid)
+const { data: tasks, isLoading, isError, error, refetch } = useTasksByCommunityUuidQuery(props.community.uuid)
+watchEffect(() => {
+  if (isError.value) {
+    showError('Loading tasks data error.', error.value as Error)
+  }
 })
+async function onTaskCreated() {
+  isCreateTaskModalOpen = false
+  console.log('onTaskCreated')
 
-// check if target element exists
+  await refetch()
+}
+
+// if teleport element exists
 const targetExists = ref(false)
-
 onMounted(async () => {
-  try {
-    // get tasks, if cached, not reload
-    tasks = await getOrFetchTasksByCommunityUuid(props.community.uuid)
-    
-    // check if target element exists
-    targetExists.value = !!document.getElementById('top-right-button')
-  }
-  catch (e) {
-    console.error('Error loading tasks:', e)
-    showError('Loading tasks data error.', e as Error)
-  }
+  targetExists.value = !!document.getElementById('top-right-button')
 })
 </script>
 
@@ -52,7 +41,7 @@ onMounted(async () => {
   <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height))] overflow-y-auto scroll-gutter">
     <!-- No tasks -->
     <div
-      v-if="!tasks.length && !isLoading"
+      v-if="!tasks?.length && !isLoading"
       class="h-[calc(100vh-var(--header-height)-40px)] w-2/3 flex justify-center items-center"
     >
       <UCard>
@@ -80,7 +69,7 @@ onMounted(async () => {
     </div>
 
     <div
-      v-if="isLoading && !tasks.length"
+      v-if="isLoading"
       class="absolute top-0 right-0 w-full h-full flex justify-center items-center"
     >
       <UIcon
@@ -90,7 +79,7 @@ onMounted(async () => {
       />
     </div>
 
-    <div v-if="tasks.length" class="mx-auto w-full">
+    <div v-if="tasks?.length" class="mx-auto w-full">
       <div
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 xl:gap-10"
       >

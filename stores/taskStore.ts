@@ -124,78 +124,6 @@ export const useTaskStore = defineStore('task', () => {
     })
   }
   
-  // 提供命令式函数，替代原始的 getOrFetchTasksByCommunityUuid
-  const getOrFetchTasksByCommunityUuid = async (communityUuid: string, forceRefresh = false): Promise<Task[]> => {
-    const queryClient = useQueryClient()
-    const queryKey = ['tasks', 'fetchTasksByCommunityUuid', communityUuid]
-    
-    if (forceRefresh) {
-      return await queryClient.fetchQuery({
-        queryKey,
-        queryFn: () => fetchTasksByCommunityUuid(communityUuid)
-      })
-    }
-    
-    // 先检查缓存
-    const cachedData = queryClient.getQueryData<Task[]>(queryKey)
-    if (cachedData) {
-      return cachedData
-    }
-    
-    // 没有缓存则获取数据
-    return await queryClient.fetchQuery({
-      queryKey,
-      queryFn: () => fetchTasksByCommunityUuid(communityUuid)
-    })
-  }
-  
-  // original get tasks method, without cache
-  const fetchTasksByCommunityUuid = async (communityUuid: string): Promise<Task[]> => {
-    if(!communityUuid) {
-      throw new Error('communityUuid is required.')
-    }
-
-    const res = await dryrun({
-      process: taskManagerProcessID,
-      tags: [
-        { name: 'Action', value: 'GetTasksByCommunityUuid' },
-        { name: 'CommunityUuid', value: communityUuid },
-      ],
-    })
-
-    const resp = extractResult<string>(res)
-    const tasks = JSON.parse(resp) as Task[]
-
-    return tasks.sort((a, b) => {
-      return a.createTime >= b.createTime ? -1 : 1
-    }).map(task => {
-      // TODO this is a temp fix of submittersCount, remove this if TaskManger process reply correct submittersCount
-      task.submittersCount = task.submissions.reduce((set, submission) => {
-        return set.add(submission.address) 
-      }, new Set()).size
-      return task
-    })
-  }
-  
-  // manually refresh tasks of a community
-  const refreshCommunityTasks = (communityUuid: string) => {
-    return getOrFetchTasksByCommunityUuid(communityUuid, true)
-  }
-  
-  // refresh cache after task creation
-  const refreshAfterTaskCreation = (communityUuid: string, newTask: Task) => {
-    const queryClient = useQueryClient()
-    queryClient.setQueryData<Task[]>(['tasks', 'community', communityUuid], (oldData) => {
-      if (!oldData) return [newTask]
-      return [newTask, ...oldData]
-    })
-  }
-  
-  const clearTaskCache = () => {
-    const queryClient = useQueryClient()
-    queryClient.invalidateQueries({ queryKey: ['tasks', 'fetchTasksByCommunityUuid'] })
-  }
-  
   // check if the tasks of a community are loading
   const isLoadingCommunityTasks = (communityUuid: string) => {
     const queryClient = useQueryClient()
@@ -360,7 +288,7 @@ export const useTaskStore = defineStore('task', () => {
   
 
   return {
-    createTask, getTask, getOrFetchTasksByCommunityUuid, getTasksByOwner,
+    createTask, getTask, getTasksByOwner,
 
     sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
 
@@ -375,9 +303,6 @@ export const useTaskStore = defineStore('task', () => {
     createTaskInviteCode, getInviteByCode, getInvitesByInviter,
 
     isCreateTaskModalOpen,
-    refreshCommunityTasks,
-    refreshAfterTaskCreation,
-    clearTaskCache,
     isLoadingCommunityTasks
   }
 })
