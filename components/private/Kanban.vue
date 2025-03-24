@@ -8,6 +8,8 @@ const props = defineProps<{
   data: BoardWithTasks
 }>()
 
+const runtimeConfig = useRuntimeConfig()
+
 const statuses = ['proposal', 'auditing', 'executing', 'waiting_for_settlement', 'settled']
 const statusColorMap: Record<string, ButtonColor> = {
   proposal: 'gray',
@@ -36,7 +38,10 @@ const fetchTasks = () => {
 
 <template>
   <div class="ttt w-full h-fit flex flex-col items-start justify-start">
-    <h3 class="text-lg font-bold mb-3">{{ data.title }}</h3>
+    <div class="flex flex-row items-center justify-between w-full">
+      <h3 class="text-lg font-bold mb-3">{{ data.title }}</h3>
+      <span v-if="runtimeConfig.public.debug" class="text-sm text-gray-500">{{ data.uuid }}</span>
+    </div>
     <div class="w-full h-full flex flex-row items-start justify-start gap-4">
       <div v-for="status in statuses" :key="status" class="w-1/5 h-full">
         <UButton variant="soft" :color="statusColorMap[status]" :label="$t(`private.task.status.${status}`)" class="w-full mb-3" />

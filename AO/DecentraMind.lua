@@ -1,4 +1,4 @@
-Variant = '0.5.96'
+Variant = '0.5.98'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -153,11 +153,15 @@ AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 ---@field title string @Title of the private area page
 ---@field content string @Content of the private area page
 
+---@class PrivateTaskBudget: TaskBounty
+---@field member string @Address of the member
+
 ---@class PrivateTask
 ---@field uuid string @UUID of the private task
+---@field boardUuid string @UUID of the private task board
 ---@field title string @Title of the private task
 ---@field description string @Description of the private task
----@field budgets TaskBounty[] @Budgets of the private task
+---@field budgets PrivateTaskBudget[] @Budgets of the private task
 ---@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
 ---@field startAt number @Start time of the private task
 ---@field endAt number @End time of the private task
@@ -559,6 +563,11 @@ Actions = {
         return u.replyError(msg, 'You have not joined the community.')
       end
 
+      -- if applicant is already in the private area, return
+      if UserCommunities[address][uuid].privateUnlockTime then
+        return u.replyError(msg, 'You are already in the private area.')
+      end
+
       -- if applicant has already submitted answers, return
       if AnswersByCommunityUuidByAddress[uuid] and AnswersByCommunityUuidByAddress[uuid][address] then
         return u.replyError(msg, 'You have already submitted answers, please wait for approval.')
@@ -731,12 +740,35 @@ Actions = {
       for _, board in pairs(copy.boards) do
         board.tasks = {}
         if PrivateTasksByBoardUuid[board.uuid] then
-          for _, task in pairs(PrivateTasksByBoardUuid[board.uuid]) do
-            table.insert(board.tasks, PrivateTasks[task])
+          for _, taskUuid in pairs(PrivateTasksByBoardUuid[board.uuid]) do
+            table.insert(board.tasks, PrivateTasks[taskUuid])
           end
         end
       end
       u.replyData(msg, copy)
+    end,
+
+    AddPrivateTask = function(msg)
+      local uuid = msg.Tags.CommunityUuid
+      ---@type PrivateTask
+      local task = json.decode(msg.Data)
+      local boardUuid = task.boardUuid
+      local config = PrivateAreaConfig[uuid]
+      if not config then
+        return u.replyError(msg, 'Private area config not found.')
+      end
+      local board = u.findIndex(config.boards, function(board) return board.uuid == boardUuid end)
+      if not board then
+        return u.replyError(msg, 'Board not found.')
+      end
+
+      local taskUuid = u.createUuid()
+      task.uuid = taskUuid
+      PrivateTasks[taskUuid] = task
+
+      PrivateTasksByBoardUuid[boardUuid] = PrivateTasksByBoardUuid[boardUuid] or {}
+      table.insert(PrivateTasksByBoardUuid[boardUuid], taskUuid)
+      u.replyData(msg, taskUuid)
     end,
 
     GetLogs = function(msg)

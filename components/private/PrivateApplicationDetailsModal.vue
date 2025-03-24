@@ -2,24 +2,25 @@
 import type { PrivateApplication } from '~/types'
 import { approveOrRejectApplication } from '~/utils/community/community'
 import { notificationStore } from '~/stores/notificationStore'
+import { useQuestionsQuery } from '~/composables/community/communityQuery'
 
 const props = defineProps<{
   modelValue: boolean
   application: PrivateApplication
-  questions: string[]
   uuid: string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'handled': []
-  'reload': []
 }>()
 
 const { t } = useI18n()
 const { showSuccess, showError } = $(notificationStore())
 let isApproving = $ref(false)
 let isRejecting = $ref(false)
+
+const { data: questions } = useQuestionsQuery(props.uuid)
 
 async function handleMember(address: string, action: 'approve' | 'reject') {
   if (!address) return
@@ -33,7 +34,6 @@ async function handleMember(address: string, action: 'approve' | 'reject') {
     await approveOrRejectApplication(props.uuid, address, action)
     showSuccess(t(action === 'approve' ? 'Member approved successfully' : 'Member rejected successfully'))
     emit('handled')
-    emit('reload')
   } catch (error) {
     console.error('Error handling member:', error)
     showError('Failed to handle member', error as Error)
@@ -82,7 +82,7 @@ async function handleMember(address: string, action: 'approve' | 'reject') {
       </div>
 
       <!-- Application Answers -->
-      <div class="space-y-4">
+      <div v-if="questions" class="space-y-4">
         <div
           v-for="(q, index) in questions"
           :key="index"

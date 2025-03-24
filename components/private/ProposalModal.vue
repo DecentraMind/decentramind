@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { watch } from 'vue'
 import dayjs from 'dayjs'
 import { tokens, tokenChains } from '~/utils/constants'
 import { arUrl, gateways, defaultTokenLogo } from '~/utils/arAssets'
-import type { UserInfoWithAddress } from '~/types'
-import { getPrivateUnlockMembers } from '~/utils/community/community'
+import { shortString } from '~/utils/string'
+import type { PrivateTask, PrivateUnlockMember } from '~/types'
+import { useAddPrivateTaskMutation, usePrivateUnlockMembersQuery } from '~/composables/community/communityQuery'
 
 // Only use what we need
 const _props = defineProps<{
@@ -12,44 +13,43 @@ const _props = defineProps<{
   boardUuid: string
 }>()
 
+const { showError } = $(notificationStore())
+
+const { currentUuid: communityUuid } = $(communityStore())
 const emit = defineEmits(['proposal-added', 'update:modelValue'])
 
-interface BudgetItem {
-  member: UserInfoWithAddress | null
-  amount: number
-  tokenName: string
-  tokenProcessID: string
-  chain: string
-  quantity: bigint
-}
-
-const state = ref({
+const state = $ref<PrivateTask>({
   title: '',
+  uuid: '',
+  boardUuid: _props.boardUuid,
+  status: 'proposal',
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
   startAt: Date.now(),
   endAt: Date.now(),
   description: '',
   executionResult: '',
-  budgets: [{ 
-    member: null,
-    amount: 0, 
+  budgets: [{
+    member: '',
+    amount: 0,
     tokenName: '', 
     tokenProcessID: '', 
     chain: tokenChains[0], 
     quantity: BigInt(0) 
-  }] as BudgetItem[]
+  }]
 })
 
 // Define a local state variable for the date range using Dayjs
-const dateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(state.value.startAt), dayjs(state.value.endAt)])
+const dateRange = $ref<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(state.startAt), dayjs(state.endAt)])
 
 watch(dateRange, (newRange) => {
-  state.value.startAt = newRange[0].valueOf()
-  state.value.endAt = newRange[1].valueOf()
+  state.startAt = newRange[0].valueOf()
+  state.endAt = newRange[1].valueOf()
 })
 
 const addBudget = () => {
-  state.value.budgets.push({ 
-    member: null,
+  state.budgets.push({ 
+    member: '',
     amount: 0, 
     tokenName: '', 
     tokenProcessID: '', 
@@ -58,21 +58,26 @@ const addBudget = () => {
   })
 }
 
+const removeBudget = (index: number) => {
+  state.budgets.splice(index, 1)
+}
+
+const { mutate: addPrivateTaskMutate, isPending } = useAddPrivateTaskMutation({communityUuid: communityUuid!, onErrorCb: () => {
+  showError('Failed to add proposal.')
+}})
+
 const submitProposal = () => {
+  addPrivateTaskMutate(state)
   // Emit the proposal-added event with the task data
-  emit('proposal-added', state.value)
+  emit('proposal-added', state)
   emit('update:modelValue', false) // Close modal after submission
 }
 
 // Token options
 const tokenNames = Object.keys(tokens)
 
-// Members
-const members = ref<Awaited<ReturnType<typeof getPrivateUnlockMembers>>>([])
-const { currentUuid: communityUuid } = $(communityStore())
-
 // Search function for the select menu
-function search(query: string, users: Awaited<ReturnType<typeof getPrivateUnlockMembers>>) {
+function search(query: string, users: PrivateUnlockMember[]) {
   if (!query) return users
   
   const lowercaseQuery = query.toLowerCase()
@@ -82,17 +87,19 @@ function search(query: string, users: Awaited<ReturnType<typeof getPrivateUnlock
   )
 }
 
-onMounted(async () => {
-  try {
-    if (communityUuid) {
-      // Fetch private members
-      const privateMembers = await getPrivateUnlockMembers(communityUuid)
-      console.log({ privateMembers })
-      members.value = privateMembers
-    }
-  } catch (error) {
-    console.error('Error fetching private members:', error)
-  }
+const { data: members } = usePrivateUnlockMembersQuery(communityUuid!)
+
+const budgetMembers = $ref<PrivateUnlockMember[]>([])
+
+watch(budgetMembers, (newBudgetMembers) => {
+  state.budgets = newBudgetMembers.map(member => ({
+    member: member.address,
+    amount: 0,
+    tokenName: '',
+    tokenProcessID: '',
+    chain: tokenChains[0],
+    quantity: BigInt(0)
+  }))
 })
 </script>
 
@@ -140,20 +147,21 @@ onMounted(async () => {
             :label="index === 0 ? $t('private.task.fields.participantsAndBudgets') : ''"
             :ui="{ error: index === 0 ? 'hidden' : 'absolute' }"
           >
-            <div class="flex flex gap-2 mb-3">
+            <div class="flex gap-2 mb-3">
               <!-- Member Selection -->
               <USelectMenu
-                v-model="budget.member"
+                v-model="budgetMembers[index]"
                 :searchable="true"
                 :search="search"
                 :search-attributes="['address', 'name']"
                 searchable-placeholder="Search by name or address..."
                 :options="members"
                 option-attribute="name"
-                by="address"
                 trailing
+                leading
+                by="address"
                 placeholder="Select member"
-                class="flex-1"
+                class="w-60"
               >
                 <template #option-empty="{ query }">
                   <q>{{ query }}</q> not found
@@ -163,25 +171,21 @@ onMounted(async () => {
                     <ArAvatar
                       :src="option.avatar"
                       :alt="option.name"
-                      class="w-6 h-6"
+                      size="2xs"
                     />
-                    <div>
-                      <span class="font-medium">{{ option.name }}</span>
-                      <div class="text-xs text-gray-500 max-w-xs">{{ option.address }}</div>
-                    </div>
+                    <span class="font-medium">{{ option.name }}</span>
+                    <div class="text-xs text-gray-500 max-w-xs">{{ shortString(option.address) }}</div>
                   </div>
                 </template>
                 <template #label>
-                  <div v-if="budget.member" class="flex items-center space-x-2">
+                  <div v-if="budgetMembers[index]" class="flex items-center space-x-2">
                     <ArAvatar
-                      :src="budget.member.avatar"
-                      :alt="budget.member.name"
-                      class="w-6 h-6"
+                      :src="budgetMembers[index].avatar"
+                      :alt="budgetMembers[index].name"
+                      size="2xs"
                     />
-                    <div>
-                      <span class="font-medium">{{ budget.member.name }}</span>
-                      <div class="text-xs text-gray-500 max-w-xs">{{ budget.member.address }}</div>
-                    </div>
+                    <span class="font-medium">{{ budgetMembers[index].name }}</span>
+                    <div class="text-xs text-gray-500 max-w-xs">{{ shortString(budgetMembers[index].address) }}</div>
                   </div>
                   <span v-else>Select member</span>
                 </template>
@@ -201,7 +205,7 @@ onMounted(async () => {
                 :name="`budgets[${index}].tokenProcessID`"
                 placeholder="Token"
                 :options="tokenNames"
-                :ui="{ wrapper: 'w-24' }"
+                :ui="{ wrapper: 'flex-1' }"
                 @change="
                   (name:string) => {
                     budget.tokenProcessID = tokens[name].processID
@@ -215,22 +219,28 @@ onMounted(async () => {
                       arUrl(tokens[name].logo || defaultTokenLogo, gateways.ario)
                     "
                     :alt="`logo of ${tokens[name].label}`"
-                    class="w-8 h-8 rounded-full border border-gray-200"
+                    class="w-8 h-8 min-w-8 rounded-full border border-gray-200"
                   >
                   <span class="truncate" :title="tokens[name].label">{{ tokens[name].label }}</span>
                 </template>
               </USelectMenu>
+
+              <UButton
+                variant="outline"
+                icon="heroicons:x-mark"
+                :class="cn({
+                  '!mr-10': index !== state.budgets.length - 1,
+                })"
+                @click="removeBudget(index)"
+              />
+              <UButton
+                v-if="index === state.budgets.length-1"
+                variant="outline"
+                icon="heroicons:plus"
+                @click="addBudget"
+              />
             </div>
           </UFormGroup>
-          
-          <UButton
-            size="sm"
-            variant="soft"
-            icon="i-heroicons-plus"
-            label="Add Budget"
-            class="mt-2"
-            @click="addBudget"
-          />
         </div>
 
         <UFormGroup :label="$t('private.task.fields.executionResult')" name="executionResult">
@@ -238,7 +248,7 @@ onMounted(async () => {
         </UFormGroup>
 
         <div class="flex justify-end pt-4">
-          <UButton type="submit" color="primary" label="Submit Proposal" />
+          <UButton :loading="isPending" type="submit" color="primary" label="Submit Proposal" />
         </div>
       </UForm>
     </UCard>

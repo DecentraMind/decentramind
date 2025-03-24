@@ -1,31 +1,32 @@
 <script setup lang="ts">
-import type { BoardWithTasks, PrivateAreaConfig } from '~/types'
-import { getPrivateAreaConfig } from '@/utils/community/community'
-import { communityStore } from '@/stores/communityStore'
+import type { BoardWithTasks } from '~/types'
 import Kanban from './Kanban.vue'
-
-const { updatePrivateAreaConfig } = $(communityStore())
+import { usePrivateAreaConfigByCommunityMutation, usePrivateAreaConfigQuery } from '~/composables/community/communityQuery'
+import { createUuid } from '~/utils/string'
 
 const props = defineProps<{
   isAdmin: boolean
   uuid: string
 }>()
+const { showError } = $(notificationStore())
 
-const config = ref<PrivateAreaConfig | null>(null)
-
-onMounted(async () => {
-  config.value = await getPrivateAreaConfig(props.uuid)
-})
+const { data: config, isLoading } = usePrivateAreaConfigQuery(props.uuid)
+const { mutate: updatePrivateAreaConfigMutation } = usePrivateAreaConfigByCommunityMutation({uuid: props.uuid, onErrorCb: () => {
+  showError('Failed to update private area.')
+}})
 
 const addBoard = async () => {
   const newBoard: BoardWithTasks = {
-    uuid: crypto.randomUUID(),
+    uuid: createUuid(),
     title: 'New Area',
     tasks: []
   }
   if (!config.value) return
-  config.value.boards.push(newBoard)
-  config.value = await updatePrivateAreaConfig(props.uuid, config.value)
+  const updatedConfig = {
+    ...config.value,
+    boards: [...config.value.boards, newBoard]
+  }
+  updatePrivateAreaConfigMutation(updatedConfig)
 }
 </script>
 
@@ -58,7 +59,7 @@ const addBoard = async () => {
       <Kanban v-for="board in config?.boards" :key="board.uuid" :data="board" class="w-full mt-4" />
     </div>
     <UButton
-      v-if="isAdmin"
+      v-if="isAdmin && !isLoading"
       size="xs"
       variant="solid"
       class="mt-8"

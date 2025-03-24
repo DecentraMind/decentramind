@@ -67,6 +67,11 @@ export default defineAppConfig({
           label: 'Empty'
         }
       }
+    },
+    selectMenu: {
+      option: {
+        container: 'flex items-center gap-1.5 min-w-8'
+      }
     }
   }
 })

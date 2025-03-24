@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Community, Log, PrivateApplication, PrivateAreaConfig, UserInfo } from '~/types'
+import type { Community, Log, PrivateApplication, PrivateAreaConfig, PrivateTask, PrivateUnlockMember } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
@@ -102,7 +102,7 @@ export const getPrivateUnlockMembers = async (uuid: string) => {
     { name: 'Action', value: 'GetPrivateUnlockMembers' },
     { name: 'CommunityUuid', value: uuid }
   ]
-  return await dryrunResultParsed<Array<UserInfo & { address: string }>>({
+  return await dryrunResultParsed<PrivateUnlockMember[]>({
     process: communityProcessID,
     tags
   })
@@ -207,6 +207,26 @@ export const enableCommunityCreation = async (address: string, wallet?: Paramete
   return await messageResultCheck({
     process: communityProcessID,
     tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+export async function updatePrivateAreaConfig(communityUuid: string, config: PrivateAreaConfig, wallet?: Parameters<typeof createDataItemSigner>[0]) {
+  const jsonString = JSON.stringify(config)
+  return await messageResultParsed<PrivateAreaConfig>({
+    process: communityProcessID,
+    tags: [{ name: 'Action', value: 'UpdatePrivateAreaConfig' }, { name: 'CommunityUuid', value: communityUuid }],
+    data: jsonString,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+export async function addPrivateTask(communityUuid: string, task: PrivateTask, wallet?: Parameters<typeof createDataItemSigner>[0]) {
+  const jsonString = JSON.stringify(task)
+  return await messageResultParsed<PrivateTask>({
+    process: communityProcessID,
+    tags: [{ name: 'Action', value: 'AddPrivateTask' }, { name: 'CommunityUuid', value: communityUuid }],
+    data: jsonString,
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
   })
 }

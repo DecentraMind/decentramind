@@ -124,7 +124,7 @@ onMounted(async () => {
                 <ArAvatar
                   :src="option.avatar"
                   :alt="option.name"
-                  class="w-6 h-6"
+                  size="2xs"
                 />
                 <span>{{ option.name }}</span>
               </div>
@@ -135,7 +135,7 @@ onMounted(async () => {
                   v-if="formState.admins[index].avatar"
                   :src="formState.admins[index].avatar"
                   :alt="formState.admins[index].name"
-                  class="w-6 h-6"
+                  size="2xs"
                 />
                 <span>{{ formState.admins[index].name }}</span>
               </div>

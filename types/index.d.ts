@@ -322,6 +322,9 @@ export type CommunityMember = UserInfoWithAddress & {
   /** timestamp when the private area application is approved, if it is not undefined, the invitee can access the private area */
   privateUnlockTime?: number
 }
+export type PrivateUnlockMember = UserInfo & {
+  address: string
+}
 
 export type UploadResponse = {
   url?: string
@@ -513,11 +516,16 @@ export type Page = {
   content: string
 }
 
+export type BudgetItem = Task['bounties'][number] & {
+  member: string
+}
+
 export type PrivateTask = {
   uuid: string
+  boardUuid: string
   title: string
   description: string
-  budgets: Task['bounties']
+  budgets: BudgetItem[]
   status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
   startAt: number
   endAt: number

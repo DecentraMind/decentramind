@@ -1,32 +1,26 @@
 <script setup lang="ts">
+import { useQueryClient } from '@tanstack/vue-query'
+import { useApplicationsByCommunityQuery } from '~/composables/community/communityQuery'
 import type { PrivateApplication } from '~/types'
-import { getApplications } from '~/utils/community/community'
 import { shortString } from '~/utils/string'
 
 const props = defineProps<{
-  questions: string[]
   uuid: string
 }>()
 
 const { t } = useI18n()
+const emit = defineEmits<{
+  (_: 'member-updated'): void
+}>()
 
 const searchQuery = ref('')
-let pendingApplications = $ref<PrivateApplication[]>([])
 let isApplicationModalOpen = $ref(false)
 let currentApplication = $ref<PrivateApplication | null>(null)
 
-let isLoading = $ref(false)
-// Load pending applications when component is mounted
-onMounted(async () => {
-  try {
-    isLoading = true
-    pendingApplications = await getApplications(props.uuid)
-  } catch (error) {
-    console.error('Error loading pending applications:', error)
-  } finally {
-    isLoading = false
-  }
+const { data: pendingApplications, refetch, isFetching } = useApplicationsByCommunityQuery(props.uuid, {
+  enabled: false
 })
+const queryClient = useQueryClient()
 
 function viewApplication(application: PrivateApplication) {
   currentApplication = application
@@ -34,10 +28,12 @@ function viewApplication(application: PrivateApplication) {
 }
 
 function onApplicationHandled() {
-  const application = currentApplication
-  if (application) {
-    pendingApplications = pendingApplications.filter(app => app.address !== application.address)
+  if (currentApplication && pendingApplications.value) {
+    const newPendingApplications = pendingApplications.value.filter(app => app.address !== currentApplication!.address)
+
+    queryClient.setQueryData(['community', 'applications', props.uuid], newPendingApplications)
   }
+  emit('member-updated')
 }
 
 const memberColumns = [
@@ -54,9 +50,10 @@ const memberColumns = [
 
 // Computed filtered members
 const filteredMembers = computed(() => {
-  if (!searchQuery.value) return pendingApplications
+  if (!pendingApplications.value) return []
+  if (!searchQuery.value) return pendingApplications.value
   const lowerCaseQuery = searchQuery.value.toLowerCase()
-  return pendingApplications.filter(app => 
+  return pendingApplications.value.filter(app => 
     app.address.toLowerCase().includes(lowerCaseQuery)
   )
 })
@@ -64,14 +61,22 @@ const filteredMembers = computed(() => {
 
 <template>
   <div>
-    <h4 class="font-semibold mb-2">
-      {{ t('private.members.pending') }}
-    </h4>
+    <div class="flex items-center justify-between">
+      <h4 class="font-semibold mb-2">
+        {{ t('private.members.pending') }}
+      </h4>
+      <UButton
+        color="gray"
+        variant="soft"
+        size="xs"
+        icon="i-heroicons-arrow-path"
+        @click="refetch()"
+      />
+    </div>
     <UTable
       :rows="filteredMembers"
       :columns="memberColumns"
-      :loading="isLoading"
-      class="px-4"
+      :loading="isFetching"
     >
       <template #search>
         <UInput
@@ -109,7 +114,6 @@ const filteredMembers = computed(() => {
       v-if="currentApplication"
       v-model="isApplicationModalOpen"
       :application="currentApplication"
-      :questions="questions"
       :uuid="uuid"
       @handled="onApplicationHandled"
     />

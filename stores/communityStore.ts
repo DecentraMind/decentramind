@@ -105,7 +105,7 @@ export const communityStore = defineStore('communityStore', () => {
     chatroomID: string
   ) => {
     const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
-    const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined' | 'admins'> = {
+    const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined' | 'admins' | 'isPrivateApplicable'> = {
       logo,
       banner,
       name,
@@ -126,7 +126,7 @@ export const communityStore = defineStore('communityStore', () => {
     }
     const jsonString = JSON.stringify(community)
 
-    const createdCommunity = await messageResultParsed({
+    const createdCommunity = await messageResultParsed<Community>({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'CreateCommunity' }
@@ -169,7 +169,7 @@ export const communityStore = defineStore('communityStore', () => {
       uuid
     }
     const jsonString = JSON.stringify(communitySetting)
-    const res = await messageResultParsed({
+    const res = await messageResultParsed<Community>({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'UpdateCommunity' },
@@ -499,17 +499,6 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, 'isPrivateApplicable', applicable)
   }
 
-  async function updatePrivateAreaConfig(uuid: string, config: PrivateAreaConfig) {
-    const jsonString = JSON.stringify(config)
-    return await messageResultParsed<PrivateAreaConfig>({
-      process: aoCommunityProcessID,
-      tags: [{ name: 'Action', value: 'UpdatePrivateAreaConfig' }, { name: 'CommunityUuid', value: uuid }],
-      data: jsonString,
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-  }
-
-
   return $$({
     communityList,
     joinedCommunities,
@@ -539,8 +528,7 @@ export const communityStore = defineStore('communityStore', () => {
     currentCommunityUserMap,
     getCommunity,
     clearCommunityData,
-    updateIsPrivateApplicable,
-    updatePrivateAreaConfig
+    updateIsPrivateApplicable
   })
 })
 

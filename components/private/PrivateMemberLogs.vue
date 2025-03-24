@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { useLogsQuery } from '~/composables/community/communityQuery'
 import type { Log } from '~/types'
-import { getLogs } from '~/utils/community/community'
 import { formatDate } from '~/utils/time'
 
 const props = defineProps<{
@@ -33,28 +33,38 @@ const logColumns = [
 ]
 
 let logs = $ref<Log[]>([])
-let isLoading = $ref(false)
-onMounted(async () => {
-  isLoading = true
-  try {
-    logs = (await getLogs(props.uuid)).filter(log => log.operation === 'removePrivateMember')
-  } catch (error) {
-    console.error('Error loading logs:', error)
-  } finally {
-    isLoading = false
+
+// const queryClient = useQueryClient()
+const { data, isSuccess, isFetching, refetch } = useLogsQuery(props.uuid, {
+  enabled: true
+})
+watchEffect(() => {
+  console.log('fetch logs isSuccess', isSuccess.value)
+  if (isSuccess.value && data.value) {
+    console.log('logs loaded successfully:', data.value)
+    logs = data.value.filter(log => log.operation === 'removePrivateMember')
   }
 })
 </script>
 
 <template>
   <div>
-    <h4 class="font-semibold mb-2">
-      {{ t('private.members.removeHistory') }}
-    </h4>
+    <div class="flex items-center justify-between">
+      <h4 class="font-semibold mb-2">
+        {{ t('private.members.removeHistory') }}
+      </h4>
+      <UButton
+        color="gray"
+        variant="soft"
+        size="xs"
+        icon="i-heroicons-arrow-path"
+        @click="refetch()"
+      />
+    </div>
     <UTable
       :rows="logs"
       :columns="logColumns"
-      :loading="isLoading"
+      :loading="isFetching"
     >
       <template #action-data="{ row }">
         {{ t(`private.members.logOperations.${row.operation}`) }}

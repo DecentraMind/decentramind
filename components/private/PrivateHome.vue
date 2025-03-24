@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { getQuestions } from '~/utils/community/community'
 import PrivateIndex from './PrivateIndex.vue'
 import PrivateManagementModal from './PrivateManagementModal.vue'
+import { useQuestionsQuery } from '~/composables/community/communityQuery'
 
 const props = withDefaults(defineProps<{
   isAdmin?: boolean
@@ -26,15 +26,19 @@ const uuid = route.params.uuid as string
 const hasQuestions = ref(false)
 const isLoading = ref(true)
 const questions = ref<string[]>([])
-
-// Load questions when component is mounted
-onMounted(async () => {
-  const loadedQuestions = await getQuestions(uuid)
-  questions.value = loadedQuestions || []
-  hasQuestions.value = loadedQuestions ? loadedQuestions.length > 0 : false
-  isLoading.value = false
-  showIndex = hasQuestions.value ? props.isAdmin || props.isOwner || props.joined : false
+const { data: loadedQuestions, isSuccess } = useQuestionsQuery(uuid, {
+  enabled: true
 })
+
+watch(isSuccess, (newVal) => {
+  if (newVal) {
+    questions.value = loadedQuestions.value || []
+    hasQuestions.value = loadedQuestions.value ? loadedQuestions.value.length > 0 : false
+    console.log('hasQuestions', hasQuestions.value)
+    isLoading.value = false
+    showIndex = hasQuestions.value ? props.isAdmin || props.isOwner || props.joined : false
+  }
+}, { immediate: true })
 
 function openMembersModal(tab: string = 'members') {
   defaultTab.value = tab
@@ -122,7 +126,6 @@ function openMembersModal(tab: string = 'members') {
     <PrivateApplicationModal
       v-model="isApplicationModalOpen"
       :uuid="uuid"
-      :questions="questions"
     />
   </UPage>
 </template>
