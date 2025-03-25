@@ -4,7 +4,6 @@ import {
   spawn,
   dryrun,
   result,
-  dryrunResult,
   dryrunResultParsed,
   messageResult,
   messageResultParsed
@@ -14,7 +13,7 @@ import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
-import { getCommunity as getCommunityAO, join, updatePrivateApplicable } from '~/utils/community/community'
+import { getCommunities, getCommunity as getCommunityAO, join, updatePrivateApplicable } from '~/utils/community/community'
 
 export const communityStore = defineStore('communityStore', () => {
   const aoCommunityProcessID = DM_PROCESS_ID
@@ -210,18 +209,8 @@ export const communityStore = defineStore('communityStore', () => {
     isCommunityListLoading = true
     communityListError = undefined
 
-    const tags = [
-      { name: 'Action', value: 'GetCommunities' }
-    ]
-    if (address) {
-      tags.push({ name: 'userAddress', value: address })
-    }
     try {
-      const data = await dryrunResult<string>({
-        process: aoCommunityProcessID,
-        tags
-      })
-      communityList = JSON.parse(data) as Community[]
+      communityList = await getCommunities(address)
       console.log('communityList refreshed', {communityList, address})
     } catch (error) {
       console.error('Failed to fetching community list:', error)

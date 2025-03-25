@@ -24,6 +24,20 @@ export const getCommunity = async (uuid: string, address?: string) => {
   }) as Community
 }
 
+export const getCommunities = async (address?: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetCommunities' }
+  ]
+  if (address) {
+    tags.push({ name: 'userAddress', value: address })
+  }
+  const data = await dryrunResult<string>({
+    process: communityProcessID,
+    tags
+  })
+  return JSON.parse(data) as Community[]
+}
+
 export const join = async (communityUuid: string, inviteCode?: string, wallet?: Wallet) => {
   const tags = [
     { name: 'Action', value: 'Join' },

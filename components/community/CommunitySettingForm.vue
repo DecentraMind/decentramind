@@ -6,7 +6,6 @@ import { communitySettingSchema, validateCommunitySetting, type CommunitySetting
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
 import { createUuid } from '~/utils'
 import { useUpload } from '~/composables/useUpload'
-import { inject } from 'vue'
 
 
 const props = defineProps<{
@@ -112,11 +111,13 @@ let showWaitingModal = $ref(false)
 let disableSave = $ref(false)
 let showSpinner = $ref(false)
 
+const queryClient = useQueryClient()
 const setCommunity = async () => {
   if (disableSave || !props.initState?.uuid) return
   disableSave = true
   showWaitingModal = true
   showSpinner = true
+
   try {
     if (!address) {
       throw new Error('Please connect wallet first.')
@@ -129,10 +130,8 @@ const setCommunity = async () => {
     )
     emit('saved')
 
-    const reloadCommunity = inject<Function>('reloadCommunity')
-    reloadCommunity && await reloadCommunity()
-
     showSuccess('Successfully updated community.')
+    await queryClient.refetchQueries({ queryKey: ['community', 'communities', address] })
   } catch (error) {
     showError('Set community error:', error as Error)
     disableSave = false

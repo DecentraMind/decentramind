@@ -1,7 +1,27 @@
-import { useMutation } from '@tanstack/vue-query'
-import type { PrivateAreaConfig, PrivateTask } from '~/types'
-import { addPrivateTask, getApplications, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, join, updatePrivateAreaConfig } from '~/utils/community/community'
+import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
+import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
+import { addPrivateTask, getApplications, getCommunities, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, join, updatePrivateAreaConfig } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
+
+export const useCommunitiesQuery = createQueryComposable(['community', 'communities'], getCommunities)
+export const useJoinedCommunitiesQuery = (address?: string, options?: Partial<UseQueryOptions<Community[]>>) => {
+  return useCommunitiesQuery(address, {
+    ...options,
+    // select option to filter joined communities
+    select: (communities) => communities.filter((community) => community.isJoined).sort((a, b) => {
+      if (a.joinTime && b.joinTime) {
+        return b.joinTime - a.joinTime
+      }
+      return 0
+    })
+  })
+}
+export const useCommunityFromCommunitiesQuery = (uuid: string, address?: string, options?: Partial<UseQueryOptions<Community[], Error, Community>>) => {
+  return useCommunitiesQuery(address, {
+    ...options,
+    select: (communities) => communities.find((community) => community.uuid === uuid)
+  })
+}
 
 export const useJoinMutation = ({communityUuid, inviteCode, onErrorCb}: {communityUuid: string, inviteCode?: string, onErrorCb?:()=>void}) => {
   return useMutation({

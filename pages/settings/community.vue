@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { useJoinedCommunitiesQuery } from '~/composables/community/communityQuery'
 import { arUrl, defaultCommunityLogo } from '~/utils/arAssets'
 
-const { joinedCommunities } = $(communityStore())
+const { address } = $(aoStore())
+const { data: joinedCommunities } = useJoinedCommunitiesQuery(address)
 
 </script>
 
@@ -11,11 +13,11 @@ const { joinedCommunities } = $(communityStore())
       <template #header>
         <div class="text-xl flex items-center pl-5">
           <h3 class="w-[420px]">
-            {{ $t('setting.community.isjoin') }}： {{ joinedCommunities.length }}
+            {{ $t('setting.community.isjoin') }}： {{ joinedCommunities?.length }}
           </h3>
         </div>
       </template>
-      <div v-if="!joinedCommunities.length" class="w-full flex justify-center">
+      <div v-if="!joinedCommunities?.length" class="w-full flex justify-center">
         <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
       </div>
       <div class="flex flex-wrap">

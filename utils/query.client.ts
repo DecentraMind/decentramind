@@ -10,11 +10,15 @@ export function createQueryComposable<TArgs, TResult>(
   queryKey: string[],
   queryFn: (_: TArgs) => Promise<TResult>
 ) {
-  return (args: TArgs, options?: Partial<UseQueryOptions<TResult>> & { additionalKeys?: string[] }) => {
+  return <TSelect = TResult>(
+    args: TArgs,
+    options?: Partial<UseQueryOptions<TResult, Error, TSelect>> & { additionalKeys?: string[] }
+  ) => {
     const serializedArgs = args instanceof Object 
     ? args
     : String(args)
-    return useQuery<TResult>({
+
+    return useQuery<TResult, Error, TSelect>({
       queryKey: [...queryKey, serializedArgs, ...(options?.additionalKeys || [])],
       queryFn: () => queryFn(args),
       enabled: true,

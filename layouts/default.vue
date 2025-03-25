@@ -4,6 +4,7 @@ import { cn, delay } from '~/utils/util'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 import LoginModal from '~/components/users/LoginModal.vue'
 import VouchModal from '~/components/users/VouchModal.vue'
+import { useJoinedCommunitiesQuery } from '~/composables/community/communityQuery'
 
 const router = useRouter()
 
@@ -14,11 +15,15 @@ let { address } = $(aoStore())
 const { updateVouchData, twitterVouched, redirectUrlAfterLogin } = $(aoStore())
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
-const { joinedCommunities, currentUuid, loadCommunityList, communityListError } = $(communityStore())
+const { currentUuid } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
+const { data: joinedCommunities, isLoading, error: communityListError, refetch: refetchCommunities } = useJoinedCommunitiesQuery(address, {
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: 'always',
+})
+
 const isCreateModalOpen = $ref(false)
-let isLoading = $ref(true)
 onMounted(async () => {
   try {
     // if not address, show login modal
@@ -26,7 +31,6 @@ onMounted(async () => {
       if (window.arweaveWallet) {
         await window.arweaveWallet.disconnect()
       }
-      await loadCommunityList()
     } else {
       if (!await checkIsActiveWallet()) {
         console.log('not active wallet')
@@ -36,13 +40,7 @@ onMounted(async () => {
       }
       addSwitchListener()
 
-      // don't use Promise.all, because CU may return 429 error
-      // await Promise.all([
-      //   updateVouchData(),
-      //   loadCommunityList(address)
-      // ])
       await updateVouchData()
-      await loadCommunityList(address)
 
       if (!twitterVouched) {
         // TODO remove vouch modal from this layout if all users are vouched
@@ -52,21 +50,16 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Error fetching data:', error)
-  } finally {
-    isLoading = false
   }
 })
 
 const refetch = async () => {
-  isLoading = true
   try {
-    await loadCommunityList(address)
+    await refetchCommunities()
     await delay(1000)
     await refetchUserInfo()
   } catch (error) {
     console.error('Error refetching data:', error)
-  } finally {
-    isLoading = false
   }
 }
 
@@ -88,7 +81,7 @@ const afterLogin = async () => {
       }
     }
 
-    await loadCommunityList(address)
+    await refetchCommunities()
   } else {
     reloadNuxtApp()
   }
@@ -258,7 +251,7 @@ const afterLogin = async () => {
         </div>
         <CommunitySettingForm
           v-if="selectModal === 1"
-          @saved="loadCommunityList(address)"
+          @saved="refetchCommunities()"
           @close-modal="isCreateModalOpen = false"
         />
         <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />

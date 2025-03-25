@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { communityRightPages, type PageSymbol } from '~/utils/constants'
-import type { Community, Task } from '~/types/index'
-import { provide } from 'vue'
+import type { Task } from '~/types'
 import Chatroom from '~/components/community/Chatroom.vue'
 import CommunitySidebar from '~/components/community/CommunitySidebar.vue'
 import PublicTasks from '~/components/community/PublicTasks.vue'
 import PrivateHome from '~/components/private/PrivateHome.vue'
+import { useCommunityFromCommunitiesQuery } from '~/composables/community/communityQuery'
 
 definePageMeta({
   ssr: false
 })
 
 const { t } = useI18n()
-const { setCurrentCommunityUuid, getLocalCommunity } = $(communityStore())
+const { setCurrentCommunityUuid } = $(communityStore())
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
 const { showError, showMessage } = $(notificationStore())
@@ -21,6 +21,21 @@ const route = useRoute()
 const router = useRouter()
 
 const uuid = $computed(() => route.params.uuid) as string
+
+const { data: community, isSuccess, isError, error } = useCommunityFromCommunitiesQuery(uuid, address)
+watch(isSuccess, async (value) => {
+  if (value) {
+    console.log('get communityInfo:', community.value?.name, community.value, uuid)
+    if (community.value?.communitychatid) {
+      await inboxAdd(community.value.name, community.value.communitychatid)
+    }
+  }
+})
+watch(isError, (value) => {
+  if (value) {
+    showError('Loading community info error.', error.value as Error)
+  }
+})
 
 type TaskVisibleTab = {
   type: Task['visible']
@@ -64,45 +79,17 @@ const onTaskVisibleTypeChange = (value: number) => {
   }
 }
 
+const isAdminOrOwner = $computed(() => community.value && address 
+  ? community.value.owner === address || community.value.admins.includes(address)
+  : false
+)
 
-console.log('get community info of ', uuid)
-let community = $ref<Community>()
-
-const isAdminOrOwner = $computed(() => community && address ? community.owner === address || community.admins.includes(address) : false)
-
-let isLoading = $ref(true)
 onMounted(async () => {
   if (!address) {
     router.push('/')
   }
   setCurrentCommunityUuid(uuid)
-
-  try {
-    community = await getLocalCommunity(uuid)
-    if (!community) {
-      throw new Error('Failed to load community info. Please try again later.')
-    }
-    console.log('get communityInfo:', community.name, community, uuid)
-
-
-    if (community.communitychatid) {
-      await inboxAdd(community.name, community.communitychatid)
-    }
-
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    showError('Loading data error.', error as Error)
-  } finally {
-    console.log('finally isLoading:', isLoading)
-    isLoading = false
-  }
 })
-
-const reloadCommunity = async () => {
-  console.log('reloading community', uuid)
-  community = await getLocalCommunity(uuid)
-}
-provide('reloadCommunity', reloadCommunity)
 
 const currentRightPage = $computed<PageSymbol>(() => {
   const page = Object.keys(communityRightPages).includes(route.hash) ? route.hash : '#quests'
