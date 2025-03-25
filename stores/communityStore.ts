@@ -9,12 +9,12 @@ import {
   messageResult,
   messageResultParsed
 } from '~/utils/ao'
-import type { Community, CommunityMember, CommunitySetting, CreateToken, PrivateAreaConfig, UserInfo } from '~/types'
+import type { Community, CommunityMember, CommunitySetting, CreateToken, UserInfo } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
-import { getCommunity as getCommunityAO, updatePrivateApplicable } from '~/utils/community/community'
+import { getCommunity as getCommunityAO, join, updatePrivateApplicable } from '~/utils/community/community'
 
 export const communityStore = defineStore('communityStore', () => {
   const aoCommunityProcessID = DM_PROCESS_ID
@@ -326,20 +326,9 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   const joinCommunity = async (communityUuid: string, inviteCode?: string) => {
-    const tags = [
-      { name: 'Action', value: 'Join' },
-      { name: 'CommunityUuid', value: communityUuid },
-    ]
-    if (inviteCode) {
-      tags.push({ name: 'InviteCode', value: inviteCode })
-    }
-    const join = await messageResultCheck({
-      process: aoCommunityProcessID,
-      tags,
-      signer: createDataItemSigner(window.arweaveWallet)
-    })
+    const result = await join(communityUuid, inviteCode)
     updateLocalCommunity(communityUuid, 'isJoined', true)
-    return join
+    return result
   }
 
   const exitCommunity = async (uuid: string) => {

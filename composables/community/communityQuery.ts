@@ -1,7 +1,16 @@
 import { useMutation } from '@tanstack/vue-query'
 import type { PrivateAreaConfig, PrivateTask } from '~/types'
-import { addPrivateTask, getApplications, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, updatePrivateAreaConfig } from '~/utils/community/community'
+import { addPrivateTask, getApplications, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, join, updatePrivateAreaConfig } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
+
+export const useJoinMutation = ({communityUuid, inviteCode, onErrorCb}: {communityUuid: string, inviteCode?: string, onErrorCb?:()=>void}) => {
+  return useMutation({
+    mutationFn: () => inviteCode ? join(communityUuid, inviteCode) : join(communityUuid),
+    onError: () => {
+      onErrorCb?.()
+    }
+  })
+}
 
 export const useApplicationsByCommunityQuery = createQueryComposable(['community', 'applications'], getApplications)
 

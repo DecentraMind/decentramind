@@ -24,6 +24,22 @@ export const getCommunity = async (uuid: string, address?: string) => {
   }) as Community
 }
 
+export const join = async (communityUuid: string, inviteCode?: string, wallet?: Wallet) => {
+  const tags = [
+    { name: 'Action', value: 'Join' },
+    { name: 'CommunityUuid', value: communityUuid },
+  ]
+  if (inviteCode) {
+    tags.push({ name: 'InviteCode', value: inviteCode })
+  }
+  const result = await messageResultCheck({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet)
+  })
+  return result
+}
+
 /**
  * Update the private applicable status of a specific community
  * @param uuid - The UUID of the community
