@@ -6,12 +6,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     defaultOptions: {
       queries: {
         staleTime: 30 * 60 * 1000,
-        refetchOnWindowFocus: false,
+        refetchOnWindowFocus: true,
         retry: 3,
         retryDelay: 500,
         persister: experimental_createPersister({
           storage: globalThis.window.localStorage,
           maxAge: 1000 * 60 * 60 * 12, // 12 hours
+          prefix: 'query'
         }),
       },
     },

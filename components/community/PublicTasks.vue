@@ -17,7 +17,10 @@ const createTaskType = $ref<Task['type']>('space')
 let isCreateTaskModalOpen = $ref(false)
 
 // get cached tasks by computed property
-const { data: tasks, isLoading, isError, error, refetch } = useTasksByCommunityUuidQuery(props.community.uuid)
+const { data: tasks, isLoading, isError, error, refetch } = useTasksByCommunityUuidQuery(props.community.uuid, {
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: 'always',
+})
 watchEffect(() => {
   if (isError.value) {
     showError('Loading tasks data error.', error.value as Error)
