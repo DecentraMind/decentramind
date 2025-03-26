@@ -1,4 +1,6 @@
-import { useQuery, type UseQueryOptions } from '@tanstack/vue-query'
+import { type UseQueryOptions } from '@tanstack/vue-query'
+import { useQueuedQuery } from '~/composables/useQueuedQuery'
+import { unref } from 'vue'
 
 /**
  * Create a query composable, args for queryFn are used as the last part of the query key
@@ -10,19 +12,24 @@ export function createQueryComposable<TArgs, TResult>(
   queryKey: string[],
   queryFn: (_: TArgs) => Promise<TResult>
 ) {
-  return <TSelect = TResult>(
+  return (
     args: TArgs,
-    options?: Partial<UseQueryOptions<TResult, Error, TSelect>> & { additionalKeys?: string[] }
+    options?: Partial<UseQueryOptions<TResult>> & { additionalKeys?: string[] }
   ) => {
     const serializedArgs = args instanceof Object 
     ? args
     : String(args)
 
-    return useQuery<TResult, Error, TSelect>({
-      queryKey: [...queryKey, serializedArgs, ...(options?.additionalKeys || [])],
-      queryFn: () => queryFn(args),
-      enabled: true,
-      ...options
-    })
+    // Create a plain array with spread operator
+    const finalQueryKey = [...unref(queryKey), serializedArgs, ...(options?.additionalKeys || [])] as const
+
+    return useQueuedQuery(
+      finalQueryKey,
+      () => queryFn(args),
+      {
+        enabled: true,
+        ...options
+      }
+    )
   }
 }
