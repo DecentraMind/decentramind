@@ -89,7 +89,9 @@ export default defineNuxtConfig({
   ui: {
     safelistColors: ['primary', 'red', 'orange', 'green']
   },
-  css: ['@/assets/css/custom.css'],
+  tailwindcss: {
+    cssPath: 'assets/css/custom.css'
+  },
 
   macros: {
     setupSFC: true,

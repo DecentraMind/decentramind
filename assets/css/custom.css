@@ -1,29 +1,36 @@
-/* @tailwind base;
-@tailwind components; */
-/* @tailwind utilities; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.flex-center {
-    @apply flex justify-center items-center
-}
-.flex-col-center {
-    @apply flex flex-col justify-center items-center
-}
+@layer base {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+  ::-webkit-scrollbar-thumb {
+    background-color: theme('colors.gray.200');
+    border-radius: 3px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background-color: theme('colors.gray.200');
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-track {
-  background-color: theme('colors.gray.50');
-  border-radius: 3px;
+  ::-webkit-scrollbar-track {
+    background-color: theme('colors.gray.50');
+    border-radius: 3px;
+  }
 }
 
-.scroll-gutter {
-  scrollbar-gutter: stable both-edges;
+/* custom classes should be in components layer */
+@layer components {
+  .flex-center {
+      @apply flex justify-center items-center
+  }
+  .flex-col-center {
+      @apply flex flex-col justify-center items-center
+  }
+}
+
+@layer utilities {
+  .scroll-gutter {
+    scrollbar-gutter: stable both-edges;
+  }
 }
