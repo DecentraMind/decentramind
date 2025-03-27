@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import PrivateIndex from './PrivateIndex.vue'
 import PrivateManagementModal from './PrivateManagementModal.vue'
+import MountedTeleport from '~/components/MountedTeleport.vue'
 import { useQuestionsQuery } from '~/composables/community/communityQuery'
 
 const props = withDefaults(defineProps<{
@@ -105,7 +106,7 @@ function openMembersModal(tab: string = 'members') {
       </div>
     </div>
 
-    <Teleport v-if="isAdmin || isOwner" to="#top-right-button">
+    <MountedTeleport v-if="isAdmin || isOwner" to="#top-right-button">
       <UButton
         color="gray"
         variant="ghost"
@@ -113,7 +114,7 @@ function openMembersModal(tab: string = 'members') {
         size="xs"
         @click="openMembersModal()"
       />
-    </Teleport>
+    </MountedTeleport>
 
     <PrivateManagementModal
       v-model="isManagementModalOpen"

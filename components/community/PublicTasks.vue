@@ -2,8 +2,8 @@
 import type { Community, Task } from '~/types'
 import AddTaskDropdown from '~/components/task/AddTaskDropdown.vue'
 import Bounties from '~/components/task/Bounties.vue'
+import MountedTeleport from '~/components/MountedTeleport.vue'
 import { useTasksByCommunityUuidQuery } from '~/composables/tasks/taskQuery'
-
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
@@ -138,12 +138,12 @@ onMounted(async () => {
     </div>
 
     <ClientOnly>
-      <Teleport to="#top-right-button" :disabled="!targetExists">
+      <MountedTeleport to="#top-right-button" :disabled="!targetExists">
         <AddTaskDropdown
           v-if="community && isAdminOrOwner && !isLoading"
           @click-create-task="(type: Task['type']) => { createTaskType = type; isCreateTaskModalOpen = true }"
         />
-      </Teleport>
+      </MountedTeleport>
     </ClientOnly>
 
     <UModal v-model="isCreateTaskModalOpen">
