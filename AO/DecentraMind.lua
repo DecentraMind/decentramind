@@ -150,8 +150,12 @@ AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 
 ---@class Page
 ---@field uuid string @UUID of the private area page
+---@field communityUuid string @UUID of the community
 ---@field title string @Title of the private area page
 ---@field content string @Content of the private area page
+
+---@type table<string, Page> Pages by page uuid
+Pages = Pages or {}
 
 ---@class PrivateTaskBudget: TaskBounty
 ---@field member string @Address of the member
@@ -163,6 +167,7 @@ AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 ---@field description string @Description of the private task
 ---@field budgets PrivateTaskBudget[] @Budgets of the private task
 ---@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+---@field editors string[] @Addresses of the editors
 ---@field startAt number @Start time of the private task
 ---@field endAt number @End time of the private task
 ---@field executionResult string @Execution result of the private task, editable when status is 'executing'
@@ -171,12 +176,18 @@ AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 
 ---@class Board
 ---@field uuid string @UUID of the private task board
+---@field communityUuid string @UUID of the community
 ---@field title string @Title of the private task board
+---@field taskUuids string[] @UUIDs of the private tasks
+
+---@type table<string, Board> Boards by board uuid
+Boards = Boards or {}
 
 ---@class PrivateAreaConfig
+---@field communityUuid string @UUID of the community
 ---@field pagesAreaTitle string @Title of the private area
----@field pages Page[] @Pages of the private area
----@field boards Board[] @Boards of the private area
+---@field pageUuids string[] @UUIDs of the pages
+---@field boardUuids string[] @UUIDs of the boards
 
 ---@type table<string, PrivateAreaConfig> Private area config, indexed by community uuid
 PrivateAreaConfig = PrivateAreaConfig or {}
@@ -184,8 +195,6 @@ PrivateAreaConfig = PrivateAreaConfig or {}
 
 --- @type table<string, PrivateTask> @private tasks table using private task's uuid as key
 PrivateTasks = PrivateTasks or {}
---- @type table<string, string[]> @private tasks uuid table using board's uuid as key
-PrivateTasksByBoardUuid = PrivateTasksByBoardUuid or {}
 
 
 ---@class Log
@@ -284,6 +293,31 @@ local function addLog(operation, communityUuid, operator, params, timestamp)
   })
   LogsByCommunityUuid[communityUuid] = LogsByCommunityUuid[communityUuid] or {}
   table.insert(LogsByCommunityUuid[communityUuid], #Logs)
+end
+
+local function isCommunityAdmin(community, address)
+  return u.findIndex(community.admins, function(admin) return admin == address end)
+end
+
+local function assertIsOwnerOrAdmin(address, communityUuid)
+  local community = Communities[communityUuid]
+  assert(community, 'Community not found.')
+
+  local isOwner = address == community.owner
+  local isAdmin = isCommunityAdmin(community, address)
+  assert(isOwner or isAdmin, 'You are not the owner or admin.')
+end
+
+local function assertPrivateUnlocked(address, communityUuid)
+  local community = Communities[communityUuid]
+  assert(community, 'Community not found.')
+  -- user must join the community
+  assert(UserCommunities[address] and UserCommunities[address][communityUuid], 'You have not joined the community.')
+
+  local isOwner = address == community.owner
+  local isAdmin = isCommunityAdmin(community, address)
+  -- only private members(privateUnlockTime is not nil) can add task
+  assert(UserCommunities[address][communityUuid].privateUnlockTime or isOwner or isAdmin, 'You are not in the private area.')
 end
 
 Actions = {
@@ -543,7 +577,7 @@ Actions = {
         return u.replyError(msg, 'Community not found.')
       end
 
-      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+      assertIsOwnerOrAdmin(msg.From, uuid)
 
       QuestionsByCommunityUuid[uuid] = questions
     end,
@@ -674,7 +708,7 @@ Actions = {
       end
 
       -- only owner or admins can remove private unlock member
-      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+      assertIsOwnerOrAdmin(msg.From, uuid)
 
       if not UserCommunities[address] or not UserCommunities[address][uuid] then
         return u.replyError(msg, 'The address is not a member of this community.')
@@ -688,16 +722,29 @@ Actions = {
       local uuid = msg.Tags.CommunityUuid
       local copy = u.deepCopy(PrivateAreaConfig[uuid] or {
         pagesAreaTitle = 'Private Area',
-        pages = {},
-        boards = {}
+        pageUuids = {},
+        boardUuids = {}
       })
 
-      for _, board in pairs(copy.boards) do
-        board.tasks = {}
-        if PrivateTasksByBoardUuid[board.uuid] then
-          for _, task in pairs(PrivateTasksByBoardUuid[board.uuid]) do
-            table.insert(board.tasks, PrivateTasks[task])
+      -- get pages from pageUuids
+      copy.pages = {}
+      for _, pageUuid in pairs(copy.pageUuids) do
+        if Pages[pageUuid] then
+          table.insert(copy.pages, Pages[pageUuid])
+        end
+      end
+
+      copy.boards = {}
+      for _, boardUuid in pairs(copy.boardUuids) do
+        if Boards[boardUuid] then
+          local boardCopy = u.deepCopy(Boards[boardUuid])
+          boardCopy.tasks = {}
+          if Boards[boardUuid].taskUuids then
+            for _, taskUuid in pairs(Boards[boardUuid].taskUuids) do
+              table.insert(boardCopy.tasks, PrivateTasks[taskUuid])
+            end
           end
+          table.insert(copy.boards, boardCopy)
         end
       end
 
@@ -706,69 +753,151 @@ Actions = {
 
     UpdatePrivateAreaConfig = function(msg)
       local uuid = msg.Tags.CommunityUuid
-      local config = json.decode(msg.Data)
+      ---@type PrivateAreaConfig
+      local update = json.decode(msg.Data)
       local community = Communities[uuid]
-      if not community then
-        return u.replyError(msg, 'Community not found.')
-      end
+      assert(community, 'Community not found.')
 
-      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+      assertIsOwnerOrAdmin(msg.From, uuid)
 
-      if not PrivateAreaConfig[uuid] then
-        PrivateAreaConfig[uuid] = {
-          pagesAreaTitle = 'Private Area',
-          pages = {},
-          boards = {}
-        }
-      end
-
-      if config.pagesAreaTitle then
-        PrivateAreaConfig[uuid].pagesAreaTitle = config.pagesAreaTitle
-      end
-
-      if config.pages then
-        PrivateAreaConfig[uuid].pages = config.pages
-      end
-
-      if config.boards then
-        PrivateAreaConfig[uuid].boards = config.boards
-      end
+      PrivateAreaConfig[uuid] = PrivateAreaConfig[uuid] or {
+        pagesAreaTitle = 'Private Area',
+        pageUuids = {},
+        boardUuids = {}
+      }
 
       ---@type PrivateAreaConfig
-      local copy = u.deepCopy(PrivateAreaConfig[uuid])
+      local configCopy
+      if not PrivateAreaConfig[uuid] then
+        configCopy = {
+          communityUuid = uuid,
+          pagesAreaTitle = 'Private Area',
+          pageUuids = {},
+          boardUuids = {}
+        }
+      else
+        configCopy = u.deepCopy(PrivateAreaConfig[uuid])
+      end
 
-      for _, board in pairs(copy.boards) do
-        board.tasks = {}
-        if PrivateTasksByBoardUuid[board.uuid] then
-          for _, taskUuid in pairs(PrivateTasksByBoardUuid[board.uuid]) do
-            table.insert(board.tasks, PrivateTasks[taskUuid])
+      if update.pagesAreaTitle then
+        configCopy.pagesAreaTitle = update.pagesAreaTitle
+      end
+
+      if update.pageUuids then
+        for _, pageUuid in pairs(update.pageUuids) do
+          assert(Pages[pageUuid], 'Page ' .. pageUuid .. ' not found.')
+          if not u.findIndex(configCopy.pageUuids, pageUuid) then
+            table.insert(configCopy.pageUuids, pageUuid)
           end
         end
       end
-      u.replyData(msg, copy)
+
+      if update.boardUuids then
+        for _, boardUuid in pairs(update.boardUuids) do
+          assert(Boards[boardUuid], 'Board ' .. boardUuid .. ' not found.')
+          if not u.findIndex(configCopy.boardUuids, boardUuid) then
+            table.insert(configCopy.boardUuids, boardUuid)
+          end
+        end
+      end
+
+      PrivateAreaConfig[uuid] = configCopy
+      u.replyData(msg, configCopy)
+    end,
+
+    AddBoard = function(msg)
+      local title = msg.Tags.Title
+      local uuid = msg.Tags.CommunityUuid
+      local community = Communities[uuid]
+      assert(community, 'Community not found.')
+      assert(title, 'Title is required.')
+
+      -- only owner or admins can add board
+      assertIsOwnerOrAdmin(msg.From, uuid)
+
+      PrivateAreaConfig[uuid] = PrivateAreaConfig[uuid] or {
+        pagesAreaTitle = 'Private Area',
+        pageUuids = {},
+        boardUuids = {}
+      }
+
+      local boardUuid = u.createUuid()
+      Boards[boardUuid] = {
+        uuid = boardUuid,
+        communityUuid = uuid,
+        title = title,
+        taskUuids = {}
+      }
+
+      PrivateAreaConfig[uuid].boardUuids = PrivateAreaConfig[uuid].boardUuids or {}
+      table.insert(PrivateAreaConfig[uuid].boardUuids, boardUuid)
+
+      u.replyData(msg, Boards[boardUuid])
+    end,
+
+    UpdateBoardTitle = function(msg)
+      local boardUuid = msg.Tags.BoardUuid
+      local title = msg.Tags.Title
+
+      local board = Boards[boardUuid]
+      if not board then
+        return u.replyError(msg, 'Work area not found.')
+      end
+
+      -- only owner or admins can update board name
+      assertIsOwnerOrAdmin(msg.From, board.communityUuid)
+
+      board.title = title
+      u.replyData(msg, board)
     end,
 
     AddPrivateTask = function(msg)
-      local uuid = msg.Tags.CommunityUuid
+      local address = msg.From
+
       ---@type PrivateTask
       local task = json.decode(msg.Data)
-      local boardUuid = task.boardUuid
+      -- only accept 'proposal' | 'auditing' status
+      assert(task.status == 'proposal' or task.status == 'auditing', 'Invalid status.')
+      assert(task.title, 'Title is required.')
+      assert(task.description, 'Description is required.')
+      assert(task.budgets and #task.budgets > 0, 'Budgets are required.')
+
+      local board = Boards[task.boardUuid]
+      assert(board, 'Board not found.')
+      local uuid = board.communityUuid
+
+      assertPrivateUnlocked(address, uuid)
+
       local config = PrivateAreaConfig[uuid]
       if not config then
         return u.replyError(msg, 'Private area config not found.')
       end
-      local board = u.findIndex(config.boards, function(board) return board.uuid == boardUuid end)
-      if not board then
-        return u.replyError(msg, 'Board not found.')
-      end
 
       local taskUuid = u.createUuid()
       task.uuid = taskUuid
+      task.editors = { msg.From }
       PrivateTasks[taskUuid] = task
 
-      PrivateTasksByBoardUuid[boardUuid] = PrivateTasksByBoardUuid[boardUuid] or {}
-      table.insert(PrivateTasksByBoardUuid[boardUuid], taskUuid)
-      u.replyData(msg, taskUuid)
+      table.insert(board.taskUuids, taskUuid)
+
+      u.replyData(msg, PrivateTasks[taskUuid])
+    end,
+
+    UpdatePrivateTaskDraft = function(msg)
+      ---@type PrivateTask
+      local task = json.decode(msg.Data)
+      assert(PrivateTasks[task.uuid], 'Proposal not found.')
+
+      local boardUuid = task.boardUuid
+      local board = Boards[boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+
+      assertPrivateUnlocked(msg.From, communityUuid)
+      assert(u.findIndex(PrivateTasks[task.uuid].editors, msg.From), 'You are not the editor of this proposal.')
+
+      PrivateTasks[task.uuid] = task
+      u.replyData(msg, PrivateTasks[task.uuid])
     end,
 
     GetLogs = function(msg)

@@ -42,7 +42,7 @@ function u.replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
-  print('Reply ' .. action .. ' ' .. errString)
+  print('Reply Error: ' .. action .. ' ' .. errString)
   request.reply({ Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
