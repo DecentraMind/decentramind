@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useQueryClient } from '@tanstack/vue-query'
+
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
 let { address } = $(aoStore())
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars

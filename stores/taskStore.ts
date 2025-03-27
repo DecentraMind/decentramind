@@ -12,6 +12,7 @@ import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
 
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 import { getTask, updateTaskSubmissions, submitTask, getInvitesByInviter } from '~/utils/task'
+import { useQueryClient } from '@tanstack/vue-query'
 
 // task cache related interfaces and variables
 export interface TaskCache {

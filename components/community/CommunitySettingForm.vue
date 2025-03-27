@@ -6,7 +6,7 @@ import { communitySettingSchema, validateCommunitySetting, type CommunitySetting
 import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAssets'
 import { createUuid } from '~/utils'
 import { useUpload } from '~/composables/useUpload'
-
+import { useQueryClient } from '@tanstack/vue-query'
 
 const props = defineProps<{
   isSettingMode?: boolean

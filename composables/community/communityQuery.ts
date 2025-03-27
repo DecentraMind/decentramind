@@ -3,8 +3,18 @@ import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
 import { addBoard, addPrivateTask, getApplications, getCommunities, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, join, updateBoardTitle, updatePrivateAreaConfig } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
+import { useQueryClient } from '@tanstack/vue-query'
 
-export const useCommunitiesQuery = createQueryComposable(['community', 'communities'], getCommunities)
+export function useCommunitiesQuery<TSelect = Community[]>(
+  address?: string, 
+  options?: Partial<UseQueryOptions<Community[], Error, TSelect>>
+) {
+  return createQueryComposable<string | undefined, Community[]>(
+    ['community', 'communities'], 
+    getCommunities
+  )<TSelect>(address, options)
+}
+
 export const useJoinedCommunitiesQuery = (address?: string, options?: Partial<UseQueryOptions<Community[]>>) => {
   return useCommunitiesQuery(address, {
     ...options,
@@ -17,8 +27,13 @@ export const useJoinedCommunitiesQuery = (address?: string, options?: Partial<Us
     })
   })
 }
-export const useCommunityFromCommunitiesQuery = (uuid: string, address?: string, options?: Partial<UseQueryOptions<Community[], Error, Community>>) => {
-  return useCommunitiesQuery(address, {
+
+export const useCommunityFromCommunitiesQuery = (
+  uuid: string, 
+  address?: string, 
+  options?: Partial<UseQueryOptions<Community[], Error, Community | undefined>>
+) => {
+  return useCommunitiesQuery<Community | undefined>(address, {
     ...options,
     select: (communities) => communities.find((community) => community.uuid === uuid)
   })

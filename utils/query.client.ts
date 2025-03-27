@@ -12,18 +12,17 @@ export function createQueryComposable<TArgs, TResult>(
   queryKey: string[],
   queryFn: (_: TArgs) => Promise<TResult>
 ) {
-  return (
+  return <TSelect = TResult>(
     args: TArgs,
-    options?: Partial<UseQueryOptions<TResult>> & { additionalKeys?: string[] }
+    options?: Partial<UseQueryOptions<TResult, Error, TSelect>> & { additionalKeys?: string[] }
   ) => {
     const serializedArgs = args instanceof Object 
-    ? args
-    : String(args)
+      ? args
+      : String(args)
 
-    // Create a plain array with spread operator
     const finalQueryKey = [...unref(queryKey), serializedArgs, ...(options?.additionalKeys || [])] as const
 
-    return useQueuedQuery(
+    return useQueuedQuery<TResult, TSelect>(
       finalQueryKey,
       () => queryFn(args),
       {
