@@ -512,6 +512,7 @@ export type Log = {
 
 export type Page = {
   uuid: string
+  communityUuid: string
   title: string
   content: string
 }
@@ -527,6 +528,7 @@ export type PrivateTask = {
   description: string
   budgets: BudgetItem[]
   status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+  editors: string[]
   startAt: number
   endAt: number
   executionResult: string
@@ -536,7 +538,9 @@ export type PrivateTask = {
 
 export type Board = {
   uuid: string
+  communityUuid: string
   title: string
+  taskUuids: string[]
 }
 
 export type BoardWithTasks = Board & {
@@ -545,6 +549,10 @@ export type BoardWithTasks = Board & {
 
 export type PrivateAreaConfig = {
   pagesAreaTitle: string
+  pageUuids: string[]
+  boardUuids: string[]
   pages: Page[]
   boards: BoardWithTasks[]
 }
+
+export type PrivateAreaConfigWithoutRelations = Omit<PrivateAreaConfig, 'boards' | 'pages'>

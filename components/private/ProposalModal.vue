@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import dayjs from 'dayjs'
+import dayjs, { type Dayjs } from 'dayjs'
 import { tokens, tokenChains } from '~/utils/constants'
 import { arUrl, gateways, defaultTokenLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils/string'
 import type { PrivateTask, PrivateUnlockMember } from '~/types'
 import { useAddPrivateTaskMutation, usePrivateUnlockMembersQuery } from '~/composables/community/communityQuery'
+import { createProposalSchema, validateCreateProposalForm } from '~/utils/schemas'
 
-// Only use what we need
-const _props = defineProps<{
+const props = defineProps<{
   modelValue: boolean
   boardUuid: string
 }>()
@@ -18,11 +18,13 @@ const { showError } = $(notificationStore())
 const { currentUuid: communityUuid } = $(communityStore())
 const emit = defineEmits(['proposal-added', 'update:modelValue'])
 
+const formRef = ref()
 const state = $ref<PrivateTask>({
   title: '',
   uuid: '',
-  boardUuid: _props.boardUuid,
+  boardUuid: props.boardUuid,
   status: 'proposal',
+  editors: [],
   createdAt: Date.now(),
   updatedAt: Date.now(),
   startAt: Date.now(),
@@ -47,30 +49,35 @@ watch(dateRange, (newRange) => {
   state.endAt = newRange[1].valueOf()
 })
 
-const addBudget = () => {
-  state.budgets.push({ 
-    member: '',
-    amount: 0, 
-    tokenName: '', 
-    tokenProcessID: '', 
-    chain: tokenChains[0], 
-    quantity: BigInt(0) 
-  })
-}
+let isSubmittingDraft = $ref(false)
+let isSubmittingProposal = $ref(false)
+const { mutateAsync: addPrivateTaskMutateAsync, isPending: isAddPending, status: addPrivateTaskStatus } = useAddPrivateTaskMutation({communityUuid: communityUuid!})
+watch(addPrivateTaskStatus, (status) => {
+  if (status === 'success' || status === 'error') {
+    isSubmittingDraft = false
+    isSubmittingProposal = false
+  }
+})
 
-const removeBudget = (index: number) => {
-  state.budgets.splice(index, 1)
-}
-
-const { mutate: addPrivateTaskMutate, isPending } = useAddPrivateTaskMutation({communityUuid: communityUuid!, onErrorCb: () => {
-  showError('Failed to add proposal.')
-}})
-
-const submitProposal = () => {
-  addPrivateTaskMutate(state)
-  // Emit the proposal-added event with the task data
-  emit('proposal-added', state)
-  emit('update:modelValue', false) // Close modal after submission
+const submitProposal = async (status: 'proposal' | 'auditing') => {
+  if (status === 'proposal') {
+    isSubmittingDraft = true
+  } else {
+    isSubmittingProposal = true
+  }
+  try {
+    const filteredState = {
+      ...state,
+      budgets: state.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
+    }
+    await addPrivateTaskMutateAsync(filteredState)
+    // Emit the proposal-added event with the task data
+    emit('proposal-added', state)
+    emit('update:modelValue', false) // Close modal after submission
+  } catch (error) {
+    console.error('Failed to add proposal.', error)
+    showError('Failed to add proposal.')
+  }
 }
 
 // Token options
@@ -91,21 +98,66 @@ const { data: members } = usePrivateUnlockMembersQuery(communityUuid!)
 
 const budgetMembers = $ref<PrivateUnlockMember[]>([])
 
+const addBudget = () => {
+  budgetMembers.push({ 
+    address: '',
+    name: '',
+    avatar: ''
+  })
+}
+const removeBudget = (index: number) => {
+  state.budgets.splice(index, 1)
+}
 watch(budgetMembers, (newBudgetMembers) => {
-  state.budgets = newBudgetMembers.map(member => ({
-    member: member.address,
-    amount: 0,
-    tokenName: '',
-    tokenProcessID: '',
-    chain: tokenChains[0],
-    quantity: BigInt(0)
-  }))
+  state.budgets = newBudgetMembers.map((member, index) => {
+    const existingBudget = state.budgets[index] || {
+      amount: 0,
+      tokenName: '',
+      tokenProcessID: '',
+      chain: tokenChains[0],
+      quantity: BigInt(0),
+      member: ''
+    }
+    return {
+      ...existingBudget,
+      member: member.address
+    }
+  })
 })
+
+const timezone = $ref('')
+function handleDateChange(
+  value: [string, string] | [Dayjs, Dayjs],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _: [string, string],
+) {
+  // TODO get tiemstamp based on timezone
+  console.log({ value, dateRange, timezone })
+  if (!dateRange) {
+    return
+  }
+
+  const offset = new Date().getTimezoneOffset() * 60000
+  const tz = timezone.match(/[-+]\d+/)
+  
+  const timezoneOffset = tz ? parseInt(tz[0]) * -60*60*1000 : offset
+  // translate to UTC time
+  state.startAt = new Date(dateRange[0].toString()).getTime() - offset + timezoneOffset
+  state.endAt = new Date(dateRange[1].toString()).getTime() - offset + timezoneOffset
+  formRef.value.validate('time')
+  console.log({
+    offset,
+    timezoneOffset,
+    startTime: formatDate(state.startAt),
+    start: state.startAt,
+    endTime: formatDate(state.endAt)
+  })
+}
 </script>
 
 <template>
   <UModal
-    :model-value="_props.modelValue"
+    :model-value="props.modelValue"
     :ui="{
       width: 'sm:max-w-xl',
       overlay: {
@@ -126,13 +178,38 @@ watch(budgetMembers, (newBudgetMembers) => {
         />
       </div>
 
-      <UForm :state="state" class="space-y-6" @submit.prevent="submitProposal">
+      <UForm
+        ref="formRef"
+        :state="state"
+        :schema="createProposalSchema"
+        :validate="validateCreateProposalForm"
+        class="space-y-6"
+        @submit="submitProposal"
+      >
         <UFormGroup :label="$t('private.task.fields.title')" name="title">
           <UInput v-model="state.title" placeholder="Enter task title" required />
         </UFormGroup>
 
-        <UFormGroup :label="$t('private.task.fields.timeRange')" name="timeRange">
-          <a-range-picker v-model:value="dateRange" show-time class="w-full" />
+        <UFormGroup name="time" :label="$t('private.task.fields.timeRange')">
+          <div class="flex justify-between items-center gap-x-1">
+            <USelect
+              v-model="timezone"
+              :placeholder="$t('Time Zone')"
+              :options="timezones"
+              :ui="{
+                variant: {
+                  outline:
+                    'ring-gray-300 dark:ring-primary-400 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400',
+                },
+              }"
+              @change="handleDateChange"
+            />
+            <a-range-picker
+              v-model:value="dateRange"
+              show-time
+              @change="handleDateChange"
+            />
+          </div>
         </UFormGroup>
 
         <UFormGroup :label="$t('private.task.fields.description')" name="description">
@@ -247,8 +324,43 @@ watch(budgetMembers, (newBudgetMembers) => {
           <UTextarea v-model="state.executionResult" placeholder="Enter execution result" :rows="3" />
         </UFormGroup>
 
-        <div class="flex justify-end pt-4">
-          <UButton :loading="isPending" type="submit" color="primary" label="Submit Proposal" />
+        <div class="flex justify-end pt-4 gap-2">
+          <UButton
+            :loading="isSubmittingDraft"
+            :disabled="isAddPending"
+            type="button"
+            color="white"
+            label="Save as Draft"
+            @click="async () => {
+              try {
+                const isValid = formRef && await formRef.validate()
+                if (isValid) {
+                  submitProposal('proposal')
+                }
+              } catch (error) {
+                console.error('Failed to validate form.', error)
+                showError('Failed to validate form.')
+              }
+            }"
+          />
+          <UButton
+            :loading="isSubmittingProposal"
+            :disabled="isAddPending"
+            type="button"
+            color="primary"
+            label="Submit Proposal"
+            @click="async () => { 
+              try {
+                const isValid = formRef && await formRef.validate()
+                if (isValid) {
+                  submitProposal('auditing')
+                }
+              } catch (error) {
+                console.error('Failed to validate form.', error)
+                showError('Failed to validate form.')
+              }
+            }"
+          />
         </div>
       </UForm>
     </UCard>

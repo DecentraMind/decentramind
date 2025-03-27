@@ -58,13 +58,14 @@ export function checkResult(res: DryrunOutput | ResultOutput) {
  * Send message to AO, then get result, check if error exists
  */
 export async function messageResultCheck(messageParams: MessageInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     const messageId = await message(messageParams)
     const res = await result({ process: messageParams.process, message: messageId })
     // console.log('check result', res)
     return checkResult(res)
   } catch (error) {
-    console.error('Failed to messageResultCheck', error)
+    // console.error('Failed to messageResultCheck', error)
     throw error
   }
 }
@@ -73,43 +74,41 @@ export async function messageResultCheck(messageParams: MessageInput) {
  * Send message to AO, then get result, check if error exists, then extract data from result
  */
 export async function messageResult<T>(messageParams: MessageInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     const messageId = await message(messageParams)
     const res = await result({ process: messageParams.process, message: messageId })
     return extractResult<T>(res)
   } catch (error) {
-    console.error('Failed to messageResult:', error)
+    // console.error('Failed to messageResult:', error)
     throw error
   }
 }
 
 export async function messageResultParsed<T>(messageParams: MessageInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     return JSON.parse(await messageResult<string>(messageParams)) as T
   } catch (error) {
-    console.error('Failed to parse message result:', error)
+    // console.error('Failed to parse message result:', error)
     throw error
   }
 }
 
 export async function dryrunResult<T>(messageParams: DryrunInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     const result = await dryrun(messageParams)
     return extractResult<T>(result)
   } catch (error) {
-    console.error('Failed to dryrun:', error)
-    console.log('messageParams', messageParams)
+    // console.error('Failed to dryrun:', error)
+    // console.log('messageParams', messageParams)
     throw error
   }
 }
 
 export async function dryrunResultParsed<T>(messageParams: DryrunInput) {
-  try {
-    return JSON.parse(await dryrunResult<string>(messageParams)) as T
-  } catch (error) {
-    console.error('Failed to parse dryrun result:', error)
-    throw error
-  }
+  return JSON.parse(await dryrunResult<string>(messageParams)) as T
 }
 
 /**

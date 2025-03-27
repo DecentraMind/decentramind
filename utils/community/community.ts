@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Community, Log, PrivateApplication, PrivateAreaConfig, PrivateTask, PrivateUnlockMember } from '~/types'
+import type { Board, Community, Log, PrivateApplication, PrivateAreaConfig, PrivateAreaConfigWithoutRelations, PrivateTask, PrivateUnlockMember } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner, type Wallet } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
@@ -219,10 +219,12 @@ export const getPrivateAreaConfig = async (uuid: string) => {
     { name: 'Action', value: 'GetPrivateAreaConfig' },
     { name: 'CommunityUuid', value: uuid }
   ]
-  return await dryrunResultParsed<PrivateAreaConfig>({
+  const result = await dryrunResultParsed<PrivateAreaConfig>({
     process: communityProcessID,
     tags
   })
+  console.log('getPrivateAreaConfig', result)
+  return result
 }
 
 /**
@@ -241,9 +243,9 @@ export const enableCommunityCreation = async (address: string, wallet?: Wallet) 
   })
 }
 
-export async function updatePrivateAreaConfig(communityUuid: string, config: PrivateAreaConfig, wallet?: Wallet) {
+export async function updatePrivateAreaConfig(communityUuid: string, config: PrivateAreaConfigWithoutRelations, wallet?: Wallet) {
   const jsonString = JSON.stringify(config)
-  return await messageResultParsed<PrivateAreaConfig>({
+  return await messageResultParsed<PrivateAreaConfigWithoutRelations>({
     process: communityProcessID,
     tags: [{ name: 'Action', value: 'UpdatePrivateAreaConfig' }, { name: 'CommunityUuid', value: communityUuid }],
     data: jsonString,
@@ -251,11 +253,37 @@ export async function updatePrivateAreaConfig(communityUuid: string, config: Pri
   })
 }
 
-export async function addPrivateTask(communityUuid: string, task: PrivateTask, wallet?: Wallet) {
+export async function addBoard(communityUuid: string, title: string, wallet?: Wallet) {
+  return await messageResultParsed<string>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'AddBoard' },
+      { name: 'CommunityUuid', value: communityUuid },
+      { name: 'Title', value: title }
+    ],
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+export async function updateBoardTitle(boardUuid: string, title: string, wallet?: Wallet) {
+  return await messageResultParsed<Board>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'UpdateBoardTitle' },
+      { name: 'BoardUuid', value: boardUuid },
+      { name: 'Title', value: title }
+    ],
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+export async function addPrivateTask(task: PrivateTask, wallet?: Wallet) {
   const jsonString = JSON.stringify(task)
   return await messageResultParsed<PrivateTask>({
     process: communityProcessID,
-    tags: [{ name: 'Action', value: 'AddPrivateTask' }, { name: 'CommunityUuid', value: communityUuid }],
+    tags: [
+      { name: 'Action', value: 'AddPrivateTask' }
+    ],
     data: jsonString,
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
   })

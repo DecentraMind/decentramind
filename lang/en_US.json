@@ -240,6 +240,7 @@
     },
     "area": {
       "title": "Private Area",
+      "noWorkArea": "No work area yet.",
       "descriptionNotApplicable": "The private area can be viewed, but builders can't apply to join it.",
       "descriptionApplicable": "The private area can be viewed and builders can apply to join it.",
       "management": "Private Area Management",
@@ -251,7 +252,7 @@
       "applicationDescription": "Please answer all questions below to apply for private area access.",
       "answerPlaceholder": "Enter your answer here...",
       "applicationSubmitted": "Your application has been submitted successfully, please wait for approval.",
-      "addBoard": "Add a Kanban"
+      "addWorkArea": "Add a work area"
     },
     "task": {
       "add": "Add Proposal",
