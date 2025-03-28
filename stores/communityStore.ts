@@ -355,31 +355,6 @@ export const communityStore = defineStore('communityStore', () => {
     return messageId
   }
 
-  const getUserByAddress = async (address: string) => {
-    const user = await dryrun({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'GetUserByAddress' },
-        { name: 'Address', value: address }
-      ]
-    })
-
-    if (!user.Messages || !user.Messages.length) {
-      console.error('get user error:', user.Error, address)
-      throw new Error('Get user info failed.')
-    }
-
-    if (!user.Messages[0].Data) {
-      return {
-        name: '',
-        avatar: ''
-      }
-    }
-
-    const userInfo = JSON.parse(user.Messages[0].Data) as UserInfo
-    return userInfo
-  }
-
   //Create a community chat room
   const makeCommunityChat = async () => {
     const processId2 = await spawn({
@@ -499,7 +474,6 @@ export const communityStore = defineStore('communityStore', () => {
     joinCommunity,
     exitCommunity,
     updateUser,
-    getUserByAddress,
     getAllUsers,
     getCommunityUser,
     setCurrentCommunityUserMap,

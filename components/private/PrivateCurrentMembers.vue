@@ -21,9 +21,7 @@ let selectedMember = $ref<UserInfoWithAddress>()
 let isRemoveModalOpen = $ref(false)
 let removeReason = $ref('')
 
-const { data, refetch, isFetching, isSuccess } = usePrivateUnlockMembersQuery(props.uuid, {
-  enabled: false
-})
+const { data, refetch, isFetching, isSuccess } = usePrivateUnlockMembersQuery(props.uuid)
 
 watchEffect(() => {
   if (isSuccess.value && data.value) {

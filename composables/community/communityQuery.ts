@@ -6,11 +6,11 @@ import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
 
 export function useCommunitiesQuery<TSelect = Community[]>(
-  address?: string, 
+  address?: string,
   options?: Partial<UseQueryOptions<Community[], Error, TSelect>>
 ) {
   return createQueryComposable<string | undefined, Community[]>(
-    ['community', 'communities'], 
+    ['community', 'communities'],
     getCommunities
   )<TSelect>(address, options)
 }

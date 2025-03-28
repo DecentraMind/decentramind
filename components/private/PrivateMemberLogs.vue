@@ -34,10 +34,7 @@ const logColumns = [
 
 let logs = $ref<Log[]>([])
 
-// const queryClient = useQueryClient()
-const { data, isSuccess, isFetching, refetch } = useLogsQuery(props.uuid, {
-  enabled: true
-})
+const { data, isSuccess, isFetching, refetch } = useLogsQuery(props.uuid)
 watchEffect(() => {
   console.log('fetch logs isSuccess', isSuccess.value)
   if (isSuccess.value && data.value) {

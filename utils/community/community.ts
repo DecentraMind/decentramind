@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Board, Community, Log, PrivateApplication, PrivateAreaConfig, PrivateAreaConfigWithoutRelations, PrivateTask, PrivateUnlockMember } from '~/types'
+import type { Board, Community, Log, PrivateApplication, PrivateAreaConfig, PrivateAreaConfigWithoutRelations, PrivateTask, PrivateUnlockMember, UserInfo } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner, type Wallet } from '~/utils/ao'
 
 const communityProcessID = DM_PROCESS_ID
@@ -286,5 +286,15 @@ export async function addPrivateTask(task: PrivateTask, wallet?: Wallet) {
     ],
     data: jsonString,
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+export async function getUserByAddress(address: string) {
+  return await dryrunResultParsed<UserInfo>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'GetUserByAddress' },
+      { name: 'Address', value: address }
+    ]
   })
 }

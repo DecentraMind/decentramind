@@ -9,7 +9,7 @@ module.exports = {
     '@typescript-eslint/semi': ['error', 'never'],
     quotes: ['error', 'single'],
     'quote-props': ['error', 'as-needed'],
-    'no-unused-vars': ['error', { argsIgnorePattern: '^_$' }],
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     
     '@typescript-eslint/no-unused-vars': [
       'error',

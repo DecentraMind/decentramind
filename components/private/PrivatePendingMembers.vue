@@ -17,9 +17,7 @@ const searchQuery = ref('')
 let isApplicationModalOpen = $ref(false)
 let currentApplication = $ref<PrivateApplication | null>(null)
 
-const { data: pendingApplications, refetch, isFetching } = useApplicationsByCommunityQuery(props.uuid, {
-  enabled: false
-})
+const { data: pendingApplications, refetch, isFetching } = useApplicationsByCommunityQuery(props.uuid)
 const queryClient = useQueryClient()
 
 function viewApplication(application: PrivateApplication) {

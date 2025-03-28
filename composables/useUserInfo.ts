@@ -1,45 +1,31 @@
-import { ref, readonly } from 'vue'
+import { readonly } from 'vue'
 import { createSharedComposable } from '@vueuse/core'
-import { communityStore } from '~/stores/communityStore'
 import { aoStore } from '~/stores/aoStore'
-import type { UserInfo } from '~/types'
+import { communityStore } from '~/stores/communityStore'
+import { useUserInfoQuery } from '~/composables/user/userQuery'
 
 const useUserInfoBase = () => {
-  const userInfo = ref<UserInfo | null>(null)
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-
-  const { getUserByAddress } = communityStore()
   const { address } = $(aoStore())
+  const { currentUuid } = $(communityStore())
 
-  const fetchUserInfo = async () => {
-    if (!address) {
-      error.value = 'No address available'
-      return
-    }
+  const {
+    data: userInfo,
+    isLoading,
+    error: queryError,
+    refetch
+  } = useUserInfoQuery(address || '', {
+    enabled: !!address,
+    staleTime: 5 * 60 * 1000, // 5分钟内不重新获取数据
+  })
 
-    isLoading.value = true
-    error.value = null
-
-    try {
-      const fetchedUserInfo = await getUserByAddress(address)
-      userInfo.value = fetchedUserInfo
-    } catch (e) {
-      console.error('Error fetching user info:', e)
-      error.value = e instanceof Error ? e.message : 'An error occurred while fetching user info'
-    } finally {
-      isLoading.value = false
-    }
-  }
+  // 转换错误格式以保持与原有API兼容
+  const error = computed(() => {
+    if (!queryError.value) return null
+    return queryError.value.message || '获取用户信息时发生错误'
+  })
 
   const refetchUserInfo = () => {
-    error.value = null
-    userInfo.value = null
-    return fetchUserInfo()
-  }
-
-  if (!userInfo.value && !isLoading.value && !error.value) {
-    fetchUserInfo()
+    return refetch()
   }
 
   return {

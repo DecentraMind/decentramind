@@ -380,7 +380,7 @@ export function validateCreateProposalForm(state: PrivateTask): FormError[] {
     if (index === 0 && !budget.member) {
       errors.push({
         path: `budgets[${index}]`,
-        message: 'Budget is required.',
+        message: 'Participant is required.',
       })
     }
     if (budget.member) {

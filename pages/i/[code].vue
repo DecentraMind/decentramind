@@ -4,13 +4,14 @@ import { shortString } from '~/utils'
 import LoginModal from '~/components/users/LoginModal.vue'
 import ArAvatar from '~/components/ArAvatar.vue'
 import { getCommunityBannerUrl, defaultUserAvatar } from '~/utils/arAssets'
+import { getUserByAddress } from '~/utils/community/community'
 
 definePageMeta({
   layout: 'landing',
   ssr: false
 })
 
-const { joinCommunity, getUserByAddress, getCommunityUser, loadCommunityList } = $(communityStore())
+const { joinCommunity, getCommunityUser, loadCommunityList } = $(communityStore())
 const { getInviteByCode } = useTaskStore()
 // const runtimeConfig = useRuntimeConfig()
 
