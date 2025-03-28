@@ -39,10 +39,9 @@ export default defineTask({
       console.log('spaceTasks', spaceTasks.length)
       console.log('tweetTasks', tweetTasks.length)
 
-      await Promise.all([
-        validateSpaceTasks(spaceTasks),
-        validateTweetTasks(tweetTasks)
-      ])
+      // validate one by one to avoid CU return 429 error
+      await validateSpaceTasks(spaceTasks)
+      await validateTweetTasks(tweetTasks)
 
       return { result: 'success' }
     } catch (error) {
@@ -95,8 +94,8 @@ async function validateSpaceTasks(spaceTasks: Task[]) {
       console.warn('Error fetching spaces:', { taskPid: task.processID, spaceIds: taskPid2SpaceIdsMap[task.processID], spaceInfo })
       // continue
     }
+    await delay(500)
     await updateSubmissions(task, spaceInfo as ValidatedSpacesInfo)
-    await delay(1000)
   }
 }
 
@@ -137,7 +136,7 @@ async function validateTweetTasks(tweetTasks: Task[]) {
       // continue
     }
 
+    await delay(300)
     await updateSubmissions<ValidatedTweetInfo>(task, tweetInfo as ValidatedTweetInfo, tweetInfo.errors)
-    await delay(1000)
   }
 }
