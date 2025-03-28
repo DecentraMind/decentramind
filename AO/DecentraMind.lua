@@ -888,6 +888,8 @@ Actions = {
       local task = json.decode(msg.Data)
       assert(PrivateTasks[task.uuid], 'Proposal not found.')
 
+      assert(PrivateTasks[task.uuid].status == 'proposal' or PrivateTasks[task.uuid].status == 'executing', 'Only proposal or executing status task can be updated.')
+
       local boardUuid = task.boardUuid
       local board = Boards[boardUuid]
       assert(board, 'Board not found.')

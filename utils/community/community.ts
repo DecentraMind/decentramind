@@ -298,3 +298,13 @@ export async function getUserByAddress(address: string) {
     ]
   })
 }
+
+export async function updatePrivateTask(task: PrivateTask, wallet?: Wallet) {
+  const jsonString = JSON.stringify(task)
+  return await messageResultParsed<PrivateTask>({
+    process: communityProcessID,
+    tags: [{ name: 'Action', value: 'UpdatePrivateTaskDraft' }],
+    data: jsonString,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}

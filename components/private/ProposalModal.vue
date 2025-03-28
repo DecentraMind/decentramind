@@ -20,11 +20,36 @@ const props = defineProps({
   }
 })
 
-const { showError } = $(notificationStore())
+const { showError, showSuccess } = $(notificationStore())
 const { currentUuid: communityUuid } = $(communityStore())
+const { isCurrentCommunityAdmin, isCurrentCommunityOwner, address } = useUserInfo()
 const privateTaskStore = usePrivateTaskStore()
 
-const isViewOnly = $ref(true)
+const isCreateMode = $computed(() => {
+  return !props.taskUuid
+})
+const isTaskEditor = $computed(() => {
+  if (!isCreateMode) {
+    return privateTaskStore.currentPrivateTask.editors.includes(address)
+  }
+  return true
+})
+const isCommunityOwnerOrAdmin = $computed(() => {
+  return isCurrentCommunityOwner || isCurrentCommunityAdmin
+})
+
+const isViewOnly = $computed(() => {
+  if (!isCreateMode) {
+    // view task or edit task
+    if (['proposal', 'executing'].includes(privateTaskStore.currentPrivateTask.status)) {
+      // only task editor can edit task
+      return !isTaskEditor
+    }
+  } else {
+    return false
+  }
+  return true
+})
 
 onMounted(() => {
   if (props.boardUuid) {
@@ -68,6 +93,21 @@ const submitProposal = async (status: 'proposal' | 'auditing') => {
   }
 }
 
+const saveProposal = async () => {
+  try {
+    const filteredState = {
+      ...privateTaskStore.currentPrivateTask,
+      budgets: privateTaskStore.currentPrivateTask.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
+    }
+    // TODO update proposal
+    // await addPrivateTaskMutateAsync(filteredState)
+    showSuccess('Proposal saved.')
+    emit('update:modelValue', false)
+  } catch (error) {
+    console.error('Failed to save proposal.', error)
+    showError('Failed to save proposal.')
+  }
+}
 </script>
 
 <template>
@@ -94,22 +134,34 @@ const submitProposal = async (status: 'proposal' | 'auditing') => {
       </div>
 
       <PrivateTaskForm :view-only="isViewOnly">
-        <UButton
-          :loading="isSubmittingDraft"
-          :disabled="isAddPending"
-          type="button"
-          color="white"
-          label="Save as Draft"
-          @click="submitProposal('proposal')"
-        />
-        <UButton
-          :loading="isSubmittingProposal"
-          :disabled="isAddPending"
-          type="button"
-          color="primary"
-          label="Submit Proposal"
-          @click="submitProposal('auditing')"
-        />
+        <div v-if="isCreateMode">
+          <UButton
+            :loading="isSubmittingDraft"
+            :disabled="isAddPending"
+            type="button"
+            color="white"
+            label="Save as Draft"
+            @click="submitProposal('proposal')"
+          />
+          <UButton
+            :loading="isSubmittingProposal"
+            :disabled="isAddPending"
+            type="button"
+            color="primary"
+            label="Submit Proposal"
+            @click="submitProposal('auditing')"
+          />
+        </div>
+        <div v-if="!isCreateMode && ['proposal', 'executing'].includes(privateTaskStore.currentPrivateTask.status) && isTaskEditor">
+          <UButton
+            :loading="isSubmittingDraft"
+            :disabled="isAddPending"
+            type="button"
+            color="white"
+            label="Save"
+            @click="saveProposal()"
+          />
+        </div>
       </PrivateTaskForm>
     </UCard>
   </UModal>
