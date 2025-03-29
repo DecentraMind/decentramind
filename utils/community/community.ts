@@ -2,7 +2,7 @@ import { DM_PROCESS_ID } from '~/utils/processID'
 import type { Board, Community, Log, PrivateApplication, PrivateAreaConfig, PrivateAreaConfigWithoutRelations, PrivateTask, PrivateUnlockMember, UserInfo } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner, type Wallet } from '~/utils/ao'
 
-const communityProcessID = DM_PROCESS_ID
+export const communityProcessID = DM_PROCESS_ID
 
 /**
  * Get information about a specific community
@@ -275,6 +275,14 @@ export async function updateBoardTitle(boardUuid: string, title: string, wallet?
     ],
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
   })
+}
+
+export const getPrivateTask = async (taskUuid: string) => {
+  const task = await dryrunResultParsed<PrivateTask>({
+    process: communityProcessID,
+    tags: [{ name: 'Action', value: 'GetPrivateTask' }, { name: 'TaskUuid', value: taskUuid }],
+  })
+  return task
 }
 
 export async function addPrivateTask(task: PrivateTask, wallet?: Wallet) {

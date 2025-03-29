@@ -264,7 +264,7 @@
         "executionResult": "Task Execution Result"
       },
       "status": {
-        "proposal": "Proposal",
+        "draft": "Draft",
         "auditing": "Auditing",
         "executing": "Executing",
         "waiting_for_validation": "Validating",

@@ -521,13 +521,14 @@ export type BudgetItem = Task['bounties'][number] & {
   member: string
 }
 
+export type PrivateTaskStatus = 'draft' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
 export type PrivateTask = {
   uuid: string
   boardUuid: string
   title: string
   description: string
   budgets: BudgetItem[]
-  status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+  status: PrivateTaskStatus
   editors: string[]
   startAt: number
   endAt: number

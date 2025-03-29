@@ -178,7 +178,7 @@
         "executionResult": "任务执行结果"
       },
       "status": {
-        "proposal": "提案中",
+        "draft": "提案中",
         "auditing": "提案审核中",
         "executing": "执行中",
         "waiting_for_validation": "执行结果审核中",

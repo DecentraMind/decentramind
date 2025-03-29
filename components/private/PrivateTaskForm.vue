@@ -89,7 +89,6 @@ const removeBudget = (index: number) => {
         :ui="{ error: index === 0 ? 'hidden' : 'absolute' }"
       >
         <div class="flex gap-2 mb-3">
-          <!-- 使用新的 UserSelectMenu 组件 -->
           <UserSelectMenu
             v-model="budget.member"
             placeholder="Select member"
@@ -157,7 +156,7 @@ const removeBudget = (index: number) => {
       :label="$t('private.task.fields.executionResult')"
       name="executionResult"
       :class="cn({
-        'hidden': !currentPrivateTask.uuid
+        'hidden': ['draft', 'auditing'].includes(currentPrivateTask.status)
       })"
     >
       <UTextarea

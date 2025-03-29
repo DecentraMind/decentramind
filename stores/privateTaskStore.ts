@@ -6,7 +6,7 @@ const getDefaultPrivateTask = (): PrivateTask => ({
   title: '',
   uuid: '',
   boardUuid: '',
-  status: 'proposal',
+  status: 'draft',
   editors: [],
   createdAt: Date.now(),
   updatedAt: Date.now(),

@@ -6,24 +6,29 @@ import { usePrivateTaskStore } from '~/stores/privateTaskStore'
 import PrivateTaskForm from './PrivateTaskForm.vue'
 import { notificationStore } from '~/stores/notificationStore'
 import { storeToRefs } from 'pinia'
+import { useQueryClient } from '@tanstack/vue-query'
+import { getPrivateTask } from '~/utils/community/community'
+import type { PrivateAreaConfig } from '~/types'
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false
-  },
-  boardUuid: {
-    type: String,
-    required: true
   }
 })
 
+const queryClient = useQueryClient()
 const { showError, showSuccess } = $(notificationStore())
 const { currentUuid: communityUuid } = $(communityStore())
 const { isCurrentCommunityAdmin, isCurrentCommunityOwner, address } = useUserInfo()
 const privateTaskStore = usePrivateTaskStore()
 const { currentPrivateTask } = storeToRefs(privateTaskStore)
 
+const boardTitle = $computed(() => {
+  const config = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
+  const board = config?.boards.find(board => board.uuid === currentPrivateTask.value.boardUuid)
+  return board?.title
+})
 const isCreateMode = $computed(() => {
   return !currentPrivateTask.value.uuid
 })
@@ -40,7 +45,7 @@ const isCommunityOwnerOrAdmin = $computed(() => {
 const isViewOnly = $computed(() => {
   if (!isCreateMode) {
     // view task or edit task
-    if (['proposal', 'executing'].includes(currentPrivateTask.value.status)) {
+    if (['draft', 'executing'].includes(currentPrivateTask.value.status)) {
       // only task editor can edit task
       return !isTaskEditor
     }
@@ -50,14 +55,41 @@ const isViewOnly = $computed(() => {
   }
 })
 
-onMounted(() => {
-  if (props.boardUuid && isCreateMode) {
-    currentPrivateTask.value.boardUuid = props.boardUuid
+let isFetchingTask = $ref(false)
+
+// Force fetch task data when modal opens
+watch(() => props.modelValue, async (value) => {
+  if (value && !isCreateMode) {
+    try {
+      isFetchingTask = true
+      const uuid = currentPrivateTask.value.uuid
+      if (!uuid) {
+        throw new Error('Invalid task UUID')
+      }
+
+      console.log('fetching task', uuid)
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateTask', uuid] })
+      const task = await queryClient.fetchQuery({
+        queryKey: ['community', 'privateTask', uuid],
+        queryFn: () => getPrivateTask(uuid),
+        retry: 2,
+        retryDelay: 1000
+      })
+
+      if (task) {
+        privateTaskStore.updateCurrentPrivateTask(task)
+        queryClient.setQueryData(['community', 'privateTask', uuid], task)
+      }
+    } catch (error) {
+      console.error('Failed to fetch task:', error)
+      showError('Failed to load task details')
+    } finally {
+      isFetchingTask = false
+    }
   }
-})
-// reset current private task when modal is closed
-watch(() => props.modelValue, (value) => {
   if (!value) {
+    console.log('resetting task')
+    // when modal is closed, reset data
     privateTaskStore.resetCurrentPrivateTask()
   }
 })
@@ -75,8 +107,8 @@ watch(addPrivateTaskStatus, (status) => {
   }
 })
 
-const submitProposal = async (status: 'proposal' | 'auditing') => {
-  if (status === 'proposal') {
+const submitProposal = async (status: 'draft' | 'auditing') => {
+  if (status === 'draft') {
     isSubmittingDraft = true
   } else {
     isSubmittingProposal = true
@@ -86,6 +118,7 @@ const submitProposal = async (status: 'proposal' | 'auditing') => {
       ...currentPrivateTask.value,
       budgets: currentPrivateTask.value.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
     }
+    console.log('adding proposal', filteredState)
     await addPrivateTaskMutateAsync(filteredState)
     showSuccess('Proposal added.')
     emit('proposal-added', currentPrivateTask.value)
@@ -106,10 +139,10 @@ const saveProposal = async (updateStatus: boolean = false) => {
     }
     if (updateStatus) {
       isUpdatingStatus = true
-      if (!['proposal', 'executing'].includes(currentPrivateTask.value.status)) {
+      if (!['draft', 'executing'].includes(currentPrivateTask.value.status)) {
         throw new Error('Only proposal or executing proposal can be updated.')
       }
-      filteredState.status = currentPrivateTask.value.status === 'proposal' ? 'auditing' : 'waiting_for_validation'
+      filteredState.status = currentPrivateTask.value.status === 'draft' ? 'auditing' : 'waiting_for_validation'
     }
     await saveProposalMutateAsync(filteredState)
     showSuccess('Proposal saved.')
@@ -166,7 +199,7 @@ const deleteProposal = async () => {
   >
     <UCard>
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-semibold">{{ isCreateMode ? 'Add Proposal' : currentPrivateTask.title }}</h3>
+        <h3 class="text-xl font-semibold">{{ isCreateMode ? 'Add Proposal in ' + boardTitle : currentPrivateTask.title }}</h3>
         <UButton
           icon="i-heroicons-x-mark"
           color="gray"
@@ -176,72 +209,77 @@ const deleteProposal = async () => {
         />
       </div>
 
-      <PrivateTaskForm :view-only="isViewOnly">
-        <div v-if="isCreateMode" class="flex flex-row gap-2">
-          <UButton
-            :loading="isSubmittingDraft"
-            :disabled="isAddPending"
-            type="button"
-            color="white"
-            label="Save as Draft"
-            @click="submitProposal('proposal')"
-          />
-          <UButton
-            :loading="isSubmittingProposal"
-            :disabled="isAddPending"
-            type="button"
-            color="primary"
-            label="Submit Proposal"
-            @click="submitProposal('auditing')"
-          />
-        </div>
+      <div v-if="isFetchingTask" class="flex justify-center py-4">
+        <UIcon name="svg-spinners:3-dots-fade" class="animate-spin" />
+      </div>
+      <div v-else>
+        <PrivateTaskForm :view-only="isViewOnly">
+          <div v-if="isCreateMode" class="flex flex-row gap-2">
+            <UButton
+              :loading="isSubmittingDraft"
+              :disabled="isAddPending"
+              type="button"
+              color="white"
+              label="Save as Draft"
+              @click="submitProposal('draft')"
+            />
+            <UButton
+              :loading="isSubmittingProposal"
+              :disabled="isAddPending"
+              type="button"
+              color="primary"
+              label="Submit Proposal"
+              @click="submitProposal('auditing')"
+            />
+          </div>
 
-        <div v-if="!isCreateMode && ['proposal', 'executing'].includes(currentPrivateTask.status) && isTaskEditor" class="flex flex-row gap-2">
-          <UButton
-            :loading="isDeletePending"
-            :disabled="isDeletePending"
-            type="button"
-            color="red"
-            label="Delete Proposal"
-            @click="deleteProposal()"
-          />
-          <UButton
-            :loading="isSavePending && !isUpdatingStatus"
-            :disabled="isSavePending && !isUpdatingStatus"
-            type="button"
-            color="white"
-            label="Save Draft"
-            @click="saveProposal()"
-          />
-          <UButton
-            :loading="isSavePending && isUpdatingStatus"
-            :disabled="isSavePending && isUpdatingStatus"
-            type="button"
-            label="Submit Proposal"
-            color="primary"
-            @click="saveProposal(true)"
-          />
-        </div>
+          <div v-if="!isCreateMode && ['draft', 'executing'].includes(currentPrivateTask.status) && isTaskEditor" class="flex flex-row gap-2">
+            <UButton
+              :loading="isDeletePending"
+              :disabled="isDeletePending"
+              type="button"
+              color="red"
+              label="Delete Proposal"
+              @click="deleteProposal()"
+            />
+            <UButton
+              :loading="isSavePending && !isUpdatingStatus"
+              :disabled="isSavePending && !isUpdatingStatus"
+              type="button"
+              color="white"
+              label="Save Draft"
+              @click="saveProposal()"
+            />
+            <UButton
+              :loading="isSavePending && isUpdatingStatus"
+              :disabled="isSavePending && isUpdatingStatus"
+              type="button"
+              label="Submit Proposal"
+              color="primary"
+              @click="saveProposal(true)"
+            />
+          </div>
 
-        <div v-if="!isCreateMode && ['auditing', 'waiting_for_validation'].includes(currentPrivateTask.status) && isCommunityOwnerOrAdmin" class="flex flex-row gap-2">
-          <UButton
-            :loading="isApprovingOrRejecting && !isRejectingProposal"
-            :disabled="isApprovingOrRejecting && !isRejectingProposal"
-            type="button"
-            color="white"
-            label="Approve"
-            @click="approveOrRejectProposal('approve')"
-          />
-          <UButton
-            :loading="isApprovingOrRejecting && isRejectingProposal"
-            :disabled="isApprovingOrRejecting && isRejectingProposal"
-            type="button"
-            color="white"
-            label="Reject"
-            @click="approveOrRejectProposal('reject')"
-          />
-        </div>
-      </PrivateTaskForm>
+          <div v-if="!isCreateMode && ['auditing', 'waiting_for_validation'].includes(currentPrivateTask.status) && isCommunityOwnerOrAdmin" class="flex flex-row gap-2">
+            <UButton
+              :loading="isApprovingOrRejecting && !isRejectingProposal"
+              :disabled="isApprovingOrRejecting && !isRejectingProposal"
+              type="button"
+              color="green"
+              label="Approve"
+              @click="approveOrRejectProposal('approve')"
+            />
+            <UButton
+              :loading="isApprovingOrRejecting && isRejectingProposal"
+              :disabled="isApprovingOrRejecting && isRejectingProposal"
+              type="button"
+              color="red"
+              label="Reject"
+              @click="approveOrRejectProposal('reject')"
+            />
+          </div>
+        </PrivateTaskForm>
+      </div>
     </UCard>
   </UModal>
 </template>

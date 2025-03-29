@@ -1,4 +1,4 @@
-Variant = '1.0.98'
+Variant = '1.0.99'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -166,7 +166,7 @@ Pages = Pages or {}
 ---@field title string @Title of the private task
 ---@field description string @Description of the private task
 ---@field budgets PrivateTaskBudget[] @Budgets of the private task
----@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+---@field status string 'draft' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
 ---@field editors string[] @Addresses of the editors
 ---@field startAt number @Start time of the private task
 ---@field endAt number @End time of the private task
@@ -789,7 +789,7 @@ Actions = {
       if update.pageUuids then
         for _, pageUuid in pairs(update.pageUuids) do
           assert(Pages[pageUuid], 'Page ' .. pageUuid .. ' not found.')
-          if not u.findIndex(configCopy.pageUuids, pageUuid) then
+          if not u.findIndex(configCopy.pageUuids, function(localUuid) return localUuid == pageUuid end) then
             table.insert(configCopy.pageUuids, pageUuid)
           end
         end
@@ -798,7 +798,7 @@ Actions = {
       if update.boardUuids then
         for _, boardUuid in pairs(update.boardUuids) do
           assert(Boards[boardUuid], 'Board ' .. boardUuid .. ' not found.')
-          if not u.findIndex(configCopy.boardUuids, boardUuid) then
+          if not u.findIndex(configCopy.boardUuids, function(localUuid) return localUuid == boardUuid end) then
             table.insert(configCopy.boardUuids, boardUuid)
           end
         end
@@ -854,19 +854,27 @@ Actions = {
       u.replyData(msg, board)
     end,
 
+    GetPrivateTask = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      local task = PrivateTasks[taskUuid]
+      assert(task, 'Task not found.')
+      u.replyData(msg, task)
+    end,
+
     AddPrivateTask = function(msg)
       local address = msg.From
 
       ---@type PrivateTask
       local task = json.decode(msg.Data)
-      -- only accept 'proposal' | 'auditing' status
-      assert(task.status == 'proposal' or task.status == 'auditing', 'Invalid status.')
-      assert(task.title, 'Title is required.')
-      assert(task.description, 'Description is required.')
+      -- only accept 'draft' | 'auditing' status
+      assert(task.status == 'draft' or task.status == 'auditing', 'Invalid status.')
+      assert(task.title and #task.title > 0, 'Title is required.')
+      assert(task.description and #task.description > 0, 'Description is required.')
       assert(task.budgets and #task.budgets > 0, 'Budgets are required.')
+      assert(task.boardUuid, 'Board uuid is required.')
 
       local board = Boards[task.boardUuid]
-      assert(board, 'Board not found.')
+      assert(board, 'Board ' .. task.boardUuid .. ' not found.')
       local uuid = board.communityUuid
 
       assertPrivateUnlocked(address, uuid)
@@ -898,10 +906,10 @@ Actions = {
       local task = json.decode(msg.Data)
       assert(PrivateTasks[task.uuid], 'Proposal not found.')
 
-      assert(PrivateTasks[task.uuid].status == 'proposal' or PrivateTasks[task.uuid].status == 'executing', 'Only draft proposal or executing proposal can be updated.')
+      assert(PrivateTasks[task.uuid].status == 'draft' or PrivateTasks[task.uuid].status == 'executing', 'Only draft proposal or executing proposal can be updated.')
 
-      if PrivateTasks[task.uuid].status == 'proposal' then
-        assert(task.status == 'proposal' or task.status == 'auditing', 'Status must be "proposal" or "auditing".')
+      if PrivateTasks[task.uuid].status == 'draft' then
+        assert(task.status == 'draft' or task.status == 'auditing', 'Status must be "draft" or "auditing".')
       elseif PrivateTasks[task.uuid].status == 'executing' then
         assert(task.status == 'executing' or task.status == 'auditing' or task.status == 'waiting_for_settlement', 'Status must be "executing" or "waiting_for_settlement".')
       end
@@ -912,7 +920,7 @@ Actions = {
       local communityUuid = board.communityUuid
 
       assertPrivateUnlocked(msg.From, communityUuid)
-      assert(u.findIndex(PrivateTasks[task.uuid].editors, msg.From), 'You are not the editor of this proposal.')
+      assert(u.findIndex(PrivateTasks[task.uuid].editors, function(editor) return editor == msg.From end), 'You are not the editor of this proposal.')
 
       PrivateTasks[task.uuid] = task
       PrivateTasks[task.uuid].updatedAt = msg.Timestamp
@@ -928,7 +936,7 @@ Actions = {
       local taskUuid = msg.Tags.TaskUuid
       assert(PrivateTasks[taskUuid], 'Proposal not found.')
 
-      assert(PrivateTasks[taskUuid].status == 'proposal' or PrivateTasks[taskUuid].status == 'executing', 'Only draft proposal or executing proposal can be deleted.')
+      assert(PrivateTasks[taskUuid].status == 'draft' or PrivateTasks[taskUuid].status == 'executing', 'Only draft proposal or executing proposal can be deleted.')
 
       local boardUuid = PrivateTasks[taskUuid].boardUuid
       local board = Boards[boardUuid]
@@ -936,7 +944,7 @@ Actions = {
       local communityUuid = board.communityUuid
 
       assertPrivateUnlocked(msg.From, communityUuid)
-      assert(u.findIndex(PrivateTasks[taskUuid].editors, msg.From), 'You are not the editor of this proposal.')
+      assert(u.findIndex(PrivateTasks[taskUuid].editors, function(editor) return editor == msg.From end), 'You are not the editor of this proposal.')
 
       PrivateTasks[taskUuid].deletedAt = msg.Timestamp
       PrivateTasks[taskUuid].updatedAt = msg.Timestamp
@@ -974,7 +982,7 @@ Actions = {
         end
       elseif operation == 'reject' then
         if oldStatus == 'auditing' then
-          newStatus = 'proposal'
+          newStatus = 'draft'
         elseif oldStatus == 'waiting_for_validation' then
           newStatus = 'executing'
         end

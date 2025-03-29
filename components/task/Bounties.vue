@@ -75,7 +75,7 @@ const formattedBounties = computed(() => {
   <div :class="props.wrapperClass">
     <div
       v-for="(bounty, index) in formattedBounties"
-      :key="bounty.pid"
+      :key="`${index}-${bounty.pid}`"
       :data-bounty-token-pid="bounty.pid"
       class="flex justify-start"
     >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BoardWithTasks, PrivateTask } from '~/types'
+import type { BoardWithTasks, PrivateTask, PrivateTaskStatus } from '~/types'
 import Bounties from '~/components/task/Bounties.vue'
 import ProposalModal from './ProposalModal.vue'
 import { usePrivateTaskStore } from '~/stores/privateTaskStore'
@@ -14,7 +14,7 @@ const privateTaskStore = usePrivateTaskStore()
 const { updateCurrentPrivateTask } = privateTaskStore
 const runtimeConfig = useRuntimeConfig()
 
-const statuses = ['proposal', 'auditing', 'executing', 'waiting_for_settlement', 'settled']
+const statuses: PrivateTaskStatus[] = ['draft', 'auditing', 'executing', 'waiting_for_validation', 'waiting_for_settlement', 'settled']
 
 console.log('board props.data', props.data)
 const taskGroups = computed(() => {
@@ -31,8 +31,17 @@ const onProposalAdded = () => {
 }
 
 const openProposalModal = (task: PrivateTask) => {
+  console.log('open proposal modal', task.uuid)
   updateCurrentPrivateTask({
-    ...task
+    ...task,
+    boardUuid: props.data.uuid
+  })
+  isProposalModalOpen = true
+}
+
+const openAddProposalModal = () => {
+  updateCurrentPrivateTask({
+    boardUuid: props.data.uuid
   })
   isProposalModalOpen = true
 }
@@ -61,14 +70,14 @@ const openProposalModal = (task: PrivateTask) => {
                 <Bounties :bounties="task.budgets" :show-logo="false" :disable-popover="true" wrapper-class="flex flex-col items-end" />
               </div>
             </div>
-            <div v-if="status === 'proposal'">
+            <div v-if="status === 'draft'">
               <UButton
                 variant="ghost"
                 icon="i-heroicons-plus"
                 :label="$t('private.task.add')"
-                class="w-full"
+                class="w-full mb-2"
                 :disabled="unclickable"
-                @click="isProposalModalOpen = true"
+                @click="openAddProposalModal()"
               />
             </div>
           </div>
@@ -76,6 +85,6 @@ const openProposalModal = (task: PrivateTask) => {
       </div>
     </div>
 
-    <ProposalModal v-model="isProposalModalOpen" :board-uuid="data.uuid" @proposal-added="onProposalAdded" />
+    <ProposalModal v-model="isProposalModalOpen" @proposal-added="onProposalAdded" />
   </div>
 </template>

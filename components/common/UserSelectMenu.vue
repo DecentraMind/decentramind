@@ -7,6 +7,7 @@ import { communityStore } from '~/stores/communityStore'
 const props = defineProps<{
   modelValue: string
   placeholder?: string
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -46,6 +47,7 @@ function handleSelectionChange(user: PrivateUnlockMember) {
 <template>
   <USelectMenu
     :model-value="selectedUser?.address"
+    :disabled="disabled"
     :searchable="true"
     :search="search"
     :search-attributes="['address', 'name']"

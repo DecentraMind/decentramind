@@ -288,7 +288,7 @@ export const VOUCH_SITE_URL = 'https://vouch.zeabur.app'
 export const VALID_SUBMISSION_STATUS = ['validated', 'revalidated'] as SubmissionValidateStatus[]
 
 export const privateTaskStatusColorMap: Record<string, ButtonColor> = {
-  proposal: 'gray',
+  draft: 'gray',
   auditing: 'blue',
   executing: 'green',
   waiting_for_settlement: 'orange',

@@ -338,7 +338,7 @@ export type CreateTokenSchema = z.infer<typeof createTokenSchema>
 
 export const createProposalSchema = z.object({
   title: z.string().min(1).max(30),
-  status: z.enum(['proposal', 'auditing']),
+  status: z.enum(['draft', 'auditing']),
   startAt: z.number().gt(0),
   endAt: z.number().gt(0),
   description: z.string().min(1).max(7000)
@@ -348,14 +348,8 @@ export type CreateProposalSchema = z.infer<typeof createProposalSchema>
 
 export function validateCreateProposalForm(state: PrivateTask): FormError[] {
   const errors = []
-  const { startAt, endAt, budgets } = state
+  const { startAt, endAt, budgets, status, executionResult } = state
   
-  if (startAt <= Date.now()) {
-    errors.push({
-      path: 'time',
-      message: 'Start time cannot be earlier than current time.',
-    })
-  }
   if (endAt <= Date.now()) {
     errors.push({
       path: 'time',
@@ -373,6 +367,13 @@ export function validateCreateProposalForm(state: PrivateTask): FormError[] {
     errors.push({
       path: 'budgets',
       message: 'Budgets are required.',
+    })
+  }
+
+  if (status === 'executing' && !executionResult) {
+    errors.push({
+      path: 'executionResult',
+      message: 'Execution result is required.',
     })
   }
 
