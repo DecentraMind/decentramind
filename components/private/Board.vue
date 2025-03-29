@@ -1,24 +1,20 @@
 <script setup lang="ts">
-import type { ButtonColor } from '#ui/types'
 import type { BoardWithTasks, PrivateTask } from '~/types'
-import Bounties from '@/components/task/Bounties.vue'
+import Bounties from '~/components/task/Bounties.vue'
 import ProposalModal from './ProposalModal.vue'
+import { usePrivateTaskStore } from '~/stores/privateTaskStore'
+import { privateTaskStatusColorMap } from '~/utils/constants'
 
 const props = defineProps<{
   data: BoardWithTasks
   unclickable?: boolean
 }>()
 
+const privateTaskStore = usePrivateTaskStore()
+const { updateCurrentPrivateTask } = privateTaskStore
 const runtimeConfig = useRuntimeConfig()
 
 const statuses = ['proposal', 'auditing', 'executing', 'waiting_for_settlement', 'settled']
-const statusColorMap: Record<string, ButtonColor> = {
-  proposal: 'gray',
-  auditing: 'blue',
-  executing: 'green',
-  waiting_for_settlement: 'orange',
-  settled: 'pink'
-}
 
 console.log('board props.data', props.data)
 const taskGroups = computed(() => {
@@ -28,10 +24,17 @@ const taskGroups = computed(() => {
   }, {} as Record<string, PrivateTask[]>)
 })
 
-const isProposalModalOpen = ref(false)
+let isProposalModalOpen = $ref(false)
 
 const onProposalAdded = () => {
   console.log('new proposal added to board', props.data.uuid)
+}
+
+const openProposalModal = (task: PrivateTask) => {
+  updateCurrentPrivateTask({
+    ...task
+  })
+  isProposalModalOpen = true
 }
 </script>
 
@@ -44,13 +47,18 @@ const onProposalAdded = () => {
     <div class="w-full overflow-x-auto">
       <div class="min-w-[920px] flex flex-row items-start justify-start gap-4">
         <div v-for="status in statuses" :key="status" class="w-1/5 h-full">
-          <UButton variant="soft" :color="statusColorMap[status]" :label="$t(`private.task.status.${status}`)" class="w-full mb-2 cursor-default" />
+          <UButton variant="soft" :color="privateTaskStatusColorMap[status]" :label="$t(`private.task.status.${status}`)" class="w-full mb-2 cursor-default" />
           <div class="p-1">
-            <div v-for="task in taskGroups[status]" :key="task.uuid" class="w-full p-3 flex flex-col items-start justify-start gap-2 text-sm mb-3 ring-1 ring-gray-200 rounded-lg">
+            <div
+              v-for="task in taskGroups[status]"
+              :key="task.uuid"
+              class="w-full p-3 flex flex-col items-start justify-start gap-2 text-sm mb-3 ring-1 ring-gray-200 rounded-lg cursor-pointer"
+              @click="openProposalModal(task)"
+            >
               <div class="font-medium">{{ task.title }}</div>
               <div class="flex flex-row items-center justify-start gap-2">
                 <span class="text-gray-500">Budgets</span>
-                <Bounties :bounties="task.budgets" :show-logo="false" wrapper-class="flex flex-col items-end" />
+                <Bounties :bounties="task.budgets" :show-logo="false" :disable-popover="true" wrapper-class="flex flex-col items-end" />
               </div>
             </div>
             <div v-if="status === 'proposal'">

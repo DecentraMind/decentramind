@@ -81,7 +81,7 @@ export const getImageDataFromURL = async (url: string, width?: number, height?: 
   })
 }
 
-export const compareImages = async (communityAvatar: string, twitterAvatar: string) => {
+export const compareImagesBrowser = async (communityAvatar: string, twitterAvatar: string) => {
   const twitterImageData = await getImageDataFromURL(twitterAvatar, 100, 100)
   const communityImageData = await getImageDataFromURL(communityAvatar, 100, 100)
   const { mssim } = ssim(twitterImageData, communityImageData)

@@ -299,12 +299,35 @@ export async function getUserByAddress(address: string) {
   })
 }
 
-export async function updatePrivateTask(task: PrivateTask, wallet?: Wallet) {
+export async function saveProposal(task: PrivateTask, wallet?: Wallet) {
   const jsonString = JSON.stringify(task)
   return await messageResultParsed<PrivateTask>({
     process: communityProcessID,
-    tags: [{ name: 'Action', value: 'UpdatePrivateTaskDraft' }],
+    tags: [{ name: 'Action', value: 'SaveProposal' }],
     data: jsonString,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+export async function deleteProposal(taskUuid: string, wallet?: Wallet) {
+  return await messageResultParsed<PrivateTask>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'DeleteProposal' },
+      { name: 'TaskUuid', value: taskUuid }
+    ],
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
+export async function updatePrivateTaskStatus(taskUuid: string, operation: 'approve' | 'reject', wallet?: Wallet) {
+  return await messageResultParsed<PrivateTask>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'UpdatePrivateTaskStatus' },
+      { name: 'TaskUuid', value: taskUuid },
+      { name: 'Operation', value: operation }
+    ],
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
   })
 }

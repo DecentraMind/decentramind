@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPrivateTask, getApplications, getCommunities, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, join, updateBoardTitle, updatePrivateAreaConfig } from '~/utils/community/community'
+import { addBoard, addPrivateTask, deleteProposal, getApplications, getCommunities, getLogs, getPrivateAreaConfig, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePrivateAreaConfig, updatePrivateTaskStatus } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -166,6 +166,66 @@ export const useAddPrivateTaskMutation = ({communityUuid, onErrorCb}: {community
       queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], context?.previousConfig)
     },
     onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+    }
+  })
+}
+
+export const useSaveProposalMutation = ({communityUuid}: {communityUuid: string}) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (task: PrivateTask) => saveProposal(task),
+    onSettled: (updatedTask) => {
+      if (!updatedTask) return
+      // update board tasks
+      const previousConfig = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
+      queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], {
+        ...previousConfig,
+        boards: previousConfig?.boards.map(board => ({
+          ...board,
+          tasks: board.tasks.map(task => task.uuid === updatedTask.uuid ? updatedTask : task)
+        }))
+      })
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+    }
+  })
+}
+
+export const useDeleteProposalMutation = ({communityUuid}: {communityUuid: string}) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (taskUuid: string) => deleteProposal(taskUuid),
+    onSettled: (deletedTask) => {
+      if (!deletedTask) return
+      // update board tasks
+      const previousConfig = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
+      queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], {
+        ...previousConfig,
+        boards: previousConfig?.boards.map(board => ({
+          ...board,
+          tasks: board.tasks.filter(task => task.uuid !== deletedTask.uuid)
+        }))
+      })
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+    }
+  })
+}
+
+export const useUpdatePrivateTaskStatusMutation = ({communityUuid}: {communityUuid: string}) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({taskUuid, operation}: {taskUuid: string, operation: 'approve' | 'reject'}) => updatePrivateTaskStatus(taskUuid, operation),
+    onSettled: (updatedTask) => {
+      if (!updatedTask) return
+      // update board tasks
+      const previousConfig = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
+      queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], {
+        ...previousConfig,
+        boards: previousConfig?.boards.map(board => ({
+          ...board,
+          tasks: board.tasks.map(task => task.uuid === updatedTask.uuid ? updatedTask : task)
+        }))
+      })
       queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
     }
   })

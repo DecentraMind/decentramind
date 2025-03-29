@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { useAddPrivateTaskMutation } from '~/composables/community/communityQuery'
+import { useAddPrivateTaskMutation, useSaveProposalMutation, useUpdatePrivateTaskStatusMutation } from '~/composables/community/communityQuery'
 import { communityStore } from '~/stores/communityStore'
 import { usePrivateTaskStore } from '~/stores/privateTaskStore'
 import PrivateTaskForm from './PrivateTaskForm.vue'
@@ -45,10 +45,10 @@ const isViewOnly = $computed(() => {
       // only task editor can edit task
       return !isTaskEditor
     }
+    return true
   } else {
     return false
   }
-  return true
 })
 
 onMounted(() => {
@@ -93,19 +93,50 @@ const submitProposal = async (status: 'proposal' | 'auditing') => {
   }
 }
 
-const saveProposal = async () => {
+const { mutateAsync: saveProposalMutateAsync, isPending: isSavePending } = useSaveProposalMutation({communityUuid: communityUuid!})
+let isUpdatingStatus = $ref(false)
+const saveProposal = async (updateStatus: boolean = false) => {
   try {
     const filteredState = {
       ...privateTaskStore.currentPrivateTask,
       budgets: privateTaskStore.currentPrivateTask.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
     }
-    // TODO update proposal
-    // await addPrivateTaskMutateAsync(filteredState)
+    if (updateStatus) {
+      isUpdatingStatus = true
+      if (!['proposal', 'executing'].includes(privateTaskStore.currentPrivateTask.status)) {
+        throw new Error('Only proposal or executing proposal can be updated.')
+      }
+      filteredState.status = privateTaskStore.currentPrivateTask.status === 'proposal' ? 'auditing' : 'waiting_for_validation'
+    }
+    await saveProposalMutateAsync(filteredState)
     showSuccess('Proposal saved.')
     emit('update:modelValue', false)
   } catch (error) {
     console.error('Failed to save proposal.', error)
     showError('Failed to save proposal.')
+  } finally {
+    isUpdatingStatus = false
+  }
+}
+
+const { mutateAsync: updatePrivateTaskStatusMutateAsync, isPending: isApprovingOrRejecting } = useUpdatePrivateTaskStatusMutation({communityUuid: communityUuid!})
+let isRejectingProposal = $ref(false)
+const approveOrRejectProposal = async (operation: 'approve' | 'reject') => {
+  try {
+    if (operation == 'reject') {
+      isRejectingProposal = true
+    }
+    if (!['auditing', 'waiting_for_validation'].includes(privateTaskStore.currentPrivateTask.status)) {
+      throw new Error('Only auditing or waiting for validation proposal can be approved.')
+    }
+    await updatePrivateTaskStatusMutateAsync({
+      taskUuid: privateTaskStore.currentPrivateTask.uuid,
+      operation
+    })
+  } catch (error) {
+    console.error('Failed to approve proposal.', error)
+  } finally {
+    isRejectingProposal = false
   }
 }
 </script>
@@ -154,12 +185,38 @@ const saveProposal = async () => {
         </div>
         <div v-if="!isCreateMode && ['proposal', 'executing'].includes(privateTaskStore.currentPrivateTask.status) && isTaskEditor">
           <UButton
-            :loading="isSubmittingDraft"
-            :disabled="isAddPending"
+            :loading="isSavePending && !isUpdatingStatus"
+            :disabled="isSavePending && !isUpdatingStatus"
             type="button"
             color="white"
-            label="Save"
+            label="Save Draft"
             @click="saveProposal()"
+          />
+          <UButton
+            :loading="isSavePending && isUpdatingStatus"
+            :disabled="isSavePending && isUpdatingStatus"
+            type="button"
+            label="Submit Proposal"
+            color="primary"
+            @click="saveProposal(true)"
+          />
+        </div>
+        <div v-if="!isCreateMode && ['auditing', 'waiting_for_validation'].includes(privateTaskStore.currentPrivateTask.status) && isCommunityOwnerOrAdmin">
+          <UButton
+            :loading="isApprovingOrRejecting && !isRejectingProposal"
+            :disabled="isApprovingOrRejecting && !isRejectingProposal"
+            type="button"
+            color="white"
+            label="Approve"
+            @click="approveOrRejectProposal('approve')"
+          />
+          <UButton
+            :loading="isApprovingOrRejecting && isRejectingProposal"
+            :disabled="isApprovingOrRejecting && isRejectingProposal"
+            type="button"
+            color="white"
+            label="Reject"
+            @click="approveOrRejectProposal('reject')"
           />
         </div>
       </PrivateTaskForm>

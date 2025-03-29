@@ -534,6 +534,7 @@ export type PrivateTask = {
   executionResult: string
   createdAt: number
   updatedAt: number
+  deletedAt?: number
 }
 
 export type Board = {

@@ -95,7 +95,12 @@ function handleDateChange(
     class="space-y-6"
   >
     <UFormGroup :label="$t('private.task.fields.title')" name="title">
-      <UInput v-model="currentPrivateTask.title" :disabled="props.viewOnly" placeholder="Enter task title" required />
+      <template #default>
+        <div class="flex justify-between items-center gap-2 mb-6">
+          <UInput v-model="currentPrivateTask.title" :disabled="props.viewOnly" placeholder="Enter task title" required class="flex-1" />
+          <UButton variant="soft" :label="currentPrivateTask.status" :color="privateTaskStatusColorMap[currentPrivateTask.status]" class="cursor-default" />
+        </div>
+      </template>
     </UFormGroup>
 
     <UFormGroup name="time" :label="$t('private.task.fields.timeRange')">
@@ -209,6 +214,11 @@ function handleDateChange(
         :disabled="props.viewOnly"
       />
     </UFormGroup>
+
+
+    <div v-if="currentPrivateTask.uuid" class="flex justify-between items-center gap-2 mb-6">
+      <p class="text-sm text-gray-500"><span class="font-semibold">Proposal UUID:</span> {{ currentPrivateTask.uuid }}</p>
+    </div>
 
     <div class="flex justify-end pt-4 gap-2">
       <slot />

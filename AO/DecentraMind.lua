@@ -1,4 +1,4 @@
-Variant = '0.5.98'
+Variant = '1.0.98'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -173,6 +173,7 @@ Pages = Pages or {}
 ---@field executionResult string @Execution result of the private task, editable when status is 'executing'
 ---@field createdAt number @Creation time of the private task
 ---@field updatedAt number @Update time of the private task
+---@field deletedAt number|nil @Deletion time of the private task
 
 ---@class Board
 ---@field uuid string @UUID of the private task board
@@ -741,7 +742,9 @@ Actions = {
           boardCopy.tasks = {}
           if Boards[boardUuid].taskUuids then
             for _, taskUuid in pairs(Boards[boardUuid].taskUuids) do
-              table.insert(boardCopy.tasks, PrivateTasks[taskUuid])
+              if PrivateTasks[taskUuid] and PrivateTasks[taskUuid].deletedAt == nil then
+                table.insert(boardCopy.tasks, PrivateTasks[taskUuid])
+              end
             end
           end
           table.insert(copy.boards, boardCopy)
@@ -877,18 +880,31 @@ Actions = {
       task.uuid = taskUuid
       task.editors = { msg.From }
       PrivateTasks[taskUuid] = task
+      PrivateTasks[taskUuid].createdAt = msg.Timestamp
+      PrivateTasks[taskUuid].updatedAt = msg.Timestamp
 
       table.insert(board.taskUuids, taskUuid)
+      -- add log
+      addLog('AddPrivateTask', uuid, msg.From, {
+        taskUuid = taskUuid
+      }, msg.Timestamp)
 
       u.replyData(msg, PrivateTasks[taskUuid])
     end,
 
-    UpdatePrivateTaskDraft = function(msg)
+    -- save proposal or executing private task content, only for task editors
+    SaveProposal = function(msg)
       ---@type PrivateTask
       local task = json.decode(msg.Data)
       assert(PrivateTasks[task.uuid], 'Proposal not found.')
 
-      assert(PrivateTasks[task.uuid].status == 'proposal' or PrivateTasks[task.uuid].status == 'executing', 'Only proposal or executing status task can be updated.')
+      assert(PrivateTasks[task.uuid].status == 'proposal' or PrivateTasks[task.uuid].status == 'executing', 'Only draft proposal or executing proposal can be updated.')
+
+      if PrivateTasks[task.uuid].status == 'proposal' then
+        assert(task.status == 'proposal' or task.status == 'auditing', 'Status must be "proposal" or "auditing".')
+      elseif PrivateTasks[task.uuid].status == 'executing' then
+        assert(task.status == 'executing' or task.status == 'auditing' or task.status == 'waiting_for_settlement', 'Status must be "executing" or "waiting_for_settlement".')
+      end
 
       local boardUuid = task.boardUuid
       local board = Boards[boardUuid]
@@ -899,7 +915,79 @@ Actions = {
       assert(u.findIndex(PrivateTasks[task.uuid].editors, msg.From), 'You are not the editor of this proposal.')
 
       PrivateTasks[task.uuid] = task
+      PrivateTasks[task.uuid].updatedAt = msg.Timestamp
+      -- add log
+      addLog('SaveProposal', communityUuid, msg.From, {
+        taskUuid = task.uuid
+      }, msg.Timestamp)
       u.replyData(msg, PrivateTasks[task.uuid])
+    end,
+
+    -- delete proposal, only for task editors
+    DeleteProposal = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      assert(PrivateTasks[taskUuid], 'Proposal not found.')
+
+      assert(PrivateTasks[taskUuid].status == 'proposal' or PrivateTasks[taskUuid].status == 'executing', 'Only draft proposal or executing proposal can be deleted.')
+
+      local boardUuid = PrivateTasks[taskUuid].boardUuid
+      local board = Boards[boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+
+      assertPrivateUnlocked(msg.From, communityUuid)
+      assert(u.findIndex(PrivateTasks[taskUuid].editors, msg.From), 'You are not the editor of this proposal.')
+
+      PrivateTasks[taskUuid].deletedAt = msg.Timestamp
+      PrivateTasks[taskUuid].updatedAt = msg.Timestamp
+      -- add log
+      addLog('DeleteProposal', communityUuid, msg.From, {
+        taskUuid = taskUuid
+      }, msg.Timestamp)
+      u.replyData(msg, PrivateTasks[taskUuid])
+    end,
+
+    -- update private task status, only for community owner or admins
+    UpdatePrivateTaskStatus = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      local operation = msg.Tags.Operation
+      assert(PrivateTasks[taskUuid], 'Proposal not found.')
+      assert(operation == 'approve' or operation == 'reject', 'Operation must be "approve" or "reject".')
+
+      assert(PrivateTasks[taskUuid].status == 'auditing' or PrivateTasks[taskUuid].status == 'waiting_for_validation', 'Only auditing or waiting for validation proposal can be updated.')
+
+      local boardUuid = PrivateTasks[taskUuid].boardUuid
+      local board = Boards[boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+
+      assertPrivateUnlocked(msg.From, communityUuid)
+      assertIsOwnerOrAdmin(msg.From, communityUuid)
+
+      local oldStatus = PrivateTasks[taskUuid].status
+      local newStatus = oldStatus
+      if operation == 'approve' then
+        if oldStatus == 'auditing' then
+          newStatus = 'executing'
+        elseif oldStatus == 'waiting_for_validation' then
+          newStatus = 'waiting_for_settlement'
+        end
+      elseif operation == 'reject' then
+        if oldStatus == 'auditing' then
+          newStatus = 'proposal'
+        elseif oldStatus == 'waiting_for_validation' then
+          newStatus = 'executing'
+        end
+      end
+      -- TODO only update status and executionResult
+      PrivateTasks[taskUuid].status = newStatus
+      PrivateTasks[taskUuid].updatedAt = msg.Timestamp
+      -- add log
+      addLog('UpdatePrivateTaskStatus', communityUuid, msg.From, {
+        taskUuid = taskUuid,
+        operation = operation
+      }, msg.Timestamp)
+      u.replyData(msg, PrivateTasks[taskUuid])
     end,
 
     GetLogs = function(msg)
