@@ -2,6 +2,7 @@
 import { usePrivateUnlockMembersQuery } from '~/composables/community/communityQuery'
 import type { UserInfo, UserInfoWithAddress } from '~/types'
 import { removePrivateUnlockMember } from '~/utils/community/community'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   uuid: string

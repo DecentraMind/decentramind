@@ -6,6 +6,7 @@ import { formatDate } from '~/utils/time'
 import ValidateStatus from './ValidateStatus.vue'
 import Bounties from './Bounties.vue'
 import { cn } from '~/utils'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   task: Task

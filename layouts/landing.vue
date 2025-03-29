@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useQueryClient } from '@tanstack/vue-query'
+import { aoStore } from '~/stores/aoStore'
 
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
 let { address } = $(aoStore())

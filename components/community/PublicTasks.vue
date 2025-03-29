@@ -4,6 +4,9 @@ import AddTaskDropdown from '~/components/task/AddTaskDropdown.vue'
 import Bounties from '~/components/task/Bounties.vue'
 import MountedTeleport from '~/components/MountedTeleport.vue'
 import { useTasksByCommunityUuidQuery } from '~/composables/tasks/taskQuery'
+import { aoStore } from '~/stores/aoStore'
+import { notificationStore } from '~/stores/notificationStore'
+
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 

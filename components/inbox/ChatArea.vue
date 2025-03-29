@@ -2,6 +2,10 @@
 import { nextTick } from 'vue'
 import MessageList from './MessageList.vue'
 import Loading from '../Loading.vue'
+import { inboxStore } from '~/stores/inboxStore'
+import { communityStore } from '~/stores/communityStore'
+import { aoStore } from '~/stores/aoStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { chat: chatID } = $defineProps<{
   chat: string

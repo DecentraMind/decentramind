@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useJoinedCommunitiesQuery } from '~/composables/community/communityQuery'
 import { arUrl, defaultCommunityLogo } from '~/utils/arAssets'
+import { aoStore } from '~/stores/aoStore'
 
 const { address } = $(aoStore())
 const { data: joinedCommunities } = useJoinedCommunitiesQuery(address)

@@ -2,6 +2,7 @@
 import { updateQuestions } from '~/utils/community/community'
 import { communityStore } from '~/stores/communityStore'
 import { useQuestionsQuery } from '~/composables/community/communityQuery'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { updateIsPrivateApplicable } = $(communityStore())
 

@@ -5,7 +5,7 @@ import {
   dryrun, spawn
 } from '~/utils/ao'
 
-import { defineStore } from 'pinia'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { Bounty, Task, TaskForm, Scores, BountySendHistory, InviteCodeInfo, Community } from '~/types'
 import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'

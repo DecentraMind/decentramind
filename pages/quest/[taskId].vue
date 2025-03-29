@@ -19,6 +19,9 @@ import Bounties from '~/components/task/Bounties.vue'
 import SpaceSubmissionForm from '~/components/task/SpaceSubmissionForm.vue'
 import TweetSubmissionForm from '~/components/task/TweetSubmissionForm.vue'
 import BountySendConfirmModal from '~/components/task/BountySendConfirmModal.vue'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 definePageMeta({
   ssr: false

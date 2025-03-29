@@ -15,6 +15,7 @@ interface Props {
   precisions?: Map<string, number>
   class?: string
   wrapperClass?: string
+  disablePopover?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -22,7 +23,8 @@ const props = withDefaults(defineProps<Props>(), {
   class: 'font-medium',
   showPlus: true,
   precisions: undefined,
-  wrapperClass: 'flex justify-start flex-wrap'
+  wrapperClass: 'flex justify-start flex-wrap',
+  disablePopover: false,
 })
 
 const defaultPrecisions = $computed(() =>
@@ -81,6 +83,7 @@ const formattedBounties = computed(() => {
       <span v-if="index > 0 && props.showPlus" class="mx-2">+</span>
       <UPopover
         mode="hover"
+        :disabled="disablePopover"
         :popper="{ placement: 'top' }"
         :ui="{
           trigger: 'flex justify-start items-center'

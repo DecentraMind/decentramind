@@ -14,6 +14,8 @@ import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type Up
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
 import { getCommunities, getCommunity as getCommunityAO, join, updatePrivateApplicable } from '~/utils/community/community'
+import { acceptHMRUpdate, defineStore } from 'pinia'
+import { aoStore } from './aoStore'
 
 export const communityStore = defineStore('communityStore', () => {
   const aoCommunityProcessID = DM_PROCESS_ID

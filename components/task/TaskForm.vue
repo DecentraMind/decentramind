@@ -6,6 +6,7 @@ import { arUrl, taskBannersMap, gateways } from '~/utils/arAssets'
 import { formatDate, taskSchema, getLocalTimezone } from '~/utils'
 import { validateTaskForm } from '~/utils/schemas'
 import { useTaskStore } from '~/stores/taskStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { t } = useI18n()
 

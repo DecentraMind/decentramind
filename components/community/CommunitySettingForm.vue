@@ -7,6 +7,9 @@ import { arUrl, defaultCommunityLogo, getCommunityBannerUrl } from '~/utils/arAs
 import { createUuid } from '~/utils'
 import { useUpload } from '~/composables/useUpload'
 import { useQueryClient } from '@tanstack/vue-query'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   isSettingMode?: boolean

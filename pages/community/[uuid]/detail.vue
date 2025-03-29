@@ -7,6 +7,9 @@ import BaseField from '~/components/fields/BaseField.vue'
 import { baseFieldClasses } from '~/components/fields'
 import * as echarts from 'echarts'
 import CommunityMembersTable from '~/components/community/CommunityMembersTable.vue'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 definePageMeta({
   ssr: false

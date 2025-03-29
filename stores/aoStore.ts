@@ -6,6 +6,9 @@ import Arweave from 'arweave'
 import type { Tag } from 'arweave/node/lib/transaction'
 import type { AoTag } from '~/types'
 import { getVouchData } from '~/utils/user/vouch.client'
+import { acceptHMRUpdate, defineStore } from 'pinia'
+import { communityStore } from './communityStore'
+import { notificationStore } from './notificationStore'
 
 const aoCommunityProcessID = DM_PROCESS_ID
 

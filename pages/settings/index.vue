@@ -3,6 +3,9 @@ import type { UserInfo } from '~/types'
 import { defaultUserAvatar } from '~/utils/arAssets'
 import { userSchema } from '~/utils/schemas'
 import { useUpload } from '~/composables/useUpload'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { address } = $(aoStore())
 const { updateUser } = $(communityStore())

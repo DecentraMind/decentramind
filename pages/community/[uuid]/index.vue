@@ -6,6 +6,10 @@ import CommunitySidebar from '~/components/community/CommunitySidebar.vue'
 import PublicTasks from '~/components/community/PublicTasks.vue'
 import PrivateHome from '~/components/private/PrivateHome.vue'
 import { useCommunityFromCommunitiesQuery } from '~/composables/community/communityQuery'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
+import { inboxStore } from '~/stores/inboxStore'
 
 definePageMeta({
   ssr: false

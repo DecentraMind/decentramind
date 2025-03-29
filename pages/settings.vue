@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { aoStore } from '~/stores/aoStore'
+
 const {t} = useI18n()
 const { address } = $(aoStore())
 const router = useRouter()

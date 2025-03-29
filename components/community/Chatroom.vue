@@ -2,6 +2,8 @@
 import type { Community, UserInfoWithAddress } from '~/types'
 import { shortString, defaultUserAvatar } from '~/utils'
 import ChatArea from '../inbox/ChatArea.vue'
+import { notificationStore } from '~/stores/notificationStore'
+import { communityStore } from '~/stores/communityStore'
 
 const props = defineProps<{
   community: Community

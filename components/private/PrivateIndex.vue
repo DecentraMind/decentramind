@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Board from './Board.vue'
 import { useAddBoardMutation, usePrivateAreaConfigQuery } from '~/composables/community/communityQuery'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   isAdmin: boolean

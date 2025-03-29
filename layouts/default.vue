@@ -5,6 +5,9 @@ import CommunitySettingForm from '~/components/community/CommunitySettingForm.vu
 import LoginModal from '~/components/users/LoginModal.vue'
 import VouchModal from '~/components/users/VouchModal.vue'
 import { useJoinedCommunitiesQuery } from '~/composables/community/communityQuery'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { useUserInfo } from '~/composables/useUserInfo'
 
 const router = useRouter()
 

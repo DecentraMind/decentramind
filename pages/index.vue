@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import LoginModal from '~/components/users/LoginModal.vue'
+import { aoStore } from '~/stores/aoStore'
 
 const { isLoginModalOpen, address } = $(aoStore())
 const router = useRouter()

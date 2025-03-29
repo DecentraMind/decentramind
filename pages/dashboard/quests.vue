@@ -3,6 +3,9 @@ import type { BountySendHistory, Task } from '~/types'
 import { tokensByProcessID } from '~/utils'
 import { useTaskStore } from '~/stores/taskStore'
 import Bounties from '~/components/task/Bounties.vue'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const questColumns = [
   {

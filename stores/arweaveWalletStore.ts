@@ -1,3 +1,5 @@
+import { acceptHMRUpdate, defineStore } from 'pinia'
+
 export const arweaveWalletStore = defineStore('arweaveWalletStore', () => {
   let address = $(lsItemRef('arweave-address', ''))
   

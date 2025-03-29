@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useQuestionsQuery } from '~/composables/community/communityQuery'
 import { submitAnswers } from '~/utils/community/community'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   modelValue: boolean

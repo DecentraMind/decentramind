@@ -2,6 +2,8 @@
 import type { FormSubmitEvent } from '#ui/types'
 import { validateCommunityAdmin, type CommunityAdminSchema } from '~/utils/schemas'
 import type { Community, UserInfoWithAddress } from '~/types'
+import { notificationStore } from '~/stores/notificationStore'
+import { communityStore } from '~/stores/communityStore'
 
 const props = defineProps<{
   uuid: string

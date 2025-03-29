@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { UserInfoWithAddress } from '~/types'
 import { enableCommunityCreation } from '~/utils/community/community'
-
+import { notificationStore } from '~/stores/notificationStore'
+import { communityStore } from '~/stores/communityStore'
 // Interface for the form state
 interface EnableCommunityFormState {
   selectedUser: UserInfoWithAddress | undefined

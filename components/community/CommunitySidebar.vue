@@ -4,6 +4,8 @@ import type { Community } from '~/types/index'
 import { getDomain, getHandle, getTextRenderWidth, cn } from '~/utils'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 import BaseField from '~/components/fields/BaseField.vue'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   community?: Community

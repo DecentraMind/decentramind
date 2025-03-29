@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onErrorCaptured } from 'vue'
+import { notificationStore } from '~/stores/notificationStore'
+
 const { showError } = $(notificationStore())
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare, no-unused-vars, @typescript-eslint/no-unused-vars

@@ -5,6 +5,9 @@ import TimeAgo from '../TimeAgo.vue'
 import Loading from '../Loading.vue'
 import audioFile from '@/assets/notify.mp3'
 import { formatEnglishDate } from '~/utils/time'
+import { inboxStore } from '~/stores/inboxStore'
+import { communityStore } from '~/stores/communityStore'
+import { aoStore } from '~/stores/aoStore'
 
 const notifySound = new Audio(audioFile)
 

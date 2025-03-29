@@ -1,5 +1,6 @@
 import { createDataItemSigner, results, message, dryrun } from '~/utils/ao'
 import type { InboxState, MailCache } from '~/types'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 
 export const inboxStore = defineStore('inboxStore', () => {
   const mailCache = $ref<Record<

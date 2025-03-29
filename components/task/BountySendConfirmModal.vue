@@ -5,6 +5,8 @@ import { tokensByProcessID, calcBounties, bigInt2Float, shortString } from '~/ut
 import { decentraMindReceiver, DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 import { updateTaskSubmissionBounties } from '~/utils/task'
 import { retry } from '~/utils/util'
+import { useTaskStore } from '~/stores/taskStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   modelValue: boolean
