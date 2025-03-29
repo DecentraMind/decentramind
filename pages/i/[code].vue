@@ -66,11 +66,11 @@ async function join() {
   }
 }
 
-let invitee = $ref<UserInfo | null>(null)
+let invitee = $ref<UserInfo>()
 watch(() => address, async () => {
   if (address) {
-    const { userInfo } = useUserInfo()
-    invitee = userInfo.value
+    const { userInfo } = $(useUserInfo())
+    invitee = userInfo
   }
 })
 

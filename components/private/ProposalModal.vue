@@ -20,7 +20,7 @@ const props = defineProps({
 const queryClient = useQueryClient()
 const { showError, showSuccess } = $(notificationStore())
 const { currentUuid: communityUuid } = $(communityStore())
-const { isCurrentCommunityAdmin, isCurrentCommunityOwner, address } = useUserInfo()
+const { isCurrentCommunityAdmin, isCurrentCommunityOwner, address } = $(useUserInfo())
 const privateTaskStore = usePrivateTaskStore()
 const { currentPrivateTask } = storeToRefs(privateTaskStore)
 const formRef = ref<InstanceType<typeof PrivateTaskForm> | null>(null)
@@ -119,14 +119,13 @@ const submitProposal = async (status: 'draft' | 'auditing') => {
     const isValid = await formRef.value?.validate()
     if (!isValid) {
       showError('Please fix the form errors before submitting')
-      isSubmittingDraft = false
-      isSubmittingProposal = false
       return
     }
 
     const filteredState = {
       ...currentPrivateTask.value,
-      budgets: currentPrivateTask.value.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
+      budgets: currentPrivateTask.value.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID),
+      status
     }
     console.log('adding proposal', filteredState)
     await addPrivateTaskMutateAsync(filteredState)
@@ -134,6 +133,8 @@ const submitProposal = async (status: 'draft' | 'auditing') => {
     emit('proposal-added', currentPrivateTask.value)
     emit('update:modelValue', false)
   } catch (error) {
+    isSubmittingDraft = false
+    isSubmittingProposal = false
     console.error('Failed to add proposal.', error)
     showError('Failed to add proposal.')
   }
@@ -189,7 +190,8 @@ const approveOrRejectProposal = async (operation: 'approve' | 'reject') => {
     showSuccess('Proposal approved.')
     emit('update:modelValue', false)
   } catch (error) {
-    console.error('Failed to approve proposal.', error)
+    showError(`Failed to ${operation} proposal.`)
+    console.error(`Failed to ${operation} proposal.`, error)
   } finally {
     isRejectingProposal = false
   }

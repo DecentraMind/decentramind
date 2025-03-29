@@ -3,10 +3,8 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { getLocalTimezone } from '~/utils/time'
 
 interface IProps {
-  modelValue: {
-    startAt: number
-    endAt: number
-  }
+  startAt: number
+  endAt: number
   disabled?: boolean
 }
 
@@ -15,19 +13,20 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: { startAt: number; endAt: number }]
+  'update:startAt': [value: number]
+  'update:endAt': [value: number]
 }>()
 
 // Local state
 const timezone = ref(getLocalTimezone())
 const dateRange = ref<[Dayjs, Dayjs]>([
-  dayjs(props.modelValue.startAt),
-  dayjs(props.modelValue.endAt)
+  dayjs(props.startAt),
+  dayjs(props.endAt)
 ])
 
 // Watch for external changes
-watch(() => props.modelValue, (newValue) => {
-  dateRange.value = [dayjs(newValue.startAt), dayjs(newValue.endAt)]
+watch(() => [props.startAt, props.endAt], ([newStartAt, newEndAt]) => {
+  dateRange.value = [dayjs(newStartAt), dayjs(newEndAt)]
 }, { deep: true })
 
 function handleDateChange(
@@ -40,10 +39,11 @@ function handleDateChange(
   const tz = timezone.value.match(/[-+]\d+/)
   const timezoneOffset = tz ? parseInt(tz[0]) * -60 * 60 * 1000 : offset
 
-  emit('update:modelValue', {
-    startAt: new Date(dateRange.value[0].toString()).getTime() - offset + timezoneOffset,
-    endAt: new Date(dateRange.value[1].toString()).getTime() - offset + timezoneOffset
-  })
+  const startAt = new Date(dateRange.value[0].toString()).getTime() - offset + timezoneOffset
+  const endAt = new Date(dateRange.value[1].toString()).getTime() - offset + timezoneOffset
+  
+  emit('update:startAt', startAt)
+  emit('update:endAt', endAt)
 }
 </script>
 

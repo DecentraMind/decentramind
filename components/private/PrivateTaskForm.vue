@@ -76,14 +76,15 @@ const removeBudget = (index: number) => {
       <template #default>
         <div class="flex justify-between items-center gap-2 mb-6">
           <UInput v-model="currentPrivateTask.title" :disabled="props.viewOnly" placeholder="Enter task title" required class="flex-1" />
-          <UButton variant="soft" :label="currentPrivateTask.status" :color="privateTaskStatusColorMap[currentPrivateTask.status]" class="cursor-default" />
+          <UButton variant="soft" :label="$t(`private.task.status.${currentPrivateTask.status}`)" :color="privateTaskStatusColorMap[currentPrivateTask.status]" class="cursor-default" />
         </div>
       </template>
     </UFormGroup>
 
     <UFormGroup name="time" :label="$t('private.task.fields.timeRange')">
       <DateTimeRange
-        v-model="currentPrivateTask"
+        v-model:start-at="currentPrivateTask.startAt"
+        v-model:end-at="currentPrivateTask.endAt"
         :disabled="props.viewOnly"
       />
     </UFormGroup>

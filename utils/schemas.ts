@@ -338,7 +338,7 @@ export type CreateTokenSchema = z.infer<typeof createTokenSchema>
 
 export const createProposalSchema = z.object({
   title: z.string().min(1).max(30),
-  status: z.enum(['draft', 'auditing']),
+  status: z.enum(['draft', 'auditing', 'executing']),
   startAt: z.number().gt(0),
   endAt: z.number().gt(0),
   description: z.string().min(1).max(7000)
