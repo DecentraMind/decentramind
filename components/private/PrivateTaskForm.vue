@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import dayjs, { type Dayjs } from 'dayjs'
 import { tokens, tokenChains } from '~/utils/constants'
 import { arUrl, gateways, defaultTokenLogo } from '~/utils/arAssets'
 import type { PrivateTask } from '~/types'
 import { createProposalSchema, validateCreateProposalForm } from '~/utils/schemas'
-import { getLocalTimezone } from '~/utils/time'
 import { usePrivateTaskStore } from '~/stores/privateTaskStore'
 import { storeToRefs } from 'pinia'
 import type { Form } from '#ui/types'
 import UserSelectMenu from '~/components/common/UserSelectMenu.vue'
+import DateTimeRange from '~/components/common/DateTimeRange.vue'
 
 const props = defineProps({
   viewOnly: {
@@ -21,16 +20,6 @@ const privateTaskStore = usePrivateTaskStore()
 const { currentPrivateTask } = storeToRefs(privateTaskStore)
 
 const formRef = $ref<Form<PrivateTask> | null>(null)
-
-// Define a local state variable for the date range using Dayjs
-const dateRange = $ref<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(currentPrivateTask.value.startAt), dayjs(currentPrivateTask.value.endAt)])
-
-watch(dateRange, (newRange) => {
-  privateTaskStore.updateCurrentPrivateTask({
-    startAt: newRange[0].valueOf(),
-    endAt: newRange[1].valueOf()
-  })
-})
 
 // Token options
 const tokenNames = Object.keys(tokens)
@@ -65,25 +54,6 @@ const removeBudget = (index: number) => {
     budgets: updatedBudgets
   })
 }
-
-const timezone = $ref(getLocalTimezone())
-function handleDateChange(
-  _value: [string, string] | [Dayjs, Dayjs],
-  _: [string, string],
-) {
-  if (!dateRange) return
-
-  const offset = new Date().getTimezoneOffset() * 60000
-  const tz = timezone.match(/[-+]\d+/)
-
-  const timezoneOffset = tz ? parseInt(tz[0]) * -60*60*1000 : offset
-  const updateDateRange = {
-    startAt: new Date(dateRange[0].toString()).getTime() - offset + timezoneOffset,
-    endAt: new Date(dateRange[1].toString()).getTime() - offset + timezoneOffset
-  }
-  privateTaskStore.updateCurrentPrivateTask(updateDateRange)
-  formRef?.validate('time')
-}
 </script>
 
 <template>
@@ -104,27 +74,10 @@ function handleDateChange(
     </UFormGroup>
 
     <UFormGroup name="time" :label="$t('private.task.fields.timeRange')">
-      <div class="flex justify-between items-center gap-x-1">
-        <USelect
-          v-model="timezone"
-          :disabled="props.viewOnly"
-          :placeholder="$t('Time Zone')"
-          :options="timezones"
-          :ui="{
-            variant: {
-              outline:
-                'ring-gray-300 dark:ring-primary-400 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400',
-            },
-          }"
-          @change="handleDateChange"
-        />
-        <a-range-picker
-          v-model:value="dateRange"
-          :disabled="props.viewOnly"
-          show-time
-          @change="handleDateChange"
-        />
-      </div>
+      <DateTimeRange
+        v-model="currentPrivateTask"
+        :disabled="props.viewOnly"
+      />
     </UFormGroup>
 
     <div>
