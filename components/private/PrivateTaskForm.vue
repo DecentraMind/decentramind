@@ -21,6 +21,14 @@ const { currentPrivateTask } = storeToRefs(privateTaskStore)
 
 const formRef = $ref<Form<PrivateTask> | null>(null)
 
+// Expose validate method to parent component
+const validate = async () => {
+  if (!formRef) return false
+  return await formRef.validate()
+}
+
+defineExpose({ validate })
+
 // Token options
 const tokenNames = Object.keys(tokens)
 

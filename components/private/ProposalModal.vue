@@ -23,6 +23,7 @@ const { currentUuid: communityUuid } = $(communityStore())
 const { isCurrentCommunityAdmin, isCurrentCommunityOwner, address } = useUserInfo()
 const privateTaskStore = usePrivateTaskStore()
 const { currentPrivateTask } = storeToRefs(privateTaskStore)
+const formRef = ref<InstanceType<typeof PrivateTaskForm> | null>(null)
 
 const boardTitle = $computed(() => {
   const config = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
@@ -114,6 +115,15 @@ const submitProposal = async (status: 'draft' | 'auditing') => {
     isSubmittingProposal = true
   }
   try {
+    // Validate the form first
+    const isValid = await formRef.value?.validate()
+    if (!isValid) {
+      showError('Please fix the form errors before submitting')
+      isSubmittingDraft = false
+      isSubmittingProposal = false
+      return
+    }
+
     const filteredState = {
       ...currentPrivateTask.value,
       budgets: currentPrivateTask.value.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
@@ -133,6 +143,13 @@ const { mutateAsync: saveProposalMutateAsync, isPending: isSavePending } = useSa
 let isUpdatingStatus = $ref(false)
 const saveProposal = async (updateStatus: boolean = false) => {
   try {
+    // Validate the form first
+    const isValid = await formRef.value?.validate()
+    if (!isValid) {
+      showError('Please fix the form errors before saving')
+      return
+    }
+
     const filteredState = {
       ...currentPrivateTask.value,
       budgets: currentPrivateTask.value.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
@@ -213,7 +230,7 @@ const deleteProposal = async () => {
         <UIcon name="svg-spinners:3-dots-fade" class="animate-spin" />
       </div>
       <div v-else>
-        <PrivateTaskForm :view-only="isViewOnly">
+        <PrivateTaskForm ref="formRef" :view-only="isViewOnly">
           <div v-if="isCreateMode" class="flex flex-row gap-2">
             <UButton
               :loading="isSubmittingDraft"

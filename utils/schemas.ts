@@ -350,16 +350,10 @@ export function validateCreateProposalForm(state: PrivateTask): FormError[] {
   const errors = []
   const { startAt, endAt, budgets, status, executionResult } = state
   
-  if (endAt <= Date.now()) {
-    errors.push({
-      path: 'time',
-      message: 'End time cannot be earlier than current time.',
-    })
-  }
   if (startAt >= endAt) {
     errors.push({
       path: 'time',
-      message: 'End time cannot be earlier than start time.',
+      message: 'Start time must be earlier than end time.',
     })
   }
 
