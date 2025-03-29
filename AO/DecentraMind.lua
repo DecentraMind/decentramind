@@ -911,7 +911,7 @@ Actions = {
       if PrivateTasks[task.uuid].status == 'draft' then
         assert(task.status == 'draft' or task.status == 'auditing', 'Status must be "draft" or "auditing".')
       elseif PrivateTasks[task.uuid].status == 'executing' then
-        assert(task.status == 'executing' or task.status == 'auditing' or task.status == 'waiting_for_settlement', 'Status must be "executing" or "waiting_for_settlement".')
+        assert(task.status == 'executing' or task.status == 'auditing' or task.status == 'waiting_for_validation', 'Status must be "executing" or "waiting_for_validation".')
       end
 
       local boardUuid = task.boardUuid
