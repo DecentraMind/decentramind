@@ -55,6 +55,12 @@ onMounted(() => {
     currentPrivateTask.value.boardUuid = props.boardUuid
   }
 })
+// reset current private task when modal is closed
+watch(() => props.modelValue, (value) => {
+  if (!value) {
+    privateTaskStore.resetCurrentPrivateTask()
+  }
+})
 
 const emit = defineEmits(['proposal-added', 'update:modelValue'])
 
