@@ -2,17 +2,30 @@
 import type { BoardWithTasks, PrivateTask, PrivateTaskStatus } from '~/types'
 import Bounties from '~/components/task/Bounties.vue'
 import ProposalModal from './ProposalModal.vue'
+import { communityStore } from '~/stores/communityStore'
 import { usePrivateTaskStore } from '~/stores/privateTaskStore'
 import { privateTaskStatusColorMap } from '~/utils/constants'
+import { useUpdateBoardTitleMutation } from '~/composables/community/communityQuery'
+import EditableText from '~/components/common/EditableText.vue'
 
 const props = defineProps<{
   data: BoardWithTasks
   unclickable?: boolean
+  canEditTitle?: boolean
 }>()
 
 const privateTaskStore = usePrivateTaskStore()
 const { updateCurrentPrivateTask } = privateTaskStore
 const runtimeConfig = useRuntimeConfig()
+const { currentUuid: communityUuid } = $(communityStore())
+
+const { mutateAsync: updateBoardTitle, isPending: updateBoardTitleLoading } = useUpdateBoardTitleMutation({
+  communityUuid: communityUuid!,
+  onErrorCb: () => {
+    showError('Failed to update work area title.')
+    console.error('Failed to update board title')
+  }
+})
 
 const statuses: PrivateTaskStatus[] = ['draft', 'auditing', 'executing', 'waiting_for_validation', 'waiting_for_settlement', 'settled']
 
@@ -44,12 +57,26 @@ const openAddProposalModal = () => {
   })
   privateTaskStore.isProposalModal = true
 }
+
+const handleUpdateBoardTitle = async (newTitle: string) => {
+  await updateBoardTitle({
+    boardUuid: props.data.uuid,
+    title: newTitle
+  })
+}
 </script>
 
 <template>
   <div class="w-full h-fit flex flex-col items-start justify-start bg-white px-3 py-6 border-t first:border-t-0">
     <div class="flex flex-row items-center justify-between w-full">
-      <h3 class="text-lg font-medium mb-4 cursor-pointer">{{ data.title }}</h3>
+      <EditableText
+        :text="data.title"
+        :can-edit="canEditTitle"
+        tag="h3"
+        class-name="text-lg font-medium mb-4"
+        :mutate="handleUpdateBoardTitle"
+        :loading="updateBoardTitleLoading"
+      />
       <span v-if="runtimeConfig.public.debug" class="text-sm text-gray-500">{{ data.uuid }}</span>
     </div>
     <div class="w-full overflow-x-auto">

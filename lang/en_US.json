@@ -268,7 +268,7 @@
         "auditing": "Auditing",
         "executing": "Executing",
         "waiting_for_validation": "Validating",
-        "waiting_for_settlement": "Waiting for Settlement",
+        "waiting_for_settlement": "Settling",
         "settled": "Settled"
       }
     },
