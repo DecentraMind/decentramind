@@ -339,3 +339,16 @@ export async function updatePrivateTaskStatus(taskUuid: string, operation: 'appr
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
   })
 }
+
+export async function updateSettleTx(taskUuid: string, budgetIndex: number, settleTx: string, wallet?: Wallet) {
+  return await messageResultParsed<PrivateTask>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'UpdateSettleTx' },
+      { name: 'TaskUuid', value: taskUuid },
+      { name: 'BudgetIndex', value: budgetIndex.toString() },
+      { name: 'SettleTx', value: settleTx },
+    ],
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}

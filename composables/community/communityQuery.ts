@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPrivateTask, deleteProposal, getApplications, getCommunities, getLogs, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePrivateAreaConfig, updatePrivateTaskStatus } from '~/utils/community/community'
+import { addBoard, addPrivateTask, deleteProposal, getApplications, getCommunities, getLogs, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -228,6 +228,21 @@ export const useUpdatePrivateTaskStatusMutation = ({communityUuid}: {communityUu
           tasks: board.tasks.map(task => task.uuid === updatedTask.uuid ? updatedTask : task)
         }))
       })
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+    }
+  })
+}
+
+export const useUpdateSettleTxMutation = ({ communityUuid }: { communityUuid: string }) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ taskUuid, budgetIndex, settleTx }: { taskUuid: string, budgetIndex: number, settleTx: string }) => await updateSettleTx(taskUuid, budgetIndex, settleTx),
+    onSuccess: (data, variables) => {
+      // Update the task data in the cache
+      queryClient.setQueryData(['community', 'privateTask', variables.taskUuid], data)
+      
+      // Invalidate the private area config query since task status might have changed
       queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
     }
   })

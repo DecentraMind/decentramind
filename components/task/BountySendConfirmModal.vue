@@ -308,6 +308,7 @@ const precisions = $computed(() =>
   <UModal
     :model-value="modelValue"
     :ui="{ width: 'sm:max-w-xl' }"
+    prevent-close
     @update:model-value="onUpdateModelValue"
   >
     <UCard>

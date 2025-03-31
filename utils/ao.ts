@@ -129,3 +129,20 @@ export function extractResult<T>(res: DryrunOutput | ResultOutput) {
 
   return res.Messages[0].Data as T
 }
+
+export function extractResultTags<T extends Record<string, string>>(res: DryrunOutput | ResultOutput): T {
+  checkResult(res)
+  return res.Messages[0].Tags.reduce(
+    (acc: T, tag: { name: string; value: string }) => {
+      const tagName = tag.name.charAt(0).toLowerCase() + tag.name.slice(1) as keyof T
+      acc[tagName] = tag.value as T[keyof T]
+      return acc
+    },
+    {} as T
+  )
+}
+
+export async function dryrunResultTags<T extends Record<string, string>>(messageParams: DryrunInput): Promise<T> {
+  const result = await dryrun(messageParams)
+  return extractResultTags<T>(result)
+}

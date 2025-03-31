@@ -1,5 +1,5 @@
 import type { Task } from '~/types'
-import { createDataItemSigner, message, result } from '~/utils/ao'
+import { createDataItemSigner, dryrunResultTags, message, result } from '~/utils/ao'
 import { retry } from '~/utils/util'
 
 export async function transferBounty(receiver: string, token: Task['bounties'][number]) {
@@ -62,4 +62,32 @@ export async function transferBounty(receiver: string, token: Task['bounties'][n
     console.info(`You have sent ${quantity} ${tokenName} to ${receiver}`)
     return {tokenProcessID, tokenName}
   }
+}
+
+export async function getTokenInfo(tokenProcessID: string) {
+  return await dryrunResultTags<{
+    name: string
+    ticker: string
+    denomination: string
+    logo: string
+  }>({
+    process: tokenProcessID,
+    tags: [{ name: 'Action', value: 'Info' }]
+  })
+}
+
+export async function amountToQuantity(amount: number, tokenProcessID: string) {
+  let token = tokensByProcessID[tokenProcessID]
+  if (!token) {
+    const tokenInfo = await getTokenInfo(tokenProcessID)
+    console.log('amountToQuantity: get tokenInfo from AO:', tokenInfo)
+    token = {
+      ticker: tokenInfo.ticker,
+      label: tokenInfo.name,
+      processID: tokenProcessID,
+      denomination: Number(tokenInfo.denomination),
+      logo: tokenInfo.logo
+    }
+  }
+  return BigInt(amount * Math.pow(10, token.denomination))
 }

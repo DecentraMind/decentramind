@@ -22,8 +22,8 @@ type Token = {
  */
 export const tokens: Record<string, Token> = {
   AR: {
-    ticker: 'AR',
-    label: 'AR', // Wrapped AR in AO
+    ticker: 'wAR',
+    label: 'Wrapped AR', // Wrapped AR in AO
     processID: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
     denomination: 12,
     logo: 'L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs'
@@ -262,7 +262,7 @@ export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRigh
 
 export const ARWEAVE_ID_REGEXP = /^[a-zA-Z0-9-_]{43}$/
 
-export const SPACE_URL_REGEXP = /(?:x|twitter)\.com\/i\/spaces\/([^/]{13})\/?/
+export const SPACE_URL_REGEXP = /(?:x|twitter)\.com\/i\/spaces\/([a-zA-Z0-9]{13})\/?/
 export const TWEET_URL_REGEXP = /^(?:https?:\/\/)?(?:twitter|x)\.com\/.+\/status\/(\d+)/
 
 export const maxCommunityLogoDimension = {

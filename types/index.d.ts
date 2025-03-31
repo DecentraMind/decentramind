@@ -519,6 +519,7 @@ export type Page = {
 
 export type BudgetItem = Task['bounties'][number] & {
   member: string
+  settleTx?: string
 }
 
 export type PrivateTaskStatus = 'draft' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'

@@ -1,13 +1,16 @@
 import { readonly } from 'vue'
-import { createSharedComposable } from '@vueuse/core'
+import { createSharedComposable, computedAsync } from '@vueuse/core'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { useUserInfoQuery } from '~/composables/user/userQuery'
-import { useCommunityFromCommunitiesQuery } from '~/composables/community/communityQuery'
+import { useQueryClient } from '@tanstack/vue-query'
+import type { Community } from '~/types'
+import { getCommunities } from '~/utils/community/community'
 
 const useUserInfoBase = () => {
   const { address } = $(aoStore())
   const { currentUuid } = $(communityStore())
+  const queryClient = useQueryClient()
 
   const {
     data: userInfo,
@@ -19,10 +22,17 @@ const useUserInfoBase = () => {
     staleTime: 5 * 60 * 1000, // 5分钟内不重新获取数据
   })
 
-  // 获取当前社区信息
-  const { data: currentCommunity } = useCommunityFromCommunitiesQuery(currentUuid || '', address, {
-    enabled: !!currentUuid && !!address
+  // TODO move this to communityStore
+  const currentCommunity = computedAsync(async () => {
+    const communities = await queryClient.fetchQuery<Community[]>({
+      queryKey: ['community', 'communities', address],
+      queryFn: async () => await getCommunities(address)
+    })
+    const community = communities.find(community => community.uuid === currentUuid)
+    // console.log('useUserInfo: currentCommunity', community)
+    return community
   })
+
 
   // 检查当前用户是否是社区所有者
   const isCurrentCommunityOwner = computed(() => {

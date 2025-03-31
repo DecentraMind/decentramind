@@ -9,7 +9,8 @@ import { storeToRefs } from 'pinia'
 import { useQueryClient } from '@tanstack/vue-query'
 import { getPrivateTask } from '~/utils/community/community'
 import type { PrivateAreaConfig } from '~/types'
-
+import SettleConfirmModal from './SettleConfirmModal.vue'
+import { amountToQuantity } from '~/utils/token'
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -127,6 +128,12 @@ const submitProposal = async (status: 'draft' | 'auditing') => {
       budgets: currentPrivateTask.value.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID),
       status
     }
+
+    // correct budget.quantity
+    for (const budget of filteredState.budgets) {
+      budget.quantity = await amountToQuantity(budget.amount, budget.tokenProcessID)
+    }
+
     console.log('adding proposal', filteredState)
     await addPrivateTaskMutateAsync(filteredState)
     showSuccess('Proposal added.')
@@ -154,6 +161,10 @@ const saveProposal = async (updateStatus: boolean = false) => {
     const filteredState = {
       ...currentPrivateTask.value,
       budgets: currentPrivateTask.value.budgets.filter(budget => budget.amount > 0 && budget.tokenName && budget.tokenProcessID)
+    }
+    // correct budget.quantity
+    for (const budget of filteredState.budgets) {
+      budget.quantity = await amountToQuantity(budget.amount, budget.tokenProcessID)
     }
     if (updateStatus) {
       isUpdatingStatus = true
@@ -187,7 +198,7 @@ const approveOrRejectProposal = async (operation: 'approve' | 'reject') => {
       taskUuid: currentPrivateTask.value.uuid,
       operation
     })
-    showSuccess('Proposal approved.')
+    showSuccess(`Proposal ${operation === 'approve' ? 'approved' : 'rejected'}.`)
     emit('update:modelValue', false)
   } catch (error) {
     showError(`Failed to ${operation} proposal.`)
@@ -199,15 +210,23 @@ const approveOrRejectProposal = async (operation: 'approve' | 'reject') => {
 
 const { mutateAsync: deleteProposalMutateAsync, isPending: isDeletePending } = useDeleteProposalMutation({communityUuid: communityUuid!})
 const deleteProposal = async () => {
-  await deleteProposalMutateAsync(currentPrivateTask.value.uuid)
-  showSuccess('Proposal deleted.')
-  emit('update:modelValue', false)
+  try {
+    await deleteProposalMutateAsync(currentPrivateTask.value.uuid)
+    showSuccess('Proposal deleted.')
+    emit('update:modelValue', false)
+  } catch (error) {
+    console.error('Failed to delete proposal.', error)
+    showError('Failed to delete proposal.', error instanceof Error ? error.message : 'Unknown error')
+  }
 }
+
+const isSettleConfirmModal = $ref(false)
 </script>
 
 <template>
   <UModal
     :model-value="props.modelValue"
+    prevent-close
     :ui="{
       width: 'sm:max-w-xl',
       overlay: {
@@ -297,8 +316,19 @@ const deleteProposal = async () => {
               @click="approveOrRejectProposal('reject')"
             />
           </div>
+
+          <div v-if="!isCreateMode && currentPrivateTask.status === 'waiting_for_settlement' && isCommunityOwnerOrAdmin" class="flex flex-row gap-2">
+            <UButton
+              type="button"
+              color="primary"
+              label="Settle Proposal"
+              @click="isSettleConfirmModal = true"
+            />
+          </div>
         </PrivateTaskForm>
       </div>
     </UCard>
   </UModal>
+
+  <SettleConfirmModal v-model="isSettleConfirmModal" />
 </template>

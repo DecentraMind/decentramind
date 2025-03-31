@@ -24,6 +24,11 @@ module.exports = {
       }
     ],
     // Vue
+    'vue/return-in-computed-property': ['error', {
+      treatUndefinedAsUnspecified: true
+    }],
+    'vue/no-side-effects-in-computed-properties': 'error',
+    'vue/no-async-in-computed-properties': 'error',
     'vue/multi-word-component-names': 0,
     'vue/max-attributes-per-line': [
       'warn',
