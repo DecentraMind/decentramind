@@ -1,14 +1,12 @@
 import {
-  createDataItemSigner,
-  result,
-  message,
-  dryrun, spawn
+  createDataItemSigner, spawn, messageResult, messageResultCheck, dryrunResult, dryrunResultParsed
 } from '~/utils/ao'
 
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { Bounty, Task, TaskForm, Scores, BountySendHistory, InviteCodeInfo, Community } from '~/types'
-import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
+import { sleep, retry } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
+import { transferBounty } from '~/utils/token'
 
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 import { getTask, updateTaskSubmissions, submitTask, getInvitesByInviter } from '~/utils/task'
@@ -132,15 +130,13 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const getTasksByOwner = async (address: string) => {
-    const res = await dryrun({
+    return await dryrunResultParsed<Task[]>({
       process: taskManagerProcessID,
       tags: [
         { name: 'Action', value: 'GetTasksByOwner' },
         { name: 'Address', value: address }
       ]
     })
-    const resp = extractResult<string>(res)
-    return JSON.parse(resp) as Task[]
   }
 
   const joinTask = async (taskPid: string, inviteCode?: string) => {
@@ -228,17 +224,15 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const getAllBounty = async () => {
-    const res = await dryrun({
+    const bountyMap = await dryrunResultParsed<Record<string, Bounty[]>>({
       process: taskManagerProcessID,
       tags: [{ name: 'Action', value: 'GetAllBounties' }]
     })
-    // console.log('all bounties = ' + res.Messages[0].Data)
-    const bountyMap = JSON.parse(res.Messages[0].Data) as Record<string, Bounty[]>
     return Object.values(bountyMap).flat()
   }
 
   const getBountiesByCommunityID = async (communityUuid: string) => {
-    const res = await dryrun({
+    return await dryrunResultParsed<(Bounty & {recipientName: string})[]>({
       process: taskManagerProcessID,
       tags: [{
         name: 'Action', value: 'GetBountiesByCommunityID'
@@ -246,12 +240,13 @@ export const useTaskStore = defineStore('task', () => {
         name: 'CommunityUuid', value: communityUuid
       }]
     })
-    const data = extractResult<string>(res)
-    return JSON.parse(data) as (Bounty & {recipientName: string})[]
   }
 
   const getBountiesByAddress = async (address: string) => {
-    const res = await dryrun({
+    return await dryrunResultParsed<{
+      published: BountySendHistory[],
+      awarded: BountySendHistory[]
+    }>({
       process: taskManagerProcessID,
       tags: [{
         name: 'Action', value: 'GetBountiesByAddress'
@@ -259,11 +254,6 @@ export const useTaskStore = defineStore('task', () => {
         name: 'Address', value: address
       }]
     })
-    const data = extractResult<string>(res)
-    return JSON.parse(data) as {
-      published: BountySendHistory[],
-      awarded: BountySendHistory[]
-    }
   }
 
   const createTaskInviteCode  = async (taskPid: string) => {
@@ -308,67 +298,7 @@ export const useTaskStore = defineStore('task', () => {
   }
 })
 
-async function transferBounty(receiver: string, token: Task['bounties'][number]) {
-  const { tokenProcessID, tokenName, quantity } = token
 
-  if (!tokenProcessID) {
-    throw new Error(`Bounty token ${tokenName} not supported.`)
-  }
-  console.log('sending ', tokenName, ' token processID: ', tokenProcessID)
-  console.log({tokenName, amount: quantity, receiver})
-
-  let mTags
-  try {
-    mTags = await retry({
-      fn: async () => {
-        const messageId = await message({
-          process: tokenProcessID,
-          signer: createDataItemSigner(window.arweaveWallet),
-          tags: [
-            { name: 'Action', value: 'Transfer' },
-            { name: 'Recipient', value: receiver },
-            { name: 'Quantity', value: quantity.toString() }
-          ]
-        })
-        const { Messages } = await result({
-          // the arweave TXID of the message
-          message: messageId,
-          // the arweave TXID of the process
-          process: tokenProcessID,
-        })
-        return Messages[0].Tags as {name: string, value: string}[]
-      },
-      maxAttempts: 1,
-      interval: 500
-    })
-  } catch(e) {
-    if (e instanceof Error && e.message.includes('Cannot read properties of undefined')) {
-      throw new Error(`Transfer token ${tokenName} failed.`)
-    }
-  }
-
-  if (!mTags) {
-    throw new Error('Pay bounty failed.')
-  }
-
-  let transError = false
-  let errorMessage = ''
-  for (let k = 0; k < mTags.length; ++k) {
-    const tag = mTags[k]
-    if (tag.name === 'Error') {
-      errorMessage = tag.value
-      transError = true
-      break
-    }
-  }
-
-  if (transError) {
-    throw new Error('Pay bounty failed. ' + errorMessage)
-  } else {
-    console.info(`You have sent ${quantity} ${tokenName} to ${receiver}`)
-    return {tokenProcessID, tokenName}
-  }
-}
 
 if (import.meta.hot)
   import.meta.hot.accept(acceptHMRUpdate(useTaskStore, import.meta.hot))

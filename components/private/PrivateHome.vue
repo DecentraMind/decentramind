@@ -60,7 +60,7 @@ function openMembersModal(tab: string = 'members') {
           class="w-16 h-16 opacity-50"
         />
       </div>
-      <div v-else class="h-full w-full">
+      <div v-else class="w-full">
         <PrivateIndex v-if="showIndex" :is-admin="isAdmin" :uuid="uuid" />
         <div v-else class="h-full flex flex-col items-center justify-center">
           <h2 class="text-2xl font-bold mb-4">
