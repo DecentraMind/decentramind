@@ -159,6 +159,7 @@ Pages = Pages or {}
 
 ---@class PrivateTaskBudget: TaskBounty
 ---@field member string @Address of the member
+---@field settleTx string|nil @Transaction ID of the token send
 
 ---@class PrivateTask
 ---@field uuid string @UUID of the private task
@@ -870,8 +871,16 @@ Actions = {
       assert(task.status == 'draft' or task.status == 'auditing', 'Invalid status.')
       assert(task.title and #task.title > 0, 'Title is required.')
       assert(task.description and #task.description > 0, 'Description is required.')
-      assert(task.budgets and #task.budgets > 0, 'Budgets are required.')
       assert(task.boardUuid, 'Board uuid is required.')
+      assert(task.budgets and #task.budgets > 0, 'Budgets are required.')
+
+      -- check budgets
+      for _, budget in ipairs(task.budgets) do
+        assert(budget.tokenProcessID, 'Token process ID is required.')
+        assert(budget.amount > 0, 'Amount must be greater than 0.')
+        assert(budget.quantity, 'Quantity is required.')
+        assert(string.match(budget.quantity, "^[1-9]%d*$") and tonumber(budget.quantity) > 0, 'Quantity must be a numeric value greater than 0.')
+      end
 
       local board = Boards[task.boardUuid]
       assert(board, 'Board ' .. task.boardUuid .. ' not found.')
@@ -1019,6 +1028,54 @@ Actions = {
         table.insert(result, log)
       end
       u.replyData(msg, result)
+    end,
+
+    UpdateSettleTx = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      local budgetIndex = tonumber(msg.Tags.BudgetIndex)
+      local settleTx = msg.Tags.SettleTx
+
+      local task = PrivateTasks[taskUuid]
+      assert(task, 'Task not found.')
+      assert(task.status ~= 'settled', 'This task is already settled.')
+      assert(budgetIndex and budgetIndex > 0 and budgetIndex <= #task.budgets, 'Invalid budget index.')
+      assert(settleTx, 'Settlement transaction ID is required.')
+
+      -- Check that budget doesn't already have a settleTx
+      assert(not task.budgets[budgetIndex].settleTx, 'This budget has already been settled.')
+
+      -- Only owner or admins can update settleTx
+      local board = Boards[task.boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+      assertIsOwnerOrAdmin(msg.From, communityUuid)
+
+      -- Update the settleTx
+      task.budgets[budgetIndex].settleTx = settleTx
+
+      -- Check if all budgets are settled and update task status if so
+      local allSettled = true
+      for _, budget in ipairs(task.budgets) do
+        if not budget.settleTx then
+          allSettled = false
+          break
+        end
+      end
+
+      if allSettled then
+        task.status = 'settled'
+      end
+
+      task.updatedAt = msg.Timestamp
+
+      -- Add log
+      addLog('UpdateSettleTx', communityUuid, msg.From, {
+        taskUuid = taskUuid,
+        budgetIndex = budgetIndex,
+        settleTx = settleTx
+      }, msg.Timestamp)
+
+      u.replyData(msg, task)
     end
   },
 
