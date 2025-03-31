@@ -33,6 +33,8 @@ const allSettled = $computed(() => {
   })
 })
 
+console.log('settle currentPrivateTask', currentPrivateTask.value.budgets)
+
 // Transfer token mutation
 const { mutate: transferToken } = useTransferTokenMutation()
 
@@ -59,16 +61,25 @@ const handleSettleBudget = (budget: BudgetItem, index: number) => {
     }
   }, {
     onSuccess: (data) => {
+      const { transferTx } = data
       // Update the settleTx in AO
       updateSettleTx({
         taskUuid: currentPrivateTask.value.uuid,
         budgetIndex: index + 1, // Lua arrays are 1-indexed
-        settleTx: data.tokenProcessID + '-' + Date.now() // Use a unique identifier with tokenProcessID and timestamp
+        settleTx: transferTx
       }, {
         onSuccess: () => {
           settlingStatus.value.set(index, 'success')
           showSuccess(`Successfully settled budget for ${budget.member}`)
           
+          privateTaskStore.updateCurrentPrivateTask({
+            budgets: currentPrivateTask.value.budgets.map((b, i) => {
+              if (i === index) {
+                return { ...b, settleTx: transferTx }
+              }
+              return b
+            })
+          })
           // Check if all budgets are settled
           const allDone = currentPrivateTask.value.budgets.every((b, i) => {
             return b.settleTx || settlingStatus.value.get(i) === 'success'
@@ -112,7 +123,7 @@ watch(() => props.modelValue, (value) => {
 
 // Get AO link for a transaction
 const getAoLink = (tx: string) => {
-  return `https://g8way.io/${tx.split('-')[0]}`
+  return `https://www.ao.link/#/message/${tx}`
 }
 </script>
 
@@ -168,16 +179,16 @@ const getAoLink = (tx: string) => {
                     <UIcon name="i-heroicons-check-circle" class="h-4 w-4" />
                     <span>Settled</span>
                   </UBadge>
-                  <UTooltip text="View transaction">
-                    <UButton
-                      icon="i-heroicons-arrow-top-right-on-square"
-                      color="gray"
-                      variant="ghost"
-                      size="xs"
-                      :to="getAoLink(budget.settleTx)"
-                      target="_blank"
-                    />
-                  </UTooltip>
+                  
+                  <UButton
+                    icon="i-heroicons-arrow-top-right-on-square"
+                    color="gray"
+                    variant="ghost"
+                    size="xs"
+                    :label="$t('View Transaction')"
+                    :to="getAoLink(budget.settleTx)"
+                    target="_blank"
+                  />
                 </template>
                 <template v-else>
                   <UButton
@@ -203,7 +214,7 @@ const getAoLink = (tx: string) => {
           <UButton
             color="green"
             variant="soft"
-            @click="emit('update:modelValue', false)"
+            @click="privateTaskStore.isProposalModal = false; emit('update:modelValue', false)"
           >
             Close
           </UButton>

@@ -26,6 +26,8 @@ const getDefaultPrivateTask = (): PrivateTask => ({
 
 export const usePrivateTaskStore = defineStore('privateTask', () => {
   const currentPrivateTask = ref<PrivateTask>(getDefaultPrivateTask())
+  const isSettleConfirmModal = ref(false)
+  const isProposalModal = ref(false)
 
   function resetCurrentPrivateTask(initialState?: Partial<PrivateTask>) {
     currentPrivateTask.value = {
@@ -39,13 +41,15 @@ export const usePrivateTaskStore = defineStore('privateTask', () => {
       ...task,
       updatedAt: Date.now()
     })
-    console.log('current private task updated:', currentPrivateTask.value)
+    console.log('current private task updated:', task, currentPrivateTask.value)
   }
 
   return {
     currentPrivateTask,
     resetCurrentPrivateTask,
-    updateCurrentPrivateTask
+    updateCurrentPrivateTask,
+    isSettleConfirmModal,
+    isProposalModal
   }
 })
 

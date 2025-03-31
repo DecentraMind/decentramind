@@ -2,12 +2,15 @@
 import Board from './Board.vue'
 import { useAddBoardMutation, usePrivateAreaConfigQuery } from '~/composables/community/communityQuery'
 import { notificationStore } from '~/stores/notificationStore'
+import { usePrivateTaskStore } from '~/stores/privateTaskStore'
+import SettleConfirmModal from './SettleConfirmModal.vue'
 
 const props = defineProps<{
   isAdmin: boolean
   uuid: string
 }>()
 const { showError } = $(notificationStore())
+const privateTaskStore = usePrivateTaskStore()
 
 const { data: config, isLoading, isError, error } = usePrivateAreaConfigQuery(props.uuid, {
   refetchOnMount: 'always',
@@ -80,5 +83,7 @@ const addBoard = async () => {
     >
       {{ $t('private.area.addWorkArea') }}
     </UButton>
+
+    <SettleConfirmModal v-model="privateTaskStore.isSettleConfirmModal" />
   </div>
 </template>

@@ -1,4 +1,4 @@
-Variant = '1.0.99'
+Variant = '1.0.100'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -686,7 +686,7 @@ Actions = {
       local members = {}
       for address, userCommunity in pairs(UserCommunities) do
         if userCommunity[uuid] and userCommunity[uuid].privateUnlockTime then
-          local user = Users[address]
+          local user = u.deepCopy(Users[address])
           if not user then
             goto nextMember
           end
@@ -696,6 +696,21 @@ Actions = {
           ::nextMember::
         end
       end
+      -- add community owner and admins
+      local community = Communities[uuid]
+      local owner = u.deepCopy(Users[community.owner])
+      if owner then
+        owner.address = community.owner
+        table.insert(members, owner)
+      end
+      for _, admin in ipairs(community.admins) do
+        local adminUser = u.deepCopy(Users[admin])
+        if adminUser and not u.findIndex(members, function(member) return member.address == admin end) then
+          adminUser.address = admin
+          table.insert(members, adminUser)
+        end
+      end
+
       u.replyData(msg, members)
     end,
 

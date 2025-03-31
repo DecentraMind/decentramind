@@ -23,7 +23,7 @@ const { showError, showSuccess } = $(notificationStore())
 const { currentUuid: communityUuid } = $(communityStore())
 const { isCurrentCommunityAdmin, isCurrentCommunityOwner, address } = $(useUserInfo())
 const privateTaskStore = usePrivateTaskStore()
-const { currentPrivateTask } = storeToRefs(privateTaskStore)
+const { currentPrivateTask, isSettleConfirmModal } = storeToRefs(privateTaskStore)
 const formRef = ref<InstanceType<typeof PrivateTaskForm> | null>(null)
 
 const boardTitle = $computed(() => {
@@ -219,8 +219,6 @@ const deleteProposal = async () => {
     showError('Failed to delete proposal.', error instanceof Error ? error.message : 'Unknown error')
   }
 }
-
-const isSettleConfirmModal = $ref(false)
 </script>
 
 <template>
@@ -329,6 +327,4 @@ const isSettleConfirmModal = $ref(false)
       </div>
     </UCard>
   </UModal>
-
-  <SettleConfirmModal v-model="isSettleConfirmModal" />
 </template>

@@ -24,7 +24,6 @@ const taskGroups = computed(() => {
   }, {} as Record<string, PrivateTask[]>)
 })
 
-let isProposalModalOpen = $ref(false)
 
 const onProposalAdded = () => {
   console.log('new proposal added to board', props.data.uuid)
@@ -36,14 +35,14 @@ const openProposalModal = (task: PrivateTask) => {
     ...task,
     boardUuid: props.data.uuid
   })
-  isProposalModalOpen = true
+  privateTaskStore.isProposalModal = true
 }
 
 const openAddProposalModal = () => {
   updateCurrentPrivateTask({
     boardUuid: props.data.uuid
   })
-  isProposalModalOpen = true
+  privateTaskStore.isProposalModal = true
 }
 </script>
 
@@ -85,6 +84,6 @@ const openAddProposalModal = () => {
       </div>
     </div>
 
-    <ProposalModal v-model="isProposalModalOpen" @proposal-added="onProposalAdded" />
+    <ProposalModal v-model="privateTaskStore.isProposalModal" @proposal-added="onProposalAdded" />
   </div>
 </template>

@@ -199,7 +199,7 @@ const removeBudget = (index: number) => {
       <div class="text-sm text-gray-500 flex justify-between"><span class="font-semibold select-none">Proposal UUID&emsp;</span><span class="text-gray-700">{{ currentPrivateTask.uuid }}</span></div>
       <div class="text-sm text-gray-500 flex justify-between">
         <span class="font-semibold select-none">Proposed by&emsp;</span>
-        <div v-if="proposedBy" class="flex items-center space-x-2">
+        <div v-if="proposedBy" class="flex items-center space-x-2" :title="proposedBy.address">
           <ArAvatar
             :src="proposedBy.avatar"
             :alt="proposedBy.name"

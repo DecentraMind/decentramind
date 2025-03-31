@@ -11,6 +11,7 @@ export async function transferBounty(receiver: string, token: Task['bounties'][n
   console.log('sending ', tokenName, ' token processID: ', tokenProcessID)
   console.log({tokenName, amount: quantity, receiver})
 
+  let transferTx = ''
   let mTags
   try {
     mTags = await retry({
@@ -24,6 +25,7 @@ export async function transferBounty(receiver: string, token: Task['bounties'][n
             { name: 'Quantity', value: quantity.toString() }
           ]
         })
+        transferTx = messageId
         const { Messages } = await result({
           // the arweave TXID of the message
           message: messageId,
@@ -60,7 +62,7 @@ export async function transferBounty(receiver: string, token: Task['bounties'][n
     throw new Error('Pay bounty failed. ' + errorMessage)
   } else {
     console.info(`You have sent ${quantity} ${tokenName} to ${receiver}`)
-    return {tokenProcessID, tokenName}
+    return {tokenProcessID, tokenName, transferTx}
   }
 }
 
