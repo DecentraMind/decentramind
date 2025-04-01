@@ -3,12 +3,14 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { storeToRefs } from 'pinia'
 import { usePrivateTaskStore } from '~/stores/privateTaskStore'
 import { useTransferTokenMutation } from '~/composables/tokenQuery'
-import { useUpdateSettleTxMutation } from '~/composables/community/communityQuery'
+import { usePrivateUnlockMembersQuery, useUpdateSettleTxMutation } from '~/composables/community/communityQuery'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
 import type { BudgetItem } from '~/types'
-import { shortString } from '~/utils/string'
+import { getAoTxLink } from '~/utils/string'
+import { openExternalLink } from '~/utils/window.client'
 import Bounties from '~/components/task/Bounties.vue'
+import UserInfo from '~/components/users/UserInfo.vue'
 
 const props = defineProps({
   modelValue: {
@@ -24,6 +26,7 @@ const { showSuccess, showError } = $(notificationStore())
 const { currentUuid: communityUuid } = $(communityStore())
 const privateTaskStore = usePrivateTaskStore()
 const { currentPrivateTask } = storeToRefs(privateTaskStore)
+const { data: members } = usePrivateUnlockMembersQuery(communityUuid!)
 
 // State for tracking settlement status for each budget
 const settlingStatus = ref(new Map<number, 'idle' | 'pending' | 'success' | 'error'>())
@@ -121,10 +124,7 @@ watch(() => props.modelValue, (value) => {
   }
 })
 
-// Get AO link for a transaction
-const getAoLink = (tx: string) => {
-  return `https://www.ao.link/#/message/${tx}`
-}
+
 </script>
 
 <template>
@@ -168,12 +168,12 @@ const getAoLink = (tx: string) => {
             >
               <div class="flex items-center space-x-2">
                 <div class="flex flex-col gap-1">
-                  <span class="font-medium" :title="budget.member">{{ shortString(budget.member) }}</span>
+                  <UserInfo v-if="members" :address="budget.member" :members="members" />
                   <Bounties :bounties="[budget]" :show-plus="false" />
                 </div>
               </div>
               
-              <div class="flex items-center space-x-2">
+              <div class="flex flex-col items-end space-x-2">
                 <template v-if="budget.settleTx">
                   <UBadge color="green" variant="subtle" class="flex items-center gap-1">
                     <UIcon name="i-heroicons-check-circle" class="h-4 w-4" />
@@ -182,12 +182,14 @@ const getAoLink = (tx: string) => {
                   
                   <UButton
                     icon="i-heroicons-arrow-top-right-on-square"
-                    color="gray"
-                    variant="ghost"
+                    variant="link"
                     size="xs"
                     :label="$t('View Transaction')"
-                    :to="getAoLink(budget.settleTx)"
-                    target="_blank"
+                    @click.prevent.stop="() => {
+                      if (budget.settleTx) {
+                        openExternalLink(getAoTxLink(budget.settleTx))
+                      }
+                    }"
                   />
                 </template>
                 <template v-else>

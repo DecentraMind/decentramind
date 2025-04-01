@@ -9,6 +9,10 @@ import type { Form } from '#ui/types'
 import UserSelectMenu from '~/components/common/UserSelectMenu.vue'
 import DateTimeRange from '~/components/common/DateTimeRange.vue'
 import { usePrivateUnlockMembersQuery } from '~/composables/community/communityQuery'
+import UserInfo from '~/components/users/UserInfo.vue'
+import { getAoTxLink } from '~/utils/string'
+import Bounties from '~/components/task/Bounties.vue'
+import { openExternalLink } from '~/utils/window.client'
 
 const props = defineProps({
   viewOnly: {
@@ -22,10 +26,6 @@ const { currentPrivateTask } = storeToRefs(privateTaskStore)
 const { currentUuid: communityUuid } = $(communityStore())
 const { data: members } = usePrivateUnlockMembersQuery(communityUuid!)
 
-const proposedBy = $computed(() => {
-  console.log('proposedBy', members?.value, currentPrivateTask.value.editors[0])
-  return members?.value?.find(member => member.address === currentPrivateTask.value.editors[0])
-})
 
 const formRef = $ref<Form<PrivateTask> | null>(null)
 
@@ -97,78 +97,115 @@ const removeBudget = (index: number) => {
       />
     </UFormGroup>
 
-    
-    <UFormGroup
-      v-for="(budget, index) in currentPrivateTask.budgets"
-      :key="index"
-      :name="`budgets[${index}]`"
-      :label="index === 0 ? $t('private.task.fields.participantsAndBudgets') : ''"
-      :ui="{ error: index === 0 ? 'hidden' : 'absolute' }"
-    >
-      <div class="flex gap-2 mb-1">
-        <UserSelectMenu
-          v-model="budget.member"
-          placeholder="Select member"
-          :disabled="props.viewOnly || currentPrivateTask.status !== 'draft'"
-        />
+    <!-- For non-settled tasks: show the form group -->
+    <template v-if="currentPrivateTask.status !== 'settled'">
+      <UFormGroup
+        v-for="(budget, index) in currentPrivateTask.budgets"
+        :key="index"
+        :name="`budgets[${index}]`"
+        :label="index === 0 ? $t('private.task.fields.participantsAndBudgets') : ''"
+        :ui="{ error: index === 0 ? 'hidden' : 'absolute' }"
+      >
+        <div class="flex gap-2 mb-1">
+          <UserSelectMenu
+            v-model="budget.member"
+            placeholder="Select member"
+            :disabled="props.viewOnly || currentPrivateTask.status !== 'draft'"
+          />
 
-        <!-- Amount and Token Selection -->
-        <UInput
-          v-model.number="budget.amount"
-          :name="`budgets[${index}].amount`"
-          type="number"
-          placeholder="Amount"
-          :ui="{ base: 'w-24 h-8' }"
-          :disabled="props.viewOnly || currentPrivateTask.status !== 'draft'"
-        />
+          <!-- Amount and Token Selection -->
+          <UInput
+            v-model.number="budget.amount"
+            :name="`budgets[${index}].amount`"
+            type="number"
+            placeholder="Amount"
+            :ui="{ base: 'w-24 h-8' }"
+            :disabled="props.viewOnly || currentPrivateTask.status !== 'draft'"
+          />
 
-        <USelectMenu
-          v-model="budget.tokenName"
-          :name="`budgets[${index}].tokenProcessID`"
-          placeholder="Token"
-          :options="tokenNames"
-          :ui="{ wrapper: 'flex-1' }"
-          :disabled="props.viewOnly || currentPrivateTask.status !== 'draft'"
-          @change="
-            (name:string) => {
-              budget.tokenProcessID = tokens[name].processID
-              budget.chain = tokenChains[0]
-            }
-          "
-        >
-          <template #option="{ option: name }">
-            <img
-              :src="
-                arUrl(tokens[name].logo || defaultTokenLogo, gateways.ario)
-              "
-              :alt="`logo of ${tokens[name].label}`"
-              class="w-8 h-8 min-w-8 rounded-full border border-gray-200"
+          <USelectMenu
+            v-model="budget.tokenName"
+            :name="`budgets[${index}].tokenProcessID`"
+            placeholder="Token"
+            :options="tokenNames"
+            :ui="{ wrapper: 'flex-1' }"
+            :disabled="props.viewOnly || currentPrivateTask.status !== 'draft'"
+            @change="
+              (name:string) => {
+                budget.tokenProcessID = tokens[name].processID
+                budget.chain = tokenChains[0]
+              }
+            "
+          >
+            <template #option="{ option: name }">
+              <img
+                :src="
+                  arUrl(tokens[name].logo || defaultTokenLogo, gateways.ario)
+                "
+                :alt="`logo of ${tokens[name].label}`"
+                class="w-8 h-8 min-w-8 rounded-full border border-gray-200"
+              >
+              <span class="truncate" :title="tokens[name].label">{{ tokens[name].label }}</span>
+            </template>
+          </USelectMenu>
+
+          <UButton
+            v-if="currentPrivateTask.budgets.length > 1"
+            variant="outline"
+            icon="heroicons:x-mark"
+            :disabled="props.viewOnly"
+            :class="cn({
+              'hidden': currentPrivateTask.status !== 'draft'
+            })"
+            @click="removeBudget(index)"
+          />
+          <UButton
+            variant="outline"
+            icon="heroicons:plus"
+            :disabled="props.viewOnly"
+            :class="cn({
+              'hidden': currentPrivateTask.status !== 'draft'
+            })"
+            @click="insertBudget(index)"
+          />
+        </div>
+      </UFormGroup>
+    </template>
+
+    <!-- For settled tasks: show the settled view -->
+    <template v-else>
+      <UFormGroup :label="$t('private.task.fields.participantsAndBudgets')">
+        <div class="rounded-lg border border-gray-200 overflow-hidden">
+          <div class="divide-y divide-gray-200">
+            <div
+              v-for="(budget, index) in currentPrivateTask.budgets"
+              :key="index"
+              class="px-4 py-3 flex items-center justify-between"
             >
-            <span class="truncate" :title="tokens[name].label">{{ tokens[name].label }}</span>
-          </template>
-        </USelectMenu>
-
-        <UButton
-          v-if="currentPrivateTask.budgets.length > 1"
-          variant="outline"
-          icon="heroicons:x-mark"
-          :disabled="props.viewOnly"
-          :class="cn({
-            'hidden': currentPrivateTask.status !== 'draft'
-          })"
-          @click="removeBudget(index)"
-        />
-        <UButton
-          variant="outline"
-          icon="heroicons:plus"
-          :disabled="props.viewOnly"
-          :class="cn({
-            'hidden': currentPrivateTask.status !== 'draft'
-          })"
-          @click="insertBudget(index)"
-        />
-      </div>
-    </UFormGroup>
+              <UserInfo v-if="members" :address="budget.member" :members="members" />
+              
+              <div class="flex items-center space-x-2">
+                <Bounties :bounties="[budget]" />
+                
+                <UButton
+                  v-if="budget.settleTx"
+                  variant="link"
+                  size="xs"
+                  icon="i-heroicons-arrow-top-right-on-square"
+                  @click.prevent.stop="() => {
+                    if (budget.settleTx) {
+                      openExternalLink(getAoTxLink(budget.settleTx))
+                    }
+                  }"
+                >
+                  {{ $t('View Transaction') }}
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </UFormGroup>
+    </template>
 
     <UFormGroup :label="$t('private.task.fields.description')" name="description">
       <UTextarea
@@ -199,15 +236,7 @@ const removeBudget = (index: number) => {
       <div class="text-sm text-gray-500 flex justify-between"><span class="font-semibold select-none">Proposal UUID&emsp;</span><span class="text-gray-700">{{ currentPrivateTask.uuid }}</span></div>
       <div class="text-sm text-gray-500 flex justify-between">
         <span class="font-semibold select-none">Proposed by&emsp;</span>
-        <div v-if="proposedBy" class="flex items-center space-x-2" :title="proposedBy.address">
-          <ArAvatar
-            :src="proposedBy.avatar"
-            :alt="proposedBy.name"
-            size="2xs"
-          />
-          <span class="font-medium">{{ proposedBy.name }}</span>
-          <div class="text-xs text-gray-500 max-w-xs">{{ shortString(proposedBy.address) }}</div>
-        </div>
+        <UserInfo v-if="members" :address="currentPrivateTask.editors[0]" :members="members" />
       </div>
     </div>
 

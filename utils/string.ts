@@ -127,3 +127,12 @@ export function wordCount(text: string) {
 
   return cjkCount + words
 }
+
+/**
+ * Get the AO link for a transaction
+ * @param tx - The transaction hash
+ * @returns The AO link for the transaction
+ */
+export function getAoTxLink(tx: string) {
+  return `https://www.ao.link/#/message/${tx}`
+}
