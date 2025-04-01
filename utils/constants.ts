@@ -55,6 +55,13 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
   },
+  'MASADEGEN’S-EARLY-BONUS': {
+    ticker: 'MASADEGEN’S-EARLY-BONUS',
+    label: 'MASADEGEN’S-EARLY-BONUS',
+    processID: '7ko4tjeJv5fhgKJiou0hdbkilLiwlD68PrOXjRJ_yj8',
+    denomination: 12,
+    logo: 'RKV61-4mVmvp0ZiYA1wf5b9BpUfOWuDO6_oAZm4yp9U'
+  },
   HIBIT: {
     ticker: 'HIBIT',
     label: 'hibit',
