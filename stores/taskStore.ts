@@ -231,17 +231,6 @@ export const useTaskStore = defineStore('task', () => {
     return Object.values(bountyMap).flat()
   }
 
-  const getBountiesByCommunityID = async (communityUuid: string) => {
-    return await dryrunResultParsed<(Bounty & {recipientName: string})[]>({
-      process: taskManagerProcessID,
-      tags: [{
-        name: 'Action', value: 'GetBountiesByCommunityID'
-      }, {
-        name: 'CommunityUuid', value: communityUuid
-      }]
-    })
-  }
-
   const getBountiesByAddress = async (address: string) => {
     return await dryrunResultParsed<{
       published: BountySendHistory[],
@@ -281,7 +270,7 @@ export const useTaskStore = defineStore('task', () => {
   return {
     createTask, getTask, getTasksByOwner,
 
-    sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
+    sendBounty, storeBounty, getAllBounty, getBountiesByAddress,
 
     submitTask,
 

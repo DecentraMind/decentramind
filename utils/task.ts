@@ -1,5 +1,5 @@
 import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner, dryrunResultParsed, type Wallet } from '~/utils/ao'
-import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, RelatedUserMap, Submission } from '~/types'
+import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, RelatedUserMap, Submission, Bounty } from '~/types'
 import { extractResult } from '~/utils'
 import { DM_PROCESS_ID } from '~/utils/processID'
 import { cloneDeep } from 'lodash-es'
@@ -47,16 +47,13 @@ export const getTasksByCommunityUuid = async (communityUuid: string): Promise<Ta
     throw new Error('communityUuid is required.')
   }
 
-  const res = await dryrun({
+  const tasks = await dryrunResultParsed<Task[]>({
     process: taskManagerProcessID,
     tags: [
       { name: 'Action', value: 'GetTasksByCommunityUuid' },
       { name: 'CommunityUuid', value: communityUuid },
     ],
   })
-
-  const resp = extractResult<string>(res)
-  const tasks = JSON.parse(resp) as Task[]
 
   return tasks.sort((a, b) => {
     return a.createTime >= b.createTime ? -1 : 1
@@ -211,4 +208,15 @@ export const getInvitesByInviter = async (inviter: string, type?: 'task' | 'comm
     relatedTasks: Record<string, Task>,
     relatedCommunities: Record<string, Community>
   }
+}
+
+export const getBountiesByCommunityID = async (communityUuid: string) => {
+  return await dryrunResultParsed<(Bounty & {recipientName: string})[]>({
+    process: taskManagerProcessID,
+    tags: [{
+      name: 'Action', value: 'GetBountiesByCommunityID'
+    }, {
+      name: 'CommunityUuid', value: communityUuid
+    }]
+  })
 }

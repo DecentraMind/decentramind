@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { tokens, type TokenSupply, type TokenName } from '~/utils/constants'
 import { shortString, getDomain, getHandle } from '~/utils'
-import type { Community } from '~/types/index'
-import { useTaskStore } from '~/stores/taskStore'
 import BaseField from '~/components/fields/BaseField.vue'
 import { baseFieldClasses } from '~/components/fields'
 import * as echarts from 'echarts'
@@ -10,14 +8,12 @@ import CommunityMembersTable from '~/components/community/CommunityMembersTable.
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
+import { useCommunityFromCommunitiesQuery } from '~/composables/community/communityQuery'
+import { useGetBountiesByCommunityIDQuery } from '~/composables/tasks/taskQuery'
+import CuteRadius from '~/components/CuteRadius.vue'
 
-definePageMeta({
-  ssr: false
-})
-
-const { getLocalCommunity, setCurrentCommunityUuid } = $(communityStore())
+const { setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
-const { getBountiesByCommunityID } = useTaskStore()
 const { showError } = $(notificationStore())
 
 const columns = [{
@@ -33,12 +29,18 @@ const columns = [{
 
 const route = useRoute()
 const communityID = $computed(() => route.params.uuid) as string
+const { data: community, isLoading } = useCommunityFromCommunitiesQuery(communityID)
+const { data: bounties, isLoading: isLoadingRankings, isError: isErrorBounties, error: errorBounties } = useGetBountiesByCommunityIDQuery(communityID)
 
-let community = $ref<Community>()
+watch(isErrorBounties, (newVal) => {
+  if (newVal) {
+    showError('Failed to load ranks.', errorBounties.value as Error)
+  }
+})
 
 const isAdminOrOwner = $computed(
   () =>
-    community?.owner === address || community?.admins.includes(address),
+    community.value?.owner === address || community.value?.admins.includes(address),
 )
 
 type Rank = {
@@ -47,54 +49,39 @@ type Rank = {
   recipientName?: string
 }
 
-let rankings = $ref<Rank[]>()
-let isLoadingRankings = $ref(true)
-const loadRanks = async () => {
-  try {
-    const bounties = await getBountiesByCommunityID(communityID)
-    // First deduplicate bounties by recipient and taskPid
-    const uniqueBounties = bounties.filter((bounty, index) => 
-      bounties.findIndex(b => 
-        b.recipient === bounty.recipient && b.taskPid === bounty.taskPid
-      ) === index
-    )
+const rankings = $computed(() => {
+  if (!bounties.value) return []
+  const uniqueBounties = bounties.value?.filter((bounty, index) => 
+    bounties.value?.findIndex(b => 
+      b.recipient === bounty.recipient && b.taskPid === bounty.taskPid
+    ) === index
+  )
 
-    return uniqueBounties.reduce((ranks, bounty) => {
-      if (bounty.recipient === decentraMindReceiver) return ranks
+  return uniqueBounties.reduce((ranks, bounty) => {
+    if (bounty.recipient === decentraMindReceiver) return ranks
 
-      const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
-      if (index >= 0) {
-        ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
-      } else {
-        ranks.push({receiver: bounty.recipient, bountyCount: 1, recipientName: bounty.recipientName})
-      }
-      return ranks
-    }, [] as Rank[]).sort((a, b) => {
-      return a.bountyCount > b.bountyCount ? -1 : 1
-    })
-  } catch (e) {
-    showError('Failed to load ranks.', e as Error)
-    console.error('Failed to load ranks.')
-  } finally {
-    isLoadingRankings = false
-  }
-}
+    const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
+    if (index >= 0) {
+      ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
+    } else {
+      ranks.push({receiver: bounty.recipient, bountyCount: 1, recipientName: bounty.recipientName})
+    }
+    return ranks
+  }, [] as Rank[]).sort((a, b) => {
+    return a.bountyCount > b.bountyCount ? -1 : 1
+  })
+})
 
 const chart = $ref<HTMLDivElement>()
-let isLoading = $ref(true)
 onMounted( async () => {
-  isLoading = true
-  rankings = await loadRanks()
-
   try {
-    community = await getLocalCommunity(communityID)
     console.log({community})
 
-    setCurrentCommunityUuid(community.uuid)
+    setCurrentCommunityUuid(community.value?.uuid)
 
-    if (community && community.tokensupply) {
-      console.log('initialize chart with tokens info:', community.tokensupply)
-      const supply = community.tokensupply
+    if (community.value && community.value.tokensupply) {
+      console.log('initialize chart with tokens info:', community.value.tokensupply)
+      const supply = community.value.tokensupply
       nextTick(() => {
         initChart(supply, chart)
       })
@@ -108,9 +95,6 @@ onMounted( async () => {
   } catch (e) {
     console.error(e)
     showError('Failed to load data.', e as Error)
-  } finally {
-    isLoading = false
-    isLoadingRankings = false
   }
 })
 
@@ -142,7 +126,7 @@ const initChart = (tokenSupply: TokenSupply[], chart?: HTMLDivElement) => {
 
   const option = {
     title: {
-      text: `${community?.alltoken ? 'Total Supply ' + community.alltoken : ''}`,
+      text: `${community.value?.alltoken ? 'Total Supply ' + community.value.alltoken : ''}`,
       left: 'center',
       top: 'bottom',
       textStyle: {
@@ -197,7 +181,7 @@ onBeforeUnmount(() => {
         class="w-16 h-16 opacity-50"
       />
     </div>
-    <div v-if="community" class="w-full h-full px-10 pt-16 overflow-y-auto">
+    <div v-if="community" class="w-full h-full px-10 py-16 overflow-y-auto">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
       <UPage class="xl:m-auto xl:max-w-[1200px]">
         <ULandingCard
@@ -205,21 +189,16 @@ onBeforeUnmount(() => {
         >
           <template #title>
             <div class="w-full flex justify-between text-3xl mb-8">
-              <div class="self-start flex-center gap-4">
-                <CuteRadius :width="64" :height="64">
-                  <div class="aspect-square rounded-lg bg-white z-10 overflow-hidden">
-                    <img
-                      :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
-                      :title="community.name"
-                      class="w-full h-full object-cover"
-                    >
-                  </div>
+              <div class="flex-center gap-4">
+                <CuteRadius class="w-12 h-12">
+                  <img
+                    :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
+                    :title="community.name"
+                    class="w-full h-full object-cover bg-white"
+                  >
                 </CuteRadius>
                 {{ community.name }}
               </div>
-              <NuxtLink :to="`/community/${community.uuid}`">
-                <UButton icon="i-heroicons-x-mark-20-solid" color="white" variant="solid" size="lg" />
-              </NuxtLink>
             </div>
           </template>
         </ULandingCard>
