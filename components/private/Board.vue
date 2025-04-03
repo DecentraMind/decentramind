@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { BoardWithTasks, PrivateTask, PrivateTaskStatus } from '~/types'
 import Bounties from '~/components/task/Bounties.vue'
-import ProposalModal from './ProposalModal.vue'
 import { communityStore } from '~/stores/communityStore'
 import { usePrivateTaskStore } from '~/stores/privateTaskStore'
 import { privateTaskStatusColorMap } from '~/utils/constants'
@@ -36,11 +35,6 @@ const taskGroups = computed(() => {
     return acc
   }, {} as Record<string, PrivateTask[]>)
 })
-
-
-const onProposalAdded = () => {
-  console.log('new proposal added to board', props.data.uuid)
-}
 
 const openProposalModal = (task: PrivateTask) => {
   console.log('open proposal modal', task.uuid)
@@ -110,7 +104,5 @@ const handleUpdateBoardTitle = async (newTitle: string) => {
         </div>
       </div>
     </div>
-
-    <ProposalModal v-model="privateTaskStore.isProposalModal" @proposal-added="onProposalAdded" />
   </div>
 </template>

@@ -6,6 +6,7 @@ import { usePrivateTaskStore } from '~/stores/privateTaskStore'
 import SettleConfirmModal from './SettleConfirmModal.vue'
 import { useUserInfo } from '~/composables/useUserInfo'
 import EditableText from '~/components/common/EditableText.vue'
+import ProposalModal from './ProposalModal.vue'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -115,6 +116,7 @@ const canEdit = computed(() => isCurrentCommunityAdmin || isCurrentCommunityOwne
       {{ $t('private.area.addWorkArea') }}
     </UButton>
 
+    <ProposalModal v-model="privateTaskStore.isProposalModal" />
     <SettleConfirmModal v-model="privateTaskStore.isSettleConfirmModal" />
   </div>
 </template>

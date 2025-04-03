@@ -9,8 +9,8 @@ import { storeToRefs } from 'pinia'
 import { useQueryClient } from '@tanstack/vue-query'
 import { getPrivateTask } from '~/utils/community/community'
 import type { PrivateAreaConfig } from '~/types'
-import SettleConfirmModal from './SettleConfirmModal.vue'
 import { amountToQuantity } from '~/utils/token'
+
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -226,20 +226,19 @@ const deleteProposal = async () => {
     :model-value="props.modelValue"
     prevent-close
     :ui="{
-      width: 'sm:max-w-xl',
-      overlay: {
-        background: 'bg-gray-900/50'
-      }
+      width: 'sm:max-w-xl'
     }"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <UCard>
+      <UInput v-model="currentPrivateTask.uuid" type="hidden" />
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-semibold">{{ isCreateMode ? 'Add Proposal in ' + boardTitle : currentPrivateTask.title }}</h3>
         <UButton
           icon="i-heroicons-x-mark"
           color="gray"
           variant="ghost"
+          tabindex="0"
           aria-label="Close"
           @click="emit('update:modelValue', false)"
         />
@@ -283,7 +282,7 @@ const deleteProposal = async () => {
               :disabled="isSavePending && !isUpdatingStatus"
               type="button"
               color="white"
-              label="Save Draft"
+              :label="currentPrivateTask.status === 'draft' ? 'Save Draft' : 'Save'"
               @click="saveProposal()"
             />
             <UButton

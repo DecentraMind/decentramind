@@ -83,7 +83,14 @@ const removeBudget = (index: number) => {
     <UFormGroup :label="$t('private.task.fields.title')" name="title">
       <template #default>
         <div class="flex justify-between items-center gap-2 mb-6">
-          <UInput v-model="currentPrivateTask.title" :disabled="props.viewOnly" placeholder="Enter task title" required class="flex-1" />
+          <UInput
+            v-model="currentPrivateTask.title"
+            
+            :disabled="props.viewOnly"
+            placeholder="Enter task title"
+            required
+            class="flex-1"
+          />
           <UButton variant="soft" :label="$t(`private.task.status.${currentPrivateTask.status}`)" :color="privateTaskStatusColorMap[currentPrivateTask.status]" class="cursor-default" />
         </div>
       </template>
