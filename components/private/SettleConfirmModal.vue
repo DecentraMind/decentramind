@@ -8,7 +8,6 @@ import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
 import type { BudgetItem } from '~/types'
 import { getAoTxLink } from '~/utils/string'
-import { openExternalLink } from '~/utils/window.client'
 import Bounties from '~/components/task/Bounties.vue'
 import UserInfo from '~/components/users/UserInfo.vue'
 
@@ -185,11 +184,9 @@ watch(() => props.modelValue, (value) => {
                     variant="link"
                     size="xs"
                     :label="$t('View Transaction')"
-                    @click.prevent.stop="() => {
-                      if (budget.settleTx) {
-                        openExternalLink(getAoTxLink(budget.settleTx))
-                      }
-                    }"
+                    :to="getAoTxLink(budget.settleTx)"
+                    target="_blank"
+                  />
                   />
                 </template>
                 <template v-else>

@@ -12,7 +12,6 @@ import { usePrivateUnlockMembersQuery } from '~/composables/community/communityQ
 import UserInfo from '~/components/users/UserInfo.vue'
 import { getAoTxLink } from '~/utils/string'
 import Bounties from '~/components/task/Bounties.vue'
-import { openExternalLink } from '~/utils/window.client'
 
 const props = defineProps({
   viewOnly: {
@@ -199,11 +198,8 @@ const removeBudget = (index: number) => {
                   variant="link"
                   size="xs"
                   icon="i-heroicons-arrow-top-right-on-square"
-                  @click.prevent.stop="() => {
-                    if (budget.settleTx) {
-                      openExternalLink(getAoTxLink(budget.settleTx))
-                    }
-                  }"
+                  :to="getAoTxLink(budget.settleTx)"
+                  target="_blank"
                 >
                   {{ $t('View Transaction') }}
                 </UButton>
