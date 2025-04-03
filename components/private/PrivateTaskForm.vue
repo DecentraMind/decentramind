@@ -227,7 +227,7 @@ const removeBudget = (index: number) => {
         v-model="currentPrivateTask.executionResult"
         placeholder="Enter execution result"
         :rows="3"
-        :disabled="props.viewOnly"
+        :disabled="props.viewOnly || currentPrivateTask.status !== 'executing'"
       />
     </UFormGroup>
 
