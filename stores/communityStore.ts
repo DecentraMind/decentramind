@@ -8,12 +8,12 @@ import {
   messageResult,
   messageResultParsed
 } from '~/utils/ao'
-import type { Community, CommunityMember, CommunitySetting, CreateToken, UserInfo } from '~/types'
+import type { Community, CommunitySetting, CreateToken, UserInfo } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
-import { getCommunities, getCommunity as getCommunityAO, join, updatePrivateApplicable } from '~/utils/community/community'
+import { getCommunities, getCommunity as getCommunityAO, join, updatePrivateApplicable, getCommunityUser } from '~/utils/community/community'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { aoStore } from './aoStore'
 
@@ -24,6 +24,14 @@ export const communityStore = defineStore('communityStore', () => {
   let communityList = $ref<Community[]>([])
   let mutedUsers = $ref<string[]>([])
   let currentUuid = $ref<string>()
+  // const currentCommunityOwner = $computed(() => {
+  //   if (!currentUuid || !address) return ''
+  //   return communityList.find(community => community.uuid === currentUuid)?.owner
+  // })
+  // const currentCommunityAdmins = $computed(() => {
+  //   if (!currentUuid || !address) return []
+  //   return communityList.find(community => community.uuid === currentUuid)?.admins
+  // })
 
   /** joined communities of current user */
   const joinedCommunities = $computed<Community[]>(() => {
@@ -285,25 +293,6 @@ export const communityStore = defineStore('communityStore', () => {
     })
   }
 
-  /**
-   * Get joined users of a community.
-   * */
-  const getCommunityUser = async (communityUuid: string) => {
-    const result = await dryrun({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'GetUsersByCommunityUUID' },
-        { name: 'CommunityUuid', value: communityUuid }
-      ],
-    })
-
-    const dataStr = extractResult<string>(result)
-
-    const communityUserMap = JSON.parse(dataStr) as Record<string, CommunityMember>
-
-    return communityUserMap
-  }
-
   const createCommunityInviteCode  = async (communityUuid: string) => {
     const code = await messageResult<string>({
       process: aoCommunityProcessID,
@@ -482,7 +471,9 @@ export const communityStore = defineStore('communityStore', () => {
     currentCommunityUserMap,
     getCommunity,
     clearCommunityData,
-    updateIsPrivateApplicable
+    updateIsPrivateApplicable,
+    // currentCommunityOwner,
+    // currentCommunityAdmins
   })
 })
 

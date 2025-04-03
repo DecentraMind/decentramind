@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { shortString } from '~/utils'
-import type { CommunityMember } from '~/types'
+import { refDebounced } from '@vueuse/core'
+import { useGetCommunityUserQuery } from '~/composables/community/communityQuery'
 
 const props = defineProps<{
   communityId: string
 }>()
 
-const { getCommunityUser } = $(communityStore())
-const loading = ref(true)
-let communityMembers = $ref<CommunityMember[]>([])
+const { data: userMap, isLoading } = useGetCommunityUserQuery(props.communityId)
+const communityMembers = $computed(() => {
+  return Object.values(userMap.value || {})
+})
 const search = ref('')
 
 // Debounced search term
@@ -28,17 +30,6 @@ const filteredMembers = computed(() => {
       .includes(searchTerm)
     return memberMatch || inviterMatch
   })
-})
-
-onMounted(async () => {
-  try {
-    const userMap = await getCommunityUser(props.communityId)
-    communityMembers = Object.values(userMap)
-
-    console.log({ communityMembers })
-  } finally {
-    loading.value = false
-  }
 })
 
 const columns = [
@@ -81,7 +72,7 @@ const columns = [
     <UTable
       :columns="columns"
       :rows="filteredMembers"
-      :loading="loading"
+      :loading="isLoading"
       :sort="{ column: 'joinTime', direction: 'desc' }"
       :ui="{
         wrapper: 'mt-4 px-1 max-h-[676px] overflow-y-auto relative',

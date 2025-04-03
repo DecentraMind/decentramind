@@ -1,5 +1,5 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
-import type { Board, Community, Log, PrivateApplication, PrivateAreaConfig, PrivateAreaConfigWithoutRelations, PrivateTask, PrivateUnlockMember, UserInfo } from '~/types'
+import type { Board, Community, CommunityMember, Log, PrivateApplication, PrivateAreaConfig, PrivateAreaConfigWithoutRelations, PrivateTask, PrivateUnlockMember, UserInfo } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner, type Wallet } from '~/utils/ao'
 
 export const communityProcessID = DM_PROCESS_ID
@@ -351,4 +351,19 @@ export async function updateSettleTx(taskUuid: string, budgetIndex: number, sett
     ],
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
   })
+}
+
+/**
+ * Get joined users of a community.
+ * */
+export const getCommunityUser = async (communityUuid: string) => {
+  const communityUserMap = await dryrunResultParsed<Record<string, CommunityMember>>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'GetUsersByCommunityUUID' },
+      { name: 'CommunityUuid', value: communityUuid }
+    ],
+  })
+
+  return communityUserMap
 }

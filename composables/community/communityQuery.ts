@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPrivateTask, deleteProposal, getApplications, getCommunities, getLogs, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx } from '~/utils/community/community'
+import { addBoard, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -247,3 +247,5 @@ export const useUpdateSettleTxMutation = ({ communityUuid }: { communityUuid: st
     }
   })
 }
+
+export const useGetCommunityUserQuery = createQueryComposable(['community', 'communityUser'], getCommunityUser)

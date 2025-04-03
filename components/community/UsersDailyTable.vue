@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { getCommunityUser } from '~/utils/community/community'
+import { useQueuedQuery } from '~/composables/useQueuedQuery'
+
 interface GrowthStats {
   period: string
   totalUsers: number
@@ -15,23 +18,31 @@ const props = withDefaults(
   },
 )
 
-const { getCommunityUser, getAllUsers } = $(communityStore())
-const loading = ref(true)
-let communityMembers = $ref<
-  {
-    address: string
-    name: string
-    avatar: string
-    joinTime: number
-  }[]
->([])
+const { getAllUsers } = $(communityStore())
+
+const { data: communityMembers, isLoading } = useQueuedQuery(
+  ['community', 'communityUser', props.communityId],
+  async () => {
+    if (props.communityId) {
+      const userMap = await getCommunityUser(props.communityId)
+      return Object.values(userMap)
+    } else {
+      const allUsers = await getAllUsers()
+      return Object.values(allUsers).map(user => ({
+        ...user,
+        joinTime: user.createdAt || 1730476100000,
+      }))
+    }
+  }
+)
+
 const periodType = ref<'daily' | 'monthly'>('daily')
 
 // Process user data into growth statistics
 const growthStats = computed<GrowthStats[]>(() => {
   const stats = new Map<string, GrowthStats>()
 
-  communityMembers.forEach(member => {
+  communityMembers.value?.forEach(member => {
     const date = new Date(member.joinTime)
     // Format date string based on period type
     const dateFormatter = new Intl.DateTimeFormat('sv-SE', {
@@ -64,26 +75,6 @@ const growthStats = computed<GrowthStats[]>(() => {
   return Array.from(stats.values()).sort(
     (a, b) => new Date(b.period).getTime() - new Date(a.period).getTime(),
   )
-})
-
-onMounted(async () => {
-  try {
-    if (props.communityId) {
-      // Get community-specific users
-      const userMap = await getCommunityUser(props.communityId)
-      communityMembers = Object.values(userMap)
-    } else {
-      // Get all users
-      const allUsers = await getAllUsers()
-      communityMembers = Object.values(allUsers).map(user => ({
-        ...user,
-        joinTime: user.createdAt || 1730476100000,
-      }))
-      console.log('allUsers', communityMembers)
-    }
-  } finally {
-    loading.value = false
-  }
 })
 
 const columns = [
@@ -134,7 +125,7 @@ const tableTitle = computed(() =>
     <UTable
       :columns="columns"
       :rows="growthStats"
-      :loading="loading"
+      :loading="isLoading"
       :sort="{ column: 'period', direction: 'desc' }"
       :ui="{
         wrapper: 'mt-4 px-1 overflow-y-auto relative',
@@ -161,7 +152,7 @@ const tableTitle = computed(() =>
     </UTable>
 
     <div class="flex justify-between items-center mt-2">
-      <b class="font-medium pl-2">Total Users: {{ communityMembers.length }}</b>
+      <b class="font-medium pl-2">Total Users: {{ communityMembers?.length || 0 }}</b>
     </div>
   </div>
 </template>
