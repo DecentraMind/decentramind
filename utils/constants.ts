@@ -198,7 +198,6 @@ export const denominations = tokenNames.reduce((carry, name) => {
 
 export type CommunityToken = {
   tokenName: TokenName;
-  showTokenName: boolean;
 }
 
 export type TokenSupply = {

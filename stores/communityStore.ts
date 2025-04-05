@@ -110,10 +110,9 @@ export const communityStore = defineStore('communityStore', () => {
   //Creating a community approach
   const addCommunity = async (
     setting: CommunitySetting,
-    communityToken: CommunityToken[],
     chatroomID: string
   ) => {
-    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
+    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames, communityTokens } = setting
     const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined' | 'admins' | 'isPrivateApplicable'> = {
       logo,
       banner,
@@ -126,7 +125,7 @@ export const communityStore = defineStore('communityStore', () => {
       github,
       bounty: bountyTokenNames,
       ispublished: isPublished,
-      communitytoken: communityToken.filter(token => token.tokenName),
+      communitytoken: communityTokens.filter(token => token.tokenName),
       istradable: isTradable,
       support: tradePlatforms,
       alltoken: allTokenSupply,
@@ -155,10 +154,9 @@ export const communityStore = defineStore('communityStore', () => {
   const updateCommunity = async (
     uuid: string,
     setting: CommunitySetting,
-    communityToken: CommunityToken[],
     owner: string
   ) => {
-    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
+    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames, communityTokens } = setting
     const communitySetting = {
       logo,
       banner,
@@ -170,7 +168,7 @@ export const communityStore = defineStore('communityStore', () => {
       github,
       bounty: bountyTokenNames,
       ispublished: isPublished,
-      communitytoken: communityToken.filter(token => token.tokenName),
+      communitytoken: communityTokens.filter(token => token.tokenName),
       istradable: isTradable,
       support: tradePlatforms,
       alltoken: allTokenSupply,
@@ -178,6 +176,7 @@ export const communityStore = defineStore('communityStore', () => {
       uuid
     }
     const jsonString = JSON.stringify(communitySetting)
+    console.log('update community:', communitySetting)
     const res = await messageResultParsed<Community>({
       process: aoCommunityProcessID,
       tags: [

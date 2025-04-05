@@ -275,9 +275,9 @@ const expanded = computed({
 
     <UModal
       v-model="isSettingModalOpen"
-      :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }"
+      :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 md:py-10 w-fit sm:max-w-[90%]' }"
     >
-      <UTabs name="Setting" :items="communitySettingTabs" class="px-6 md:px-16">
+      <UTabs name="Setting" :items="communitySettingTabs" class="px-6 md:px-10">
         <template #basic-info>
           <CommunitySettingForm
             :is-setting-mode="true"

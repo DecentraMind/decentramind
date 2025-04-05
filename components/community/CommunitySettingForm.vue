@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
+import { cloneDeep } from 'lodash-es'
 
 const props = defineProps<{
   isSettingMode?: boolean
@@ -76,7 +77,7 @@ async function uploadBanner2AR() {
 
 let createdCommunityID = $ref('')
 
-const formState = reactive<CommunitySetting>({
+const formState = $ref<CommunitySetting>({
   logo: defaultCommunityLogo,
   banner: 'banner6',
   name: '',
@@ -86,6 +87,7 @@ const formState = reactive<CommunitySetting>({
   github: undefined,
   bountyTokenNames: [],
   isPublished: true,
+  communityTokens: [],
   isTradable: false,
   tradePlatforms: [],
   allTokenSupply: undefined,
@@ -126,9 +128,8 @@ const setCommunity = async () => {
       throw new Error('Please connect wallet first.')
     }
     await updateCommunity(
-      props.initState?.uuid,
+      props.initState!.uuid,
       formState,
-      communityTokens,
       address
     )
     emit('saved')
@@ -158,7 +159,6 @@ const createCommunity = async () => {
 
     createdCommunityID = await addCommunity(
       formState,
-      communityTokens,
       communityChatID
     )
     emit('saved')
@@ -198,18 +198,11 @@ const updateBanner = (index: number) => {
   }
 }
 
-let communityTokens = $ref([{
-  tokenName: '',
-  // TODO remove showTokenName
-  showTokenName: true
-}])
-
 // 添加表单组函数
 const addCommunityTokenForm = () => {
-  if (communityTokens.length < 2) {
-    communityTokens.push({
-      tokenName: '',
-      showTokenName: true
+  if (formState.communityTokens.length < 2) {
+    formState.communityTokens.push({
+      tokenName: ''
     })
   } else {
     console.warn('Maximum of 2 community tokens allowed')
@@ -218,8 +211,8 @@ const addCommunityTokenForm = () => {
 
 // 移除表单组函数
 const removeFormGroup = (index: any) => {
-  communityTokens.splice(index, 1)
-  if (!communityTokens.length) {
+  formState.communityTokens.splice(index, 1)
+  if (!formState.communityTokens.length) {
     formState.isPublished = false
   }
 }
@@ -227,11 +220,11 @@ const removeFormGroup = (index: any) => {
 // 监听 state.isPublished 的变化
 watch(() => formState.isPublished, (newVal) => {
   if (newVal) {
-    if (communityTokens.length === 0) {
+    if (formState.communityTokens.length === 0) {
       addCommunityTokenForm()
     }
   } else {
-    communityTokens = []
+    formState.communityTokens = []
   }
 })
 
@@ -262,13 +255,13 @@ const setInitState = async (initState: Community) => {
   formState.website = initState.website
   formState.twitter = initState.twitter
   formState.github = initState.github
-  formState.bountyTokenNames = initState.bounty
+  formState.bountyTokenNames = cloneDeep(initState.bounty)
   formState.isPublished = initState.ispublished
-  communityTokens = initState.communitytoken
+  formState.communityTokens = cloneDeep(initState.communitytoken)
   formState.isTradable = initState.istradable
-  formState.tradePlatforms = initState.support
+  formState.tradePlatforms = cloneDeep(initState.support)
   formState.allTokenSupply = initState.alltoken
-  formState.tokenAllocations = initState.tokensupply
+  formState.tokenAllocations = cloneDeep(initState.tokensupply)
 }
 
 onMounted(async () => {
@@ -279,11 +272,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div :class="cn('overflow-y-auto pt-10 pb-6 px-6 md:px-16 w-fit', props.class)">
+  <div :class="cn('overflow-y-auto md:pt-10 pb-0 px-6 md:px-10 w-fit', props.class)">
     <UAlert
       icon="heroicons:user-group"
       :title="!props.isSettingMode ? $t('community.create') : $t('community.setting')"
-      class="max-w-[75vw] w-full md:w-[580px]"
+      class="md:max-w-[75vw] w-full md:w-[580px] ring-0 md:ring-1"
     >
       <template #description>
         <p v-if="!props.isSettingMode" v-html="$t('community.modalDescription', { lineBreak: '<br>' })" />
@@ -294,7 +287,7 @@ onMounted(async () => {
       :validate="validateCommunitySetting"
       :schema="communitySettingSchema"
       :state="formState"
-      class="space-y-7 pt-10"
+      class="space-y-7 pt-2 md:pt-10"
       @submit="onFormSubmit"
     >
       <UFormGroup required name="logo" :label="$t('Logo')">
@@ -451,15 +444,30 @@ onMounted(async () => {
         </div>
       </UFormGroup>
 
-      <div v-for="(formGroup, index) in communityTokens" :key="index" class="!mb-2 !mt-3">
-        <UFormGroup :label="`Token ${index+1}`" :ui="{label: {base: 'font-medium'}, error: 'hidden'}">
-          <div class="flex flex-row items-center gap-x-3">
-            <USelect v-model="formGroup.tokenName" :options="tokenNames" />
-            <UButton icon="heroicons:x-mark-solid" variant="outline" @click="removeFormGroup(index)" />
-            <UButton v-if="formState.isPublished && communityTokens.length<=1" variant="outline" icon="heroicons:plus" @click="addCommunityTokenForm" />
-          </div>
-        </UFormGroup>
-      </div>
+      <UFormGroup
+        v-for="(formGroup, index) in formState.communityTokens"
+        :key="index"
+        v-model="formState.communityTokens[index]"
+        :name="`communityTokens[${index}]`"
+        :label="`Token ${index+1}`"
+        :ui="{wrapper: '!mb-2 !mt-3', label: {base: 'font-medium'}, error: 'hidden'}"
+      >
+        <div class="flex flex-row items-center gap-x-3">
+          <USelectMenu
+            v-model="formGroup.tokenName"
+            :name="`communityTokens[${index}].tokenName`"
+            :options="tokenNames"
+            class="w-52"
+          />
+          <UButton icon="heroicons:x-mark-solid" variant="outline" @click="removeFormGroup(index)" />
+          <UButton
+            v-if="formState.isPublished && formState.communityTokens.length<=1"
+            variant="outline"
+            icon="heroicons:plus"
+            @click="addCommunityTokenForm"
+          />
+        </div>
+      </UFormGroup>
 
       <UFormGroup :label="$t('community.token.trade')" class="w-52 flex items-center justify-between space-x-10 !mt-8">
         <UToggle v-model="formState.isTradable" />
@@ -518,7 +526,7 @@ onMounted(async () => {
       </div>
 
       <div class="flex-center !mt-12">
-        <UButton color="white" type="submit" size="xl" :disabled="disableSave" :loading="showSpinner">
+        <UButton type="submit" :disabled="disableSave" :loading="showSpinner">
           {{ $t('Submit') }}
         </UButton>
       </div>

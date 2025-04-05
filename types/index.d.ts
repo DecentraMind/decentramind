@@ -124,6 +124,9 @@ export type CommunitySetting = {
   bountyTokenNames: TokenName[]
   /** 是否有发行 token */
   isPublished: boolean
+  /** published community tokens */
+  communityTokens: CommunityToken[]
+
   isTradable: boolean
   tradePlatforms: TradePlatform[]
   /** 分配的 community token 总量  */
