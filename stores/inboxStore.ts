@@ -154,9 +154,9 @@ export const inboxStore = defineStore('inboxStore', () => {
     isInboxLoading = true
     const waitForReadIndexChunk = chunk(waitForReadIndex, limit)
 
-    await Promise.all(waitForReadIndexChunk[0].map(async index => {
+    for (const index of waitForReadIndexChunk[0]) {
       if (mailCache[process][index]) {
-        return mailCache[process][index]
+        continue
       }
 
       const rz = await dryrun({
@@ -169,15 +169,16 @@ export const inboxStore = defineStore('inboxStore', () => {
       const message = getDryrunData(rz, 'MessageDetails.value')
       if (message['App-Process'] && message['Authority']) {
         // ignore spawn message that create the chat room process
-        return
+        continue
       }
       mailCache[process][index] = {
         ...message,
         index,
       }
 
-      return mailCache[process][index]
-    }))
+      // Add 100ms delay between each request
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
     if (mailCache[process][999999]) {
       delete mailCache[process][999999]
     }

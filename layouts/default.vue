@@ -8,6 +8,7 @@ import { useJoinedCommunitiesQuery } from '~/composables/community/communityQuer
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { useUserInfo } from '~/composables/useUserInfo'
+import TopNav from '~/components/TopNav.vue'
 
 const router = useRouter()
 
@@ -239,7 +240,10 @@ const afterLogin = async () => {
       </UCard>
     </UDashboardPage>
 
-    <slot v-else />
+    <div v-else class="relative h-screen w-full">
+      <TopNav class="sticky top-0 z-10" />
+      <slot />
+    </div>
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
       <div v-if="!userInfo?.canCreateCommunity" class="flex-center text-center whitespace-pre-line text-xl text-gray-500">

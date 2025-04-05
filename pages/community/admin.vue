@@ -75,7 +75,7 @@ async function submit() {
 </script>
 
 <template>
-  <div class="w-full h-screen gap-4 p-8 overflow-y-auto">
+  <div class="w-full h-[calc(100vh-var(--header-height))] gap-4 p-8 overflow-y-auto">
     <div class="max-w-3xl mx-auto">
       <h1 class="text-2xl font-bold mb-6">{{ $t('community.admin.title') }}</h1>
       

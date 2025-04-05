@@ -10,6 +10,7 @@ import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
 import { inboxStore } from '~/stores/inboxStore'
+import { breadcrumbStore } from '~/stores/breadcrumbStore'
 
 definePageMeta({
   ssr: false
@@ -20,6 +21,7 @@ const { setCurrentCommunityUuid } = $(communityStore())
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
 const { showError, showMessage } = $(notificationStore())
+const { setBreadcrumbs } = $(breadcrumbStore())
 
 const route = useRoute()
 const router = useRouter()
@@ -40,6 +42,20 @@ watch(isError, (value) => {
     showError('Loading community info error.', error.value as Error)
   }
 })
+watch(() => community.value?.name, (communityName) => {
+  if (communityName) {
+    setBreadcrumbs([
+        {
+          labelKey: 'Home',
+          label: 'Home',
+          to: '/discovery'
+        },
+        {
+          label: communityName
+        }
+      ])
+  }
+}, { immediate: true })
 
 type TaskVisibleTab = {
   type: Task['visible']
@@ -103,13 +119,13 @@ const currentRightPage = $computed<PageSymbol>(() => {
 const showSidebar = ref(false)
 </script>
 <template>
-  <UDashboardPage :ui="{ wrapper: 'w-full static' }">
+  <UDashboardPage :ui="{ wrapper: 'w-full static h-[calc(100vh-var(--header-height))]' }">
     <CommunitySidebar
       v-model:is-expanded="showSidebar"
       :community="community"
       :address="address"
     />
-    <div class="w-full h-screen">
+    <div class="w-full">
       <div v-if="currentRightPage === communityRightPages['#quests']" class="bg-grid">
         <!-- header buttons -->
         <div class="w-full relative flex justify-between items-center px-4 py-3 z-10 bg-white drop-shadow-sm">

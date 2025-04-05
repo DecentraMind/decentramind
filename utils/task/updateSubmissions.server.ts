@@ -73,7 +73,7 @@ const saveValidatedSubmission = async <T extends ValidatedSpacesInfo | Validated
   wallet: any,
   communityLogo: string
 ) => {
-  const invites = (await getInvitesByInviter(submission.address, 'task')).invites
+  const invites = (await getInvitesByInviter({inviter: submission.address, type: 'task'})).invites
   const validateStatus: SubmissionValidateStatus = submission.validateStatus === 'waiting_for_validation'
     ? 'validated'
     : 'revalidated'

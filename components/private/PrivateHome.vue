@@ -49,7 +49,7 @@ function openMembersModal(tab: string = 'members') {
 
 <template>
   <UPage>
-    <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height))] overflow-y-auto scroll-gutter">
+    <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height)-var(--header-height))] overflow-y-auto scroll-gutter">
       <div
         v-if="isLoading"
         class="absolute top-0 right-0 w-full h-full flex justify-center items-center"

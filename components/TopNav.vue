@@ -2,12 +2,25 @@
 import { shortString } from '@/utils/string'
 import { useUserInfo } from '~/composables/useUserInfo'
 import { aoStore } from '~/stores/aoStore'
+import { breadcrumbStore } from '~/stores/breadcrumbStore'
+import { computed } from 'vue'
 
 const { isLoginModalOpen } = $(aoStore())
 const { address, doLogout } = $(aoStore())
 const { userInfo } = $(useUserInfo())
 const { class: className } = $(useAttrs())
+const { breadcrumbs } = $(breadcrumbStore())
 const router = useRouter()
+const { t } = useI18n()
+
+const translatedBreadcrumbs = computed(() => {
+  if (!breadcrumbs) return []
+  
+  return breadcrumbs.map(crumb => ({
+    ...crumb,
+    label: crumb.communityName || (crumb.labelKey ? t(crumb.labelKey) : crumb.label)
+  }))
+})
 
 const translate = [
   [
@@ -37,11 +50,11 @@ const onClickDisconnect = async () => {
   >
     <div class="flex items-center justify-between flex-1 gap-x-1.5 min-w-0">
       <div class="flex items-stretch gap-1.5 min-w-0">
-        <h1
-          class="flex items-center gap-1.5 font-semibold text-gray-900 dark:text-white min-w-0"
-        >
-          <span class="truncate">Explore</span>
-        </h1>
+        <UBreadcrumb v-if="translatedBreadcrumbs.length > 0" :links="translatedBreadcrumbs">
+          <template #default="{ link, isActive }">
+            <span class="truncate" :class="{ 'font-medium': !isActive, 'text-gray-700': isActive }">{{ link.label }}</span>
+          </template>
+        </UBreadcrumb>
       </div>
       <div class="flex items-stretch flex-shrink-0 gap-1.5">
         <UBadge color="white">

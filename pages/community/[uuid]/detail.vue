@@ -11,36 +11,71 @@ import { notificationStore } from '~/stores/notificationStore'
 import { useCommunityFromCommunitiesQuery } from '~/composables/community/communityQuery'
 import { useGetBountiesByCommunityIDQuery } from '~/composables/tasks/taskQuery'
 import CuteRadius from '~/components/CuteRadius.vue'
+import { breadcrumbStore } from '~/stores/breadcrumbStore'
 
 const { setCurrentCommunityUuid } = $(communityStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
+const { setBreadcrumbs } = $(breadcrumbStore())
 
-const columns = [{
-  key: 'name',
-  label: 'Contributor'
-}, {
-  key: 'bountyCount',
-  class: 'text-right',
-  rowClass: 'font-mono text-right',
-  label: 'Bounty Count'
-}]
-
+const columns = [
+  {
+    key: 'name',
+    label: 'Contributor',
+  },
+  {
+    key: 'bountyCount',
+    class: 'text-right',
+    rowClass: 'font-mono text-right',
+    label: 'Bounty Count',
+  },
+]
 
 const route = useRoute()
 const communityID = $computed(() => route.params.uuid) as string
-const { data: community, isLoading } = useCommunityFromCommunitiesQuery(communityID)
-const { data: bounties, isLoading: isLoadingRankings, isError: isErrorBounties, error: errorBounties } = useGetBountiesByCommunityIDQuery(communityID)
+const { data: community, isLoading } =
+  useCommunityFromCommunitiesQuery(communityID)
+const {
+  data: bounties,
+  isLoading: isLoadingRankings,
+  isError: isErrorBounties,
+  error: errorBounties,
+} = useGetBountiesByCommunityIDQuery(communityID)
 
-watch(isErrorBounties, (newVal) => {
+watch(isErrorBounties, newVal => {
   if (newVal) {
     showError('Failed to load ranks.', errorBounties.value as Error)
   }
 })
+watch(
+  () => community.value?.name,
+  communityName => {
+    if (communityName) {
+      setBreadcrumbs([
+        {
+          labelKey: 'Home',
+          label: 'Home',
+          to: '/discovery',
+        },
+        {
+          label: communityName,
+          to: `/community/${communityID}`,
+        },
+        {
+          labelKey: 'detail',
+          label: 'Detail',
+          to: `/community/${communityID}/detail`,
+        },
+      ])
+    }
+  },
+  { immediate: true },
+)
 
 const isAdminOrOwner = $computed(
   () =>
-    community.value?.owner === address || community.value?.admins.includes(address),
+    community.value?.owner === address ||
+    community.value?.admins.includes(address),
 )
 
 type Rank = {
@@ -51,42 +86,57 @@ type Rank = {
 
 const rankings = $computed(() => {
   if (!bounties.value) return []
-  const uniqueBounties = bounties.value?.filter((bounty, index) => 
-    bounties.value?.findIndex(b => 
-      b.recipient === bounty.recipient && b.taskPid === bounty.taskPid
-    ) === index
+  const uniqueBounties = bounties.value?.filter(
+    (bounty, index) =>
+      bounties.value?.findIndex(
+        b => b.recipient === bounty.recipient && b.taskPid === bounty.taskPid,
+      ) === index,
   )
 
-  return uniqueBounties.reduce((ranks, bounty) => {
-    if (bounty.recipient === decentraMindReceiver) return ranks
+  return uniqueBounties
+    .reduce((ranks, bounty) => {
+      if (bounty.recipient === decentraMindReceiver) return ranks
 
-    const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
-    if (index >= 0) {
-      ranks[index] = {...ranks[index], bountyCount: ranks[index].bountyCount + 1}
-    } else {
-      ranks.push({receiver: bounty.recipient, bountyCount: 1, recipientName: bounty.recipientName})
-    }
-    return ranks
-  }, [] as Rank[]).sort((a, b) => {
-    return a.bountyCount > b.bountyCount ? -1 : 1
-  })
+      const index = ranks.findIndex(rank => rank.receiver === bounty.recipient)
+      if (index >= 0) {
+        ranks[index] = {
+          ...ranks[index],
+          bountyCount: ranks[index].bountyCount + 1,
+        }
+      } else {
+        ranks.push({
+          receiver: bounty.recipient,
+          bountyCount: 1,
+          recipientName: bounty.recipientName,
+        })
+      }
+      return ranks
+    }, [] as Rank[])
+    .sort((a, b) => {
+      return a.bountyCount > b.bountyCount ? -1 : 1
+    })
 })
 
 const chart = $ref<HTMLDivElement>()
-onMounted( async () => {
+onMounted(async () => {
   try {
-    console.log({community})
+    console.log({ community })
 
     setCurrentCommunityUuid(community.value?.uuid)
 
     if (community.value && community.value.tokensupply) {
-      console.log('initialize chart with tokens info:', community.value.tokensupply)
+      console.log(
+        'initialize chart with tokens info:',
+        community.value.tokensupply,
+      )
       const supply = community.value.tokensupply
       nextTick(() => {
         initChart(supply, chart)
       })
     } else {
-      console.error('Failed to initialize chart: TokenSupply data is not available.')
+      console.error(
+        'Failed to initialize chart: TokenSupply data is not available.',
+      )
     }
 
     if (typeof window !== 'undefined') {
@@ -107,7 +157,7 @@ function onResize() {
 let chartInstance: echarts.ECharts
 
 const initChart = (tokenSupply: TokenSupply[], chart?: HTMLDivElement) => {
-  if(!chart) {
+  if (!chart) {
     nextTick(() => {
       initChart(tokenSupply, chart)
     })
@@ -121,27 +171,31 @@ const initChart = (tokenSupply: TokenSupply[], chart?: HTMLDivElement) => {
   // Convert communityInfo.supply to the format required by ECharts
   const data = tokenSupply.map(item => ({
     value: item.supply,
-    name: item.name
+    name: item.name,
   }))
 
   const option = {
     title: {
-      text: `${community.value?.alltoken ? 'Total Supply ' + community.value.alltoken : ''}`,
+      text: `${
+        community.value?.alltoken
+          ? 'Total Supply ' + community.value.alltoken
+          : ''
+      }`,
       left: 'center',
       top: 'bottom',
       textStyle: {
         color: '#444',
         fontSize: 14,
-        fontWeight: 600
-      }
+        fontWeight: 600,
+      },
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{b}: {d}%'
+      formatter: '{b}: {d}%',
     },
     legend: {
       orient: 'vertical',
-      left: 'left'
+      left: 'left',
     },
     series: [
       {
@@ -153,11 +207,11 @@ const initChart = (tokenSupply: TokenSupply[], chart?: HTMLDivElement) => {
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        }
-      }
-    ]
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        },
+      },
+    ],
   }
 
   chartInstance.setOption(option)
@@ -169,30 +223,34 @@ onBeforeUnmount(() => {
     chartInstance.dispose()
   }
 })
-
 </script>
 
 <template>
-  <UDashboardPage class="h-screen">
-    <div v-if="isLoading" class="absolute top-0 left-0 w-full h-full flex-center">
+  <UDashboardPage class="h-[calc(100vh-var(--header-height))]">
+    <div
+      v-if="isLoading"
+      class="absolute top-0 left-0 w-full h-full flex-center"
+    >
       <UIcon
         name="svg-spinners:blocks-scale"
         dynamic
         class="w-16 h-16 opacity-50"
       />
     </div>
-    <div v-if="community" class="w-full h-full px-10 py-16 overflow-y-auto">
+    <div v-if="community" class="w-full h-full px-10 pt-16 overflow-y-auto">
       <!--<UColorModeImage :src="`/task/${communityInfo.banner}.jpg`" :dark="'darkImagePath'" :light="'lightImagePath'" class="w-full max-h-[300px] min-h-[200px] h-[250px]" />-->
       <UPage class="xl:m-auto xl:max-w-[1200px]">
-        <ULandingCard
-          :description="community.desc"
-        >
+        <ULandingCard :description="community.desc">
           <template #title>
             <div class="w-full flex justify-between text-3xl mb-8">
               <div class="flex-center gap-4">
                 <CuteRadius class="w-12 h-12">
                   <img
-                    :src="community.logo ? arUrl(community.logo) : arUrl(defaultCommunityLogo)"
+                    :src="
+                      community.logo
+                        ? arUrl(community.logo)
+                        : arUrl(defaultCommunityLogo)
+                    "
                     :title="community.name"
                     class="w-full h-full object-cover bg-white"
                   >
@@ -205,7 +263,14 @@ onBeforeUnmount(() => {
 
         <UPageBody>
           <ULandingGrid>
-            <ULandingCard class="col-span-7 row-span-2" title="Profile" :ui="{title: 'text-lg', body: {base: 'gap-y-5 md:gap-y-7 mb-3'}}">
+            <ULandingCard
+              class="col-span-7 row-span-2"
+              title="Profile"
+              :ui="{
+                title: 'text-lg',
+                body: { base: 'gap-y-5 md:gap-y-7 mb-3' },
+              }"
+            >
               <BaseField
                 v-if="community.website"
                 :name="$t('community.website')"
@@ -229,11 +294,21 @@ onBeforeUnmount(() => {
                 link-icon="ri:github-fill"
               />
 
-              <BaseField :name="$t('TokenOfCommunityDetail')" :values="community.communitytoken.filter(token => token.tokenName) as unknown as Record<string, string>[]" value-key="tokenName" />
+              <BaseField
+                :name="$t('TokenOfCommunityDetail')"
+                :values="community.communitytoken.filter(token => token.tokenName) as unknown as Record<string, string>[]"
+                value-key="tokenName"
+              />
 
-              <BaseField :name="$t('community.token.platforms')" :values="community.support as unknown as Record<string, string>[]" />
+              <BaseField
+                :name="$t('community.token.platforms')"
+                :values="community.support as unknown as Record<string, string>[]"
+              />
 
-              <BaseField :name="$t('community.type of bounty')" :values="community.bounty as unknown as Record<string, string>[]">
+              <BaseField
+                :name="$t('community.type of bounty')"
+                :values="community.bounty as unknown as Record<string, string>[]"
+              >
                 <template #values="{ values }">
                   <div class="flex space-x-3 cursor-default">
                     <UPopover
@@ -264,7 +339,7 @@ onBeforeUnmount(() => {
                 //@ts-ignore
                 body: {
                   base: 'gap-y-0',
-                }
+                },
               }"
             >
               <UTable
@@ -279,13 +354,23 @@ onBeforeUnmount(() => {
                   },
                   td: {
                     padding: 'px-1',
-                  }
+                  },
                 }"
               >
                 <template #name-data="{ row }">
                   <div class="flex items-center gap-3">
                     <!-- <ArAvatar :src="row.avatar || defaultUserAvatar" :alt="row.receiver" size="xs" /> -->
-                    <span class="text-gray-900 dark:text-white font-medium" :title="row.receiver">{{ row.recipientName ? `${row.recipientName} (${shortString(row.receiver, 14)})` : shortString(row.receiver, 20) }}</span>
+                    <span
+                      class="text-gray-900 dark:text-white font-medium"
+                      :title="row.receiver"
+                    >{{
+                      row.recipientName
+                        ? `${row.recipientName} (${shortString(
+                          row.receiver,
+                          14,
+                        )})`
+                        : shortString(row.receiver, 20)
+                    }}</span>
                   </div>
                 </template>
               </UTable>
@@ -297,7 +382,7 @@ onBeforeUnmount(() => {
               class="col-span-7 row-span-2"
               :ui="{
                 wrapper: 'h-fit',
-                title: 'text-lg'
+                title: 'text-lg',
               }"
             >
               <div ref="chart" class="w-full h-96" />
@@ -309,7 +394,7 @@ onBeforeUnmount(() => {
               class="col-span-12"
               :ui="{
                 wrapper: 'h-fit',
-                title: 'text-lg'
+                title: 'text-lg',
               }"
             >
               <CommunityMembersTable :community-id="communityID" />

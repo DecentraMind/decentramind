@@ -7,7 +7,7 @@ import { bigintReplacer } from '~/utils/int'
 
 const taskManagerProcessID = DM_PROCESS_ID
 
-export async function getTask(taskPid: string, address?: string): Promise<Task> {
+export async function getTask({taskPid, address}: {taskPid: string, address?: string}): Promise<Task> {
   if (!taskPid) {
     throw new Error('Task process ID is required to get task info.')
   }
@@ -192,7 +192,7 @@ export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTim
   })
 }
 
-export const getInvitesByInviter = async (inviter: string, type?: 'task' | 'community') => {
+export const getInvitesByInviter = async ({inviter, type}: {inviter: string, type?: 'task' | 'community'}) => {
   const tags = [{ name: 'Action', value: 'GetInvitesByInviter' }, { name: 'Inviter', value: inviter }]
   if (type) {
     tags.push({ name: 'InviteType', value: type })

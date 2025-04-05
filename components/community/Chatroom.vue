@@ -58,8 +58,8 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
 
 <template>
   <UPage class="w-full">
-    <div class="relative w-full h-full grid grid-cols-1 sm:grid-cols-[1fr,230px]">
-      <div v-if="community.isJoined" class="flex h-screen ">
+    <div class="relative w-full grid grid-cols-1 sm:grid-cols-[1fr,230px]">
+      <div v-if="community.isJoined" class="flex h-[calc(100vh-var(--header-height))]">
         <ChatArea :chat="community.communitychatid" />
         <UDivider orientation="vertical" />
       </div>

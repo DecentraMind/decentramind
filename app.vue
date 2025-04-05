@@ -14,7 +14,7 @@ BigInt.prototype.toJSON = function () {
   return this.toString()
 }
 
-onErrorCaptured((error, instance, info) => {
+onErrorCaptured((error, _instance, info) => {
   console.error('Global error handler:', error, info)
   showError('Application Error: ', error)
   // return false to avoid 'TypeError: Cannot destructure property 'type' of 'vnode' as it is null' and page freezing

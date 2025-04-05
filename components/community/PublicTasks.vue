@@ -44,7 +44,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height))] overflow-y-auto scroll-gutter">
+  <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height)-var(--header-height))] overflow-y-auto scroll-gutter">
     <!-- No tasks -->
     <div
       v-if="!tasks?.length && !isLoading"

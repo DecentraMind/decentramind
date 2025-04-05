@@ -6,6 +6,7 @@ import Bounties from '~/components/task/Bounties.vue'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
+import { breadcrumbStore } from '~/stores/breadcrumbStore'
 
 const questColumns = [
   {
@@ -36,6 +37,12 @@ const { getBountiesByAddress, getTasksByOwner } = useTaskStore()
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 const { joinedCommunities, setCurrentCommunityUuid } = $(communityStore())
+const { setBreadcrumbs } = $(breadcrumbStore())
+
+setBreadcrumbs([
+  { label: 'Home', to: '/discovery' },
+  { label: 'Dashboard' },
+])
 
 const page = $ref(1)
 const pageC = $ref(1)
