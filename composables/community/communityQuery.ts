@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx } from '~/utils/community/community'
+import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -249,3 +249,77 @@ export const useUpdateSettleTxMutation = ({ communityUuid }: { communityUuid: st
 }
 
 export const useGetCommunityUserQuery = createQueryComposable(['community', 'communityUser'], getCommunityUser)
+
+export const useGetPageQuery = createQueryComposable(['community', 'page'], getPage)
+
+export const useAddPageMutation = ({communityUuid, onErrorCb}: {communityUuid: string, onErrorCb?:()=>void}) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (page: {title: string, content: string}) => addPage(communityUuid, page),
+    onMutate: async (page: {title: string, content: string}) => {
+      await queryClient.cancelQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+      const previousConfig = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
+      
+      if (!previousConfig) {
+        return
+      }
+      
+      const tempPageUuid = createUuid()
+      const tempPage = {
+        uuid: tempPageUuid,
+        communityUuid,
+        ...page
+      }
+      
+      queryClient.setQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid], {
+        ...previousConfig,
+        pages: [
+          ...(previousConfig?.pages || []),
+          tempPage
+        ]
+      })
+      
+      return { previousConfig }
+    },
+    onError: (_error, _page, context) => {
+      onErrorCb?.()
+      queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], context?.previousConfig)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+    }
+  })
+}
+
+export const useUpdatePageMutation = ({communityUuid, onErrorCb}: {communityUuid: string, onErrorCb?:()=>void}) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({pageUuid, page}: {pageUuid: string, page: {title: string, content: string}}) => updatePage(pageUuid, page),
+    onMutate: async ({pageUuid, page}: {pageUuid: string, page: {title: string, content: string}}) => {
+      await queryClient.cancelQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+      const previousConfig = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
+      
+      if (!previousConfig) {
+        return
+      }
+      
+      queryClient.setQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid], {
+        ...previousConfig,
+        pages: previousConfig.pages.map(p => 
+          p.uuid === pageUuid 
+            ? { ...p, ...page }
+            : p
+        )
+      })
+      
+      return { previousConfig }
+    },
+    onError: (_error, _variables, context) => {
+      onErrorCb?.()
+      queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], context?.previousConfig)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+    }
+  })
+}

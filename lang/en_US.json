@@ -252,7 +252,17 @@
       "applicationDescription": "Please answer all questions below to apply for private area access.",
       "answerPlaceholder": "Enter your answer here...",
       "applicationSubmitted": "Your application has been submitted successfully, please wait for approval.",
-      "addWorkArea": "Add a work area"
+      "addWorkArea": "Add a work area",
+    },
+    "page": {
+      "addPage": "Add a page",
+      "editPage": "Edit a page",
+      "pageTitlePlaceholder": "Page Title",
+      "pageContentPlaceholder": "Enter your page content here...",
+      "failedToAddPage": "Failed to add page",
+      "failedToUpdatePage": "Failed to update page",
+      "titleRequired": "Title is required",
+      "pageUpdated": "Page updated successfully"
     },
     "task": {
       "add": "Add Proposal",

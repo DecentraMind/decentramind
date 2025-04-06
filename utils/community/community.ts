@@ -367,3 +367,57 @@ export const getCommunityUser = async (communityUuid: string) => {
 
   return communityUserMap
 }
+
+/**
+ * Get a page by its UUID
+ * @param pageUuid - The UUID of the page
+ * @returns The page
+ */
+export const getPage = async (pageUuid: string) => {
+  const tags = [
+    { name: 'Action', value: 'GetPage' },
+    { name: 'PageUuid', value: pageUuid }
+  ]
+  return await dryrunResultParsed({
+    process: communityProcessID,
+    tags
+  })
+}
+
+/**
+ * Add a new page to a community
+ * @param communityUuid - The UUID of the community
+ * @param page - The page to add
+ * @returns The created page
+ */
+export const addPage = async (communityUuid: string, page: { title: string, content: string }, wallet?: Wallet) => {
+  const tags = [
+    { name: 'Action', value: 'AddPage' },
+    { name: 'CommunityUuid', value: communityUuid }
+  ]
+  return await messageResultParsed({
+    process: communityProcessID,
+    tags,
+    data: JSON.stringify(page),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet)
+  })
+}
+
+/**
+ * Update an existing page
+ * @param pageUuid - The UUID of the page
+ * @param page - The updated page data
+ * @returns The updated page
+ */
+export const updatePage = async (pageUuid: string, page: { title: string, content: string }, wallet?: Wallet) => {
+  const tags = [
+    { name: 'Action', value: 'UpdatePage' },
+    { name: 'PageUuid', value: pageUuid }
+  ]
+  return await messageResultParsed({
+    process: communityProcessID,
+    tags,
+    data: JSON.stringify(page),
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet)
+  })
+}

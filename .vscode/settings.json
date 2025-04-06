@@ -104,4 +104,7 @@
   },
   "javascript.preferGoToSourceDefinition": true,
   "typescript.preferGoToSourceDefinition": true,
+  "Lua.diagnostics.disable": [
+    "trailing-space"
+  ],
 }

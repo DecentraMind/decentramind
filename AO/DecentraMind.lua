@@ -1091,6 +1091,68 @@ Actions = {
       }, msg.Timestamp)
 
       u.replyData(msg, task)
+    end,
+    
+    GetPage = function(msg)
+      local pageUuid = msg.Tags.PageUuid
+      
+      local page = Pages[pageUuid]
+      if not page then
+        return u.replyError(msg, 'Page not found.')
+      end
+      
+      u.replyData(msg, page)
+    end,
+
+    AddPage = function(msg)
+      local communityUuid = msg.Tags.CommunityUuid
+      
+      -- Only owner or admins can add page
+      assertIsOwnerOrAdmin(msg.From, communityUuid)
+      
+      ---@type Page
+      local page = json.decode(msg.Data)
+      local pageUuid = u.createUuid()
+      
+      page.uuid = pageUuid
+      page.communityUuid = communityUuid
+      
+      Pages[pageUuid] = page
+      
+      -- Add page to PrivateAreaConfig
+      PrivateAreaConfig[communityUuid] = PrivateAreaConfig[communityUuid] or {
+        communityUuid = communityUuid,
+        pagesAreaTitle = 'Private Area',
+        pageUuids = {},
+        boardUuids = {}
+      }
+      
+      if not u.findIndex(PrivateAreaConfig[communityUuid].pageUuids, function(uuid) return uuid == pageUuid end) then
+        table.insert(PrivateAreaConfig[communityUuid].pageUuids, pageUuid)
+      end
+      
+      u.replyData(msg, page)
+    end,
+    
+    UpdatePage = function(msg)
+      local pageUuid = msg.Tags.PageUuid
+      
+      local existingPage = Pages[pageUuid]
+      if not existingPage then
+        return u.replyError(msg, 'Page not found.')
+      end
+      
+      -- Only owner or admins can update page
+      assertIsOwnerOrAdmin(msg.From, existingPage.communityUuid)
+      
+      ---@type Page
+      local updatedPage = json.decode(msg.Data)
+      
+      -- Only update title and content
+      existingPage.title = updatedPage.title
+      existingPage.content = updatedPage.content
+      
+      u.replyData(msg, existingPage)
     end
   },
 

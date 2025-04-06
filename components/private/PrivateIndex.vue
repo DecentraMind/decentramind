@@ -7,6 +7,9 @@ import SettleConfirmModal from './SettleConfirmModal.vue'
 import { useUserInfo } from '~/composables/useUserInfo'
 import EditableText from '~/components/common/EditableText.vue'
 import ProposalModal from './ProposalModal.vue'
+import PageFormModal from './PageFormModal.vue'
+import PageModal from './PageModal.vue'
+import type { Page } from '~/types'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -67,6 +70,19 @@ const updatePrivateAreaTitle = async (newTitle: string) => {
 }
 
 const canEdit = computed(() => isCurrentCommunityAdmin || isCurrentCommunityOwner)
+let isPageFormModalOpen = $ref(false)
+let isPageModalOpen = $ref(false)
+let currentPage = $ref<Page | undefined>(undefined)
+
+const openPageFormModal = (page?: Page) => {
+  currentPage = page
+  isPageFormModalOpen = true
+}
+
+const openPageModal = (page: Page) => {
+  currentPage = page
+  isPageModalOpen = true
+}
 </script>
 
 <template>
@@ -75,29 +91,35 @@ const canEdit = computed(() => isCurrentCommunityAdmin || isCurrentCommunityOwne
       :text="config?.pagesAreaTitle || ''"
       :can-edit="canEdit"
       tag="h2"
-      class-name="text-2xl font-bold text-left mb-4"
+      class-name="text-lg font-bold text-left mb-4"
       :mutate="updatePrivateAreaTitle"
       :loading="isUpdatingConfig"
     />
-    <!-- <div class="mt-2 w-full flex flex-col items-center justify-center ring-1 ring-gray-200 rounded-lg p-4">
-      <div v-for="page in config?.pages" :key="page.title">
-        <h3 class="text-lg font-bold">{{ page.title }}</h3>
+    <div class="mt-2 w-full grid grid-cols-3 gap-x-4 gap-y-6 bg-gray-100 rounded-lg p-4">
+      <div 
+        v-for="page in config?.pages" 
+        :key="page.uuid" 
+        class="group relative bg-white rounded-lg p-3 cursor-pointer"
+        @click="openPageModal(page)"
+      >
+        <h4 class="font-medium text-sm line-clamp-1">{{ page.title }}</h4>
+        <UIcon 
+          v-if="canEdit"
+          name="i-heroicons-pencil-square" 
+          class="absolute top-3 right-2 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          @click.stop="openPageFormModal(page)"
+        />
       </div>
       <UButton
-        color="blue"
-        variant="solid"
-        class="mt-4"
-        @click="openAddPageModal"
+        v-if="canEdit"
+        size="xs"
+        variant="ghost"
+        icon="i-heroicons-plus"
+        @click="openPageFormModal()"
       >
-        {{ $t('private.area.addPage') }}
+        {{ $t('private.page.addPage') }}
       </UButton>
-
-      <AddPageModal
-        v-model="isAddPageModalOpen"
-        :uuid="props.uuid"
-        @page-added="fetchConfig"
-      /> 
-    </div>-->
+    </div>
     <!-- show board list -->
     <div class="w-full">
       <Board v-for="board in config?.boards" :key="board.uuid" :data="board" :unclickable="isAddingBoard" :can-edit-title="canEdit" />
@@ -118,5 +140,15 @@ const canEdit = computed(() => isCurrentCommunityAdmin || isCurrentCommunityOwne
 
     <ProposalModal v-model="privateTaskStore.isProposalModal" />
     <SettleConfirmModal v-model="privateTaskStore.isSettleConfirmModal" />
+
+    <PageFormModal 
+      v-model="isPageFormModalOpen" 
+      :page="currentPage" 
+      :community-uuid="uuid" 
+    />
+    <PageModal 
+      v-model="isPageModalOpen" 
+      :page="currentPage" 
+    />
   </div>
 </template>

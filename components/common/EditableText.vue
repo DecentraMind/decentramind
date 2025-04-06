@@ -76,11 +76,19 @@ watch(() => props.text, (newValue) => {
     :class="[className, { 'group cursor-pointer': canEdit }]"
     @click="onEdit"
   >
-    <div v-if="isEditing" ref="inputRef" class="relative inline-flex items-center">
+    <div v-if="isEditing" ref="inputRef" class="w-full relative inline-flex items-center">
       <UInput
         v-model="newText"
+        variant="none"
         :class="className"
-        class="min-w-[150px]"
+        class="min-w-[150px] w-full"
+        size="lg"
+        :ui="{
+          base: 'py-2 px-0 focus:outline-none',
+          padding: {
+            lg: 'py-2 px-0'
+          }
+        }"
         @blur="onBlur"
         @keydown="onKeyDown"
       />
@@ -90,7 +98,7 @@ watch(() => props.text, (newValue) => {
         class="absolute right-2 animate-spin" 
       />
     </div>
-    <div v-else class="inline-flex items-center">
+    <div v-else class="inline-flex items-center py-3">
       {{ text }}
       <UIcon 
         v-if="canEdit" 
