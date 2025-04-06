@@ -65,9 +65,6 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      echarts:
-        specifier: ^5.5.0
-        version: 5.5.1
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -4352,9 +4349,6 @@ packages:
   ecdsa-sig-formatter@1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
 
-  echarts@5.5.1:
-    resolution: {integrity: sha512-Fce8upazaAXUVUVsjgV6mBnGuqgO+JNDlcgF79Dksy4+wgGpQB2lmYoO4TSweFg/mZITdpGHomw/cNBJZj1icA==}
-
   editorconfig@1.0.4:
     resolution: {integrity: sha512-L9Qe08KWTlqYMVvMcTIvMAdl1cDUubzRNYL+WfA4bLDMHe4nemKkpmYzkznE1FwLKu0EEmy6obgQKzMJrg4x9Q==}
     engines: {node: '>=14'}
@@ -7014,9 +7008,6 @@ packages:
   ts-macro@0.1.25:
     resolution: {integrity: sha512-C8Lxnn/XXvqMx+orKU6/gKrCmU/dOFUAxRstRTSmNUdrIjxoTuwsK8vTrLyYP0L+IVbIq9WgKBiGFUIab36l1Q==}
 
-  tslib@2.3.0:
-    resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
-
   tslib@2.8.0:
     resolution: {integrity: sha512-jWVzBLplnCmoaTr13V9dYbiQ99wvZRd0vNWaDRg+aVYRcjDF3nDksxFDE/+fkXnKhpnUUkmx5pK/v8mCtLVqZA==}
 
@@ -7742,9 +7733,6 @@ packages:
 
   zod@3.24.2:
     resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
-
-  zrender@5.6.0:
-    resolution: {integrity: sha512-uzgraf4njmmHAbEUxMJ8Oxg+P3fT04O+9p7gY+wJRVxo8Ge+KmYv0WJev945EH4wFuc4OY2NLXz46FZrWS9xJg==}
 
 snapshots:
 
@@ -13238,11 +13226,6 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  echarts@5.5.1:
-    dependencies:
-      tslib: 2.3.0
-      zrender: 5.6.0
-
   editorconfig@1.0.4:
     dependencies:
       '@one-ini/wasm': 0.1.1
@@ -16597,8 +16580,6 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  tslib@2.3.0: {}
-
   tslib@2.8.0: {}
 
   tsscmp@1.0.6: {}
@@ -17419,7 +17400,3 @@ snapshots:
   zod@3.23.8: {}
 
   zod@3.24.2: {}
-
-  zrender@5.6.0:
-    dependencies:
-      tslib: 2.3.0

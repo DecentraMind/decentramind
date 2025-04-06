@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { tokens, type TokenSupply, type TokenName } from '~/utils/constants'
+import { tokens, type TokenName } from '~/utils/constants'
 import { shortString, getDomain, getHandle } from '~/utils'
 import BaseField from '~/components/fields/BaseField.vue'
 import { baseFieldClasses } from '~/components/fields'
-import * as echarts from 'echarts'
+import TokenAllocationPieChart from '~/components/charts/TokenAllocationPieChart.vue'
 import CommunityMembersTable from '~/components/community/CommunityMembersTable.vue'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
@@ -117,27 +117,13 @@ const rankings = $computed(() => {
     })
 })
 
-const chart = $ref<HTMLDivElement>()
+const decentraMindReceiver = 'rwQW4t4EQGY48iuzPgn9P1gL8j9oBBJwkdSvfEaRYk0'
+
 onMounted(async () => {
   try {
     console.log({ community })
 
     setCurrentCommunityUuid(community.value?.uuid)
-
-    if (community.value && community.value.tokensupply) {
-      console.log(
-        'initialize chart with tokens info:',
-        community.value.tokensupply,
-      )
-      const supply = community.value.tokensupply
-      nextTick(() => {
-        initChart(supply, chart)
-      })
-    } else {
-      console.error(
-        'Failed to initialize chart: TokenSupply data is not available.',
-      )
-    }
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', onResize)
@@ -149,78 +135,12 @@ onMounted(async () => {
 })
 
 function onResize() {
-  if (chartInstance) {
-    chartInstance.resize()
-  }
-}
-
-let chartInstance: echarts.ECharts
-
-const initChart = (tokenSupply: TokenSupply[], chart?: HTMLDivElement) => {
-  if (!chart) {
-    nextTick(() => {
-      initChart(tokenSupply, chart)
-    })
-    throw new Error('chart element not ready.')
-  }
-  chartInstance = echarts.init(chart)
-
-  if (!tokenSupply || tokenSupply.length === 0) {
-    console.warn('TokenSupply is not available or is not an array.')
-  }
-  // Convert communityInfo.supply to the format required by ECharts
-  const data = tokenSupply.map(item => ({
-    value: item.supply,
-    name: item.name,
-  }))
-
-  const option = {
-    title: {
-      text: `${
-        community.value?.alltoken
-          ? 'Total Supply ' + community.value.alltoken
-          : ''
-      }`,
-      left: 'center',
-      top: 'bottom',
-      textStyle: {
-        color: '#444',
-        fontSize: 14,
-        fontWeight: 600,
-      },
-    },
-    tooltip: {
-      trigger: 'item',
-      formatter: '{b}: {d}%',
-    },
-    legend: {
-      orient: 'vertical',
-      left: 'left',
-    },
-    series: [
-      {
-        name: '',
-        type: 'pie',
-        radius: '50%',
-        data: data,
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)',
-          },
-        },
-      },
-    ],
-  }
-
-  chartInstance.setOption(option)
+  // Empty resize handler for any future needs
 }
 
 onBeforeUnmount(() => {
-  if (typeof window !== 'undefined' && chartInstance) {
+  if (typeof window !== 'undefined') {
     window.removeEventListener('resize', onResize)
-    chartInstance.dispose()
   }
 })
 </script>
@@ -385,7 +305,10 @@ onBeforeUnmount(() => {
                 title: 'text-lg',
               }"
             >
-              <div ref="chart" class="w-full h-96" />
+              <TokenAllocationPieChart 
+                :token-supply="community.tokensupply" 
+                :total-supply="community.alltoken?.toString()"
+              />
             </ULandingCard>
 
             <ULandingCard
