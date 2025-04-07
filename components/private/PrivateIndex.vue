@@ -91,7 +91,7 @@ const openPageModal = (page: Page) => {
       :text="config?.pagesAreaTitle || ''"
       :can-edit="canEdit"
       tag="h2"
-      class-name="text-lg font-bold text-left mb-4"
+      class-name="text-lg font-medium mb-2"
       :mutate="updatePrivateAreaTitle"
       :loading="isUpdatingConfig"
     />

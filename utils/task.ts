@@ -1,5 +1,5 @@
 import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner, dryrunResultParsed, type Wallet } from '~/utils/ao'
-import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, RelatedUserMap, Submission, Bounty } from '~/types'
+import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, RelatedUserMap, Submission, Bounty, BountySendHistory } from '~/types'
 import { extractResult } from '~/utils'
 import { DM_PROCESS_ID } from '~/utils/processID'
 import { cloneDeep } from 'lodash-es'
@@ -218,5 +218,29 @@ export const getBountiesByCommunityID = async (communityUuid: string) => {
     }, {
       name: 'CommunityUuid', value: communityUuid
     }]
+  })
+}
+
+export const getBountiesByAddress = async (address: string) => {
+  return await dryrunResultParsed<{
+    published: BountySendHistory[],
+    awarded: BountySendHistory[]
+  }>({
+    process: taskManagerProcessID,
+    tags: [{
+      name: 'Action', value: 'GetBountiesByAddress'
+    }, {
+      name: 'Address', value: address
+    }]
+  })
+}
+
+export const getTasksByOwner = async (address: string) => {
+  return await dryrunResultParsed<Task[]>({
+    process: taskManagerProcessID,
+    tags: [
+      { name: 'Action', value: 'GetTasksByOwner' },
+      { name: 'Address', value: address }
+    ]
   })
 }

@@ -877,6 +877,48 @@ Actions = {
       u.replyData(msg, task)
     end,
 
+    GetPrivateTasksByInitiator = function(msg)
+      local address = msg.Tags.Address
+      assert(address, 'Address is required.')
+      
+      local results = {}
+      for _, task in pairs(PrivateTasks) do
+        -- Check if the user is the first editor (initiator)
+        if task.editors[1] == address and task.deletedAt == nil then
+          local taskCopy = u.deepCopy(task)
+          local board = Boards[taskCopy.boardUuid]
+          taskCopy.communityName = Communities[board.communityUuid].name
+          table.insert(results, taskCopy)
+        end
+      end
+      
+      u.replyData(msg, results)
+    end,
+    
+    GetPrivateTasksByParticipant = function(msg)
+      local address = msg.Tags.Address
+      assert(address, 'Address is required.')
+      
+      local results = {}
+      for _, task in pairs(PrivateTasks) do
+        -- Skip if the user is the initiator (to avoid duplicate tasks)
+        if task.deletedAt == nil then
+          -- Check if the user is in the budgets
+          for _, budget in ipairs(task.budgets) do
+            if budget.member == address then
+              local taskCopy = u.deepCopy(task)
+              local board = Boards[taskCopy.boardUuid]
+              taskCopy.communityName = Communities[board.communityUuid].name
+              table.insert(results, taskCopy)
+              break -- Found a match, so move to the next task
+            end
+          end
+        end
+      end
+      
+      u.replyData(msg, results)
+    end,
+
     AddPrivateTask = function(msg)
       local address = msg.From
 
@@ -1610,9 +1652,14 @@ Actions = {
       for address, inviteInfo in pairs(UserCommunities) do
         if inviteInfo[uuid] then
           if not Users[address] then
-            Users[address] = { name = '', avatar = '' }
+            Users[address] = {
+              avatar = DefaultUserAvatar,
+              name = string.sub(address, -4),
+              createdAt = msg.Timestamp,
+              canCreateCommunity = false
+            }
           end
-          communityUsers[address] = Users[address]
+          communityUsers[address] = u.deepCopy(Users[address])
           communityUsers[address].address = address
           communityUsers[address].muted = false
 

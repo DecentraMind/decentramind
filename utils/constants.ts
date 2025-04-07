@@ -1,4 +1,4 @@
-import type { ChainNames, SubmissionValidateStatus, TradePlatform } from '~/types'
+import type { ChainNames, PrivateTaskStatus, SubmissionValidateStatus, TradePlatform } from '~/types'
 import type { ButtonColor } from '#ui/types'
 
 export const tradePlatforms: TradePlatform[] = [
@@ -286,10 +286,11 @@ export const VOUCH_SITE_URL = 'https://vouch.zeabur.app'
 
 export const VALID_SUBMISSION_STATUS = ['validated', 'revalidated'] as SubmissionValidateStatus[]
 
-export const privateTaskStatusColorMap: Record<string, ButtonColor> = {
+export const privateTaskStatusColorMap: Record<PrivateTaskStatus, ButtonColor> = {
   draft: 'gray',
-  auditing: 'blue',
+  auditing: 'yellow',
   executing: 'green',
+  waiting_for_validation: 'sky',
   waiting_for_settlement: 'orange',
   settled: 'pink'
 }

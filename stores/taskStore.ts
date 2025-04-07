@@ -129,16 +129,6 @@ export const useTaskStore = defineStore('task', () => {
     return queryClient.isFetching({ queryKey: ['tasks', 'fetchTasksByCommunityUuid', communityUuid] })
   }
 
-  const getTasksByOwner = async (address: string) => {
-    return await dryrunResultParsed<Task[]>({
-      process: taskManagerProcessID,
-      tags: [
-        { name: 'Action', value: 'GetTasksByOwner' },
-        { name: 'Address', value: address }
-      ]
-    })
-  }
-
   const joinTask = async (taskPid: string, inviteCode?: string) => {
     return await messageResultCheck({
       process: taskManagerProcessID,
@@ -231,20 +221,6 @@ export const useTaskStore = defineStore('task', () => {
     return Object.values(bountyMap).flat()
   }
 
-  const getBountiesByAddress = async (address: string) => {
-    return await dryrunResultParsed<{
-      published: BountySendHistory[],
-      awarded: BountySendHistory[]
-    }>({
-      process: taskManagerProcessID,
-      tags: [{
-        name: 'Action', value: 'GetBountiesByAddress'
-      }, {
-        name: 'Address', value: address
-      }]
-    })
-  }
-
   const createTaskInviteCode  = async (taskPid: string) => {
     const code = await messageResult<string>({
       process: taskManagerProcessID,
@@ -268,9 +244,9 @@ export const useTaskStore = defineStore('task', () => {
   
 
   return {
-    createTask, getTask, getTasksByOwner,
+    createTask, getTask,
 
-    sendBounty, storeBounty, getAllBounty, getBountiesByAddress,
+    sendBounty, storeBounty, getAllBounty,
 
     submitTask,
 

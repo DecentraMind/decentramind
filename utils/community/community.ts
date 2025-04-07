@@ -285,6 +285,28 @@ export const getPrivateTask = async (taskUuid: string) => {
   return task
 }
 
+export const getPrivateTasksByInitiator = async (address: string) => {
+  const tasks = await dryrunResultParsed<Array<PrivateTask&{communityName: string}>>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'GetPrivateTasksByInitiator' },
+      { name: 'Address', value: address }
+    ],
+  })
+  return tasks
+}
+
+export const getPrivateTasksByParticipant = async (address: string) => {
+  const tasks = await dryrunResultParsed<Array<PrivateTask&{communityName: string}>>({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'GetPrivateTasksByParticipant' },
+      { name: 'Address', value: address }
+    ],
+  })
+  return tasks
+}
+
 export async function addPrivateTask(task: PrivateTask, wallet?: Wallet) {
   const jsonString = JSON.stringify(task)
   return await messageResultParsed<PrivateTask>({

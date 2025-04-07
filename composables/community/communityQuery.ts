@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx } from '~/utils/community/community'
+import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -140,6 +140,16 @@ export const useUpdateBoardTitleMutation = ({communityUuid, onErrorCb}: {communi
 }
 
 export const useGetPrivateTaskQuery = createQueryComposable(['community', 'privateTask'], getPrivateTask)
+
+export const useGetPrivateTasksByInitiatorQuery = createQueryComposable(
+  ['community', 'privateTasksByInitiator'], 
+  getPrivateTasksByInitiator
+)
+
+export const useGetPrivateTasksByParticipantQuery = createQueryComposable(
+  ['community', 'privateTasksByParticipant'], 
+  getPrivateTasksByParticipant
+)
 
 export const useAddPrivateTaskMutation = ({communityUuid, onErrorCb}: {communityUuid: string, onErrorCb?:()=>void}) => {
   const queryClient = useQueryClient()

@@ -66,8 +66,8 @@ const handleUpdateBoardTitle = async (newTitle: string) => {
       <EditableText
         :text="data.title"
         :can-edit="canEditTitle"
-        tag="h3"
-        class-name="text-lg font-medium mb-4"
+        tag="h2"
+        class-name="text-lg font-medium mb-2"
         :mutate="handleUpdateBoardTitle"
         :loading="updateBoardTitleLoading"
       />
