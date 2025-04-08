@@ -184,10 +184,12 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
       }
 
       if (validatedData) {
+        await delay(200)
         await saveValidatedSubmission(submission, validatedData, task, wallet, community.logo)
       }
 
     } catch (error) {
+      await delay(200)
       const validateError = error instanceof Error ? error.message : 'Unknown error'
       await updateInvalidSubmission({
         submissionId: submission.id,

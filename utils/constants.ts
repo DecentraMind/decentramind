@@ -56,6 +56,20 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
   },
+  'SYNBO_EARLY_BIRD': {
+    ticker: 'SYNBO_EARLY_BIRD',
+    label: 'SYNBO_EARLY_BIRD',
+    processID: 'Glr6TWiPaMOtErIKHYrsmhurWCXWjqEK6Id9nuolQHg',
+    denomination: 12,
+    logo: 'NU4cSWOa-E3h_ZwmlpIB8a9C4oMO8w79v8hJSR6nXEY'
+  },
+  'MASADEGEN’S-EARLY-BONUS': {
+    ticker: 'MASADEGEN’S-EARLY-BONUS',
+    label: 'MASADEGEN’S-EARLY-BONUS',
+    processID: '7ko4tjeJv5fhgKJiou0hdbkilLiwlD68PrOXjRJ_yj8',
+    denomination: 12,
+    logo: 'RKV61-4mVmvp0ZiYA1wf5b9BpUfOWuDO6_oAZm4yp9U'
+  },
   HIBIT: {
     ticker: 'HIBIT',
     label: 'hibit',
