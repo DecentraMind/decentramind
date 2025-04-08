@@ -262,7 +262,13 @@
       "failedToAddPage": "Failed to add page",
       "failedToUpdatePage": "Failed to update page",
       "titleRequired": "Title is required",
-      "pageUpdated": "Page updated successfully"
+      "pageUpdated": "Page updated successfully",
+      "noPage": "No page yet",
+      "deletePage": "Delete Page",
+      "deleteConfirm": "Are you sure you want to delete the page \"{title}\"?",
+      "deleteWarning": "This action cannot be undone.",
+      "deleteSuccess": "Page deleted successfully",
+      "deleteError": "Failed to delete page"
     },
     "task": {
       "add": "Add Proposal",

@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant } from '~/utils/community/community'
+import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant, deletePage } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -325,6 +325,35 @@ export const useUpdatePageMutation = ({communityUuid, onErrorCb}: {communityUuid
       return { previousConfig }
     },
     onError: (_error, _variables, context) => {
+      onErrorCb?.()
+      queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], context?.previousConfig)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+    }
+  })
+}
+
+export const useDeletePageMutation = ({communityUuid, onErrorCb}: {communityUuid: string, onErrorCb?:()=>void}) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (pageUuid: string) => deletePage(pageUuid),
+    onMutate: async (pageUuid: string) => {
+      await queryClient.cancelQueries({ queryKey: ['community', 'privateAreaConfig', communityUuid] })
+      const previousConfig = queryClient.getQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid])
+      
+      if (!previousConfig) {
+        return
+      }
+      
+      queryClient.setQueryData<PrivateAreaConfig>(['community', 'privateAreaConfig', communityUuid], {
+        ...previousConfig,
+        pages: previousConfig.pages.filter(p => p.uuid !== pageUuid)
+      })
+      
+      return { previousConfig }
+    },
+    onError: (_error, _pageUuid, context) => {
       onErrorCb?.()
       queryClient.setQueryData(['community', 'privateAreaConfig', communityUuid], context?.previousConfig)
     },

@@ -1176,6 +1176,36 @@ Actions = {
       u.replyData(msg, page)
     end,
     
+    DeletePage = function(msg)
+      local pageUuid = msg.Tags.PageUuid
+      
+      local existingPage = Pages[pageUuid]
+      assert(existingPage, 'Page not found.')
+      
+      -- Only owner or admins can delete page
+      assertIsOwnerOrAdmin(msg.From, existingPage.communityUuid)
+      
+      
+      -- Remove page from PrivateAreaConfig
+      local communityUuid = existingPage.communityUuid
+      if PrivateAreaConfig[communityUuid] and PrivateAreaConfig[communityUuid].pageUuids then
+        local index = u.findIndex(PrivateAreaConfig[communityUuid].pageUuids, function(uuid) return uuid == pageUuid end)
+        if index then
+          table.remove(PrivateAreaConfig[communityUuid].pageUuids, index)
+        end
+      end
+      -- Remove page from Pages table
+      Pages[pageUuid] = nil
+      
+      -- Add log
+      addLog('DeletePage', communityUuid, msg.From, {
+        pageUuid = pageUuid,
+        pageTitle = existingPage.title
+      }, msg.Timestamp)
+      
+      u.replyData(msg, { success = true, deletedPageUuid = pageUuid })
+    end,
+    
     UpdatePage = function(msg)
       local pageUuid = msg.Tags.PageUuid
       

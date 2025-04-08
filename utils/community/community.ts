@@ -443,3 +443,20 @@ export const updatePage = async (pageUuid: string, page: { title: string, conten
     signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet)
   })
 }
+
+/**
+ * Delete a page
+ * @param pageUuid - The UUID of the page to delete
+ * @returns The result of the delete operation
+ */
+export const deletePage = async (pageUuid: string, wallet?: Wallet) => {
+  const tags = [
+    { name: 'Action', value: 'DeletePage' },
+    { name: 'PageUuid', value: pageUuid }
+  ]
+  return await messageResultParsed<{success: boolean, deletedPageUuid: string}>({
+    process: communityProcessID,
+    tags,
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet)
+  })
+}
