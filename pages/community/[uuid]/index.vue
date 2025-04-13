@@ -20,7 +20,7 @@ const { t } = useI18n()
 const { setCurrentCommunityUuid } = $(communityStore())
 const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
-const { showError, showMessage } = $(notificationStore())
+const { showError } = $(notificationStore())
 const { setBreadcrumbs } = $(breadcrumbStore())
 
 const route = useRoute()
@@ -77,7 +77,7 @@ const taskVisibleTabs: TaskVisibleTab[] = [
 ]
 
 const runtimeConfig = useRuntimeConfig()
-let selectedTaskVisibleType = $computed({
+const selectedTaskVisibleType = $computed({
   get() {
     const index = taskVisibleTabs.findIndex(item => item.type === (route.query.visible || 'public'))
     return index === -1 ? 0 : index
@@ -86,18 +86,6 @@ let selectedTaskVisibleType = $computed({
     router.replace({ query: { visible: taskVisibleTabs[value].type }, hash: route.hash })
   },
 })
-const onTaskVisibleTypeChange = (value: number) => {
-  // prevent user to select private quests
-  if (value !== 0) {
-    if (runtimeConfig.public.debug) {
-      return
-    }
-    showMessage('Being Cooked!')
-    setTimeout(() => {
-      selectedTaskVisibleType = 0
-    }, 500)
-  }
-}
 
 const isAdminOrOwner = $computed(() => community.value && address 
   ? community.value.owner === address || community.value.admins.includes(address)
@@ -141,7 +129,6 @@ const showSidebar = ref(false)
             v-model="selectedTaskVisibleType"
             :items="taskVisibleTabs"
             :ui="{ wrapper: 'space-y-0' }"
-            @change="onTaskVisibleTypeChange"
           />
           <div id="top-right-button" />
         </div>
