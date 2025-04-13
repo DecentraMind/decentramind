@@ -1,52 +1,78 @@
-import { ref, readonly } from 'vue'
-import { createSharedComposable } from '@vueuse/core'
-import { communityStore } from '~/stores/communityStore'
+import { readonly } from 'vue'
+import { createSharedComposable, computedAsync } from '@vueuse/core'
 import { aoStore } from '~/stores/aoStore'
-import type { UserInfo } from '~/types'
+import { communityStore } from '~/stores/communityStore'
+import { useUserInfoQuery } from '~/composables/user/userQuery'
+import { useQueryClient } from '@tanstack/vue-query'
+import type { Community } from '~/types'
+import { getCommunities, getUserByAddress } from '~/utils/community/community'
 
 const useUserInfoBase = () => {
-  const userInfo = ref<UserInfo | null>(null)
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-
-  const { getUserByAddress } = communityStore()
   const { address } = $(aoStore())
+  const { currentUuid } = $(communityStore())
+  const queryClient = useQueryClient()
 
-  const fetchUserInfo = async () => {
-    if (!address) {
-      error.value = 'No address available'
-      return
-    }
+  // 使用计算属性来确保地址变化时查询会重新执行
+  const currentAddress = computed(() => address)
 
-    isLoading.value = true
-    error.value = null
+  console.log('useUserInfo: address', currentAddress.value)
+  const {
+    data: userInfo,
+    isLoading,
+    error: queryError
+  } = useUserInfoQuery(currentAddress.value, {
+    enabled: !!currentAddress.value,
+    staleTime: 0, // 立即重新获取数据
+  })
 
-    try {
-      const fetchedUserInfo = await getUserByAddress(address)
-      userInfo.value = fetchedUserInfo
-    } catch (e) {
-      console.error('Error fetching user info:', e)
-      error.value = e instanceof Error ? e.message : 'An error occurred while fetching user info'
-    } finally {
-      isLoading.value = false
-    }
-  }
+  // TODO move this to communityStore
+  const currentCommunity = computedAsync(async () => {
+    const communities = await queryClient.fetchQuery<Community[]>({
+      queryKey: ['community', 'communities', currentAddress.value],
+      queryFn: async () => await getCommunities(currentAddress.value)
+    })
+    const community = communities.find(community => community.uuid === currentUuid)
+    // console.log('useUserInfo: currentCommunity', community)
+    return community
+  })
 
-  const refetchUserInfo = () => {
-    error.value = null
-    userInfo.value = null
-    return fetchUserInfo()
-  }
 
-  if (!userInfo.value && !isLoading.value && !error.value) {
-    fetchUserInfo()
+  // 检查当前用户是否是社区所有者
+  const isCurrentCommunityOwner = computed(() => {
+    if (!currentCommunity.value || !currentAddress.value) return false
+    return currentCommunity.value.owner === currentAddress.value
+  })
+
+  // 检查当前用户是否是社区管理员
+  const isCurrentCommunityAdmin = computed(() => {
+    if (!currentCommunity.value || !currentAddress.value) return false
+    return currentCommunity.value.admins?.includes(currentAddress.value) || false
+  })
+
+  // 转换错误格式以保持与原有API兼容
+  const error = computed(() => {
+    if (!queryError.value) return null
+    return queryError.value.message || '获取用户信息时发生错误'
+  })
+
+  const refetchUserInfo = async () => {
+    // 使用 queryClient 直接获取最新数据
+    const data = await queryClient.fetchQuery({
+      queryKey: ['user', 'getUserByAddress', currentAddress.value],
+      queryFn: () => getUserByAddress(currentAddress.value),
+      staleTime: 0
+    })
+    return data
   }
 
   return {
     userInfo: readonly(userInfo),
+    address: currentAddress,
     isLoading,
     error,
-    refetchUserInfo
+    refetchUserInfo,
+    isCurrentCommunityOwner,
+    isCurrentCommunityAdmin
   }
 }
 

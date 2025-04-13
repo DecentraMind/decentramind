@@ -3,6 +3,8 @@ import { useTaskStore } from '~/stores/taskStore'
 import type { InviteCodeInfo, RelatedUserMap, Task } from '~/types'
 import { arUrl, defaultUserAvatar, defaultCommunityLogo } from '~/utils/arAssets'
 import { shortString } from '~/utils'
+import { notificationStore } from '~/stores/notificationStore'
+import { aoStore } from '~/stores/aoStore'
 
 const { getInvitesByInviter } = useTaskStore()
 const { address } = $(aoStore())
@@ -38,7 +40,7 @@ const tableColumns = $ref([
 ])
 onMounted( async () => {
   try {
-    const { invites: myInviteCodeInfos, relatedUsers, relatedCommunities, relatedTasks } = await getInvitesByInviter(address)
+    const { invites: myInviteCodeInfos, relatedUsers, relatedCommunities, relatedTasks } = await getInvitesByInviter({inviter: address})
     invites = myInviteCodeInfos
     users = relatedUsers
     communities = relatedCommunities

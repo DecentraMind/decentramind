@@ -4,6 +4,9 @@ import type { CreateToken } from '~/types'
 import { createTokenSchema } from '~/utils/schemas'
 import { arUrl, defaultTokenLogo } from '~/utils/arAssets'
 import { useUpload } from '~/composables/useUpload'
+import { notificationStore } from '~/stores/notificationStore'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
 
 const { address } = $(aoStore())
 const { createToken } = $(communityStore())

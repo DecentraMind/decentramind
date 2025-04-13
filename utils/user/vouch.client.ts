@@ -3,7 +3,6 @@ import { uniq } from 'lodash-es'
 import { messageResult } from '~/utils/ao'
 import { VALID_VOUCHERS } from '~/utils/processID'
 
-/** move this function to aoStore */
 export const getVouchData = async (address: string, method: string = 'X'): Promise<string[]> => {
   if (!address) {
     throw new Error('No address specified.')

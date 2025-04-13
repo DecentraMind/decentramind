@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { useQuestionsQuery } from '~/composables/community/communityQuery'
 import { submitAnswers } from '~/utils/community/community'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   modelValue: boolean
   uuid: string
-  questions: string[]
 }>()
 
 const emit = defineEmits<{
@@ -14,7 +15,9 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { showSuccess, showError } = $(notificationStore())
 
-const answers = $ref<string[]>(Array(props.questions.length).fill(''))
+const { data: questions } = useQuestionsQuery(props.uuid)
+
+const answers = $computed<string[]>(() => Array(questions?.value?.length || 0).fill(''))
 let isSubmitting = $ref(false)
 
 async function onSubmitAnswers() {

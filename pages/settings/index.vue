@@ -3,10 +3,15 @@ import type { UserInfo } from '~/types'
 import { defaultUserAvatar } from '~/utils/arAssets'
 import { userSchema } from '~/utils/schemas'
 import { useUpload } from '~/composables/useUpload'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
+import { breadcrumbStore } from '~/stores/breadcrumbStore'
 
 const { address } = $(aoStore())
 const { updateUser } = $(communityStore())
 const { showSuccess, showError } = $(notificationStore())
+const { setBreadcrumbs } = $(breadcrumbStore())
 
 const { userInfo, isLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
@@ -50,6 +55,18 @@ onMounted(async () => {
   }
   console.log({userForm})
 
+  // 设置设置页面的面包屑
+  setBreadcrumbs([
+    {
+      labelKey: 'Home',
+      label: 'Home',
+      to: '/discovery'
+    },
+    {
+      labelKey: 'setting.title',
+      label: 'Settings'
+    }
+  ])
 })
 
 const uploadInput = $ref<HTMLInputElement>()

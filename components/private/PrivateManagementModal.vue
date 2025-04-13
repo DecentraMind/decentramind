@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { getQuestions } from '~/utils/community/community'
 import PrivatePendingMembers from './PrivatePendingMembers.vue'
 import PrivateCurrentMembers from './PrivateCurrentMembers.vue'
 import PrivateMemberLogs from './PrivateMemberLogs.vue'
+import { useApplicationsByCommunityQuery, useLogsQuery, usePrivateUnlockMembersQuery, useQuestionsQuery } from '~/composables/community/communityQuery'
 
 const props = defineProps<{
   modelValue: boolean
@@ -40,21 +40,30 @@ const defaultIndex = computed(() => {
 
 const activeTab = ref(0)
 
-const questions = ref<string[]>([])
+const { refetch: refetchApplications } = useApplicationsByCommunityQuery(props.uuid, {
+  enabled: false
+})
+const { refetch: refetchPrivateUnlockMembers } = usePrivateUnlockMembersQuery(props.uuid, {
+  enabled: false
+})
+const { refetch: refetchLogs } = useLogsQuery(props.uuid, {
+  enabled: false
+})
+const { refetch: refetchQuestions } = useQuestionsQuery(props.uuid, {
+  enabled: false
+})
+
 
 // Load data
 onMounted(async () => {
-  // Set initial active tab
-  activeTab.value = defaultIndex.value
-
-  // Load questions
-  questions.value = await getQuestions(props.uuid) || []
-
-  await loadMemberData()
+  await loadData()
 })
 
-async function loadMemberData() {
-  
+async function loadData() {
+  await refetchApplications()
+  await refetchPrivateUnlockMembers()
+  await refetchLogs()
+  await refetchQuestions()
 }
 </script>
 
@@ -93,21 +102,20 @@ async function loadMemberData() {
             <div class="space-y-6">
               <!-- Pending Members Section -->
               <PrivatePendingMembers
-                :questions="questions"
                 :uuid="uuid"
-                @member-updated="loadMemberData"
+                @member-updated="loadData"
               />
 
               <!-- Current Members Section -->
               <PrivateCurrentMembers
                 :uuid="uuid"
-                @member-updated="loadMemberData"
+                @member-updated="loadData"
               />
 
               <!-- Member History Section -->
               <PrivateMemberLogs
                 :uuid="uuid"
-                @member-updated="loadMemberData"
+                @member-updated="loadData"
               />
             </div>
           </UCard>

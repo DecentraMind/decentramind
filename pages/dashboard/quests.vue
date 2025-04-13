@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type { BountySendHistory, Task } from '~/types'
 import { tokensByProcessID } from '~/utils'
-import { useTaskStore } from '~/stores/taskStore'
 import Bounties from '~/components/task/Bounties.vue'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
+import { breadcrumbStore } from '~/stores/breadcrumbStore'
+import PrivateQuests from '~/components/dashboard/PrivateQuests.vue'
+import { useGetBountiesByAddressQuery, useGetTasksByOwnerQuery } from '~/composables/tasks/taskQuery'
 
 const questColumns = [
   {
@@ -29,10 +34,15 @@ const bountyColumns = [
 
 const sort = $ref({ column: 'id', direction: 'asc' as const })
 
-const { getBountiesByAddress, getTasksByOwner } = useTaskStore()
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 const { joinedCommunities, setCurrentCommunityUuid } = $(communityStore())
+const { setBreadcrumbs } = $(breadcrumbStore())
+
+setBreadcrumbs([
+  { label: 'Home', to: '/discovery' },
+  { label: 'Dashboard' },
+])
 
 const page = $ref(1)
 const pageC = $ref(1)
@@ -50,11 +60,16 @@ type Categorized = {
   sum: { [tokenProcessID: string]: sumRow }
 }
 
-let publishedTasks = $ref<Array<Task>>([])
+const { data: bountiesByAddress, isLoading: bountiesByAddressIsLoading } = useGetBountiesByAddressQuery(address)
+const { data: tasksByOwner, isLoading: tasksByOwnerIsLoading } = useGetTasksByOwnerQuery(address)
 
-let awarded = $ref<Categorized>({
-  taskId2BountiesMap: {},
-  sum: {},
+const publishedTasks = $computed<Array<Task>>(() => {
+  return tasksByOwner.value || []
+})
+
+const awarded = $computed<Categorized>(() => {
+  if (!bountiesByAddress.value) return { taskId2BountiesMap: {}, sum: {} }
+  return categorize(bountiesByAddress.value.awarded)
 })
 
 type questRow = {
@@ -115,18 +130,9 @@ const awardedBountyRows = $computed(() => {
   return awardedBounties.slice((page - 1) * pageCount, page * pageCount)
 })
 
-let awardedSums = $ref<sumRow[]>([])
-
-let loadingBounties = $ref(true)
-onMounted(async () => {
-  setCurrentCommunityUuid(null)
-  try {
-    const { awarded: awardedBounties } = await getBountiesByAddress(address)
-    publishedTasks = await getTasksByOwner(address)
-    // console.log({ publishedTasks, awardedBounties })
-
-    awarded = categorize(awardedBounties)
-    awardedSums = awardedBounties.reduce((acc, bounty) => {
+const awardedSums = $computed<sumRow[]>(() => {
+  if (!bountiesByAddress.value) return []
+  return bountiesByAddress.value.awarded.reduce((acc, bounty) => {
       const index = acc.findIndex(
         sum => sum.tokenProcessID === bounty.tokenProcessID,
       )
@@ -142,12 +148,13 @@ onMounted(async () => {
       }
       return acc
     }, [] as sumRow[])
-    // console.log('categorized awarded sums', awardedSums)
-  } catch (e) {
-    showError('Failed to load data.', e as Error)
-  } finally {
-    loadingBounties = false
-  }
+})
+
+const loadingBounties = $computed(() => {
+  return tasksByOwnerIsLoading.value || bountiesByAddressIsLoading.value
+})
+onMounted(async () => {
+  setCurrentCommunityUuid(null)
 })
 
 // eslint-disable-next-line prefer-const
@@ -182,95 +189,110 @@ function categorize(bounties: BountySendHistory[]) {
 
   return categorized
 }
+
+const selectedTaskVisibleType = $ref(0)
+const taskVisibleTabs = $ref([
+  { label: 'Public Quests', value: 0 },
+  { label: 'Private Quests', value: 1 },
+])
+
 </script>
 
 <template>
   <UDashboardPanelContent class="pb-10">
-    <UCard>
+    <UCard class="w-fit">
       <template #header>
-        <UBadge variant="soft" size="lg"> Public Quests </UBadge>
+        <UTabs
+          v-model="selectedTaskVisibleType"
+          :items="taskVisibleTabs"
+          :ui="{ wrapper: 'space-y-0 w-80' }"
+        />
       </template>
-      <div class="w-full lg:w-[800px]">
-        <UCard
-          :ui="{
-            header: {
-              padding: 'px-4 py-2 sm:px-6',
-            },
-          }"
-        >
-          <template #header>
-            <div class="text-center font-semibold">
-              Published&emsp;<UBadge variant="soft" size="lg">
-                {{ publishedTasks.length }}
-              </UBadge>
-            </div>
-          </template>
-          <UTable
-            v-model:sort="sort"
-            :rows="publishedTasksRows"
-            :columns="questColumns"
-            :loading="loadingBounties"
-            sort-mode="manual"
-            :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
+
+      <PrivateQuests v-if="selectedTaskVisibleType === 1" class="mb-10" />
+      <div v-else>
+        <div class="w-full lg:w-[800px]">
+          <UCard
+            :ui="{
+              header: {
+                padding: 'px-4 py-2 sm:px-6',
+              },
+            }"
           >
-            <template #bounties-data="{ row }">
-              <Bounties :bounties="row.bounties" :show-plus="false" wrapper-class="flex flex-col gap-y-1" />
+            <template #header>
+              <div class="text-center font-semibold">
+                Published&emsp;<UBadge variant="soft" size="lg">
+                  {{ publishedTasks.length }}
+                </UBadge>
+              </div>
             </template>
-          </UTable>
-          <div class="flex justify-between mt-2 pt-3.5">
-            <UButton
-              color="white"
-              @click="isPublishedBountyModalOpen = true"
+            <UTable
+              v-model:sort="sort"
+              :rows="publishedTasksRows"
+              :columns="questColumns"
+              :loading="loadingBounties"
+              sort-mode="manual"
+              :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
             >
-              Total Bounty
-            </UButton>
-            <UPagination
-              v-model="pageC"
-              :page-count="pageCount"
-              :total="publishedTasks.length"
-            />
-          </div>
-        </UCard>
-      </div>
-
-      <div class="my-10" />
-
-      <div class="w-full lg:w-[800px]">
-        <UCard
-          :ui="{
-            header: {
-              padding: 'px-4 py-2 sm:px-6',
-            },
-          }"
-        >
-          <template #header>
-            <div class="text-center font-semibold">
-              Awarded&emsp;<UBadge variant="soft" size="lg">
-                {{ awardedBounties.length }}
-              </UBadge>
+              <template #bounties-data="{ row }">
+                <Bounties :bounties="row.bounties" :show-plus="false" wrapper-class="flex flex-col gap-y-1" />
+              </template>
+            </UTable>
+            <div class="flex justify-between mt-2 pt-3.5">
+              <UButton
+                color="white"
+                @click="isPublishedBountyModalOpen = true"
+              >
+                Total Bounty
+              </UButton>
+              <UPagination
+                v-model="pageC"
+                :page-count="pageCount"
+                :total="publishedTasks.length"
+              />
             </div>
-          </template>
-          <UTable
-            v-model:sort="sort"
-            :rows="awardedBountyRows"
-            :columns="questColumns"
-            :loading="loadingBounties"
-            sort-mode="manual"
-            :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
+          </UCard>
+        </div>
+
+        <div class="my-10" />
+
+        <div class="w-full lg:w-[800px]">
+          <UCard
+            :ui="{
+              header: {
+                padding: 'px-4 py-2 sm:px-6',
+              },
+            }"
           >
-            <template #bounties-data="{ row }">
-              <Bounties :bounties="row.bounties" :show-plus="false" wrapper-class="flex flex-col gap-y-2" />
+            <template #header>
+              <div class="text-center font-semibold">
+                Awarded&emsp;<UBadge variant="soft" size="lg">
+                  {{ awardedBounties.length }}
+                </UBadge>
+              </div>
             </template>
-          </UTable>
-          <div class="flex justify-between mt-2 pt-3.5">
-            <UButton color="white" @click="isAwardedBountyModalOpen = true">Total Bounty</UButton>
-            <UPagination
-              v-model="page"
-              :page-count="pageCount"
-              :total="awardedBounties.length"
-            />
-          </div>
-        </UCard>
+            <UTable
+              v-model:sort="sort"
+              :rows="awardedBountyRows"
+              :columns="questColumns"
+              :loading="loadingBounties"
+              sort-mode="manual"
+              :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
+            >
+              <template #bounties-data="{ row }">
+                <Bounties :bounties="row.bounties" :show-plus="false" wrapper-class="flex flex-col gap-y-2" />
+              </template>
+            </UTable>
+            <div class="flex justify-between mt-2 pt-3.5">
+              <UButton color="white" @click="isAwardedBountyModalOpen = true">Total Bounty</UButton>
+              <UPagination
+                v-model="page"
+                :page-count="pageCount"
+                :total="awardedBounties.length"
+              />
+            </div>
+          </UCard>
+        </div>
       </div>
 
       <UModal v-model="isPublishedBountyModalOpen" :ui="{base: '!w-fit'}">

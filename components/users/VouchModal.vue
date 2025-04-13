@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { VOUCH_SITE_URL } from '~/utils/constants'
+import { aoStore } from '~/stores/aoStore'
+
 const { isVouchModalOpen } = $(aoStore())
 
 // TODO remove this component and isVouchModalOpen after all user data fixed(no unvouched user), and new user must be vouched before first login

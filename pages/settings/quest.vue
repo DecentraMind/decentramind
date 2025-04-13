@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useTaskStore } from '~/stores/taskStore'
+import { getBountiesByAddress } from '~/utils/task'
+import { aoStore } from '~/stores/aoStore'
 
-const { getBountiesByAddress } = useTaskStore()
 const { address } = $(aoStore())
 
 let result = $ref<number>()

@@ -1,4 +1,5 @@
-import type { ChainNames, SubmissionValidateStatus, TradePlatform } from '~/types'
+import type { ChainNames, PrivateTaskStatus, SubmissionValidateStatus, TradePlatform } from '~/types'
+import type { ButtonColor } from '#ui/types'
 
 export const tradePlatforms: TradePlatform[] = [
   'ArSwap',
@@ -21,8 +22,8 @@ type Token = {
  */
 export const tokens: Record<string, Token> = {
   AR: {
-    ticker: 'AR',
-    label: 'AR', // Wrapped AR in AO
+    ticker: 'wAR',
+    label: 'Wrapped AR', // Wrapped AR in AO
     processID: 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
     denomination: 12,
     logo: 'L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs'
@@ -211,7 +212,6 @@ export const denominations = tokenNames.reduce((carry, name) => {
 
 export type CommunityToken = {
   tokenName: TokenName;
-  showTokenName: boolean;
 }
 
 export type TokenSupply = {
@@ -275,7 +275,7 @@ export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRigh
 
 export const ARWEAVE_ID_REGEXP = /^[a-zA-Z0-9-_]{43}$/
 
-export const SPACE_URL_REGEXP = /(?:x|twitter)\.com\/i\/spaces\/([^/]+)\/?/
+export const SPACE_URL_REGEXP = /(?:x|twitter)\.com\/i\/spaces\/([a-zA-Z0-9]{13})\/?/
 export const TWEET_URL_REGEXP = /^(?:https?:\/\/)?(?:twitter|x)\.com\/.+\/status\/(\d+)/
 
 export const maxCommunityLogoDimension = {
@@ -299,3 +299,12 @@ export const maxFetchTweetIds = 100
 export const VOUCH_SITE_URL = 'https://vouch.zeabur.app'
 
 export const VALID_SUBMISSION_STATUS = ['validated', 'revalidated'] as SubmissionValidateStatus[]
+
+export const privateTaskStatusColorMap: Record<PrivateTaskStatus, ButtonColor> = {
+  draft: 'gray',
+  auditing: 'yellow',
+  executing: 'green',
+  waiting_for_validation: 'sky',
+  waiting_for_settlement: 'orange',
+  settled: 'pink'
+}

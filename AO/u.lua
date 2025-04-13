@@ -42,7 +42,7 @@ function u.replyError(request, errorMsg)
     errString = json.encode(errorMsg)
   end
 
-  print('Reply ' .. action .. ' ' .. errString)
+  print('Reply Error: ' .. action .. ' ' .. errString)
   request.reply({ Action = action, ["Message-Id"] = request.Id, Error = errString })
 end
 
@@ -57,6 +57,10 @@ function u.replyData(request, data)
   end
 end
 
+---Find the index of the first element in the array that satisfies the predicate
+---@param array table
+---@param predicate function
+---@return number|nil
 function u.findIndex(array, predicate)
   for index, value in ipairs(array) do
     if predicate(value) then

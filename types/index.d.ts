@@ -1,5 +1,7 @@
 import type { Avatar } from '#ui/types'
 
+/// <reference types="arconnect" />
+
 export type AoTag = {
   name: string
   value: string
@@ -14,15 +16,6 @@ export interface User {
   avatar?: Avatar
   status: UserStatus
   location: string
-}
-
-export interface Mail {
-  id: number
-  unread?: boolean
-  from: User
-  subject: string
-  body: string
-  date: string
 }
 
 type MailCache = {
@@ -131,6 +124,9 @@ export type CommunitySetting = {
   bountyTokenNames: TokenName[]
   /** 是否有发行 token */
   isPublished: boolean
+  /** published community tokens */
+  communityTokens: CommunityToken[]
+
   isTradable: boolean
   tradePlatforms: TradePlatform[]
   /** 分配的 community token 总量  */
@@ -329,6 +325,9 @@ export type CommunityMember = UserInfoWithAddress & {
   /** timestamp when the private area application is approved, if it is not undefined, the invitee can access the private area */
   privateUnlockTime?: number
 }
+export type PrivateUnlockMember = UserInfo & {
+  address: string
+}
 
 export type UploadResponse = {
   url?: string
@@ -516,26 +515,38 @@ export type Log = {
 
 export type Page = {
   uuid: string
+  communityUuid: string
   title: string
   content: string
 }
 
+export type BudgetItem = Task['bounties'][number] & {
+  member: string
+  settleTx?: string
+}
+
+export type PrivateTaskStatus = 'draft' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
 export type PrivateTask = {
   uuid: string
+  boardUuid: string
   title: string
   description: string
-  budgets: Task['bounties']
-  status: 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+  budgets: BudgetItem[]
+  status: PrivateTaskStatus
+  editors: string[]
   startAt: number
   endAt: number
   executionResult: string
   createdAt: number
   updatedAt: number
+  deletedAt?: number
 }
 
 export type Board = {
   uuid: string
+  communityUuid: string
   title: string
+  taskUuids: string[]
 }
 
 export type BoardWithTasks = Board & {
@@ -544,6 +555,10 @@ export type BoardWithTasks = Board & {
 
 export type PrivateAreaConfig = {
   pagesAreaTitle: string
+  pageUuids: string[]
+  boardUuids: string[]
   pages: Page[]
   boards: BoardWithTasks[]
 }
+
+export type PrivateAreaConfigWithoutRelations = Omit<PrivateAreaConfig, 'boards' | 'pages'>

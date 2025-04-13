@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { VOUCH_SITE_URL } from '~/utils/constants'
 import { shortString } from '~/utils/string'
+import { aoStore } from '~/stores/aoStore'
+import { notificationStore } from '~/stores/notificationStore'
+import { useUserInfo } from '~/composables/useUserInfo'
+
 const { connectExtensionWallet, connectOthentWallet, registerOrLogin, updateVouchData, twitterVouched, twitterVouchedIDs } = $(aoStore())
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 let { isLoginModalOpen, address } = $(aoStore())
 const { showError } = $(notificationStore())
-const { refetchUserInfo } = $(useUserInfo())
+const { refetchUserInfo } = useUserInfo()
 
 const emit = defineEmits(['login'])
 

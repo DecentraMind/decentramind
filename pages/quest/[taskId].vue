@@ -7,11 +7,11 @@ import type {
   AllSubmissionWithCalculatedBounties,
   TaskWithLink,
   SpaceSubmission,
-  TweetSubmission,
+  TweetSubmission
 } from '~/types'
 import { VALID_SUBMISSION_STATUS } from '~/utils/constants'
 import TaskStatus from '~/components/task/TaskStatus.vue'
-import { watch } from 'vue'
+import { watch, watchEffect } from 'vue'
 import { useClock } from '~/composables/useClock'
 import { useTaskScoreCalculate } from '~/composables/tasks/useTaskScoreCalculate'
 import TaskSubmissionTable from '~/components/task/SubmissionTable.vue'
@@ -19,26 +19,25 @@ import Bounties from '~/components/task/Bounties.vue'
 import SpaceSubmissionForm from '~/components/task/SpaceSubmissionForm.vue'
 import TweetSubmissionForm from '~/components/task/TweetSubmissionForm.vue'
 import BountySendConfirmModal from '~/components/task/BountySendConfirmModal.vue'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
+import { breadcrumbStore, type IBreadcrumbLink } from '~/stores/breadcrumbStore'
+import { useGetInvitesByInviterQuery, useGetTaskQuery } from '~/composables/tasks/taskQuery'
+import { useCommunitiesQuery } from '~/composables/community/communityQuery'
 
-definePageMeta({
-  ssr: false
-})
+
 const router = useRouter()
 
 const runtimeConfig = useRuntimeConfig()
 
-let now: Ref<number>
-
 const {
-  getInvitesByInviter,
   updateTaskScores,
-  getTask,
   joinTask,
   createTaskInviteCode,
 } = useTaskStore()
 
 const {
-  getLocalCommunity,
   setCurrentCommunityUuid,
   joinCommunity
 } = $(communityStore())
@@ -51,7 +50,58 @@ let { isLoginModalOpen, isVouchModalOpen, redirectUrlAfterLogin } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
 
-let task = $ref<Task>()
+const { data: task, isSuccess: isTaskLoaded, isLoading: isTaskLoading, error: taskError, refetch: refetchTask } = useGetTaskQuery({taskPid, address})
+watch(isTaskLoaded, async () => {
+  if (task.value) {
+    setCurrentCommunityUuid(task.value.communityUuid)
+    if (!task.value.inviteCode && address) {
+      task.value.inviteCode = await createTaskInviteCode(taskPid)
+      // console.log('create invite code ', task.inviteCode)
+    }
+  }
+})
+
+// const { data: communityInfo, isLoading: isCommunityInfoLoading } = useCommunitiesQuery<Community | undefined>(address, {
+//   select: (communities) => communities.find((community) => community.uuid === task.value?.communityUuid)
+// })
+
+// 改为分两步，先获取所有社区，然后用计算属性找到对应的社区
+const { data: communities, isLoading: isCommunityInfoLoading } = useCommunitiesQuery(address)
+
+// 使用计算属性找到对应的社区
+const communityInfo = computed(() => {
+  if (!communities.value || !task.value?.communityUuid) return undefined
+  return communities.value.find(community => community.uuid === task.value?.communityUuid)
+})
+
+// 添加监听以诊断 communityInfo 何时发生变化
+watchEffect(() => {
+  console.log('communityInfo watchEffect:', communityInfo.value)
+})
+
+const isJoinedCommunity = $computed(() => {
+  return communityInfo.value && communityInfo.value.isJoined
+})
+const { setBreadcrumbs } = $(breadcrumbStore())
+// 将 watchEffect 改为 watch 以监视 communityInfo 变化
+watch(communityInfo, (newVal) => {
+  console.log('communityInfo watch with computed:', newVal)
+  if (newVal) {
+    const communityBreadcrumb: IBreadcrumbLink = { label: newVal.name }
+    if (task.value && isJoinedCommunity) {
+      communityBreadcrumb.to = `/community/${newVal.uuid}`
+    }
+    setBreadcrumbs([
+      { labelKey: 'Home', label: 'Home', to: '/discovery' },
+      communityBreadcrumb,
+      { label: 'Quest' }
+    ])
+  }
+}, { immediate: true })
+
+const isOwner = $computed(
+  () => task.value?.ownerAddress === address || communityInfo.value?.owner === address,
+)
 
 /**
  * if the user already has valid submission or waiting submission, the user can't submit again
@@ -67,38 +117,32 @@ const canSubmit = $computed(
 )
 const isJoined = $computed(() => {
   // console.log('task', task)
-  return task && task.builders
-    ? Object.keys(task.builders).findIndex(builder => builder === address) > -1
+  return task.value && task.value.builders
+    ? Object.keys(task.value.builders).findIndex(builder => builder === address) > -1
     : false
-})
-const isJoinedCommunity = $computed(() => {
-  return communityInfo && communityInfo.isJoined
 })
 
 const isIng = $computed(() => {
-  return task ? now.value > task.startTime && now.value < task.endTime : false
+  return task.value ? now.value > task.value.startTime && now.value < task.value.endTime : false
 })
 
 const submittedBuilderCount = $computed(() => {
-  return !task?.submissions
+  return !task.value?.submissions
     ? ''
-    : task.submissions.reduce((set, current) => {
+    : task.value.submissions.reduce((set, current) => {
         set.add(current.address)
         return set
       }, new Set()).size
 })
 
-let communityInfo: Awaited<ReturnType<typeof getLocalCommunity>>
+const { data: inviteInfos, isSuccess: isInvitesLoaded, isLoading: isInvitesLoading } = useGetInvitesByInviterQuery({inviter: address, type: 'task'}, {
+  enabled: !!address
+})
 
-const isOwner = $computed(
-  () => task?.ownerAddress === address || communityInfo?.owner === address,
-)
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let invites: InviteCodeInfo[]
+const invites: InviteCodeInfo[] = $computed(() => inviteInfos.value?.invites || [])
 
 const submissions = $computed(
-  () => task?.submissions as AllSubmissionWithCalculatedBounties[],
+  () => task.value?.submissions as AllSubmissionWithCalculatedBounties[],
 )
 
 async function calculateAndUpdateScore(task: Task, submissions: AllSubmissionWithCalculatedBounties[]) {
@@ -128,77 +172,66 @@ async function calculateAndUpdateScore(task: Task, submissions: AllSubmissionWit
   return updatedSubmissions
 }
 
-let isLoading = $ref(true)
-onMounted(async () => {
-  now = useClock(3000)
-  isLoading = true
-  try {
-    task = await getTask(taskPid, address)
-    console.log('getTask ', task)
-
-    if (!task) {
-      throw new Error('Failed to get task ' + taskPid)
-    }
-
-    if (!task.inviteCode && address) {
-      task.inviteCode = await createTaskInviteCode(taskPid)
-      // console.log('create invite code ', task.inviteCode)
-    }
-
-    // if the task status(from not started to ing, or from ing to ended) changes with time, refresh current page
-    watch(
-      () => now.value,
-      (newVal, oldVal) => {
-        if (!task) return
-
-        if (
-          (newVal >= task.startTime && oldVal < task.startTime) ||
-          (newVal >= task.endTime && oldVal < task.endTime)
-        ) {
-          // same as window.location.reload()
-          reloadNuxtApp()
-        }
-      },
-    )
-
-    // console.log({ isIng, isSettle: task.isSettled, isCal: task.isScoreCalculated })
-
-    // TOOD invited number should calculated at AO
-    invites = (await getInvitesByInviter(address, 'task')).invites
-
-    communityInfo = await getLocalCommunity(task.communityUuid)
-    setCurrentCommunityUuid(communityInfo.uuid)
-    // console.log('spaceTaskSubmitInfo = ', {submissions, taskPid})
-
+const now = useClock(3000)
+// if the task status(from not started to ing, or from ing to ended) changes with time, refresh current page
+watch(
+  () => now.value,
+  (newVal, oldVal) => {
+    if (!task.value) return
 
     if (
-      (runtimeConfig.public.debug || !task.isScoreCalculated) &&
-      now.value >= task.endTime &&
-      !task.isSettled &&
-      isOwner
+      (newVal >= task.value.startTime && oldVal < task.value.startTime) ||
+      (newVal >= task.value.endTime && oldVal < task.value.endTime)
     ) {
-      const updatedSubmissions = await calculateAndUpdateScore(
-        task,
-        task.submissions as AllSubmissionWithCalculatedBounties[]
-      )
-      if (updatedSubmissions) {
-        // Refetch task info
-        task = await getTask(taskPid, address)
-      }
+      // same as window.location.reload()
+      reloadNuxtApp()
     }
+  },
+)
 
-    // console.log({ canSubmit })
-  } catch (e) {
-    console.error(e)
-    // TODO show a page size error overlay and reload button
-    // if (!task) {
-    //   showErrorOverlay = true
-    // }
-    showError('Data loading failed.', e as Error)
-  } finally {
-    isLoading = false
+/**
+ * Check if task score needs to be calculated and update it
+ */
+async function checkAndCalculateTaskScore() {
+  if (!task.value) return
+  
+  if (
+    (runtimeConfig.public.debug || !task.value.isScoreCalculated) &&
+    now.value >= task.value.endTime &&
+    !task.value.isSettled &&
+    isOwner
+  ) {
+    const updatedSubmissions = await calculateAndUpdateScore(
+      task.value,
+      task.value.submissions as AllSubmissionWithCalculatedBounties[]
+    )
+    if (updatedSubmissions) {
+      // Refetch task info
+      await refetchTask()
+    }
   }
+}
 
+// Run calculation only once when task is first loaded
+let hasCalculatedScore = $ref(false)
+let isCalculatingScore = $ref(false)
+watch(isTaskLoaded, async (isLoaded) => {
+  if (isLoaded && task.value && !hasCalculatedScore) {
+    hasCalculatedScore = true
+    isCalculatingScore = true
+    try {
+      await checkAndCalculateTaskScore()
+    } finally {
+      isCalculatingScore = false
+    }
+  }
+}, { immediate: true })
+
+const isLoading = $computed(() => {
+  const shouldIncludeInvitesLoading = !!address && isInvitesLoading.value
+  return isTaskLoading.value || isCommunityInfoLoading.value || isCalculatingScore || shouldIncludeInvitesLoading
+})
+onMounted(async () => {
   // auto join task if there is a joinTask action in the url
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.get('action') === 'joinTask' && !isJoined) {
@@ -243,11 +276,11 @@ let isJoinLoading = $ref(false)
 async function onClickJoin() {
   isJoinLoading = true
   // if not joined the community, join the community first
-  if (!communityInfo.isJoined) {
-    await joinCommunity(communityInfo.uuid)
+  if (!communityInfo.value?.isJoined) {
+    await joinCommunity(communityInfo.value!.uuid)
   }
   await joinTask(taskPid)
-  task = await getTask(taskPid, address)
+  await refetchTask()
   isJoinModalOpen = false
   isJoinLoading = false
 }
@@ -256,7 +289,7 @@ let submitTweetUrlLoading = $ref(false)
 async function onSubmitTweetUrl(url: string) {
   submitTweetUrlLoading = true
   try {
-    if (!submissions || !invites || !communityInfo || !task) {
+    if (!submissions || !invites || !communityInfo.value || !task) {
       throw new Error('Data loading not completed. Please wait or try refresh.')
     }
 
@@ -283,7 +316,7 @@ async function onSubmitTweetUrl(url: string) {
     }
     await submitTask(tweetSubmission)
 
-    task = await getTask(taskPid, address)
+    await refetchTask()
 
     isSubmitModalOpen = false
   } catch (e) {
@@ -298,7 +331,7 @@ let submitSpaceUrlLoading = $ref(false)
 async function onSubmitSpaceUrl(url: string) {
   submitSpaceUrlLoading = true
   try {
-    if (!submissions || !invites || !communityInfo || !task) {
+    if (!submissions || !invites || !communityInfo.value || !task) {
       throw new Error('Data loading not completed. Please wait or try refresh.')
     }
 
@@ -322,7 +355,7 @@ async function onSubmitSpaceUrl(url: string) {
     }
     await submitTask(spaceSubmission)
 
-    task = await getTask(taskPid, address)
+    await refetchTask()
 
     isSubmitModalOpen = false
   } catch (e) {
@@ -335,18 +368,18 @@ async function onSubmitSpaceUrl(url: string) {
 
 const selectedSubmissions = $ref<AllSubmissionWithCalculatedBounties[]>([])
 const validatedSubmissions = $computed(() => {
-  return task?.submissions.filter(s => s.validateStatus && VALID_SUBMISSION_STATUS.includes(s.validateStatus))
+  return task.value?.submissions.filter(s => s.validateStatus && VALID_SUBMISSION_STATUS.includes(s.validateStatus))
 })
 
 let isBountyConfirmModalOpen = $ref(false)
 async function onClickSendBounty() {
-  if (!task || !submissions || !communityInfo) {
+  if (!task.value || !submissions || !communityInfo.value) {
     showError('Data loading does not completed. Please wait or try refresh.')
     return
   }
 
   // if no submitted info, don't need isScoreCalculated
-  if (selectedSubmissions.length > 0 && !task.isScoreCalculated) {
+  if (selectedSubmissions.length > 0 && !task.value.isScoreCalculated) {
     showMessage('Being Cooked.')
     return
   }
@@ -384,8 +417,8 @@ watch(
         submission,
         selectedTotalScore,
         selectedSubmissions.length,
-        task!.bounties,
-        task!.totalChances,
+        task.value!.bounties,
+        task.value!.totalChances,
       )
 
       submission.calculatedBounties = calculated as Task['bounties']
@@ -404,7 +437,7 @@ const onClickCopyInviteCode = async () => {
   try {
     if (!task) return
     await navigator.clipboard.writeText(
-      location.origin + '/i/' + task.inviteCode!,
+      location.origin + '/i/' + task.value!.inviteCode!,
     )
     showSuccess('Copied!')
   } catch (_) {
@@ -415,7 +448,7 @@ const onClickCopyInviteCode = async () => {
 const isInviteModalOpen = $ref(false)
 const inviteUrl = $computed(() => {
   return typeof window !== 'undefined'
-    ? `${window.location.origin}/i/${task?.inviteCode}`
+    ? `${window.location.origin}/i/${task.value?.inviteCode}`
     : ''
 })
 
@@ -432,7 +465,7 @@ const onClickShareToTwitter = () => {
 </script>
 
 <template>
-  <UDashboardPage class="h-screen overflow-y-auto">
+  <UDashboardPage :ui="{ wrapper: 'h-[calc(100vh-var(--header-height))] overflow-y-auto' }">
     <div
       v-if="isLoading"
       class="absolute top-[calc(var(--header-height)+40px)] right-0 w-full h-[calc(100%-var(--header-height)-40px)] flex justify-center items-center"
@@ -446,25 +479,12 @@ const onClickShareToTwitter = () => {
 
     <UPage v-if="!isLoading" class="overflow-y-auto h-full lg:w-full">
       <div class="w-full overflow-y-auto h-full">
-        <NuxtLink
-          v-if="task && isJoinedCommunity"
-          :to="`/community/${task.communityUuid}`"
-          class="fixed top-4 right-4 z-10"
-        >
-          <UButton
-            icon="i-heroicons-x-mark-20-solid"
-            color="white"
-            variant="solid"
-            size="lg"
-          />
-        </NuxtLink>
-
         <UBlogPost
           v-if="task"
           :key="task.processID"
           :title="task.name"
           :description="task.intro"
-          class="px-4 sm:px-10 pt-8 sm:pt-16 pb-8 sm:pb-10"
+          class="px-4 sm:px-10 pt-8 sm:pt-10 pb-8 sm:pb-10"
           :ui="{
             // wrapper: 'p-2 sm:p-4',
             title: 'text-3xl mb-6 text-clip'

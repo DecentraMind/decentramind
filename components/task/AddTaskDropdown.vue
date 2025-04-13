@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Task } from '~/types'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { showMessage } = $(notificationStore())
 withDefaults(defineProps<{

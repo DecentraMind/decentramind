@@ -15,7 +15,7 @@ export default defineTask({
   },
   async run({ payload }) {
     const { taskPid } = payload as UpdateSubmissionsPayload
-    const task = await getTask(taskPid)
+    const task = await getTask({taskPid})
 
     if (!task) {
       return { result: 'error', message: 'task not found' }

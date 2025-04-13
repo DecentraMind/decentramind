@@ -6,10 +6,14 @@ import Arweave from 'arweave'
 import type { Tag } from 'arweave/node/lib/transaction'
 import type { AoTag } from '~/types'
 import { getVouchData } from '~/utils/user/vouch.client'
+import { acceptHMRUpdate, defineStore } from 'pinia'
+import { communityStore } from './communityStore'
+import { notificationStore } from './notificationStore'
 
 const aoCommunityProcessID = DM_PROCESS_ID
 
 import type { PermissionType } from 'arconnect'
+import { get } from 'lodash-es'
 
 
 const permissions: PermissionType[] = [
@@ -226,7 +230,7 @@ export const aoStore = defineStore('aoStore', () => {
         message: messageId,
         process,
       })
-      const balance = useGet(useGet(res, 'Messages[0].Tags').find((tag: AoTag) => tag.name === 'Balance'), 'value', '0')
+      const balance = get(get(res, 'Messages[0].Tags').find((tag: AoTag) => tag.name === 'Balance'), 'value', '0')
 
       return parseFloat(balance)
     } catch (err) {
@@ -255,7 +259,7 @@ export const aoStore = defineStore('aoStore', () => {
         })
         return hasMatchTag.length === Object.keys(tagFilters).length
       })
-      return JSON.parse(useGet(filteredMessages, '[0].Data'))
+      return JSON.parse(get(filteredMessages, '[0].Data'))
     } catch (err) {
       console.error(err)
       throw new Error('Failed to get data from process.')
@@ -294,12 +298,12 @@ export const aoStore = defineStore('aoStore', () => {
         message: messageId,
         process,
       })
-      const error = useGet(res, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Error')
+      const error = get(res, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Error')
       if (error) {
         showError(error.value)
         return false
       }
-      const action = useGet(res, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Action').value
+      const action = get(res, 'Messages[0].Tags').find((tag: Tag) => tag.name === 'Action').value
       if (action === 'Debit-Notice') {
         return true
       }

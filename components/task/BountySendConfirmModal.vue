@@ -4,6 +4,9 @@ import Bounties from './Bounties.vue'
 import { tokensByProcessID, calcBounties, bigInt2Float, shortString } from '~/utils'
 import { decentraMindReceiver, DM_BOUNTY_CHARGE_PERCENT } from '~/utils/constants'
 import { updateTaskSubmissionBounties } from '~/utils/task'
+import { retry } from '~/utils/util'
+import { useTaskStore } from '~/stores/taskStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   modelValue: boolean
@@ -305,6 +308,7 @@ const precisions = $computed(() =>
   <UModal
     :model-value="modelValue"
     :ui="{ width: 'sm:max-w-xl' }"
+    prevent-close
     @update:model-value="onUpdateModelValue"
   >
     <UCard>

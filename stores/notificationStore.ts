@@ -1,3 +1,5 @@
+import { acceptHMRUpdate, defineStore } from 'pinia'
+
 // TODO move these notification functions to utils
 export const notificationStore = defineStore('notificationStore', () => {
   const toast = useToast()

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import type { UserInfoWithAddress } from '~/types'
-import { getPrivateUnlockMembers, removePrivateUnlockMember } from '~/utils/community/community'
+import { usePrivateUnlockMembersQuery } from '~/composables/community/communityQuery'
+import type { UserInfo, UserInfoWithAddress } from '~/types'
+import { removePrivateUnlockMember } from '~/utils/community/community'
+import { notificationStore } from '~/stores/notificationStore'
 
 const props = defineProps<{
   uuid: string
@@ -13,22 +15,18 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { showSuccess, showError } = $(notificationStore())
 
-let privateUnlockMembers = $ref<Awaited<ReturnType<typeof getPrivateUnlockMembers>>>([])
-let isLoading = $ref(false)
+let privateUnlockMembers = $ref<Array<UserInfo & { address: string }>>([])
+
 const removingMembers = ref(new Set<string>())
 let selectedMember = $ref<UserInfoWithAddress>()
 let isRemoveModalOpen = $ref(false)
 let removeReason = $ref('')
 
-// Load private unlock members when component is mounted
-onMounted(async () => {
-  isLoading = true
-  try {
-    privateUnlockMembers = await getPrivateUnlockMembers(props.uuid)
-  } catch (error) {
-    console.error('Error loading private unlock members:', error)
-  } finally {
-    isLoading = false
+const { data, refetch, isFetching, isSuccess } = usePrivateUnlockMembersQuery(props.uuid)
+
+watchEffect(() => {
+  if (isSuccess.value && data.value) {
+    privateUnlockMembers = data.value || []
   }
 })
 
@@ -71,13 +69,22 @@ const memberColumns = [
 
 <template>
   <div>
-    <h4 class="font-semibold mb-2">
-      {{ t('private.members.current') }}
-    </h4>
+    <div class="flex items-center justify-between">
+      <h4 class="font-semibold mb-2">
+        {{ t('private.members.current') }}
+      </h4>
+      <UButton
+        color="gray"
+        variant="soft"
+        size="xs"
+        icon="i-heroicons-arrow-path"
+        @click="refetch()"
+      />
+    </div>
     <UTable
       :rows="privateUnlockMembers"
       :columns="memberColumns"
-      :loading="isLoading"
+      :loading="isFetching"
     >
       <template #member-data="{ row }">
         <div class="flex items-center space-x-2">

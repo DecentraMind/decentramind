@@ -22,7 +22,7 @@ export default defineTask({
     console.log('====== periodic validation task started ======')
 
     try {
-      const tasks = taskPid ? [await getTask(taskPid)] : await getUnsettledTasks()
+      const tasks = taskPid ? [await getTask({taskPid})] : await getUnsettledTasks()
 
       // separate tasks by type and filter for tasks with submissions updated before end time
       const spaceTasks = tasks.filter(task => 

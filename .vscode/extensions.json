@@ -2,10 +2,12 @@
   "recommendations": [
     "sumneko.lua",
     "esbenp.prettier-vscode",
-    "vue.volar",
     "bradlc.vscode-tailwindcss",
     "rohit-gohri.format-code-action",
     "dbaeumer.vscode-eslint",
-    "lokalise.i18n-ally"
+    "lokalise.i18n-ally",
+    "antfu.goto-alias",
+    "vue.volar",
+    "nuxtr.nuxtr-vscode"
   ]
 }

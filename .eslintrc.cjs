@@ -9,7 +9,7 @@ module.exports = {
     '@typescript-eslint/semi': ['error', 'never'],
     quotes: ['error', 'single'],
     'quote-props': ['error', 'as-needed'],
-    'no-unused-vars': ['error', { argsIgnorePattern: '^_$' }],
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     
     '@typescript-eslint/no-unused-vars': [
       'error',
@@ -24,6 +24,11 @@ module.exports = {
       }
     ],
     // Vue
+    'vue/return-in-computed-property': ['error', {
+      treatUndefinedAsUnspecified: true
+    }],
+    'vue/no-side-effects-in-computed-properties': 'error',
+    'vue/no-async-in-computed-properties': 'error',
     'vue/multi-word-component-names': 0,
     'vue/max-attributes-per-line': [
       'warn',

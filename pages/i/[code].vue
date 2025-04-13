@@ -4,13 +4,18 @@ import { shortString } from '~/utils'
 import LoginModal from '~/components/users/LoginModal.vue'
 import ArAvatar from '~/components/ArAvatar.vue'
 import { getCommunityBannerUrl, defaultUserAvatar } from '~/utils/arAssets'
+import { getUserByAddress } from '~/utils/community/community'
+import { aoStore } from '~/stores/aoStore'
+import { communityStore } from '~/stores/communityStore'
+import { notificationStore } from '~/stores/notificationStore'
+import { useTaskStore } from '~/stores/taskStore'
 
 definePageMeta({
   layout: 'landing',
   ssr: false
 })
 
-const { joinCommunity, getUserByAddress, getCommunityUser, loadCommunityList } = $(communityStore())
+const { joinCommunity, getCommunityUser, loadCommunityList } = $(communityStore())
 const { getInviteByCode } = useTaskStore()
 // const runtimeConfig = useRuntimeConfig()
 
@@ -61,11 +66,11 @@ async function join() {
   }
 }
 
-let invitee = $ref<UserInfo | null>(null)
+let invitee = $ref<UserInfo>()
 watch(() => address, async () => {
   if (address) {
-    const { userInfo } = useUserInfo()
-    invitee = userInfo.value
+    const { userInfo } = $(useUserInfo())
+    invitee = userInfo
   }
 })
 

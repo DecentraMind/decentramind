@@ -6,6 +6,7 @@ import { arUrl, taskBannersMap, gateways } from '~/utils/arAssets'
 import { formatDate, taskSchema, getLocalTimezone } from '~/utils'
 import { validateTaskForm } from '~/utils/schemas'
 import { useTaskStore } from '~/stores/taskStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { t } = useI18n()
 
@@ -20,7 +21,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'created'): void
+  'created': []
 }>()
 
 let defaultTaskForm: TaskForm | TaskFormWithLink = {
@@ -256,7 +257,7 @@ onMounted(() => {
                   arUrl(tokens[name].logo || defaultTokenLogo, gateways.ario)
                 "
                 :alt="`logo of ${tokens[name].label}`"
-                class="w-8 h-8 rounded-full border border-gray-200"
+                class="w-8 h-8 min-w-8 rounded-full border border-gray-200"
               >
               <span class="truncate" :title="tokens[name].label">{{ tokens[name].label }}</span>
             </template>

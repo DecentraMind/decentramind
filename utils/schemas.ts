@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ARWEAVE_ID_REGEXP, maxTotalChances, tokenChains, tokenNames, tokensByProcessID, type TokenSupply, isValidNumber, SPACE_URL_REGEXP, TWEET_URL_REGEXP } from '~/utils'
 import type { FormError } from '#ui/types'
-import type { CommunitySetting, Task, TaskFormWithLink } from '~/types'
+import type { CommunitySetting, PrivateTask, Task, TaskFormWithLink } from '~/types'
 
 export const communitySettingSchema = z.object({
   // banner: z.enum(['banner6', 'banner7', 'banner8', 'banner9', 'banner10']),
@@ -335,3 +335,66 @@ export const createTokenSchema = z.object({
 })
 
 export type CreateTokenSchema = z.infer<typeof createTokenSchema>
+
+export const createProposalSchema = z.object({
+  title: z.string().min(1).max(30),
+  status: z.enum(['draft', 'auditing', 'executing']),
+  startAt: z.number().gt(0),
+  endAt: z.number().gt(0),
+  description: z.string().min(1).max(7000)
+})
+
+export type CreateProposalSchema = z.infer<typeof createProposalSchema>
+
+export function validateCreateProposalForm(state: PrivateTask): FormError[] {
+  const errors = []
+  const { startAt, endAt, budgets, status, executionResult } = state
+  
+  if (startAt >= endAt) {
+    errors.push({
+      path: 'time',
+      message: 'Start time must be earlier than end time.',
+    })
+  }
+
+  if (!budgets || budgets.length === 0) {
+    errors.push({
+      path: 'budgets',
+      message: 'Budgets are required.',
+    })
+  }
+
+  if (status === 'executing' && !executionResult) {
+    errors.push({
+      path: 'executionResult',
+      message: 'Execution result is required.',
+    })
+  }
+
+  for (const [index, budget] of budgets.entries()) {
+    if (index === 0 && !budget.member) {
+      errors.push({
+        path: `budgets[${index}]`,
+        message: 'Participant is required.',
+      })
+    }
+    if (budget.member) {
+      try {
+        !z.number().gt(0).parse(budget.amount)
+      } catch (_) {
+        errors.push({
+          path: `budgets[${index}]`,
+          message: `Amount ${budget.amount} is not valid`,
+        })
+      }
+      if (!budget.tokenProcessID) {
+        errors.push({
+          path: `budgets[${index}]`,
+          message: 'Please select a token.',
+        })
+      }
+    }
+  }
+  console.log('validate task form:', errors, state)
+  return errors
+}

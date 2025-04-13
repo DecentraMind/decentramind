@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { getQuestions, updateQuestions } from '~/utils/community/community'
+import { updateQuestions } from '~/utils/community/community'
 import { communityStore } from '~/stores/communityStore'
+import { useQuestionsQuery } from '~/composables/community/communityQuery'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { updateIsPrivateApplicable } = $(communityStore())
 
@@ -15,13 +17,17 @@ const { showSuccess, showError } = $(notificationStore())
 
 const questions = ref<string[]>([])
 const isSaving = ref(false)
-const isLoading = ref(true)
 let isSettingApplicable = $ref(false)
 
-// Load questions when component is mounted
-onMounted(async () => {
-  await loadQuestions()
+const { data: loadedQuestions, isFetching, refetch, isSuccess } = useQuestionsQuery(props.uuid, {
+  enabled: false
 })
+
+watch(isSuccess, (newVal) => {
+  if (newVal) {
+    questions.value = loadedQuestions.value && loadedQuestions.value.length > 0 ? loadedQuestions.value : ['']
+  }
+}, { immediate: true })
 
 async function saveQuestions() {
   try {
@@ -33,20 +39,6 @@ async function saveQuestions() {
     showError('Failed to save questions', error as Error)
   } finally {
     isSaving.value = false
-  }
-}
-
-async function loadQuestions() {
-  try {
-    isLoading.value = true
-    const loadedQuestions = await getQuestions(props.uuid)
-    questions.value = loadedQuestions && loadedQuestions.length > 0 ? loadedQuestions : ['']
-  } catch (error) {
-    console.error('Error loading questions:', error)
-    showError('Failed to load questions', error as Error)
-    questions.value = ['']
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -75,7 +67,7 @@ async function updateApplicable(value: boolean) {
           <UButton
             :loading="isSettingApplicable"
             :disabled="isSettingApplicable"
-            @click="updateApplicable(!isApplicable).then(() => loadQuestions())"
+            @click="updateApplicable(!isApplicable).then(() => refetch())"
           >
             {{ isApplicable ? t('private.applicable.disable') : t('private.applicable.enable') }}
           </UButton>
@@ -83,7 +75,7 @@ async function updateApplicable(value: boolean) {
       </div>
     </template>
 
-    <Loading v-if="isLoading" class="h-32" />
+    <Loading v-if="isFetching" class="h-32" />
     <!-- questions setting -->
     <template v-else>
       <hr class="my-4">

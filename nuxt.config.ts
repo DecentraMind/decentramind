@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [process.env.NUXT_UI_PRO_PATH || '@nuxt/ui-pro'],
-  ssr: true,
+  ssr: false,
   runtimeConfig: {
     // public environment variable, accessible in any file
     public: {
@@ -34,15 +34,13 @@ export default defineNuxtConfig({
     },
   },
   modules: [
-    '@nuxtjs/i18n',
-    '@nuxt/content',
     '@nuxt/image',
-    '@nuxt/ui',
     '@nuxt/fonts',
+    '@nuxt/ui',
+    '@nuxtjs/i18n',
     '@vueuse/nuxt',
     'nuxt-og-image',
     '@vue-macros/nuxt',
-    'nuxt-lodash',
     'nuxt-gtag',
     '@pinia/nuxt',
     '@ant-design-vue/nuxt',
@@ -89,15 +87,17 @@ export default defineNuxtConfig({
   ui: {
     safelistColors: ['primary', 'red', 'orange', 'green']
   },
-  css: ['@/assets/css/custom.css'],
-
+  tailwindcss: {
+    cssPath: 'assets/css/custom.css'
+  },
+  ogImage: { enabled: false },
   macros: {
     setupSFC: true,
     betterDefine: false
   },
 
   devtools: {
-    enabled: true
+    enabled: false
   },
 
   compatibilityDate: '2024-07-23',

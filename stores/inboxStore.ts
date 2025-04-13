@@ -1,5 +1,7 @@
 import { createDataItemSigner, results, message, dryrun } from '~/utils/ao'
 import type { InboxState, MailCache } from '~/types'
+import { acceptHMRUpdate, defineStore } from 'pinia'
+import { get, keyBy, without, max, range, difference, chunk } from 'lodash-es'
 
 export const inboxStore = defineStore('inboxStore', () => {
   const mailCache = $ref<Record<
@@ -91,9 +93,9 @@ export const inboxStore = defineStore('inboxStore', () => {
   }
 
   const getDryrunData = (result: Awaited<ReturnType<typeof dryrun>>, key: string) => {
-    return useGet(
-      useKeyBy(
-        useGet(result, 'Messages[0].Tags'), 'name'
+    return get(
+      keyBy(
+        get(result, 'Messages[0].Tags'), 'name'
       ),
       key
     )
@@ -136,25 +138,25 @@ export const inboxStore = defineStore('inboxStore', () => {
     }
 
     const inboxCount = await getInboxCount(process, true)
-    const cachedIndex = useWithout(
+    const cachedIndex = without(
       Object.keys(mailCache[process])
         .map(item => parseInt(item)),
       999999
     )
     
-    const start = isNewer ? (useMax(cachedIndex) || 1) : 1
-    const allIndex = useRange(start, parseInt(inboxCount) + 1)
-    const waitForReadIndex = useDifference(allIndex, cachedIndex).reverse()
+    const start = isNewer ? (max(cachedIndex) || 1) : 1
+    const allIndex = range(start, parseInt(inboxCount) + 1)
+    const waitForReadIndex = difference(allIndex, cachedIndex).reverse()
     if (waitForReadIndex.length === 0) {
       return
     }
 
     isInboxLoading = true
-    const waitForReadIndexChunk = useChunk(waitForReadIndex, limit)
+    const waitForReadIndexChunk = chunk(waitForReadIndex, limit)
 
-    await Promise.all(waitForReadIndexChunk[0].map(async index => {
+    for (const index of waitForReadIndexChunk[0]) {
       if (mailCache[process][index]) {
-        return mailCache[process][index]
+        continue
       }
 
       const rz = await dryrun({
@@ -167,15 +169,16 @@ export const inboxStore = defineStore('inboxStore', () => {
       const message = getDryrunData(rz, 'MessageDetails.value')
       if (message['App-Process'] && message['Authority']) {
         // ignore spawn message that create the chat room process
-        return
+        continue
       }
       mailCache[process][index] = {
         ...message,
         index,
       }
 
-      return mailCache[process][index]
-    }))
+      // Add 100ms delay between each request
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
     if (mailCache[process][999999]) {
       delete mailCache[process][999999]
     }

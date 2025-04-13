@@ -1,17 +1,16 @@
 import {
-  createDataItemSigner,
-  result,
-  message,
-  dryrun, spawn
+  createDataItemSigner, spawn, messageResult, messageResultCheck, dryrunResult, dryrunResultParsed
 } from '~/utils/ao'
 
-import { defineStore } from 'pinia'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { Bounty, Task, TaskForm, Scores, BountySendHistory, InviteCodeInfo, Community } from '~/types'
-import { sleep, retry, messageResult, messageResultCheck, extractResult, dryrunResult } from '~/utils'
+import { sleep, retry } from '~/utils'
 import { moduleID, schedulerID, MU, DM_PROCESS_ID } from '~/utils/processID'
+import { transferBounty } from '~/utils/token'
 
 import taskProcessCode from '~/AO/Task.tpl.lua?raw'
 import { getTask, updateTaskSubmissions, submitTask, getInvitesByInviter } from '~/utils/task'
+import { useQueryClient } from '@tanstack/vue-query'
 
 // task cache related interfaces and variables
 export interface TaskCache {
@@ -23,15 +22,6 @@ export interface TaskCache {
 export const useTaskStore = defineStore('task', () => {
   const taskManagerProcessID = DM_PROCESS_ID
   const isCreateTaskModalOpen = $ref(false)
-
-  // task cache, save by community UUID
-  const taskCacheMap = ref<Record<string, TaskCache>>({})
-  
-  // whether there are pending requests
-  const pendingRequests = ref<Record<string, Promise<Task[]> | undefined>>({})
-  
-  // cache expiry time (30 minutes)
-  const CACHE_EXPIRY_TIME = 30 * 60 * 1000
 
   const createTask = async (data: TaskForm, communityName: string) => {
     // create a task process, then add process ID to task info
@@ -132,131 +122,11 @@ export const useTaskStore = defineStore('task', () => {
       signer: createDataItemSigner(window.arweaveWallet),
     })
   }
-
-  // get tasks of a community, with cache mechanism
-  const getOrFetchTasksByCommunityUuid = async (communityUuid: string, forceRefresh = false): Promise<Task[]> => {
-    // check if there is valid cache data and not expired
-    const hasValidCache = taskCacheMap.value[communityUuid] && 
-                         (Date.now() - taskCacheMap.value[communityUuid].timestamp < CACHE_EXPIRY_TIME) &&
-                         !forceRefresh
-    
-    console.log('hasValidCache:', hasValidCache)
-    
-    // if there is valid cache and not force refresh, return cached data
-    if (hasValidCache) {
-      console.log('Returning cached data for:', communityUuid)
-      return taskCacheMap.value[communityUuid].tasks
-    }
-    
-    // if there is a pending request, reuse it
-    if (pendingRequests.value[communityUuid]) {
-      console.log('Reusing pending request for:', communityUuid)
-      return pendingRequests.value[communityUuid] as Promise<Task[]>
-    }
-    
-    // initialize cache entry or update status to loading
-    if (!taskCacheMap.value[communityUuid]) {
-      console.log('Initializing cache entry for:', communityUuid)
-      taskCacheMap.value[communityUuid] = {
-        tasks: [],
-        timestamp: 0,
-        loading: true
-      }
-    } else {
-      console.log('Updating loading state for:', communityUuid)
-      taskCacheMap.value[communityUuid].loading = true
-    }
-    
-    // create a new request
-    console.log('Creating new request for:', communityUuid)
-    const fetchPromise = fetchTasksByCommunityUuid(communityUuid)
-      .then(tasks => {
-        // update cache
-        taskCacheMap.value[communityUuid] = {
-          tasks,
-          timestamp: Date.now(),
-          loading: false
-        }
-        // clean request reference
-        delete pendingRequests.value[communityUuid]
-        return tasks
-      })
-      .catch(error => {
-        // handle error
-        taskCacheMap.value[communityUuid].loading = false
-        delete pendingRequests.value[communityUuid]
-        throw error
-      })
-    
-    // store request for possible reuse
-    pendingRequests.value[communityUuid] = fetchPromise
-    return fetchPromise
-  }
-  
-  // original get tasks method, without cache
-  const fetchTasksByCommunityUuid = async (communityUuid: string): Promise<Task[]> => {
-    if(!communityUuid) {
-      throw new Error('communityUuid is required.')
-    }
-
-    const res = await dryrun({
-      process: taskManagerProcessID,
-      tags: [
-        { name: 'Action', value: 'GetTasksByCommunityUuid' },
-        { name: 'CommunityUuid', value: communityUuid },
-      ],
-    })
-
-    const resp = extractResult<string>(res)
-    const tasks = JSON.parse(resp) as Task[]
-
-    return tasks.sort((a, b) => {
-      return a.createTime >= b.createTime ? -1 : 1
-    }).map(task => {
-      // TODO this is a temp fix of submittersCount, remove this if TaskManger process reply correct submittersCount
-      task.submittersCount = task.submissions.reduce((set, submission) => {
-        return set.add(submission.address) 
-      }, new Set()).size
-      return task
-    })
-  }
-  
-  // manually refresh tasks of a community
-  const refreshCommunityTasks = (communityUuid: string) => {
-    return getOrFetchTasksByCommunityUuid(communityUuid, true)
-  }
-  
-  // refresh cache after task creation
-  const refreshAfterTaskCreation = (communityUuid: string, newTask: Task) => {
-    // if there is cache, update it
-    if (taskCacheMap.value[communityUuid]) {
-      taskCacheMap.value[communityUuid].tasks = [
-        newTask,
-        ...taskCacheMap.value[communityUuid].tasks
-      ]
-      taskCacheMap.value[communityUuid].timestamp = Date.now()
-    }
-  }
-  
-  const clearTaskCache = () => {
-    taskCacheMap.value = {}
-  }
   
   // check if the tasks of a community are loading
   const isLoadingCommunityTasks = (communityUuid: string) => {
-    return taskCacheMap.value[communityUuid]?.loading || false
-  }
-
-  const getTasksByOwner = async (address: string) => {
-    const res = await dryrun({
-      process: taskManagerProcessID,
-      tags: [
-        { name: 'Action', value: 'GetTasksByOwner' },
-        { name: 'Address', value: address }
-      ]
-    })
-    const resp = extractResult<string>(res)
-    return JSON.parse(resp) as Task[]
+    const queryClient = useQueryClient()
+    return queryClient.isFetching({ queryKey: ['tasks', 'fetchTasksByCommunityUuid', communityUuid] })
   }
 
   const joinTask = async (taskPid: string, inviteCode?: string) => {
@@ -344,42 +214,11 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const getAllBounty = async () => {
-    const res = await dryrun({
+    const bountyMap = await dryrunResultParsed<Record<string, Bounty[]>>({
       process: taskManagerProcessID,
       tags: [{ name: 'Action', value: 'GetAllBounties' }]
     })
-    // console.log('all bounties = ' + res.Messages[0].Data)
-    const bountyMap = JSON.parse(res.Messages[0].Data) as Record<string, Bounty[]>
     return Object.values(bountyMap).flat()
-  }
-
-  const getBountiesByCommunityID = async (communityUuid: string) => {
-    const res = await dryrun({
-      process: taskManagerProcessID,
-      tags: [{
-        name: 'Action', value: 'GetBountiesByCommunityID'
-      }, {
-        name: 'CommunityUuid', value: communityUuid
-      }]
-    })
-    const data = extractResult<string>(res)
-    return JSON.parse(data) as (Bounty & {recipientName: string})[]
-  }
-
-  const getBountiesByAddress = async (address: string) => {
-    const res = await dryrun({
-      process: taskManagerProcessID,
-      tags: [{
-        name: 'Action', value: 'GetBountiesByAddress'
-      }, {
-        name: 'Address', value: address
-      }]
-    })
-    const data = extractResult<string>(res)
-    return JSON.parse(data) as {
-      published: BountySendHistory[],
-      awarded: BountySendHistory[]
-    }
   }
 
   const createTaskInviteCode  = async (taskPid: string) => {
@@ -405,9 +244,9 @@ export const useTaskStore = defineStore('task', () => {
   
 
   return {
-    createTask, getTask, getOrFetchTasksByCommunityUuid, getTasksByOwner,
+    createTask, getTask,
 
-    sendBounty, storeBounty, getAllBounty, getBountiesByCommunityID, getBountiesByAddress,
+    sendBounty, storeBounty, getAllBounty,
 
     submitTask,
 
@@ -420,75 +259,11 @@ export const useTaskStore = defineStore('task', () => {
     createTaskInviteCode, getInviteByCode, getInvitesByInviter,
 
     isCreateTaskModalOpen,
-    refreshCommunityTasks,
-    refreshAfterTaskCreation,
-    clearTaskCache,
-    isLoadingCommunityTasks,
-    taskCacheMap
+    isLoadingCommunityTasks
   }
 })
 
-async function transferBounty(receiver: string, token: Task['bounties'][number]) {
-  const { tokenProcessID, tokenName, quantity } = token
 
-  if (!tokenProcessID) {
-    throw new Error(`Bounty token ${tokenName} not supported.`)
-  }
-  console.log('sending ', tokenName, ' token processID: ', tokenProcessID)
-  console.log({tokenName, amount: quantity, receiver})
-
-  let mTags
-  try {
-    mTags = await retry({
-      fn: async () => {
-        const messageId = await message({
-          process: tokenProcessID,
-          signer: createDataItemSigner(window.arweaveWallet),
-          tags: [
-            { name: 'Action', value: 'Transfer' },
-            { name: 'Recipient', value: receiver },
-            { name: 'Quantity', value: quantity.toString() }
-          ]
-        })
-        const { Messages } = await result({
-          // the arweave TXID of the message
-          message: messageId,
-          // the arweave TXID of the process
-          process: tokenProcessID,
-        })
-        return Messages[0].Tags as {name: string, value: string}[]
-      },
-      maxAttempts: 1,
-      interval: 500
-    })
-  } catch(e) {
-    if (e instanceof Error && e.message.includes('Cannot read properties of undefined')) {
-      throw new Error(`Transfer token ${tokenName} failed.`)
-    }
-  }
-
-  if (!mTags) {
-    throw new Error('Pay bounty failed.')
-  }
-
-  let transError = false
-  let errorMessage = ''
-  for (let k = 0; k < mTags.length; ++k) {
-    const tag = mTags[k]
-    if (tag.name === 'Error') {
-      errorMessage = tag.value
-      transError = true
-      break
-    }
-  }
-
-  if (transError) {
-    throw new Error('Pay bounty failed. ' + errorMessage)
-  } else {
-    console.info(`You have sent ${quantity} ${tokenName} to ${receiver}`)
-    return {tokenProcessID, tokenName}
-  }
-}
 
 if (import.meta.hot)
   import.meta.hot.accept(acceptHMRUpdate(useTaskStore, import.meta.hot))

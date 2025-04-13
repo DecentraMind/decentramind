@@ -4,17 +4,18 @@ import {
   spawn,
   dryrun,
   result,
-  dryrunResult,
   dryrunResultParsed,
   messageResult,
   messageResultParsed
 } from '~/utils/ao'
-import type { Community, CommunityMember, CommunitySetting, CreateToken, PrivateAreaConfig, UserInfo } from '~/types'
+import type { Community, CommunitySetting, CreateToken, UserInfo } from '~/types'
 import type { CommunityToken } from '~/utils/constants'
 import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
 import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
-import { getCommunity as getCommunityAO, updatePrivateApplicable } from '~/utils/community/community'
+import { getCommunities, getCommunity as getCommunityAO, join, updatePrivateApplicable, getCommunityUser } from '~/utils/community/community'
+import { acceptHMRUpdate, defineStore } from 'pinia'
+import { aoStore } from './aoStore'
 
 export const communityStore = defineStore('communityStore', () => {
   const aoCommunityProcessID = DM_PROCESS_ID
@@ -23,6 +24,14 @@ export const communityStore = defineStore('communityStore', () => {
   let communityList = $ref<Community[]>([])
   let mutedUsers = $ref<string[]>([])
   let currentUuid = $ref<string>()
+  // const currentCommunityOwner = $computed(() => {
+  //   if (!currentUuid || !address) return ''
+  //   return communityList.find(community => community.uuid === currentUuid)?.owner
+  // })
+  // const currentCommunityAdmins = $computed(() => {
+  //   if (!currentUuid || !address) return []
+  //   return communityList.find(community => community.uuid === currentUuid)?.admins
+  // })
 
   /** joined communities of current user */
   const joinedCommunities = $computed<Community[]>(() => {
@@ -101,11 +110,10 @@ export const communityStore = defineStore('communityStore', () => {
   //Creating a community approach
   const addCommunity = async (
     setting: CommunitySetting,
-    communityToken: CommunityToken[],
     chatroomID: string
   ) => {
-    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
-    const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined' | 'admins'> = {
+    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames, communityTokens } = setting
+    const community: Omit<Community, 'uuid' | 'timestamp' | 'buildnum' | 'isJoined' | 'admins' | 'isPrivateApplicable'> = {
       logo,
       banner,
       name,
@@ -117,7 +125,7 @@ export const communityStore = defineStore('communityStore', () => {
       github,
       bounty: bountyTokenNames,
       ispublished: isPublished,
-      communitytoken: communityToken.filter(token => token.tokenName),
+      communitytoken: communityTokens.filter(token => token.tokenName),
       istradable: isTradable,
       support: tradePlatforms,
       alltoken: allTokenSupply,
@@ -126,7 +134,7 @@ export const communityStore = defineStore('communityStore', () => {
     }
     const jsonString = JSON.stringify(community)
 
-    const createdCommunity = await messageResultParsed({
+    const createdCommunity = await messageResultParsed<Community>({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'CreateCommunity' }
@@ -146,10 +154,9 @@ export const communityStore = defineStore('communityStore', () => {
   const updateCommunity = async (
     uuid: string,
     setting: CommunitySetting,
-    communityToken: CommunityToken[],
     owner: string
   ) => {
-    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames } = setting
+    const { logo, banner, name, desc, website, twitter, github, isPublished, isTradable, tradePlatforms, allTokenSupply, tokenAllocations, bountyTokenNames, communityTokens } = setting
     const communitySetting = {
       logo,
       banner,
@@ -161,7 +168,7 @@ export const communityStore = defineStore('communityStore', () => {
       github,
       bounty: bountyTokenNames,
       ispublished: isPublished,
-      communitytoken: communityToken.filter(token => token.tokenName),
+      communitytoken: communityTokens.filter(token => token.tokenName),
       istradable: isTradable,
       support: tradePlatforms,
       alltoken: allTokenSupply,
@@ -169,7 +176,8 @@ export const communityStore = defineStore('communityStore', () => {
       uuid
     }
     const jsonString = JSON.stringify(communitySetting)
-    const res = await messageResultParsed({
+    console.log('update community:', communitySetting)
+    const res = await messageResultParsed<Community>({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'UpdateCommunity' },
@@ -210,18 +218,8 @@ export const communityStore = defineStore('communityStore', () => {
     isCommunityListLoading = true
     communityListError = undefined
 
-    const tags = [
-      { name: 'Action', value: 'GetCommunities' }
-    ]
-    if (address) {
-      tags.push({ name: 'userAddress', value: address })
-    }
     try {
-      const data = await dryrunResult<string>({
-        process: aoCommunityProcessID,
-        tags
-      })
-      communityList = JSON.parse(data) as Community[]
+      communityList = await getCommunities(address)
       console.log('communityList refreshed', {communityList, address})
     } catch (error) {
       console.error('Failed to fetching community list:', error)
@@ -294,25 +292,6 @@ export const communityStore = defineStore('communityStore', () => {
     })
   }
 
-  /**
-   * Get joined users of a community.
-   * */
-  const getCommunityUser = async (communityUuid: string) => {
-    const result = await dryrun({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'GetUsersByCommunityUUID' },
-        { name: 'CommunityUuid', value: communityUuid }
-      ],
-    })
-
-    const dataStr = extractResult<string>(result)
-
-    const communityUserMap = JSON.parse(dataStr) as Record<string, CommunityMember>
-
-    return communityUserMap
-  }
-
   const createCommunityInviteCode  = async (communityUuid: string) => {
     const code = await messageResult<string>({
       process: aoCommunityProcessID,
@@ -326,20 +305,9 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   const joinCommunity = async (communityUuid: string, inviteCode?: string) => {
-    const tags = [
-      { name: 'Action', value: 'Join' },
-      { name: 'CommunityUuid', value: communityUuid },
-    ]
-    if (inviteCode) {
-      tags.push({ name: 'InviteCode', value: inviteCode })
-    }
-    const join = await messageResultCheck({
-      process: aoCommunityProcessID,
-      tags,
-      signer: createDataItemSigner(window.arweaveWallet)
-    })
+    const result = await join(communityUuid, inviteCode)
     updateLocalCommunity(communityUuid, 'isJoined', true)
-    return join
+    return result
   }
 
   const exitCommunity = async (uuid: string) => {
@@ -375,31 +343,6 @@ export const communityStore = defineStore('communityStore', () => {
     })
 
     return messageId
-  }
-
-  const getUserByAddress = async (address: string) => {
-    const user = await dryrun({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'GetUserByAddress' },
-        { name: 'Address', value: address }
-      ]
-    })
-
-    if (!user.Messages || !user.Messages.length) {
-      console.error('get user error:', user.Error, address)
-      throw new Error('Get user info failed.')
-    }
-
-    if (!user.Messages[0].Data) {
-      return {
-        name: '',
-        avatar: ''
-      }
-    }
-
-    const userInfo = JSON.parse(user.Messages[0].Data) as UserInfo
-    return userInfo
   }
 
   //Create a community chat room
@@ -499,17 +442,6 @@ export const communityStore = defineStore('communityStore', () => {
     updateLocalCommunity(uuid, 'isPrivateApplicable', applicable)
   }
 
-  async function updatePrivateAreaConfig(uuid: string, config: PrivateAreaConfig) {
-    const jsonString = JSON.stringify(config)
-    return await messageResultParsed<PrivateAreaConfig>({
-      process: aoCommunityProcessID,
-      tags: [{ name: 'Action', value: 'UpdatePrivateAreaConfig' }, { name: 'CommunityUuid', value: uuid }],
-      data: jsonString,
-      signer: createDataItemSigner(window.arweaveWallet),
-    })
-  }
-
-
   return $$({
     communityList,
     joinedCommunities,
@@ -532,7 +464,6 @@ export const communityStore = defineStore('communityStore', () => {
     joinCommunity,
     exitCommunity,
     updateUser,
-    getUserByAddress,
     getAllUsers,
     getCommunityUser,
     setCurrentCommunityUserMap,
@@ -540,7 +471,8 @@ export const communityStore = defineStore('communityStore', () => {
     getCommunity,
     clearCommunityData,
     updateIsPrivateApplicable,
-    updatePrivateAreaConfig
+    // currentCommunityOwner,
+    // currentCommunityAdmins
   })
 })
 

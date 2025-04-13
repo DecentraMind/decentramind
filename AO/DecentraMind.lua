@@ -1,4 +1,4 @@
-Variant = '0.5.96'
+Variant = '1.0.100'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -150,29 +150,46 @@ AnswersByCommunityUuidByAddress = AnswersByCommunityUuidByAddress or {}
 
 ---@class Page
 ---@field uuid string @UUID of the private area page
+---@field communityUuid string @UUID of the community
 ---@field title string @Title of the private area page
 ---@field content string @Content of the private area page
 
+---@type table<string, Page> Pages by page uuid
+Pages = Pages or {}
+
+---@class PrivateTaskBudget: TaskBounty
+---@field member string @Address of the member
+---@field settleTx string|nil @Transaction ID of the token send
+
 ---@class PrivateTask
 ---@field uuid string @UUID of the private task
+---@field boardUuid string @UUID of the private task board
 ---@field title string @Title of the private task
 ---@field description string @Description of the private task
----@field budgets TaskBounty[] @Budgets of the private task
----@field status string 'proposal' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+---@field budgets PrivateTaskBudget[] @Budgets of the private task
+---@field status string 'draft' | 'auditing' | 'executing' | 'waiting_for_validation' | 'waiting_for_settlement' | 'settled'
+---@field editors string[] @Addresses of the editors
 ---@field startAt number @Start time of the private task
 ---@field endAt number @End time of the private task
 ---@field executionResult string @Execution result of the private task, editable when status is 'executing'
 ---@field createdAt number @Creation time of the private task
 ---@field updatedAt number @Update time of the private task
+---@field deletedAt number|nil @Deletion time of the private task
 
 ---@class Board
 ---@field uuid string @UUID of the private task board
+---@field communityUuid string @UUID of the community
 ---@field title string @Title of the private task board
+---@field taskUuids string[] @UUIDs of the private tasks
+
+---@type table<string, Board> Boards by board uuid
+Boards = Boards or {}
 
 ---@class PrivateAreaConfig
+---@field communityUuid string @UUID of the community
 ---@field pagesAreaTitle string @Title of the private area
----@field pages Page[] @Pages of the private area
----@field boards Board[] @Boards of the private area
+---@field pageUuids string[] @UUIDs of the pages
+---@field boardUuids string[] @UUIDs of the boards
 
 ---@type table<string, PrivateAreaConfig> Private area config, indexed by community uuid
 PrivateAreaConfig = PrivateAreaConfig or {}
@@ -180,8 +197,6 @@ PrivateAreaConfig = PrivateAreaConfig or {}
 
 --- @type table<string, PrivateTask> @private tasks table using private task's uuid as key
 PrivateTasks = PrivateTasks or {}
---- @type table<string, string[]> @private tasks uuid table using board's uuid as key
-PrivateTasksByBoardUuid = PrivateTasksByBoardUuid or {}
 
 
 ---@class Log
@@ -280,6 +295,31 @@ local function addLog(operation, communityUuid, operator, params, timestamp)
   })
   LogsByCommunityUuid[communityUuid] = LogsByCommunityUuid[communityUuid] or {}
   table.insert(LogsByCommunityUuid[communityUuid], #Logs)
+end
+
+local function isCommunityAdmin(community, address)
+  return u.findIndex(community.admins, function(admin) return admin == address end)
+end
+
+local function assertIsOwnerOrAdmin(address, communityUuid)
+  local community = Communities[communityUuid]
+  assert(community, 'Community not found.')
+
+  local isOwner = address == community.owner
+  local isAdmin = isCommunityAdmin(community, address)
+  assert(isOwner or isAdmin, 'You are not the owner or admin.')
+end
+
+local function assertPrivateUnlocked(address, communityUuid)
+  local community = Communities[communityUuid]
+  assert(community, 'Community not found.')
+  -- user must join the community
+  assert(UserCommunities[address] and UserCommunities[address][communityUuid], 'You have not joined the community.')
+
+  local isOwner = address == community.owner
+  local isAdmin = isCommunityAdmin(community, address)
+  -- only private members(privateUnlockTime is not nil) can add task
+  assert(UserCommunities[address][communityUuid].privateUnlockTime or isOwner or isAdmin, 'You are not in the private area.')
 end
 
 Actions = {
@@ -539,7 +579,7 @@ Actions = {
         return u.replyError(msg, 'Community not found.')
       end
 
-      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+      assertIsOwnerOrAdmin(msg.From, uuid)
 
       QuestionsByCommunityUuid[uuid] = questions
     end,
@@ -557,6 +597,11 @@ Actions = {
       -- applicant must join the community
       if not UserCommunities[address] or not UserCommunities[address][uuid] then
         return u.replyError(msg, 'You have not joined the community.')
+      end
+
+      -- if applicant is already in the private area, return
+      if UserCommunities[address][uuid].privateUnlockTime then
+        return u.replyError(msg, 'You are already in the private area.')
       end
 
       -- if applicant has already submitted answers, return
@@ -641,7 +686,7 @@ Actions = {
       local members = {}
       for address, userCommunity in pairs(UserCommunities) do
         if userCommunity[uuid] and userCommunity[uuid].privateUnlockTime then
-          local user = Users[address]
+          local user = u.deepCopy(Users[address])
           if not user then
             goto nextMember
           end
@@ -651,6 +696,21 @@ Actions = {
           ::nextMember::
         end
       end
+      -- add community owner and admins
+      local community = Communities[uuid]
+      local owner = u.deepCopy(Users[community.owner])
+      if owner then
+        owner.address = community.owner
+        table.insert(members, owner)
+      end
+      for _, admin in ipairs(community.admins) do
+        local adminUser = u.deepCopy(Users[admin])
+        if adminUser and not u.findIndex(members, function(member) return member.address == admin end) then
+          adminUser.address = admin
+          table.insert(members, adminUser)
+        end
+      end
+
       u.replyData(msg, members)
     end,
 
@@ -665,7 +725,7 @@ Actions = {
       end
 
       -- only owner or admins can remove private unlock member
-      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+      assertIsOwnerOrAdmin(msg.From, uuid)
 
       if not UserCommunities[address] or not UserCommunities[address][uuid] then
         return u.replyError(msg, 'The address is not a member of this community.')
@@ -679,16 +739,31 @@ Actions = {
       local uuid = msg.Tags.CommunityUuid
       local copy = u.deepCopy(PrivateAreaConfig[uuid] or {
         pagesAreaTitle = 'Private Area',
-        pages = {},
-        boards = {}
+        pageUuids = {},
+        boardUuids = {}
       })
 
-      for _, board in pairs(copy.boards) do
-        board.tasks = {}
-        if PrivateTasksByBoardUuid[board.uuid] then
-          for _, task in pairs(PrivateTasksByBoardUuid[board.uuid]) do
-            table.insert(board.tasks, PrivateTasks[task])
+      -- get pages from pageUuids
+      copy.pages = {}
+      for _, pageUuid in pairs(copy.pageUuids) do
+        if Pages[pageUuid] then
+          table.insert(copy.pages, Pages[pageUuid])
+        end
+      end
+
+      copy.boards = {}
+      for _, boardUuid in pairs(copy.boardUuids) do
+        if Boards[boardUuid] then
+          local boardCopy = u.deepCopy(Boards[boardUuid])
+          boardCopy.tasks = {}
+          if Boards[boardUuid].taskUuids then
+            for _, taskUuid in pairs(Boards[boardUuid].taskUuids) do
+              if PrivateTasks[taskUuid] and PrivateTasks[taskUuid].deletedAt == nil then
+                table.insert(boardCopy.tasks, PrivateTasks[taskUuid])
+              end
+            end
           end
+          table.insert(copy.boards, boardCopy)
         end
       end
 
@@ -697,46 +772,296 @@ Actions = {
 
     UpdatePrivateAreaConfig = function(msg)
       local uuid = msg.Tags.CommunityUuid
-      local config = json.decode(msg.Data)
+      ---@type PrivateAreaConfig
+      local update = json.decode(msg.Data)
       local community = Communities[uuid]
-      if not community then
-        return u.replyError(msg, 'Community not found.')
-      end
+      assert(community, 'Community not found.')
 
-      assert(msg.From == community.owner or u.findIndex(community.admins, function(admin) return admin == msg.From end), 'You are not the owner or admin.')
+      assertIsOwnerOrAdmin(msg.From, uuid)
 
-      if not PrivateAreaConfig[uuid] then
-        PrivateAreaConfig[uuid] = {
-          pagesAreaTitle = 'Private Area',
-          pages = {},
-          boards = {}
-        }
-      end
-
-      if config.pagesAreaTitle then
-        PrivateAreaConfig[uuid].pagesAreaTitle = config.pagesAreaTitle
-      end
-
-      if config.pages then
-        PrivateAreaConfig[uuid].pages = config.pages
-      end
-
-      if config.boards then
-        PrivateAreaConfig[uuid].boards = config.boards
-      end
+      PrivateAreaConfig[uuid] = PrivateAreaConfig[uuid] or {
+        pagesAreaTitle = 'Private Area',
+        pageUuids = {},
+        boardUuids = {}
+      }
 
       ---@type PrivateAreaConfig
-      local copy = u.deepCopy(PrivateAreaConfig[uuid])
+      local configCopy
+      if not PrivateAreaConfig[uuid] then
+        configCopy = {
+          communityUuid = uuid,
+          pagesAreaTitle = 'Private Area',
+          pageUuids = {},
+          boardUuids = {}
+        }
+      else
+        configCopy = u.deepCopy(PrivateAreaConfig[uuid])
+      end
 
-      for _, board in pairs(copy.boards) do
-        board.tasks = {}
-        if PrivateTasksByBoardUuid[board.uuid] then
-          for _, task in pairs(PrivateTasksByBoardUuid[board.uuid]) do
-            table.insert(board.tasks, PrivateTasks[task])
+      if update.pagesAreaTitle then
+        configCopy.pagesAreaTitle = update.pagesAreaTitle
+      end
+
+      if update.pageUuids then
+        for _, pageUuid in pairs(update.pageUuids) do
+          assert(Pages[pageUuid], 'Page ' .. pageUuid .. ' not found.')
+          if not u.findIndex(configCopy.pageUuids, function(localUuid) return localUuid == pageUuid end) then
+            table.insert(configCopy.pageUuids, pageUuid)
           end
         end
       end
-      u.replyData(msg, copy)
+
+      if update.boardUuids then
+        for _, boardUuid in pairs(update.boardUuids) do
+          assert(Boards[boardUuid], 'Board ' .. boardUuid .. ' not found.')
+          if not u.findIndex(configCopy.boardUuids, function(localUuid) return localUuid == boardUuid end) then
+            table.insert(configCopy.boardUuids, boardUuid)
+          end
+        end
+      end
+
+      PrivateAreaConfig[uuid] = configCopy
+      u.replyData(msg, configCopy)
+    end,
+
+    AddBoard = function(msg)
+      local title = msg.Tags.Title
+      local uuid = msg.Tags.CommunityUuid
+      local community = Communities[uuid]
+      assert(community, 'Community not found.')
+      assert(title, 'Title is required.')
+
+      -- only owner or admins can add board
+      assertIsOwnerOrAdmin(msg.From, uuid)
+
+      PrivateAreaConfig[uuid] = PrivateAreaConfig[uuid] or {
+        pagesAreaTitle = 'Private Area',
+        pageUuids = {},
+        boardUuids = {}
+      }
+
+      local boardUuid = u.createUuid()
+      Boards[boardUuid] = {
+        uuid = boardUuid,
+        communityUuid = uuid,
+        title = title,
+        taskUuids = {}
+      }
+
+      PrivateAreaConfig[uuid].boardUuids = PrivateAreaConfig[uuid].boardUuids or {}
+      table.insert(PrivateAreaConfig[uuid].boardUuids, boardUuid)
+
+      u.replyData(msg, Boards[boardUuid])
+    end,
+
+    UpdateBoardTitle = function(msg)
+      local boardUuid = msg.Tags.BoardUuid
+      local title = msg.Tags.Title
+
+      local board = Boards[boardUuid]
+      if not board then
+        return u.replyError(msg, 'Work area not found.')
+      end
+
+      -- only owner or admins can update board name
+      assertIsOwnerOrAdmin(msg.From, board.communityUuid)
+
+      board.title = title
+      u.replyData(msg, board)
+    end,
+
+    GetPrivateTask = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      local task = PrivateTasks[taskUuid]
+      assert(task, 'Task not found.')
+      u.replyData(msg, task)
+    end,
+
+    GetPrivateTasksByInitiator = function(msg)
+      local address = msg.Tags.Address
+      assert(address, 'Address is required.')
+      
+      local results = {}
+      for _, task in pairs(PrivateTasks) do
+        -- Check if the user is the first editor (initiator)
+        if task.editors[1] == address and task.deletedAt == nil then
+          local taskCopy = u.deepCopy(task)
+          local board = Boards[taskCopy.boardUuid]
+          taskCopy.communityName = Communities[board.communityUuid].name
+          table.insert(results, taskCopy)
+        end
+      end
+      
+      u.replyData(msg, results)
+    end,
+    
+    GetPrivateTasksByParticipant = function(msg)
+      local address = msg.Tags.Address
+      assert(address, 'Address is required.')
+      
+      local results = {}
+      for _, task in pairs(PrivateTasks) do
+        -- Skip if the user is the initiator (to avoid duplicate tasks)
+        if task.deletedAt == nil then
+          -- Check if the user is in the budgets
+          for _, budget in ipairs(task.budgets) do
+            if budget.member == address then
+              local taskCopy = u.deepCopy(task)
+              local board = Boards[taskCopy.boardUuid]
+              taskCopy.communityName = Communities[board.communityUuid].name
+              table.insert(results, taskCopy)
+              break -- Found a match, so move to the next task
+            end
+          end
+        end
+      end
+      
+      u.replyData(msg, results)
+    end,
+
+    AddPrivateTask = function(msg)
+      local address = msg.From
+
+      ---@type PrivateTask
+      local task = json.decode(msg.Data)
+      -- only accept 'draft' | 'auditing' status
+      assert(task.status == 'draft' or task.status == 'auditing', 'Invalid status.')
+      assert(task.title and #task.title > 0, 'Title is required.')
+      assert(task.description and #task.description > 0, 'Description is required.')
+      assert(task.boardUuid, 'Board uuid is required.')
+      assert(task.budgets and #task.budgets > 0, 'Budgets are required.')
+
+      -- check budgets
+      for _, budget in ipairs(task.budgets) do
+        assert(budget.tokenProcessID, 'Token process ID is required.')
+        assert(budget.amount > 0, 'Amount must be greater than 0.')
+        assert(budget.quantity, 'Quantity is required.')
+        assert(string.match(budget.quantity, "^[1-9]%d*$") and tonumber(budget.quantity) > 0, 'Quantity must be a numeric value greater than 0.')
+      end
+
+      local board = Boards[task.boardUuid]
+      assert(board, 'Board ' .. task.boardUuid .. ' not found.')
+      local uuid = board.communityUuid
+
+      assertPrivateUnlocked(address, uuid)
+
+      local config = PrivateAreaConfig[uuid]
+      if not config then
+        return u.replyError(msg, 'Private area config not found.')
+      end
+
+      local taskUuid = u.createUuid()
+      task.uuid = taskUuid
+      task.editors = { msg.From }
+      PrivateTasks[taskUuid] = task
+      PrivateTasks[taskUuid].createdAt = msg.Timestamp
+      PrivateTasks[taskUuid].updatedAt = msg.Timestamp
+
+      table.insert(board.taskUuids, taskUuid)
+      -- add log
+      addLog('AddPrivateTask', uuid, msg.From, {
+        taskUuid = taskUuid
+      }, msg.Timestamp)
+
+      u.replyData(msg, PrivateTasks[taskUuid])
+    end,
+
+    -- save proposal or executing private task content, only for task editors
+    SaveProposal = function(msg)
+      ---@type PrivateTask
+      local task = json.decode(msg.Data)
+      assert(PrivateTasks[task.uuid], 'Proposal not found.')
+
+      assert(PrivateTasks[task.uuid].status == 'draft' or PrivateTasks[task.uuid].status == 'executing', 'Only draft proposal or executing proposal can be updated.')
+
+      if PrivateTasks[task.uuid].status == 'draft' then
+        assert(task.status == 'draft' or task.status == 'auditing', 'Status must be "draft" or "auditing".')
+      elseif PrivateTasks[task.uuid].status == 'executing' then
+        assert(task.status == 'executing' or task.status == 'auditing' or task.status == 'waiting_for_validation', 'Status must be "executing" or "waiting_for_validation".')
+      end
+
+      local boardUuid = task.boardUuid
+      local board = Boards[boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+
+      assertPrivateUnlocked(msg.From, communityUuid)
+      assert(u.findIndex(PrivateTasks[task.uuid].editors, function(editor) return editor == msg.From end), 'You are not the editor of this proposal.')
+
+      PrivateTasks[task.uuid] = task
+      PrivateTasks[task.uuid].updatedAt = msg.Timestamp
+      -- add log
+      addLog('SaveProposal', communityUuid, msg.From, {
+        taskUuid = task.uuid
+      }, msg.Timestamp)
+      u.replyData(msg, PrivateTasks[task.uuid])
+    end,
+
+    -- delete proposal, only for task editors
+    DeleteProposal = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      assert(PrivateTasks[taskUuid], 'Proposal not found.')
+
+      assert(PrivateTasks[taskUuid].status == 'draft' or PrivateTasks[taskUuid].status == 'executing', 'Only draft proposal or executing proposal can be deleted.')
+
+      local boardUuid = PrivateTasks[taskUuid].boardUuid
+      local board = Boards[boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+
+      assertPrivateUnlocked(msg.From, communityUuid)
+      assert(u.findIndex(PrivateTasks[taskUuid].editors, function(editor) return editor == msg.From end), 'You are not the editor of this proposal.')
+
+      PrivateTasks[taskUuid].deletedAt = msg.Timestamp
+      PrivateTasks[taskUuid].updatedAt = msg.Timestamp
+      -- add log
+      addLog('DeleteProposal', communityUuid, msg.From, {
+        taskUuid = taskUuid
+      }, msg.Timestamp)
+      u.replyData(msg, PrivateTasks[taskUuid])
+    end,
+
+    -- update private task status, only for community owner or admins
+    UpdatePrivateTaskStatus = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      local operation = msg.Tags.Operation
+      assert(PrivateTasks[taskUuid], 'Proposal not found.')
+      assert(operation == 'approve' or operation == 'reject', 'Operation must be "approve" or "reject".')
+
+      assert(PrivateTasks[taskUuid].status == 'auditing' or PrivateTasks[taskUuid].status == 'waiting_for_validation', 'Only auditing or waiting for validation proposal can be updated.')
+
+      local boardUuid = PrivateTasks[taskUuid].boardUuid
+      local board = Boards[boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+
+      assertPrivateUnlocked(msg.From, communityUuid)
+      assertIsOwnerOrAdmin(msg.From, communityUuid)
+
+      local oldStatus = PrivateTasks[taskUuid].status
+      local newStatus = oldStatus
+      if operation == 'approve' then
+        if oldStatus == 'auditing' then
+          newStatus = 'executing'
+        elseif oldStatus == 'waiting_for_validation' then
+          newStatus = 'waiting_for_settlement'
+        end
+      elseif operation == 'reject' then
+        if oldStatus == 'auditing' then
+          newStatus = 'draft'
+        elseif oldStatus == 'waiting_for_validation' then
+          newStatus = 'executing'
+        end
+      end
+      -- TODO only update status and executionResult
+      PrivateTasks[taskUuid].status = newStatus
+      PrivateTasks[taskUuid].updatedAt = msg.Timestamp
+      -- add log
+      addLog('UpdatePrivateTaskStatus', communityUuid, msg.From, {
+        taskUuid = taskUuid,
+        operation = operation
+      }, msg.Timestamp)
+      u.replyData(msg, PrivateTasks[taskUuid])
     end,
 
     GetLogs = function(msg)
@@ -760,6 +1085,146 @@ Actions = {
         table.insert(result, log)
       end
       u.replyData(msg, result)
+    end,
+
+    UpdateSettleTx = function(msg)
+      local taskUuid = msg.Tags.TaskUuid
+      local budgetIndex = tonumber(msg.Tags.BudgetIndex)
+      local settleTx = msg.Tags.SettleTx
+
+      local task = PrivateTasks[taskUuid]
+      assert(task, 'Task not found.')
+      assert(task.status ~= 'settled', 'This task is already settled.')
+      assert(budgetIndex and budgetIndex > 0 and budgetIndex <= #task.budgets, 'Invalid budget index.')
+      assert(settleTx, 'Settlement transaction ID is required.')
+
+      -- Check that budget doesn't already have a settleTx
+      assert(not task.budgets[budgetIndex].settleTx, 'This budget has already been settled.')
+
+      -- Only owner or admins can update settleTx
+      local board = Boards[task.boardUuid]
+      assert(board, 'Board not found.')
+      local communityUuid = board.communityUuid
+      assertIsOwnerOrAdmin(msg.From, communityUuid)
+
+      -- Update the settleTx
+      task.budgets[budgetIndex].settleTx = settleTx
+
+      -- Check if all budgets are settled and update task status if so
+      local allSettled = true
+      for _, budget in ipairs(task.budgets) do
+        if not budget.settleTx then
+          allSettled = false
+          break
+        end
+      end
+
+      if allSettled then
+        task.status = 'settled'
+      end
+
+      task.updatedAt = msg.Timestamp
+
+      -- Add log
+      addLog('UpdateSettleTx', communityUuid, msg.From, {
+        taskUuid = taskUuid,
+        budgetIndex = budgetIndex,
+        settleTx = settleTx
+      }, msg.Timestamp)
+
+      u.replyData(msg, task)
+    end,
+    
+    GetPage = function(msg)
+      local pageUuid = msg.Tags.PageUuid
+      
+      local page = Pages[pageUuid]
+      if not page then
+        return u.replyError(msg, 'Page not found.')
+      end
+      
+      u.replyData(msg, page)
+    end,
+
+    AddPage = function(msg)
+      local communityUuid = msg.Tags.CommunityUuid
+      
+      -- Only owner or admins can add page
+      assertIsOwnerOrAdmin(msg.From, communityUuid)
+      
+      ---@type Page
+      local page = json.decode(msg.Data)
+      local pageUuid = u.createUuid()
+      
+      page.uuid = pageUuid
+      page.communityUuid = communityUuid
+      
+      Pages[pageUuid] = page
+      
+      -- Add page to PrivateAreaConfig
+      PrivateAreaConfig[communityUuid] = PrivateAreaConfig[communityUuid] or {
+        communityUuid = communityUuid,
+        pagesAreaTitle = 'Private Area',
+        pageUuids = {},
+        boardUuids = {}
+      }
+      
+      if not u.findIndex(PrivateAreaConfig[communityUuid].pageUuids, function(uuid) return uuid == pageUuid end) then
+        table.insert(PrivateAreaConfig[communityUuid].pageUuids, pageUuid)
+      end
+      
+      u.replyData(msg, page)
+    end,
+    
+    DeletePage = function(msg)
+      local pageUuid = msg.Tags.PageUuid
+      
+      local existingPage = Pages[pageUuid]
+      assert(existingPage, 'Page not found.')
+      
+      -- Only owner or admins can delete page
+      assertIsOwnerOrAdmin(msg.From, existingPage.communityUuid)
+      
+      
+      -- Remove page from PrivateAreaConfig
+      local communityUuid = existingPage.communityUuid
+      if PrivateAreaConfig[communityUuid] and PrivateAreaConfig[communityUuid].pageUuids then
+        local index = u.findIndex(PrivateAreaConfig[communityUuid].pageUuids, function(uuid) return uuid == pageUuid end)
+        if index then
+          table.remove(PrivateAreaConfig[communityUuid].pageUuids, index)
+        end
+      end
+      -- Remove page from Pages table
+      Pages[pageUuid] = nil
+      
+      -- Add log
+      addLog('DeletePage', communityUuid, msg.From, {
+        pageUuid = pageUuid,
+        pageTitle = existingPage.title
+      }, msg.Timestamp)
+      
+      u.replyData(msg, { success = true, deletedPageUuid = pageUuid })
+    end,
+    
+    UpdatePage = function(msg)
+      local pageUuid = msg.Tags.PageUuid
+      
+      local existingPage = Pages[pageUuid]
+      if not existingPage then
+        return u.replyError(msg, 'Page not found.')
+      end
+      
+      -- Only owner or admins can update page
+      assertIsOwnerOrAdmin(msg.From, existingPage.communityUuid)
+      
+      ---@type Page
+      local updatedPage = json.decode(msg.Data)
+      
+      -- Only update title and content
+      existingPage.title = updatedPage.title
+      existingPage.content = updatedPage.content
+      
+      u.replyData(msg, existingPage)
     end
   },
 
@@ -1217,9 +1682,14 @@ Actions = {
       for address, inviteInfo in pairs(UserCommunities) do
         if inviteInfo[uuid] then
           if not Users[address] then
-            Users[address] = { name = '', avatar = '' }
+            Users[address] = {
+              avatar = DefaultUserAvatar,
+              name = string.sub(address, -4),
+              createdAt = msg.Timestamp,
+              canCreateCommunity = false
+            }
           end
-          communityUsers[address] = Users[address]
+          communityUsers[address] = u.deepCopy(Users[address])
           communityUsers[address].address = address
           communityUsers[address].muted = false
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onErrorCaptured } from 'vue'
+import { notificationStore } from '~/stores/notificationStore'
+
 const { showError } = $(notificationStore())
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare, no-unused-vars, @typescript-eslint/no-unused-vars
@@ -12,7 +14,7 @@ BigInt.prototype.toJSON = function () {
   return this.toString()
 }
 
-onErrorCaptured((error, instance, info) => {
+onErrorCaptured((error, _instance, info) => {
   console.error('Global error handler:', error, info)
   showError('Application Error: ', error)
   // return false to avoid 'TypeError: Cannot destructure property 'type' of 'vnode' as it is null' and page freezing

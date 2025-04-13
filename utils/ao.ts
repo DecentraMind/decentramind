@@ -1,7 +1,8 @@
 import { connect, createDataItemSigner } from '@permaweb/aoconnect'
 import { get } from 'lodash-es'
+import { retry } from '~/utils/util'
 
-const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect({
+const { result, results, message, spawn, monitor, unmonitor, dryrun: originalDryrun } = connect({
   // MU_URL: 'https://mu.ao-testnet.xyz',
   // CU_URL: 'https://cu131.ao-testnet.xyz',
   MODE: 'legacy',
@@ -9,47 +10,36 @@ const { result, results, message, spawn, monitor, unmonitor, dryrun } = connect(
   GATEWAY_URL: 'https://g8way.io',
 })
 
+export type DryrunInput = Parameters<typeof originalDryrun>[0]
+export type DryrunOutput = Awaited<ReturnType<typeof originalDryrun>>
+export type ResultInput = Parameters<typeof result>[0]
+export type ResultOutput = Awaited<ReturnType<typeof result>>
+export type MessageInput = Parameters<typeof message>[0]
+export type Wallet = Parameters<typeof createDataItemSigner>[0]
+
+/**
+ * dryrun wrapper with retry.
+ * @param messageParams 
+ * @returns 
+ */
+const dryrun = async (messageParams: DryrunInput): Promise<DryrunOutput> => {
+  const res = await retry({
+    fn: () => originalDryrun(messageParams),
+    maxAttempts: 3,
+    interval: 500
+  })
+  if (!res) {
+    throw new Error('Dryrun failed.')
+  }
+  return res
+}
+
 export { result, results, message, spawn, monitor, unmonitor, dryrun, createDataItemSigner }
 
-export type MessageInput = {
-  process: string;
-  data?: any;
-  tags?: {
-    name: string;
-    value: string;
-  }[];
-  anchor?: string;
-  Id?: string;
-  Owner?: string;
-}
-
-export type DryrunInput = MessageInput & {
-  [x: string]: any;
-}
-
-// TODO import Types.signer from @permaweb/aoconnect/dist/dal.d.ts
-type Signer = (_: {
-  data?: any;
-  tags?: { name?: string; value?: any }[];
-  target?: string;
-  anchor?: string;
-}) => Promise<{
-  id?: string;
-  raw?: any;
-}>
-
-export type SendMessageArgs = {
-  process: string;
-  data?: string;
-  tags?: {
-      name: string;
-      value: string;
-  }[];
-  anchor?: string;
-  signer: Signer;
-}
-
-export function checkResult(res: Awaited<ReturnType<typeof result>>) {
+export function checkResult(res: DryrunOutput | ResultOutput) {
+  if (!res) {
+    throw new Error('No result')
+  }
   if (res.Error) {
     throw new Error(res.Error)
   }
@@ -67,14 +57,15 @@ export function checkResult(res: Awaited<ReturnType<typeof result>>) {
 /**
  * Send message to AO, then get result, check if error exists
  */
-export async function messageResultCheck(messageParams: SendMessageArgs) {
+export async function messageResultCheck(messageParams: MessageInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     const messageId = await message(messageParams)
     const res = await result({ process: messageParams.process, message: messageId })
     // console.log('check result', res)
     return checkResult(res)
   } catch (error) {
-    console.error('Failed to messageResultCheck', error)
+    // console.error('Failed to messageResultCheck', error)
     throw error
   }
 }
@@ -82,61 +73,76 @@ export async function messageResultCheck(messageParams: SendMessageArgs) {
 /**
  * Send message to AO, then get result, check if error exists, then extract data from result
  */
-export async function messageResult<T>(messageParams: SendMessageArgs) {
+export async function messageResult<T>(messageParams: MessageInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     const messageId = await message(messageParams)
     const res = await result({ process: messageParams.process, message: messageId })
     return extractResult<T>(res)
   } catch (error) {
-    console.error('Failed to messageResult:', error)
+    // console.error('Failed to messageResult:', error)
     throw error
   }
 }
 
-export async function messageResultParsed<T>(messageParams: SendMessageArgs) {
+export async function messageResultParsed<T>(messageParams: MessageInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     return JSON.parse(await messageResult<string>(messageParams)) as T
   } catch (error) {
-    console.error('Failed to parse message result:', error)
-    return null
+    // console.error('Failed to parse message result:', error)
+    throw error
   }
 }
 
 export async function dryrunResult<T>(messageParams: DryrunInput) {
+  // eslint-disable-next-line no-useless-catch
   try {
     const result = await dryrun(messageParams)
     return extractResult<T>(result)
   } catch (error) {
-    console.error('Failed to dryrun:', error)
-    console.log('messageParams', messageParams)
+    // console.error('Failed to dryrun:', error)
+    // console.log('messageParams', messageParams)
     throw error
   }
 }
 
 export async function dryrunResultParsed<T>(messageParams: DryrunInput) {
-  try {
-    return JSON.parse(await dryrunResult<string>(messageParams)) as T
-  } catch (error) {
-    console.error('Failed to parse dryrun result:', error)
-    return null
-  }
+  return JSON.parse(await dryrunResult<string>(messageParams)) as T
 }
 
 /**
  * Get data from dryrun/result() return value
- * @param result dryrun result
+ * @param res dryrun/result() return value
  * @returns
  */
-export function extractResult<T>(result: Awaited<ReturnType<typeof dryrun>>) {
-  checkResult(result)
+export function extractResult<T>(res: DryrunOutput | ResultOutput) {
+  checkResult(res)
 
-  if (!result?.Messages?.[0]?.Data) {
-    console.error('Failed to extract data from result.Messages:', result)
-    if (result.Output?.print) {
-      console.error(result.Output.data)
+  if (!res?.Messages?.[0]?.Data) {
+    console.error('Failed to extract data from result.Messages:', res)
+    if (res!.Output?.print) {
+      console.error(res!.Output.data)
     }
     throw new Error('Failed to extract data from result.Messages.')
   }
 
-  return result.Messages[0].Data as T
+  return res.Messages[0].Data as T
+}
+
+export function extractResultTags<T extends Record<string, string>>(res: DryrunOutput | ResultOutput): T {
+  checkResult(res)
+  return res.Messages[0].Tags.reduce(
+    (acc: T, tag: { name: string; value: string }) => {
+      const tagName = tag.name.charAt(0).toLowerCase() + tag.name.slice(1) as keyof T
+      acc[tagName] = tag.value as T[keyof T]
+      return acc
+    },
+    {} as T
+  )
+}
+
+export async function dryrunResultTags<T extends Record<string, string>>(messageParams: DryrunInput): Promise<T> {
+  const result = await dryrun(messageParams)
+  return extractResultTags<T>(result)
 }

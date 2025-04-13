@@ -2,6 +2,10 @@
 import { nextTick } from 'vue'
 import MessageList from './MessageList.vue'
 import Loading from '../Loading.vue'
+import { inboxStore } from '~/stores/inboxStore'
+import { communityStore } from '~/stores/communityStore'
+import { aoStore } from '~/stores/aoStore'
+import { notificationStore } from '~/stores/notificationStore'
 
 const { chat: chatID } = $defineProps<{
   chat: string
@@ -112,7 +116,7 @@ const isTextareaDisabled = computed(() => {
       </div>
     </div>
 
-    <div class="relative h-[calc(100vh-var(--header-height))] flex flex-col justify-between pt-0 pb-4">
+    <div class="relative h-[calc(100vh-var(--header-height)-var(--header-height))] flex flex-col justify-between pt-0 pb-4">
       <div class="overflow-y-auto h-[calc(100%-160px)] flex flex-col-reverse">
         <div ref="listBottom" class="h-0" />
 

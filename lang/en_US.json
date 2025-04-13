@@ -227,7 +227,7 @@
   "wallet.withdraw": "withdraw",
   "yes": "yes",
   "Save": "Save",
-
+  "View Transaction": "View Transaction",
   "private": {
     "applicable": {
       "label": "Private Area Applicable",
@@ -240,6 +240,7 @@
     },
     "area": {
       "title": "Private Area",
+      "noWorkArea": "No work area yet.",
       "descriptionNotApplicable": "The private area can be viewed, but builders can't apply to join it.",
       "descriptionApplicable": "The private area can be viewed and builders can apply to join it.",
       "management": "Private Area Management",
@@ -251,7 +252,23 @@
       "applicationDescription": "Please answer all questions below to apply for private area access.",
       "answerPlaceholder": "Enter your answer here...",
       "applicationSubmitted": "Your application has been submitted successfully, please wait for approval.",
-      "addBoard": "Add a Kanban"
+      "addWorkArea": "Add a work area",
+    },
+    "page": {
+      "addPage": "Add a page",
+      "editPage": "Edit a page",
+      "pageTitlePlaceholder": "Page Title",
+      "pageContentPlaceholder": "Enter your page content here...",
+      "failedToAddPage": "Failed to add page",
+      "failedToUpdatePage": "Failed to update page",
+      "titleRequired": "Title is required",
+      "pageUpdated": "Page updated successfully",
+      "noPage": "No page yet",
+      "deletePage": "Delete Page",
+      "deleteConfirm": "Are you sure you want to delete the page \"{title}\"?",
+      "deleteWarning": "This action cannot be undone.",
+      "deleteSuccess": "Page deleted successfully",
+      "deleteError": "Failed to delete page"
     },
     "task": {
       "add": "Add Proposal",
@@ -263,11 +280,11 @@
         "executionResult": "Task Execution Result"
       },
       "status": {
-        "proposal": "Proposal",
+        "draft": "Draft",
         "auditing": "Auditing",
         "executing": "Executing",
         "waiting_for_validation": "Validating",
-        "waiting_for_settlement": "Waiting for Settlement",
+        "waiting_for_settlement": "Settling",
         "settled": "Settled"
       }
     },

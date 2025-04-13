@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { BadgeColor } from '#ui/types'
-
-type SubmissionValidateStatus = 'waiting_for_validation' | 'validated' | 'invalid' | 'validation_error' | 'revalidated'
+import type { SubmissionValidateStatus } from '~/types'
 
 interface Props {
   status: SubmissionValidateStatus

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { getQuestions } from '~/utils/community/community'
 import PrivateIndex from './PrivateIndex.vue'
+import PrivateManagementModal from './PrivateManagementModal.vue'
+import MountedTeleport from '~/components/MountedTeleport.vue'
+import { useQuestionsQuery } from '~/composables/community/communityQuery'
 
 const props = withDefaults(defineProps<{
   isAdmin?: boolean
@@ -14,7 +16,7 @@ const props = withDefaults(defineProps<{
   joined: false
 })
 
-const isMembersModalOpen = ref(false)
+const isManagementModalOpen = ref(false)
 const isApplicationModalOpen = ref(false)
 const defaultTab = ref('members')
 let showIndex = $ref(false)
@@ -25,25 +27,29 @@ const uuid = route.params.uuid as string
 const hasQuestions = ref(false)
 const isLoading = ref(true)
 const questions = ref<string[]>([])
-
-// Load questions when component is mounted
-onMounted(async () => {
-  const loadedQuestions = await getQuestions(uuid)
-  questions.value = loadedQuestions || []
-  hasQuestions.value = loadedQuestions ? loadedQuestions.length > 0 : false
-  isLoading.value = false
-  showIndex = hasQuestions.value ? props.isAdmin || props.isOwner || props.joined : false
+const { data: loadedQuestions, isSuccess } = useQuestionsQuery(uuid, {
+  enabled: true
 })
+
+watch(isSuccess, (newVal) => {
+  if (newVal) {
+    questions.value = loadedQuestions.value || []
+    hasQuestions.value = loadedQuestions.value ? loadedQuestions.value.length > 0 : false
+    console.log('hasQuestions', hasQuestions.value)
+    isLoading.value = false
+    showIndex = hasQuestions.value ? props.isAdmin || props.isOwner || props.joined : false
+  }
+}, { immediate: true })
 
 function openMembersModal(tab: string = 'members') {
   defaultTab.value = tab
-  isMembersModalOpen.value = true
+  isManagementModalOpen.value = true
 }
 </script>
 
 <template>
   <UPage>
-    <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height))] overflow-y-auto scroll-gutter">
+    <div class="relative flex flex-col px-3 pt-6 pb-10 items-center h-[calc(100vh-var(--header-height)-var(--header-height))] overflow-y-auto scroll-gutter">
       <div
         v-if="isLoading"
         class="absolute top-0 right-0 w-full h-full flex justify-center items-center"
@@ -54,7 +60,7 @@ function openMembersModal(tab: string = 'members') {
           class="w-16 h-16 opacity-50"
         />
       </div>
-      <div v-else class="h-full w-full">
+      <div v-else class="w-full">
         <PrivateIndex v-if="showIndex" :is-admin="isAdmin" :uuid="uuid" />
         <div v-else class="h-full flex flex-col items-center justify-center">
           <h2 class="text-2xl font-bold mb-4">
@@ -100,7 +106,7 @@ function openMembersModal(tab: string = 'members') {
       </div>
     </div>
 
-    <Teleport v-if="isAdmin || isOwner" to="#top-right-button">
+    <MountedTeleport v-if="isAdmin || isOwner" to="#top-right-button">
       <UButton
         color="gray"
         variant="ghost"
@@ -108,10 +114,10 @@ function openMembersModal(tab: string = 'members') {
         size="xs"
         @click="openMembersModal()"
       />
-    </Teleport>
+    </MountedTeleport>
 
-    <PrivateMembersModal
-      v-model="isMembersModalOpen"
+    <PrivateManagementModal
+      v-model="isManagementModalOpen"
       :uuid="uuid"
       :default-tab="defaultTab"
       :show-applicable-setting="isOwner"
@@ -121,7 +127,6 @@ function openMembersModal(tab: string = 'members') {
     <PrivateApplicationModal
       v-model="isApplicationModalOpen"
       :uuid="uuid"
-      :questions="questions"
     />
   </UPage>
 </template>

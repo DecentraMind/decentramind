@@ -8,6 +8,7 @@
     "source.fixAll": "never",
     "source.fixAll.eslint": "explicit"
   },
+  "editor.gotoLocation.multipleDefinitions": "goto",
 
 
   "eslint.validate": [
@@ -103,4 +104,7 @@
   },
   "javascript.preferGoToSourceDefinition": true,
   "typescript.preferGoToSourceDefinition": true,
+  "Lua.diagnostics.disable": [
+    "trailing-space"
+  ],
 }

@@ -5,6 +5,10 @@ import TimeAgo from '../TimeAgo.vue'
 import Loading from '../Loading.vue'
 import audioFile from '@/assets/notify.mp3'
 import { formatEnglishDate } from '~/utils/time'
+import { inboxStore } from '~/stores/inboxStore'
+import { communityStore } from '~/stores/communityStore'
+import { aoStore } from '~/stores/aoStore'
+import { sortBy, filter } from 'lodash-es'
 
 const notifySound = new Audio(audioFile)
 
@@ -23,7 +27,7 @@ const { address } = $(aoStore())
 const groupedMessages = $computed(() => {
   if (!mailCache || !mailCache[pid]) return []
   
-  const sortedMessages = useSortBy(useFilter(mailCache[pid], item => !!item.Data), item => item.index)
+  const sortedMessages = sortBy(filter(mailCache[pid], item => !!item.Data), item => item.index)
   const groups: { date: string; messages: MailCache[] }[] = []
   
   sortedMessages.forEach((message) => {

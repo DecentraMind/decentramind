@@ -53,7 +53,7 @@ export default defineEventHandler(async (event: H3Event<EventHandlerRequest>): P
       Bucket: bucketName,
       Key: key,
       ContentType: file.type,
-      Body: await file.arrayBuffer(),
+      Body: new Uint8Array(await file.arrayBuffer()),
       ACL: 'public-read'
     } as PutObjectCommandInput
 

@@ -1,12 +1,13 @@
-import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner, dryrunResultParsed } from '~/utils/ao'
-import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, RelatedUserMap, Submission } from '~/types'
+import { dryrun, dryrunResult, messageResultCheck, createDataItemSigner, dryrunResultParsed, type Wallet } from '~/utils/ao'
+import type { Task, AllSubmissionWithCalculatedBounties, AllSubmission, Community, InviteCodeInfo, RelatedUserMap, Submission, Bounty, BountySendHistory } from '~/types'
 import { extractResult } from '~/utils'
 import { DM_PROCESS_ID } from '~/utils/processID'
 import { cloneDeep } from 'lodash-es'
 import { bigintReplacer } from '~/utils/int'
 
 const taskManagerProcessID = DM_PROCESS_ID
-export async function getTask(taskPid: string, address?: string): Promise<Task> {
+
+export async function getTask({taskPid, address}: {taskPid: string, address?: string}): Promise<Task> {
   if (!taskPid) {
     throw new Error('Task process ID is required to get task info.')
   }
@@ -41,6 +42,30 @@ export async function getTask(taskPid: string, address?: string): Promise<Task> 
   return task
 }
 
+export const getTasksByCommunityUuid = async (communityUuid: string): Promise<Task[]> => {
+  if(!communityUuid) {
+    throw new Error('communityUuid is required.')
+  }
+
+  const tasks = await dryrunResultParsed<Task[]>({
+    process: taskManagerProcessID,
+    tags: [
+      { name: 'Action', value: 'GetTasksByCommunityUuid' },
+      { name: 'CommunityUuid', value: communityUuid },
+    ],
+  })
+
+  return tasks.sort((a, b) => {
+    return a.createTime >= b.createTime ? -1 : 1
+  }).map(task => {
+    // TODO this is a temp fix of submittersCount, remove this if TaskManger process reply correct submittersCount
+    task.submittersCount = task.submissions.reduce((set, submission) => {
+      return set.add(submission.address) 
+    }, new Set()).size
+    return task
+  })
+}
+
 /**
  * Get tasks that are not settled
  */
@@ -70,7 +95,7 @@ export async function getUnsettledTasksByCommunityUuid(communityUuid: string) {
 export const updateSubmission = async (
   submission: Pick<AllSubmission, 'id'> & Partial<Omit<AllSubmission, 'createTime' | 'updateTime' | 'validateTime' | 'validator'>>,
   taskPid: string,
-  wallet?: Parameters<typeof createDataItemSigner>[0]
+  wallet?: Wallet
 ) => {
   console.log('update submission', { taskPid, submission: submission.id, validateStatus: submission.validateStatus })
   
@@ -95,7 +120,7 @@ export const updateSubmission = async (
  * @param submissions 
  * @returns 
  */
-export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const updateTaskSubmissions = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Wallet) => {
   console.log('update task submissions', submissions)
   if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
@@ -117,7 +142,7 @@ export const updateTaskSubmissions = async (taskPid: string, submissions: AllSub
  * @param submissions
  * @returns 
  */
-export const updateTaskSubmissionBounties = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+export const updateTaskSubmissionBounties = async (taskPid: string, submissions: AllSubmissionWithCalculatedBounties[], wallet?: Wallet) => {
   console.log('update task submission bounties', submissions)
   if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to update task submission bounties')
@@ -136,7 +161,7 @@ export const updateTaskSubmissionBounties = async (taskPid: string, submissions:
 /**
  * update invalid or validation error submission
  */
-export const updateInvalidSubmission = async function({submissionId, taskPid, wallet, validateStatus, validateError}: {submissionId: number, taskPid: string, wallet?: Parameters<typeof createDataItemSigner>[0], validateStatus: Submission['validateStatus'], validateError?: string}) {
+export const updateInvalidSubmission = async function({submissionId, taskPid, wallet, validateStatus, validateError}: {submissionId: number, taskPid: string, wallet?: Wallet, validateStatus: Submission['validateStatus'], validateError?: string}) {
   if (!validateStatus || !['invalid', 'validation_error'].includes(validateStatus)) {
     throw new Error('Invalid validate status')
   }
@@ -155,7 +180,7 @@ export const updateInvalidSubmission = async function({submissionId, taskPid, wa
  * @returns 
  */
 export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTime'|'updateTime'>, 
-  wallet?: Parameters<typeof createDataItemSigner>[0]) => {
+  wallet?: Wallet) => {
   if (!globalThis.window?.arweaveWallet && !wallet) {
     throw new Error('Wallet is required to submit task')
   }
@@ -167,7 +192,7 @@ export const submitTask = async (submission: Omit<AllSubmission, 'id'|'createTim
   })
 }
 
-export const getInvitesByInviter = async (inviter: string, type?: 'task' | 'community') => {
+export const getInvitesByInviter = async ({inviter, type}: {inviter: string, type?: 'task' | 'community'}) => {
   const tags = [{ name: 'Action', value: 'GetInvitesByInviter' }, { name: 'Inviter', value: inviter }]
   if (type) {
     tags.push({ name: 'InviteType', value: type })
@@ -183,4 +208,39 @@ export const getInvitesByInviter = async (inviter: string, type?: 'task' | 'comm
     relatedTasks: Record<string, Task>,
     relatedCommunities: Record<string, Community>
   }
+}
+
+export const getBountiesByCommunityID = async (communityUuid: string) => {
+  return await dryrunResultParsed<(Bounty & {recipientName: string})[]>({
+    process: taskManagerProcessID,
+    tags: [{
+      name: 'Action', value: 'GetBountiesByCommunityID'
+    }, {
+      name: 'CommunityUuid', value: communityUuid
+    }]
+  })
+}
+
+export const getBountiesByAddress = async (address: string) => {
+  return await dryrunResultParsed<{
+    published: BountySendHistory[],
+    awarded: BountySendHistory[]
+  }>({
+    process: taskManagerProcessID,
+    tags: [{
+      name: 'Action', value: 'GetBountiesByAddress'
+    }, {
+      name: 'Address', value: address
+    }]
+  })
+}
+
+export const getTasksByOwner = async (address: string) => {
+  return await dryrunResultParsed<Task[]>({
+    process: taskManagerProcessID,
+    tags: [
+      { name: 'Action', value: 'GetTasksByOwner' },
+      { name: 'Address', value: address }
+    ]
+  })
 }
