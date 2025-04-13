@@ -140,7 +140,7 @@ const showSidebar = ref(false)
           :community="community"
         />
         <PrivateHome
-          v-if="community && selectedTaskVisibleType === 1 && runtimeConfig.public.debug"
+          v-if="community && selectedTaskVisibleType === 1"
           :is-admin="isAdminOrOwner"
           :is-owner="community.owner === address"
           :is-applicable="community.isPrivateApplicable"
