@@ -111,8 +111,8 @@ const findInvitedByCommunityID = (communityID: string) => {
 </script>
 
 <template>
-  <UDashboardPanelContent class="p-0 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
-    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none'}">
+  <UDashboardPanelContent :ui="{wrapper: 'overflow-y-auto p-0'}">
+    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none', base: 'p-4 h-[calc(100vh-var(--header-height)-48px)]'}">
       <div v-if="loading" class="w-full flex justify-center">
         <UIcon name="svg-spinners:3-dots-fade" class="w-[210px]" size="xl" dynamic v-bind="$attrs" />
       </div>

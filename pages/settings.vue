@@ -3,6 +3,7 @@ import { aoStore } from '~/stores/aoStore'
 
 const {t} = useI18n()
 const { address } = $(aoStore())
+const { setCurrentCommunityUuid } = $(communityStore())
 const router = useRouter()
 
 definePageMeta({
@@ -10,6 +11,7 @@ definePageMeta({
 })
 
 onMounted(async () => {
+  setCurrentCommunityUuid(undefined)
   if(!address) {
     router.push('/')
     return
@@ -33,26 +35,13 @@ const links = [[{
     label: t('setting.invite'),
     icon: 'i-heroicons-bell',
     to: '/settings/my-invite'
-  }]/*, [{
-    label: 'Documentation',
-    icon: 'i-heroicons-book-open',
-    to: 'https://ui.nuxt.com/pro',
-    target: '_blank'
-  }, {
-    label: 'Buy now',
-    icon: 'i-heroicons-credit-card',
-    to: 'https://ui.nuxt.com/pro/purchase',
-    target: '_blank'
   }]
-  */
   ]
 </script>
 
 <template>
   <UDashboardPage>
     <UDashboardPanel grow>
-      <UDashboardNavbar :title="`${t('setting.title')}`" />
-
       <UDashboardToolbar class="py-0 px-1.5 overflow-x-auto">
         <UHorizontalNavigation :links="links" />
       </UDashboardToolbar>

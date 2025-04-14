@@ -13,8 +13,8 @@ onMounted( async () => {
 </script>
 
 <template>
-  <UDashboardPanelContent class="p-4 pb-24 divide-y divide-gray-200 dark:divide-gray-800">
-    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none'}">
+  <UDashboardPanelContent :ui="{wrapper: 'overflow-y-auto p-0'}">
+    <UCard :ui="{ring: 'ring-0', shadow: 'shadow-none', base: 'p-4 h-[calc(100vh-var(--header-height)-48px)]'}">
       <template #header>
         <div class="text-xl flex items-center pl-5">
           <h3 class="w-[420px]">
