@@ -202,20 +202,20 @@ function categorize(bounties: BountySendHistory[]) {
 
 const selectedTaskVisibleType = $ref(0)
 const taskVisibleTabs = $ref([
-  { label: 'Public Quests', value: 0 },
-  { label: 'Private Quests', value: 1 },
+  { label: 'Public', value: 0 },
+  { label: 'Private', value: 1 },
 ])
 
 </script>
 
 <template>
-  <UDashboardPanelContent class="pb-10">
-    <UCard class="w-fit">
+  <UDashboardPanelContent :ui="{wrapper: 'overflow-y-auto p-0 h-[calc(100vh-var(--header-height)-48px)]'}">
+    <UCard class="" :ui="{ring: 'ring-0', shadow: 'shadow-none', base: 'p-0'}">
       <template #header>
         <UTabs
           v-model="selectedTaskVisibleType"
           :items="taskVisibleTabs"
-          :ui="{ wrapper: 'space-y-0 w-80' }"
+          :ui="{ wrapper: 'space-y-0 sm:w-80 max-w-full' }"
         />
       </template>
 

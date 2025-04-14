@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import type { Task } from '~/types'
+import type { JoinedCommunity, Task } from '~/types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -237,4 +237,10 @@ export function updateItemInArray<
     array[index] = fieldOrNewItem
   }
   return true
+}
+
+export function sortCommunities(communities: JoinedCommunity[]) {
+  return [...communities].sort((a, b) => {
+    return b.joinTime - a.joinTime
+  })
 }

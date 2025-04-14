@@ -27,14 +27,6 @@ const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUse
 
 let joinedCommunities = $ref<JoinedCommunity[]>([])
 const { isLoading, error: communityListError, isSuccess, data } = useJoinedCommunitiesQuery(address, {
-  select: (communities) => {
-    return [...communities].sort((a, b) => {
-      if (a.joinTime && b.joinTime) {
-        return b.joinTime - a.joinTime
-      }
-      return 0
-    })
-  },
   refetchOnMount: 'always',
   refetchOnWindowFocus: 'always'
 })

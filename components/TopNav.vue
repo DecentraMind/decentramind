@@ -62,7 +62,7 @@ const onClickDisconnect = async () => {
       </div>
 
       <div class="flex items-stretch flex-shrink-0 gap-1.5">
-        <UBadge color="white" :ui="{base: '!p-0 sm:!p-1'}">
+        <UBadge color="white" :ui="{base: '!p-0 sm:!p-1 [--tw-ring-inset:_]'}">
           <template v-if="address">
             <NuxtLink :to="'/dashboard/quests'">
               <UButton color="white" variant="ghost">

@@ -1,6 +1,7 @@
 import { DM_PROCESS_ID } from '~/utils/processID'
 import type { Board, Community, CommunityMember, JoinedCommunity, Log, PrivateApplication, PrivateAreaConfig, PrivateAreaConfigWithoutRelations, PrivateTask, PrivateUnlockMember, UserInfo } from '~/types'
 import { dryrunResultParsed, messageResultCheck, createDataItemSigner, type Wallet } from '~/utils/ao'
+import { sortCommunities } from '~/utils/util'
 
 export const communityProcessID = DM_PROCESS_ID
 
@@ -46,7 +47,7 @@ export const getJoinedCommunities = async (address: string) => {
     { name: 'Action', value: 'GetJoinedCommunities' },
     { name: 'userAddress', value: address }
   ]
-  return await dryrunResultParsed<JoinedCommunity[]>({ process: communityProcessID, tags })
+  return sortCommunities(await dryrunResultParsed<JoinedCommunity[]>({ process: communityProcessID, tags }))
 }
 
 export const join = async (communityUuid: string, inviteCode?: string, wallet?: Wallet) => {

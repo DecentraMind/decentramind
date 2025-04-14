@@ -11,7 +11,7 @@ const links = [[
 
 <template>
   <UDashboardPage>
-    <UDashboardPanel grow class="h-screen">
+    <UDashboardPanel grow class="h-[calc(100vh-var(--header-height))]">
       <UDashboardToolbar class="py-0 px-1.5 overflow-x-auto sticky top-0 z-10 backdrop-blur-lg">
         <UHorizontalNavigation :links="links" />
       </UDashboardToolbar>
