@@ -562,3 +562,8 @@ export type PrivateAreaConfig = {
 }
 
 export type PrivateAreaConfigWithoutRelations = Omit<PrivateAreaConfig, 'boards' | 'pages'>
+
+export type JoinedCommunity = Community & {
+  joinTime: number
+  privateUnlockTime: number
+}

@@ -9,6 +9,9 @@ import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { useUserInfo } from '~/composables/useUserInfo'
 import TopNav from '~/components/TopNav.vue'
+import { useQueryClient } from '@tanstack/vue-query'
+import type { JoinedCommunity } from '~/types'
+import { getJoinedCommunities } from '~/utils/community/community'
 
 const router = useRouter()
 
@@ -22,10 +25,37 @@ let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const { currentUuid } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
-const { data: joinedCommunities, isLoading, error: communityListError, refetch: refetchCommunities } = useJoinedCommunitiesQuery(address, {
+let joinedCommunities = $ref<JoinedCommunity[]>([])
+const { isLoading, error: communityListError, isSuccess, data } = useJoinedCommunitiesQuery(address, {
+  select: (communities) => {
+    return [...communities].sort((a, b) => {
+      if (a.joinTime && b.joinTime) {
+        return b.joinTime - a.joinTime
+      }
+      return 0
+    })
+  },
   refetchOnMount: 'always',
-  refetchOnWindowFocus: 'always',
+  refetchOnWindowFocus: 'always'
 })
+
+watch(isSuccess, () => {
+  if (isSuccess.value) {
+    joinedCommunities = data.value || []
+  }
+})
+
+
+const queryClient = useQueryClient()
+const refetchJoinedCommunities = async () => {
+  const newData = await queryClient.fetchQuery({
+    queryKey: ['community', 'joinedCommunities', address],
+    queryFn: () => getJoinedCommunities(address),
+    staleTime: 0
+  })
+  joinedCommunities = newData || []
+  console.log('new joinedCommunities', joinedCommunities.length)
+}
 
 const isCreateModalOpen = $ref(false)
 onMounted(async () => {
@@ -59,7 +89,7 @@ onMounted(async () => {
 
 const refetch = async () => {
   try {
-    await refetchCommunities()
+    await refetchJoinedCommunities()
     await delay(1000)
     await refetchUserInfo()
   } catch (error) {
@@ -85,7 +115,7 @@ const afterLogin = async () => {
       }
     }
 
-    await refetchCommunities()
+    await refetch()
   } else {
     reloadNuxtApp()
   }
@@ -258,7 +288,7 @@ const afterLogin = async () => {
         </div>
         <CommunitySettingForm
           v-if="selectModal === 1"
-          @saved="refetchCommunities()"
+          @saved="refetchJoinedCommunities()"
           @close-modal="isCreateModalOpen = false"
         />
         <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />

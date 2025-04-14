@@ -297,7 +297,7 @@ async function onSubmitTweetUrl(url: string) {
       throw new Error('You are not vouched.')
     }
 
-    if (!canSubmit && !runtimeConfig.public.debug) {
+    if (!canSubmit) {
       throw new Error('You already have a valid submission or waiting submission.')
     }
     
@@ -339,7 +339,7 @@ async function onSubmitSpaceUrl(url: string) {
       throw new Error('You are not vouched.')
     }
 
-    if (!canSubmit && !runtimeConfig.public.debug) {
+    if (!canSubmit) {
       throw new Error('You already have a valid submission or waiting submission.')
     }
 

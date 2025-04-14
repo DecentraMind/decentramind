@@ -76,7 +76,6 @@ const taskVisibleTabs: TaskVisibleTab[] = [
   },
 ]
 
-const runtimeConfig = useRuntimeConfig()
 const selectedTaskVisibleType = $computed({
   get() {
     const index = taskVisibleTabs.findIndex(item => item.type === (route.query.visible || 'public'))

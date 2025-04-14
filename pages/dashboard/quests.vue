@@ -8,6 +8,7 @@ import { notificationStore } from '~/stores/notificationStore'
 import { breadcrumbStore } from '~/stores/breadcrumbStore'
 import PrivateQuests from '~/components/dashboard/PrivateQuests.vue'
 import { useGetBountiesByAddressQuery, useGetTasksByOwnerQuery } from '~/composables/tasks/taskQuery'
+import { useJoinedCommunitiesQuery } from '~/composables/community/communityQuery'
 
 const questColumns = [
   {
@@ -36,8 +37,15 @@ const sort = $ref({ column: 'id', direction: 'asc' as const })
 
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
-const { joinedCommunities, setCurrentCommunityUuid } = $(communityStore())
+const { setCurrentCommunityUuid } = $(communityStore())
 const { setBreadcrumbs } = $(breadcrumbStore())
+const { data: joinedCommunities, isError: joinedCommunitiesIsError } = useJoinedCommunitiesQuery(address)
+
+watch(joinedCommunitiesIsError, () => {
+  if (joinedCommunitiesIsError.value) {
+    showError('Failed to fetch community data.')
+  }
+})
 
 setBreadcrumbs([
   { label: 'Home', to: '/discovery' },
@@ -78,6 +86,7 @@ type questRow = {
   communityName: string
 }
 const awardedBounties = $computed<questRow[]>(() => {
+  if (!joinedCommunities.value) return []
   const results = [] as questRow[]
   // eslint-disable-next-line no-unused-vars
   for (const [_, bounties] of Object.entries(awarded.taskId2BountiesMap)) {
@@ -85,7 +94,7 @@ const awardedBounties = $computed<questRow[]>(() => {
     const result = {
       name: bounties[0].taskName,
       bounties: bounties as unknown as Task['bounties'],
-      communityName: joinedCommunities.find(community => community.uuid == bounties[0].communityUuid)?.name || '',
+      communityName: joinedCommunities.value.find(community => community.uuid == bounties[0].communityUuid)?.name || '',
     }
     results.push(result)
   }
@@ -93,10 +102,11 @@ const awardedBounties = $computed<questRow[]>(() => {
 })
 
 const publishedTasksRows = $computed(() => {
+  if (!joinedCommunities.value) return []
   console.log('published rows', publishedTasks, pageC, pageCount)
   return publishedTasks.slice((pageC - 1) * pageCount, pageC * pageCount).map(task => {
     const res = {...task} as Task & { communityName: string }
-    res.communityName = joinedCommunities.find(community => community.uuid == task.communityUuid)?.name || ''
+    res.communityName = joinedCommunities.value.find(community => community.uuid == task.communityUuid)?.name || ''
     return res
   })
 })

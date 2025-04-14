@@ -1,4 +1,4 @@
-Variant = '1.0.100'
+Variant = '1.0.101'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -355,7 +355,7 @@ Actions = {
       local copy = u.deepCopy(Communities[uuid])
       copy.isJoined = true
       copy.joinTime = msg.Timestamp
-      copy.privateUnlockTime = nil
+      copy.privateUnlockTime = msg.Timestamp
       u.replyData(msg, json.encode(copy))
     end,
 
@@ -382,6 +382,22 @@ Actions = {
         table.insert(communities, copy)
       end
 
+      u.replyData(msg, communities)
+    end,
+
+    GetJoinedCommunities = function(msg)
+      local address = msg.Tags.userAddress
+      local communities = {}
+      for uuid, _ in pairs(UserCommunities[address] or {}) do
+        if not Communities[uuid] then
+          goto nextCommunity
+        end
+        local community = u.deepCopy(Communities[uuid])
+        community.joinTime = UserCommunities[address][uuid].joinTime
+        community.privateUnlockTime = UserCommunities[address][uuid].privateUnlockTime
+        table.insert(communities, community)
+        ::nextCommunity::
+      end
       u.replyData(msg, communities)
     end,
 
