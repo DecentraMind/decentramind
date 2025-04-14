@@ -119,7 +119,7 @@ const paginatedParticipatedTasks = computed(() => {
         </template>
         
         <div class="border-b border-gray-200 dark:border-gray-800">
-          <UButtonGroup block class="mb-0 rounded-none">
+          <UButtonGroup block class="mb-0 rounded-none max-w-full overflow-x-auto">
             <UButton
               v-for="status in privateTaskStatuses"
               :key="status"
