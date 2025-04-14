@@ -48,16 +48,21 @@ const onClickDisconnect = async () => {
       )
     "
   >
-    <div class="flex items-center justify-between flex-1 gap-x-1.5 min-w-0">
-      <div class="flex items-stretch gap-1.5 min-w-0">
-        <UBreadcrumb v-if="translatedBreadcrumbs.length > 0" :links="translatedBreadcrumbs">
-          <template #default="{ link, isActive }">
-            <span class="truncate" :class="{ 'font-medium': !isActive, 'text-gray-700': isActive }">{{ link.label }}</span>
+    <div class="flex items-center justify-between flex-1 gap-x-1 min-w-0">
+      <div class="flex items-stretch gap-1 min-w-0">
+        <UBreadcrumb
+          v-if="translatedBreadcrumbs.length > 0"
+          :links="translatedBreadcrumbs"
+          :ui="{ol: 'gap-x-0 sm:gap-x-1.5', li: 'gap-x-0 sm:gap-x-1.5', base: 'gap-x-0 sm:gap-x-1.5', divider: {base: 'hidden'}}"
+        >
+          <template #default="{ link, isActive, index }">
+            <span class="truncate" :class="{ 'font-medium': !isActive, 'text-gray-700': isActive, 'hidden sm:block': index === 0 }">{{ link.label }}</span><span :class="{ 'iconify i-heroicons:chevron-right-20-solid flex-shrink-0 w-5 h-5 rtl:rotate-180': true, 'hidden sm:block': index === 0, 'hidden': index === translatedBreadcrumbs.length - 1 }" />
           </template>
         </UBreadcrumb>
       </div>
+
       <div class="flex items-stretch flex-shrink-0 gap-1.5">
-        <UBadge color="white">
+        <UBadge color="white" :ui="{base: '!p-0 sm:!p-1'}">
           <template v-if="address">
             <NuxtLink :to="'/dashboard/quests'">
               <UButton color="white" variant="ghost">
