@@ -33,19 +33,6 @@ export const communityStore = defineStore('communityStore', () => {
   //   return communityList.find(community => community.uuid === currentUuid)?.admins
   // })
 
-  /** joined communities of current user */
-  const joinedCommunities = $computed<Community[]>(() => {
-    if (!address) return []
-
-    return (communityList as Community[]).filter((item) => item.isJoined)
-      .sort((a, b) => {
-        if (a.joinTime && b.joinTime) {
-          return b.joinTime - a.joinTime
-        }
-        return 0
-      })
-  })
-
   //Set the uuid of the currently selected community
   const setCurrentCommunityUuid = (uuid: any) => {
     console.log('set current community:', uuid)
@@ -444,7 +431,6 @@ export const communityStore = defineStore('communityStore', () => {
 
   return $$({
     communityList,
-    joinedCommunities,
     currentUuid,
     mutedUsers,
     mute,

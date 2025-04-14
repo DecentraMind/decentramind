@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant, deletePage } from '~/utils/community/community'
+import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant, deletePage, getJoinedCommunities } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -15,18 +15,10 @@ export function useCommunitiesQuery<TSelect = Community[]>(
   )<TSelect>(address, options)
 }
 
-export const useJoinedCommunitiesQuery = (address?: string, options?: Partial<UseQueryOptions<Community[]>>) => {
-  return useCommunitiesQuery(address, {
-    ...options,
-    // select option to filter joined communities
-    select: (communities) => communities.filter((community) => community.isJoined).sort((a, b) => {
-      if (a.joinTime && b.joinTime) {
-        return b.joinTime - a.joinTime
-      }
-      return 0
-    })
-  })
-}
+export const useJoinedCommunitiesQuery = createQueryComposable(
+  ['community', 'joinedCommunities'],
+  getJoinedCommunities
+)
 
 export const useCommunityFromCommunitiesQuery = (
   uuid: string, 

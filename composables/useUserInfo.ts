@@ -4,12 +4,13 @@ import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { useUserInfoQuery } from '~/composables/user/userQuery'
 import { useQueryClient } from '@tanstack/vue-query'
-import type { Community } from '~/types'
+import type { Community, UserInfo } from '~/types'
 import { getCommunities, getUserByAddress } from '~/utils/community/community'
 
 const useUserInfoBase = () => {
   const { address } = $(aoStore())
   const { currentUuid } = $(communityStore())
+  const userInfo = ref<UserInfo>()
   const queryClient = useQueryClient()
 
   // 使用计算属性来确保地址变化时查询会重新执行
@@ -17,12 +18,18 @@ const useUserInfoBase = () => {
 
   console.log('useUserInfo: address', currentAddress.value)
   const {
-    data: userInfo,
+    data,
     isLoading,
-    error: queryError
+    error: queryError,
+    isSuccess
   } = useUserInfoQuery(currentAddress.value, {
     enabled: !!currentAddress.value,
     staleTime: 0, // 立即重新获取数据
+  })
+  watch(isSuccess, () => {
+    if (isSuccess.value && data.value) {
+      userInfo.value = data.value
+    }
   })
 
   // TODO move this to communityStore
@@ -62,7 +69,7 @@ const useUserInfoBase = () => {
       queryFn: () => getUserByAddress(currentAddress.value),
       staleTime: 0
     })
-    return data
+    userInfo.value = data
   }
 
   return {

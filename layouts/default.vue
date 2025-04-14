@@ -9,6 +9,9 @@ import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { useUserInfo } from '~/composables/useUserInfo'
 import TopNav from '~/components/TopNav.vue'
+import { useQueryClient } from '@tanstack/vue-query'
+import type { JoinedCommunity } from '~/types'
+import { getJoinedCommunities } from '~/utils/community/community'
 
 const router = useRouter()
 
@@ -22,10 +25,37 @@ let { isLoginModalOpen, isVouchModalOpen } = $(aoStore())
 const { currentUuid } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
-const { data: joinedCommunities, isLoading, error: communityListError, refetch: refetchCommunities } = useJoinedCommunitiesQuery(address, {
+let joinedCommunities = $ref<JoinedCommunity[]>([])
+const { isLoading, error: communityListError, isSuccess, data } = useJoinedCommunitiesQuery(address, {
+  select: (communities) => {
+    return [...communities].sort((a, b) => {
+      if (a.joinTime && b.joinTime) {
+        return b.joinTime - a.joinTime
+      }
+      return 0
+    })
+  },
   refetchOnMount: 'always',
-  refetchOnWindowFocus: 'always',
+  refetchOnWindowFocus: 'always'
 })
+
+watch(isSuccess, () => {
+  if (isSuccess.value) {
+    joinedCommunities = data.value || []
+  }
+})
+
+
+const queryClient = useQueryClient()
+const refetchJoinedCommunities = async () => {
+  const newData = await queryClient.fetchQuery({
+    queryKey: ['community', 'joinedCommunities', address],
+    queryFn: () => getJoinedCommunities(address),
+    staleTime: 0
+  })
+  joinedCommunities = newData || []
+  console.log('new joinedCommunities', joinedCommunities.length)
+}
 
 const isCreateModalOpen = $ref(false)
 onMounted(async () => {
@@ -59,7 +89,7 @@ onMounted(async () => {
 
 const refetch = async () => {
   try {
-    await refetchCommunities()
+    await refetchJoinedCommunities()
     await delay(1000)
     await refetchUserInfo()
   } catch (error) {
@@ -85,7 +115,7 @@ const afterLogin = async () => {
       }
     }
 
-    await refetchCommunities()
+    await refetch()
   } else {
     reloadNuxtApp()
   }
@@ -94,12 +124,13 @@ const afterLogin = async () => {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel class="w-12 sm:w-20" :ui="{border:'lg:w-20'}">
+    <UDashboardPanel class="w-12 sm:w-16" :ui="{border:'lg:w-16'}">
       <UDashboardSidebar
         :ui="{
-          wrapper: 'bg-gray-100',
+          wrapper: 'bg-gray-100 pt-0',
+          container: 'pt-0 gap-y-0',
           body: 'px-0 py-0 gap-y-0',
-          header: 'flex-center px-0',
+          header: 'flex-center px-0 h-[calc(var(--header-height)-1px)]',
           footer: 'px-0 gap-x-0 justify-center'
         }"
       >
@@ -124,9 +155,9 @@ const afterLogin = async () => {
             <UButton
               to="/discovery"
               variant="ghost"
-              class="w-full px-1 py-0 hover:bg-transparent border-0 rounded-full text-white transition duration-300 ease-in-out transform bbbbb"
+              class="w-full px-1 py-0 hover:bg-transparent border-0 rounded-full text-white transition duration-300 ease-in-out transform"
             >
-              <img :src="arUrl(exploreLogo)" class="h-full w-full scale-110">
+              <img :src="arUrl(exploreLogo)" class="h-full w-full">
             </UButton>
             <template #panel>
               <div class="flex-center px-2 py-1">
@@ -138,7 +169,7 @@ const afterLogin = async () => {
 
         <UDivider />
 
-        <div class="overflow-y-auto h-full px-1 sm:px-2 pb-2" style="-ms-overflow-style: none; scrollbar-width: none;">
+        <div class="overflow-y-auto h-full py-2 px-1 sm:px-2 pb-2" style="-ms-overflow-style: none; scrollbar-width: none;">
           <div
             v-for="community in joinedCommunities"
             :key="community.uuid"
@@ -162,15 +193,15 @@ const afterLogin = async () => {
               <UButton
                 variant="link"
                 :to="`/community/${community.uuid}`"
-                class="group w-full block p-0 mt-2 relative ring-0"
+                class="group w-full block p-0 mt-1 relative ring-0"
               >
                 <!-- indicator of current community -->
                 <div
                   :class="cn(
                     'transition-all ease-in-out duration-500 rounded-sm bg-gray-900 absolute left-[-6px]',
-                    'w-0 group-hover:w-1 h-3 sm:h-8 top-4 sm:top-4 bg-opacity-0 group-hover:bg-opacity-60',
+                    'w-0 group-hover:w-1 h-3 sm:h-4 top-4 sm:top-4 bg-opacity-0 group-hover:bg-opacity-60',
                     {
-                      'w-1 h-6 sm:h-10 top-2 sm:top-3 bg-opacity-80': community.uuid === currentUuid
+                      'w-1 h-6 sm:h-6 top-2 sm:top-3 bg-opacity-80': community.uuid === currentUuid
                     }
                   )"
                 />
@@ -212,13 +243,13 @@ const afterLogin = async () => {
 
         <template #footer>
           <!-- <UserDropdownMini /> -->
-          <UPopover mode="hover" :to="userInfo && address ? '/settings' : '#'">
-            <UButton variant="ghost" @click="userInfo && address ? router.push('/settings') : isLoginModalOpen = true">
+          <UPopover mode="hover" :to="userInfo && address ? '/settings' : '#'" class="w-10 h-12 sm:w-12 sm:h-14">
+            <UButton variant="ghost" class="px-0 py-2" @click="userInfo && address ? router.push('/settings') : isLoginModalOpen = true">
               <template v-if="!userInfo || !address">
-                <ArAvatar :src="defaultUserAvatar" alt="User Settings" class="w-full h-full" avatar-class="w-10 h-10 sm:w-16 sm:h-16" :ui="{ size: {sm: 'w-10 h-10 sm:w-16 sm:h-16'} }" />
+                <ArAvatar :src="defaultUserAvatar" alt="User Settings" class="w-full h-full" avatar-class="w-10 h-10 sm:w-12 sm:h-12" :ui="{ size: {sm: 'w-10 h-10 sm:w-12 sm:h-12'} }" />
               </template>
               <template v-else>
-                <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" class="w-full h-full" avatar-class="w-10 h-10 sm:w-16 sm:h-16" :ui="{ size: {sm: 'w-10 h-10 sm:w-16 sm:h-16'} }" />
+                <ArAvatar :src="userInfo.avatar || defaultUserAvatar" alt="User Settings" class="w-full h-full" avatar-class="w-10 h-10 sm:w-12 sm:h-12" :ui="{ size: {sm: 'w-10 h-10 sm:w-12 sm:h-12'} }" />
               </template>
             </UButton>
           </UPopover>
@@ -240,7 +271,7 @@ const afterLogin = async () => {
       </UCard>
     </UDashboardPage>
 
-    <div v-else class="relative h-screen w-full">
+    <div v-else class="relative h-screen w-[calc(100vw-48px)] sm:w-[calc(100vw-64px)]">
       <TopNav class="sticky top-0 z-10" />
       <slot />
     </div>
@@ -258,7 +289,7 @@ const afterLogin = async () => {
         </div>
         <CommunitySettingForm
           v-if="selectModal === 1"
-          @saved="refetchCommunities()"
+          @saved="refetchJoinedCommunities()"
           @close-modal="isCreateModalOpen = false"
         />
         <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />
