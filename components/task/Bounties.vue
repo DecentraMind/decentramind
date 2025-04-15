@@ -32,7 +32,7 @@ const defaultPrecisions = $computed(() =>
     const fractionalLength = fractionalPart(bounty.amount).length
     carry.set(
       bounty.tokenProcessID,
-      bounty.amount < 1 ? fractionalLength + 1 : 2,
+      bounty.amount < 1 ? Math.min(4, fractionalLength + 1) : 2,
     )
     return carry
   }, new Map<string, number>()),
