@@ -116,7 +116,7 @@ const afterLogin = async () => {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel class="w-12 sm:w-16" :ui="{border:'lg:w-16'}">
+    <UDashboardPanel class="w-12 sm:w-16" :ui="{border:'lg:w-16 border-b-0'}">
       <UDashboardSidebar
         :ui="{
           wrapper: 'bg-gray-100 pt-0',
@@ -131,6 +131,7 @@ const afterLogin = async () => {
             mode="hover"
             :popper="{ arrow: true, placement: 'right', strategy: 'fixed', offsetDistance: 0 }"
             :ui="{
+              wrapper: 'flex-center',
               container: 'w-fit',
               background: 'bg-gray-50',
               base: 'font-bold py-0.5',
