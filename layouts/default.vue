@@ -27,8 +27,8 @@ const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUse
 
 let joinedCommunities = $ref<JoinedCommunity[]>([])
 const { isLoading, error: communityListError, isSuccess, data } = useJoinedCommunitiesQuery(address, {
-  refetchOnMount: 'always',
-  refetchOnWindowFocus: 'always'
+  refetchOnMount: address ? 'always' : false,
+  refetchOnWindowFocus: address ? 'always' : false
 })
 
 watch(isSuccess, () => {
