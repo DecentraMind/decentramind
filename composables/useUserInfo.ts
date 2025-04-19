@@ -5,7 +5,7 @@ import { communityStore } from '~/stores/communityStore'
 import { useUserInfoQuery } from '~/composables/user/userQuery'
 import { useQueryClient } from '@tanstack/vue-query'
 import type { Community, UserInfo } from '~/types'
-import { getCommunities, getUserByAddress } from '~/utils/community/community'
+import { getCommunity, getUserByAddress } from '~/utils/community/community'
 
 const useUserInfoBase = () => {
   const { address } = $(aoStore())
@@ -34,11 +34,10 @@ const useUserInfoBase = () => {
 
   // TODO move this to communityStore
   const currentCommunity = computedAsync(async () => {
-    const communities = await queryClient.fetchQuery<Community[]>({
-      queryKey: ['community', 'communities', currentAddress.value],
-      queryFn: async () => await getCommunities(currentAddress.value)
+    const community = await queryClient.fetchQuery<Community | null>({
+      queryKey: ['community', 'community', currentUuid],
+      queryFn: async () => currentUuid ? await getCommunity(currentUuid) : null
     })
-    const community = communities.find(community => community.uuid === currentUuid)
     // console.log('useUserInfo: currentCommunity', community)
     return community
   })
