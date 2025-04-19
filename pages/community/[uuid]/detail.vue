@@ -53,11 +53,6 @@ watch(
     if (communityName) {
       setBreadcrumbs([
         {
-          labelKey: 'Home',
-          label: 'Home',
-          to: '/discovery',
-        },
-        {
           label: communityName,
           to: `/community/${communityID}`,
         },

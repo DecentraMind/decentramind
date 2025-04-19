@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
-import type { Community, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant, deletePage, getJoinedCommunities } from '~/utils/community/community'
+import type { Community, JoinedCommunity, PrivateAreaConfig, PrivateTask } from '~/types'
+import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, exit, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant, deletePage, getJoinedCommunities, getCommunity } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -15,11 +15,27 @@ export function useCommunitiesQuery<TSelect = Community[]>(
   )<TSelect>(address, options)
 }
 
-export const useJoinedCommunitiesQuery = createQueryComposable(
-  ['community', 'joinedCommunities'],
-  getJoinedCommunities
+export const useJoinedCommunitiesQuery = function<TSelect = JoinedCommunity[]>(options?: Partial<UseQueryOptions<JoinedCommunity[], Error, TSelect>>) {
+  const { address } = $(aoStore())
+  return useQueuedQuery<JoinedCommunity[], TSelect>(
+    ['community', 'joinedCommunities', address],
+    () => getJoinedCommunities(address),
+    {
+      enabled: true,
+      ...options
+    }
+  )
+}
+
+export const useCommunityQuery = createQueryComposable(
+  ['community', 'community'],
+  (uuid: string) => {
+    const { address } = $(aoStore())
+    return getCommunity(uuid, address)
+  }
 )
 
+// TODO: remove this
 export const useCommunityFromCommunitiesQuery = (
   uuid: string, 
   address?: string, 
@@ -31,11 +47,55 @@ export const useCommunityFromCommunitiesQuery = (
   })
 }
 
-export const useJoinMutation = ({communityUuid, inviteCode, onErrorCb}: {communityUuid: string, inviteCode?: string, onErrorCb?:()=>void}) => {
+export const useJoinMutation = (onErrorCb?:()=>void) => {
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => inviteCode ? join(communityUuid, inviteCode) : join(communityUuid),
-    onError: () => {
+    mutationFn: async ({communityToJoin, address, inviteCode}: {communityToJoin: Community, address: string, inviteCode?: string}) => {
+      if (inviteCode) {
+        await join(communityToJoin.uuid, inviteCode)
+      } else {
+        await join(communityToJoin.uuid)
+      }
+      return {joinedCommunity: {...communityToJoin, joinTime: Date.now()}, address}
+    },
+    onError: (_error, _variables, _context) => {
       onErrorCb?.()
+    },
+    onSettled: async (data) => {
+      const {joinedCommunity, address} = data || {}
+      if (!joinedCommunity || !address) return
+      await queryClient.cancelQueries({ queryKey: ['community', 'joinedCommunities', address] })
+        
+      console.log('update joined communities', joinedCommunity, address)
+      
+      queryClient.setQueryData<JoinedCommunity[]>(
+        ['community', 'joinedCommunities', address],
+        (old = []) => [joinedCommunity, ...old.filter(c => c.uuid !== joinedCommunity.uuid)]
+      )
+      queryClient.invalidateQueries({ queryKey: ['community', 'joinedCommunities', address] })
+    },
+  })
+}
+
+export const useExitMutation = (onErrorCb?:()=>void) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({communityUuid, address}: {communityUuid: string, address: string}) => {
+      await exit(communityUuid)
+      return {address, communityUuid}
+    },
+    onError: (_error, _variables, _context) => {
+      onErrorCb?.()
+    },
+    onSettled: async (data) => {
+      const {address, communityUuid} = data || {}
+      if (!address || !communityUuid) return
+      await queryClient.cancelQueries({ queryKey: ['community', 'joinedCommunities', address] })
+      queryClient.setQueryData<JoinedCommunity[]>(
+        ['community', 'joinedCommunities', address],
+        (old = []) => old.filter(c => c.uuid !== communityUuid)
+      )
+      queryClient.invalidateQueries({ queryKey: ['community', 'joinedCommunities', address] })
     }
   })
 }

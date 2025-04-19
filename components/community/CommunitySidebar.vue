@@ -6,10 +6,11 @@ import CommunitySettingForm from '~/components/community/CommunitySettingForm.vu
 import BaseField from '~/components/fields/BaseField.vue'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
+import { useExitMutation } from '~/composables/community/communityQuery'
+import { aoStore } from '~/stores/aoStore'
 
 const props = defineProps<{
   community?: Community
-  address: string
   isExpanded: boolean
 }>()
 
@@ -17,11 +18,16 @@ const emit = defineEmits<{
   'update:isExpanded': [value: boolean]
 }>()
 
-const { community, address } = $(toRefs(props))
+const { community } = $(toRefs(props))
+
+const { address } = $(aoStore())
+
 const isCommunityOwner = $computed(() => community && address ? community.owner === address : false)
 
-const { exitCommunity, createCommunityInviteCode } = $(communityStore())
+const { createCommunityInviteCode } = $(communityStore())
 const { showError, showSuccess } = $(notificationStore())
+
+const { mutateAsync: exitCommunityAsync, isPending: isExiting } = useExitMutation()
 
 const communitySettingTabs = [
   {
@@ -38,19 +44,15 @@ const router = useRouter()
 
 const isSettingModalOpen = $ref(false)
 
-let isExiting = $ref(false)
 const quitCommunity = async (communityUuid: string) => {
-  if (!community) return
-  isExiting = true
+  if (!community || !address) return
+  
   try {
-    await exitCommunity(communityUuid)
-    isExiting = false
+    await exitCommunityAsync({communityUuid, address})
     router.push('/discovery')
     showSuccess(`You have leaved ${community.name}.`)
   } catch (error) {
     showError('Exit community failed.', error as Error)
-  } finally {
-    isExiting = false
   }
 }
 
@@ -201,7 +203,7 @@ const expanded = computed({
 
         <UDivider />
 
-        <div v-if="!isCommunityOwner && community.isJoined" class="flex justify-end mt-10">
+        <div v-if="!isCommunityOwner && community.isJoined && address" class="flex justify-end mt-10">
           <Confirm
             title="Leave Community"
             confirm-btn-text="Leave"

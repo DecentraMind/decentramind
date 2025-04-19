@@ -11,8 +11,8 @@ const { address } = $(aoStore())
 const { setBreadcrumbs } = $(breadcrumbStore())
 
 const { data: communityList } = useCommunitiesQuery(address, {
-  refetchOnMount: 'always',
-  refetchOnWindowFocus: 'always',
+  refetchOnMount: address ? 'always' : false,
+  refetchOnWindowFocus: address ? 'always' : false,
 })
 const sortedCommunities = $computed(() => {
   // don't use communityList.value?.sort() directly, because it will mutate the original array
@@ -24,9 +24,8 @@ onMounted(async () => {
   
   // 设置首页面包屑
   setBreadcrumbs([{
-    labelKey: 'Home',
-    label: 'Home',
-    to: '/discovery'
+    labelKey: 'Explore',
+    label: 'Explore'
   }])
 })
 </script>

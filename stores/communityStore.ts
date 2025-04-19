@@ -297,25 +297,6 @@ export const communityStore = defineStore('communityStore', () => {
     return result
   }
 
-  const exitCommunity = async (uuid: string) => {
-    const messageId = await message({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'Exit' },
-        { name: 'Uuid', value: uuid }
-      ],
-      signer: createDataItemSigner(window.arweaveWallet),
-      data: uuid,
-    })
-    const { Error: error } = await result({ message: messageId, process: aoCommunityProcessID })
-    if (error) {
-      console.error(error)
-      throw new Error('Exit error. ' + error)
-    }
-
-    updateLocalCommunity(uuid, 'isJoined', false)
-  }
-
   //Modification of personal information
   const updateUser = async (userData: UserInfo) => {
     const jsonString = JSON.stringify(userData)
@@ -448,7 +429,6 @@ export const communityStore = defineStore('communityStore', () => {
     updateCommunityAdmins,
     createCommunityInviteCode,
     joinCommunity,
-    exitCommunity,
     updateUser,
     getAllUsers,
     getCommunityUser,

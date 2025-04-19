@@ -92,7 +92,6 @@ watch(communityInfo, (newVal) => {
       communityBreadcrumb.to = `/community/${newVal.uuid}`
     }
     setBreadcrumbs([
-      { labelKey: 'Home', label: 'Home', to: '/discovery' },
       communityBreadcrumb,
       { label: 'Quest' }
     ])

@@ -1,14 +1,9 @@
 <script lang="ts" setup>
 import type { Community } from '~/types'
 import { getCommunityBannerUrl } from '~/utils/arAssets'
-import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
 import { aoStore } from '~/stores/aoStore'
 import { useJoinMutation } from '~/composables/community/communityQuery'
-
-const {
-  loadCommunityList,
-} = $(communityStore())
 
 const { showError, showSuccess } = $(notificationStore())
 const { address, twitterVouched } = $(aoStore())
@@ -20,11 +15,8 @@ const props = defineProps<{
   community: Community
 }>()
 
-const { mutate: joinMutate, isPending, isSuccess } = useJoinMutation({
-  communityUuid: props.community.uuid,
-  onErrorCb: () => {
-    showError('Failed to join.')
-  }
+const { mutateAsync: joinMutateAsync, isPending, isSuccess } = useJoinMutation(() => {
+  showError('Failed to join.')
 })
 
 watch(isSuccess, () => {
@@ -41,8 +33,7 @@ const joinToCommunity = async () => {
     return
   }
   try {
-    joinMutate()
-    await loadCommunityList(address)
+    await joinMutateAsync({communityToJoin: props.community, address})
     router.push('/community/' + props.community.uuid)
   } catch (error) {
     showError('Failed to join.', error as Error)

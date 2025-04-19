@@ -26,16 +26,19 @@ const { currentUuid } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 let joinedCommunities = $ref<JoinedCommunity[]>([])
-const { isLoading, error: communityListError, isSuccess, data } = useJoinedCommunitiesQuery(address, {
+const { isLoading, error: communityListError, data } = useJoinedCommunitiesQuery({
   refetchOnMount: 'always',
-  refetchOnWindowFocus: 'always'
+  refetchOnWindowFocus: 'always',
+  staleTime: 0,
+  refetchOnReconnect: 'always'
 })
 
-watch(isSuccess, () => {
-  if (isSuccess.value) {
-    joinedCommunities = data.value || []
+watch(() => data.value, (newData) => {
+  console.log('new joinedCommunities', newData)
+  if (newData) {
+    joinedCommunities = newData
   }
-})
+}, { immediate: true })
 
 
 const queryClient = useQueryClient()
@@ -116,7 +119,7 @@ const afterLogin = async () => {
 
 <template>
   <UDashboardLayout>
-    <UDashboardPanel class="w-12 sm:w-16" :ui="{border:'lg:w-16'}">
+    <UDashboardPanel class="w-12 sm:w-16" :ui="{border:'lg:w-16 border-b-0'}">
       <UDashboardSidebar
         :ui="{
           wrapper: 'bg-gray-100 pt-0',
@@ -131,6 +134,7 @@ const afterLogin = async () => {
             mode="hover"
             :popper="{ arrow: true, placement: 'right', strategy: 'fixed', offsetDistance: 0 }"
             :ui="{
+              wrapper: 'flex-center',
               container: 'w-fit',
               background: 'bg-gray-50',
               base: 'font-bold py-0.5',
