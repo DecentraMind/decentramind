@@ -19,7 +19,7 @@ const questions = ref<string[]>([])
 const isSaving = ref(false)
 let isSettingApplicable = $ref(false)
 
-const { data: loadedQuestions, isFetching, refetch, isSuccess } = useQuestionsQuery(props.uuid, {
+const { data: loadedQuestions, isLoading, refetch, isSuccess } = useQuestionsQuery(props.uuid, {
   enabled: false
 })
 
@@ -75,7 +75,7 @@ async function updateApplicable(value: boolean) {
       </div>
     </template>
 
-    <Loading v-if="isFetching" class="h-32" />
+    <Loading v-if="isLoading" class="h-32" />
     <!-- questions setting -->
     <template v-else>
       <hr class="my-4">
