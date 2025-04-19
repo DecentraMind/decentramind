@@ -56,7 +56,7 @@ const onClickDisconnect = async () => {
           :ui="{ol: 'gap-x-0 sm:gap-x-1.5', li: 'gap-x-0 sm:gap-x-1.5', base: 'gap-x-0 sm:gap-x-1.5', divider: {base: 'hidden'}}"
         >
           <template #default="{ link, isActive, index }">
-            <span class="truncate" :class="{ 'font-medium': !isActive, 'text-gray-700': isActive, 'hidden sm:block': index === 0 }">{{ link.label }}</span><span :class="{ 'iconify i-heroicons:chevron-right-20-solid flex-shrink-0 w-5 h-5 rtl:rotate-180': true, 'hidden sm:block': index === 0, 'hidden': index === translatedBreadcrumbs.length - 1 }" />
+            <span class="truncate" :class="{ 'font-medium': !isActive, 'text-gray-700': isActive, 'hidden sm:block': index === 0 }">{{ link.label }}</span><span :class="{ 'iconify i-heroicons:chevron-right-20-solid flex-shrink-0 w-5 h-5 rtl:rotate-180': true, 'hidden sm:block': index === 0 && index !== translatedBreadcrumbs.length - 1, 'hidden': index === translatedBreadcrumbs.length - 1 }" />
           </template>
         </UBreadcrumb>
       </div>

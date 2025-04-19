@@ -26,16 +26,19 @@ const { currentUuid } = $(communityStore())
 const { userInfo, isLoading: isUserInfoLoading, error: userInfoError, refetchUserInfo } = $(useUserInfo())
 
 let joinedCommunities = $ref<JoinedCommunity[]>([])
-const { isLoading, error: communityListError, isSuccess, data } = useJoinedCommunitiesQuery(address, {
-  refetchOnMount: address ? 'always' : false,
-  refetchOnWindowFocus: address ? 'always' : false
+const { isLoading, error: communityListError, data } = useJoinedCommunitiesQuery({
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: 'always',
+  staleTime: 0,
+  refetchOnReconnect: 'always'
 })
 
-watch(isSuccess, () => {
-  if (isSuccess.value) {
-    joinedCommunities = data.value || []
+watch(() => data.value, (newData) => {
+  console.log('new joinedCommunities', newData)
+  if (newData) {
+    joinedCommunities = newData
   }
-})
+}, { immediate: true })
 
 
 const queryClient = useQueryClient()

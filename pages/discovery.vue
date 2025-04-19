@@ -24,9 +24,8 @@ onMounted(async () => {
   
   // 设置首页面包屑
   setBreadcrumbs([{
-    labelKey: 'Home',
-    label: 'Home',
-    to: '/discovery'
+    labelKey: 'Explore',
+    label: 'Explore'
   }])
 })
 </script>

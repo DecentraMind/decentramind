@@ -66,6 +66,17 @@ export const join = async (communityUuid: string, inviteCode?: string, wallet?: 
   return result
 }
 
+export const exit = async (uuid: string, wallet?: Wallet) => {
+  return await messageResultCheck({
+    process: communityProcessID,
+    tags: [
+      { name: 'Action', value: 'Exit' },
+      { name: 'Uuid', value: uuid }
+    ],
+    signer: createDataItemSigner(wallet || globalThis.window.arweaveWallet),
+  })
+}
+
 /**
  * Update the private applicable status of a specific community
  * @param uuid - The UUID of the community

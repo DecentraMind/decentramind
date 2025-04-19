@@ -39,7 +39,7 @@ const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 const { setCurrentCommunityUuid } = $(communityStore())
 const { setBreadcrumbs } = $(breadcrumbStore())
-const { data: joinedCommunities, isError: joinedCommunitiesIsError } = useJoinedCommunitiesQuery(address)
+const { data: joinedCommunities, isError: joinedCommunitiesIsError } = useJoinedCommunitiesQuery()
 
 watch(joinedCommunitiesIsError, () => {
   if (joinedCommunitiesIsError.value) {

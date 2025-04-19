@@ -5,7 +5,7 @@ import Chatroom from '~/components/community/Chatroom.vue'
 import CommunitySidebar from '~/components/community/CommunitySidebar.vue'
 import PublicTasks from '~/components/community/PublicTasks.vue'
 import PrivateHome from '~/components/private/PrivateHome.vue'
-import { useCommunityFromCommunitiesQuery } from '~/composables/community/communityQuery'
+import { useCommunityQuery } from '~/composables/community/communityQuery'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
@@ -28,7 +28,12 @@ const router = useRouter()
 
 const uuid = $computed(() => route.params.uuid) as string
 
-const { data: community, isSuccess, isError, error } = useCommunityFromCommunitiesQuery(uuid, address)
+const { data: community, isSuccess, isError, error, isLoading } = useCommunityQuery(uuid, {
+  staleTime: 0,
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: 'always',
+  refetchOnReconnect: 'always',
+})
 watch(isSuccess, async (value) => {
   if (value) {
     console.log('get communityInfo:', community.value?.name, community.value, uuid)
@@ -46,14 +51,11 @@ watch(() => community.value?.name, (communityName) => {
   if (communityName) {
     setBreadcrumbs([
         {
-          labelKey: 'Home',
-          label: 'Home',
-          to: '/discovery'
-        },
-        {
           label: communityName
         }
       ])
+  } else {
+    setBreadcrumbs([])
   }
 }, { immediate: true })
 
@@ -107,52 +109,61 @@ const showSidebar = ref(false)
 </script>
 <template>
   <UDashboardPage :ui="{ wrapper: 'w-full static h-[calc(100vh-var(--header-height))]' }">
-    <CommunitySidebar
-      v-model:is-expanded="showSidebar"
-      :community="community"
-      :address="address"
-    />
-    <div class="w-full">
-      <div v-if="currentRightPage === communityRightPages['#quests']" class="bg-grid">
-        <!-- header buttons -->
-        <div class="w-full relative flex justify-between items-center px-4 py-3 bg-white drop-shadow-sm">
-          <!-- expand sidebar button -->
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-chevron-double-right"
-            :class="{ 'invisible': showSidebar, 'block lg:hidden': true }"
-            @click="showSidebar = true"
-          />
-          <UTabs
-            v-model="selectedTaskVisibleType"
-            :items="taskVisibleTabs"
-            :ui="{ wrapper: 'space-y-0' }"
-          />
-          <div id="top-right-button" />
-        </div>
-
-        <!-- public tasks list -->
-        <PublicTasks
-          v-if="community && selectedTaskVisibleType === 0"
-          :is-admin-or-owner="isAdminOrOwner"
-          :community="community"
-        />
-        <PrivateHome
-          v-if="community && selectedTaskVisibleType === 1"
-          :is-admin="isAdminOrOwner"
-          :is-owner="community.owner === address"
-          :is-applicable="community.isPrivateApplicable"
-          :uuid="uuid"
-          :joined="!!community.privateUnlockTime"
-        />
-      </div>
-
-      <Chatroom
-        v-if="community && currentRightPage === communityRightPages['#chatroom']"
+    <div v-if="isLoading" class="w-full h-full flex justify-center items-center">
+      <UIcon
+        name="svg-spinners:blocks-scale"
+        dynamic
+        class="w-16 h-16 opacity-50"
+      />
+    </div>
+    <template v-else>
+      <CommunitySidebar
+        v-model:is-expanded="showSidebar"
         :community="community"
         :address="address"
       />
-    </div>
+      <div class="w-full">
+        <div v-if="currentRightPage === communityRightPages['#quests']" class="bg-grid">
+          <!-- header buttons -->
+          <div class="w-full relative flex justify-between items-center px-4 py-3 bg-white drop-shadow-sm">
+            <!-- expand sidebar button -->
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-chevron-double-right"
+              :class="{ 'invisible': showSidebar, 'block lg:hidden': true }"
+              @click="showSidebar = true"
+            />
+            <UTabs
+              v-model="selectedTaskVisibleType"
+              :items="taskVisibleTabs"
+              :ui="{ wrapper: 'space-y-0' }"
+            />
+            <div id="top-right-button" />
+          </div>
+
+          <!-- public tasks list -->
+          <PublicTasks
+            v-if="community && selectedTaskVisibleType === 0"
+            :is-admin-or-owner="isAdminOrOwner"
+            :community="community"
+          />
+          <PrivateHome
+            v-if="community && selectedTaskVisibleType === 1"
+            :is-admin="isAdminOrOwner"
+            :is-owner="community.owner === address"
+            :is-applicable="community.isPrivateApplicable"
+            :uuid="uuid"
+            :joined="!!community.privateUnlockTime"
+          />
+        </div>
+
+        <Chatroom
+          v-if="community && currentRightPage === communityRightPages['#chatroom']"
+          :community="community"
+          :address="address"
+        />
+      </div>
+    </template>
   </UDashboardPage>
 </template>
