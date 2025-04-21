@@ -25,7 +25,7 @@ export type Wallet = Parameters<typeof createDataItemSigner>[0]
 const dryrun = async (messageParams: DryrunInput): Promise<DryrunOutput> => {
   const res = await retry({
     fn: () => originalDryrun(messageParams),
-    maxAttempts: 3,
+    maxAttempts: 2,
     interval: 500
   })
   if (!res) {

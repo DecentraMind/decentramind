@@ -3,19 +3,21 @@ import { nextTick } from 'vue'
 import MessageList from './MessageList.vue'
 import Loading from '../Loading.vue'
 import { inboxStore } from '~/stores/inboxStore'
-import { communityStore } from '~/stores/communityStore'
 import { aoStore } from '~/stores/aoStore'
 import { notificationStore } from '~/stores/notificationStore'
+import { delay } from '~/utils/util'
+import { useMutedUsersQuery } from '~/composables/community/chatroomQuery'
+import { useQueryClient } from '@tanstack/vue-query'
 
-const { chat: chatID } = $defineProps<{
+const { chat: chatID, communityUuid } = $defineProps<{
   chat: string
+  communityUuid: string
 }>()
 
 // load this process data list
 // send msg
 // auto load new message for this process and other process, so we can show last unread message on the left sidebar msg list
 const { sendMessage, loadInboxList, isInboxLoading, mailCache } = $(inboxStore())
-const { mutedUsers } = $(communityStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 
@@ -56,7 +58,31 @@ const scrollToBottom = () => {
   })
 }
 
+const { data: mutedUsers, refetch: refetchMutedUsers } = useMutedUsersQuery(communityUuid, {
+  refetchOnWindowFocus: true,
+  refetchOnMount: true,
+  refetchOnReconnect: true,
+})
+const isTextareaDisabled = computed(() => {
+  return (
+    isSubmitting ||
+    (mutedUsers.value && mutedUsers.value.includes(address))
+  )
+})
+
+const queryClient = useQueryClient()
 const submitMessage = async () => {
+  await refetchMutedUsers()
+  
+  if (mutedUsers.value && mutedUsers.value.includes(address)) {
+    showError('You are muted in this chatroom.')
+    // invalidate community user query
+    await queryClient.invalidateQueries({ queryKey: ['community', 'communityUser', communityUuid] })
+    // refetch community user query
+    await queryClient.refetchQueries({ queryKey: ['community', 'communityUser', communityUuid] })
+    msg = ''
+    return
+  }
   if (isSubmitting || !mailCache) {
     console.log('cannot submit', {isLoading: isSubmitting, mailCache})
     return
@@ -86,6 +112,7 @@ const submitMessage = async () => {
     isSubmitting = false
   }
 
+  await delay(100)
   await loadInboxList(chatID)
   scrollToBottom()
 }
@@ -95,13 +122,6 @@ defineShortcuts({
     usingInput: 'msg',
     handler: submitMessage,
   },
-})
-
-const isTextareaDisabled = computed(() => {
-  return (
-    isSubmitting ||
-    (mutedUsers && mutedUsers.includes(address))
-  )
 })
 </script>
 

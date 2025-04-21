@@ -4,6 +4,7 @@ import { validateCommunityAdmin, type CommunityAdminSchema } from '~/utils/schem
 import type { Community, UserInfoWithAddress } from '~/types'
 import { notificationStore } from '~/stores/notificationStore'
 import { communityStore } from '~/stores/communityStore'
+import { getCommunityUser } from '~/utils/community/community'
 
 const props = defineProps<{
   uuid: string
@@ -11,7 +12,7 @@ const props = defineProps<{
   class?: string
 }>()
 
-const { updateCommunityAdmins, getCommunityUser } = $(communityStore())
+const { updateCommunityAdmins } = $(communityStore())
 const { showSuccess, showError } = $(notificationStore())
 
 const formState = $ref<CommunityAdminSchema>({ admins: [] })
