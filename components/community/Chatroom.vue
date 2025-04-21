@@ -4,6 +4,9 @@ import { shortString, defaultUserAvatar } from '~/utils'
 import ChatArea from '../inbox/ChatArea.vue'
 import { notificationStore } from '~/stores/notificationStore'
 import { communityStore } from '~/stores/communityStore'
+import { useGetCommunityUserQuery } from '~/composables/community/communityQuery'
+import Loading from '../Loading.vue'
+import { useQueryClient } from '@tanstack/vue-query'
 
 const props = defineProps<{
   community: Community
@@ -11,28 +14,35 @@ const props = defineProps<{
 }>()
 const { community, address } = $(toRefs(props))
 
-const { getCommunityUser, mute, unmute, getMutedUsers, setCurrentCommunityUuid, setCurrentCommunityUserMap } = $(communityStore())
+const { mute, unmute, setCurrentCommunityUuid, setCurrentCommunityUserMap } = $(communityStore())
 const { showSuccess, showError } = $(notificationStore())
 
 const isAdminOrOwner = (address: string) => community && address ? community.owner === address || community.admins.includes(address) : false
 
-let users = $ref<UserInfoWithAddress[]>([])
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let mutedUsers = $ref<string[]>([])
-onMounted(async () => {
-  setCurrentCommunityUuid(community.uuid)
-  mutedUsers = await getMutedUsers(community.uuid)
-  const userMap = await getCommunityUser(community.uuid)
-  users = Object.values(userMap).sort((a, b) => {
+const { data: userMap, isSuccess, isLoading: isLoadingUserMap } = useGetCommunityUserQuery(community.uuid, {
+  // refetchOnWindowFocus: true,
+  refetchOnMount: true,
+  // refetchOnReconnect: true,
+  staleTime: 0,
+})
+watch(isSuccess, (isSuccess) => {
+  if (isSuccess && userMap.value) {
+    setCurrentCommunityUserMap(userMap.value)
+    console.log('userMap', userMap.value)
+  }
+})
+const users = $computed<UserInfoWithAddress[]>(() => {
+  return Object.values(userMap.value || {}).sort((a, b) => {
     return a.muted && !b.muted ? 1
     : !a.muted && !b.muted ? 0 : -1
   })
-  await setCurrentCommunityUserMap(userMap)
-  console.log('-------chatroom mounted--------')
-  console.log({users})
 })
 
+onMounted(async () => {
+  setCurrentCommunityUuid(community.uuid)
+})
+
+const queryClient = useQueryClient()
 const muteOrUnmute = async(user: UserInfoWithAddress) => {
   if (!user) return
 
@@ -49,6 +59,11 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
     user.muted = !user.muted
 
     showSuccess(`You have ${action} ` + user.name || shortString(user.address))
+
+    // invalidate community user query
+    queryClient.invalidateQueries({ queryKey: ['community', 'communityUser', community.uuid] })
+    // refetch community user query
+    queryClient.refetchQueries({ queryKey: ['community', 'communityUser', community.uuid] })
   } catch (e) {
     showError('Failed to mute.', e as Error)
   }
@@ -60,7 +75,7 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
   <UPage class="w-full">
     <div class="relative w-full grid grid-cols-1 sm:grid-cols-[1fr,230px]">
       <div v-if="community.isJoined" class="flex h-[calc(100vh-var(--header-height))]">
-        <ChatArea :chat="community.communitychatid" />
+        <ChatArea :chat="community.communitychatid" :community-uuid="community.uuid" />
         <UDivider orientation="vertical" />
       </div>
       <div v-if="community.isJoined" class="hidden sm:block bg-gray-50">
@@ -70,7 +85,10 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
           </template>
         </UDashboardNavbar>
 
-        <div v-if="community" class="py-4 px-2 max-h-[calc(100vh-var(--header-height))] overflow-y-auto">
+        <div v-if="isLoadingUserMap" class="flex-center h-full">
+          <Loading />
+        </div>
+        <div v-else-if="community" class="py-4 px-2 max-h-[calc(100vh-var(--header-height))] overflow-y-auto">
           <div
             v-for="user in users"
             :key="user.address"

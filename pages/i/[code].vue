@@ -4,18 +4,19 @@ import { shortString } from '~/utils'
 import LoginModal from '~/components/users/LoginModal.vue'
 import ArAvatar from '~/components/ArAvatar.vue'
 import { getCommunityBannerUrl, defaultUserAvatar } from '~/utils/arAssets'
-import { getUserByAddress } from '~/utils/community/community'
+import { getUserByAddress, getCommunityUser } from '~/utils/community/community'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
 import { useTaskStore } from '~/stores/taskStore'
+import { delay } from '~/utils'
 
 definePageMeta({
   layout: 'landing',
   ssr: false
 })
 
-const { joinCommunity, getCommunityUser, loadCommunityList } = $(communityStore())
+const { joinCommunity, loadCommunityList } = $(communityStore())
 const { getInviteByCode } = useTaskStore()
 // const runtimeConfig = useRuntimeConfig()
 
@@ -99,12 +100,13 @@ onMounted(async () => {
   console.log('invite info', invite, task)
 
   
-  // Run remaining get calls in parallel
-  const [unsettledTasksResult, userMapResult, inviterResult] = await Promise.all([
-    getUnsettledTasksByCommunityUuid(community.uuid),
-    getCommunityUser(community.uuid),
-    getUserByAddress(invite.inviterAddress)
-  ])
+  await delay(100)
+  // Execute sequentially with 100ms delay between calls to avoid 429 error
+  const unsettledTasksResult = await getUnsettledTasksByCommunityUuid(community.uuid)
+  await delay(100)
+  const userMapResult = await getCommunityUser(community.uuid)
+  await delay(100)
+  const inviterResult = await getUserByAddress(invite.inviterAddress)
 
   unsettledTasks = unsettledTasksResult
   const userMap = userMapResult

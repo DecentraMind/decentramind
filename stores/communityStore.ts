@@ -2,16 +2,13 @@ import {
   createDataItemSigner,
   message,
   spawn,
-  dryrun,
-  result,
   dryrunResultParsed,
   messageResult,
   messageResultParsed
 } from '~/utils/ao'
 import type { Community, CommunitySetting, CreateToken, UserInfo } from '~/types'
-import type { CommunityToken } from '~/utils/constants'
-import { defaultTokenLogo, sleep, retry, checkResult, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
-import { moduleID, schedulerID, extractResult, DM_PROCESS_ID } from '~/utils'
+import { defaultTokenLogo, sleep, retry, updateItemInArray, type UpdateItemParams, MU } from '~/utils'
+import { moduleID, schedulerID, DM_PROCESS_ID } from '~/utils'
 import tokenProcessCode from '~/AO/Token.tpl.lua?raw'
 import { getCommunities, getCommunity as getCommunityAO, join, updatePrivateApplicable, getCommunityUser } from '~/utils/community/community'
 import { acceptHMRUpdate, defineStore } from 'pinia'
@@ -22,7 +19,6 @@ export const communityStore = defineStore('communityStore', () => {
 
   const { address } = $(aoStore())
   let communityList = $ref<Community[]>([])
-  let mutedUsers = $ref<string[]>([])
   let currentUuid = $ref<string>()
   // const currentCommunityOwner = $computed(() => {
   //   if (!currentUuid || !address) return ''
@@ -45,12 +41,11 @@ export const communityStore = defineStore('communityStore', () => {
      item.joinTime = undefined
      return item
     })
-    mutedUsers = []
     currentUuid = undefined
   }
 
   const mute = async (communityUuid: string, userAddress: string) => {
-    const messageId = await message({
+    return await messageResultCheck({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'Mute' },
@@ -59,12 +54,10 @@ export const communityStore = defineStore('communityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    const res = await result({ process: aoCommunityProcessID, message: messageId})
-    checkResult(res)
   }
 
   const unmute = async (communityUuid: string, userAddress: string) => {
-    const messageId = await message({
+    return await messageResultCheck({
       process: aoCommunityProcessID,
       tags: [
         { name: 'Action', value: 'Unmute' },
@@ -73,25 +66,6 @@ export const communityStore = defineStore('communityStore', () => {
       ],
       signer: createDataItemSigner(window.arweaveWallet),
     })
-    const res = await result({ process: aoCommunityProcessID, message: messageId})
-    checkResult(res)
-  }
-
-  const getMutedUsers = async (communityUuid: string) => {
-    if (!communityUuid) {
-      throw new Error('No communityUuid specified.')
-    }
-    const result = await dryrun({
-      process: aoCommunityProcessID,
-      tags: [
-        { name: 'Action', value: 'GetMutedUsers' },
-        { name: 'CommunityUuid', value: communityUuid }
-      ]
-    })
-
-    const data = extractResult<string>(result)
-    mutedUsers = JSON.parse(data) as string[]
-    return mutedUsers
   }
 
   //Creating a community approach
@@ -401,7 +375,7 @@ export const communityStore = defineStore('communityStore', () => {
   }
 
   let currentCommunityUserMap = $ref<Record<string, UserInfo>>()
-  const setCurrentCommunityUserMap = async(users: Record<string, UserInfo>) => {
+  const setCurrentCommunityUserMap = (users: Record<string, UserInfo>) => {
     currentCommunityUserMap = users
   }
 
@@ -413,11 +387,9 @@ export const communityStore = defineStore('communityStore', () => {
   return $$({
     communityList,
     currentUuid,
-    mutedUsers,
     mute,
     unmute,
     createToken,
-    getMutedUsers,
     setCurrentCommunityUuid,
     makeCommunityChat,
     getLocalCommunity,
