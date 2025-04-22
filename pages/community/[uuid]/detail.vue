@@ -57,8 +57,8 @@ watch(
           to: `/community/${communityID}`,
         },
         {
-          labelKey: 'detail',
-          label: 'Detail',
+          labelKey: 'Details',
+          label: 'Details',
           to: `/community/${communityID}/detail`,
         },
       ])
