@@ -60,7 +60,7 @@ const taskTypes = [
   <UDropdown
     :items="taskTypes"
     :popper="{ placement: 'bottom-end' }"
-    :ui="{ wrapper: 'h-8' }"
+    :ui="{ wrapper: 'h-8', container: '!translate-y-14 !translate-x-[-16px]' }"
   >
     <template v-if="noResponsive">
       <UButton
