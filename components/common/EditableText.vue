@@ -98,7 +98,7 @@ watch(() => props.text, (newValue) => {
         class="absolute right-2 animate-spin" 
       />
     </div>
-    <div v-else class="inline-flex items-center py-3">
+    <div v-else class="inline-flex items-center py-3 break-all whitespace-break-spaces">
       {{ text }}
       <UIcon 
         v-if="canEdit" 

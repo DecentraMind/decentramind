@@ -126,7 +126,8 @@ const deletePage = async () => {
     <div class="mt-2 mb-4 w-full grid grid-cols-3 gap-x-4 gap-y-6 bg-gray-100 rounded-lg p-4">
       <div 
         v-for="page in config?.pages" 
-        :key="page.uuid" 
+        :key="page.uuid"
+        :data-page-uuid="page.uuid"
         class="group relative bg-white rounded-lg p-3 cursor-pointer"
         @click="openPageModal(page)"
       >
