@@ -125,7 +125,7 @@ const showSidebar = ref(false)
       <div class="w-full">
         <div v-if="currentRightPage === communityRightPages['#quests']" class="bg-grid">
           <!-- header buttons -->
-          <div class="w-full relative flex justify-between items-center px-4 py-3 bg-white drop-shadow-sm">
+          <div class="w-full relative z-50 flex justify-between items-center px-4 py-3 bg-white drop-shadow-sm">
             <!-- expand sidebar button -->
             <UButton
               color="gray"
