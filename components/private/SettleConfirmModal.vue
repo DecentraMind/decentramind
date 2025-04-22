@@ -167,7 +167,7 @@ watch(() => props.modelValue, (value) => {
             >
               <div class="flex items-center space-x-2">
                 <div class="flex flex-col gap-1">
-                  <UserInfo v-if="members" :address="budget.member" :members="members" />
+                  <UserInfo v-if="members" :address="budget.member" :members="members" show-address />
                   <Bounties :bounties="[budget]" :show-plus="false" />
                 </div>
               </div>

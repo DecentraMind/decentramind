@@ -36,7 +36,7 @@ const { t } = useI18n()
         </div>
       </template>
 
-      <div class="prose max-w-none">
+      <div class="prose max-w-none break-all whitespace-break-spaces">
         <p>{{ props.page?.content || '' }}</p>
       </div>
 

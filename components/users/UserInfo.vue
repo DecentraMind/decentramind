@@ -2,6 +2,7 @@
 import type { UserInfo } from '~/types'
 const props = defineProps<{
   address: string
+  showAddress?: boolean
   members: (UserInfo & {
     address: string
   })[]
@@ -18,7 +19,7 @@ const member = computed(() => {
       :alt="member.name"
       size="2xs"
     />
-    <span class="font-medium">{{ member.name }}</span>
-    <div class="text-xs text-gray-500 max-w-xs">{{ shortString(member.address) }}</div>
+    <span class="font-medium" :title="member.address">{{ member.name }}</span>
+    <div v-if="showAddress" class="text-xs text-gray-500 max-w-xs">{{ shortString(member.address) }}</div>
   </div>
 </template>
