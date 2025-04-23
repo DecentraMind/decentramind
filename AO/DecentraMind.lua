@@ -1,4 +1,4 @@
-Variant = '1.0.101'
+Variant = '1.0.102'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -319,7 +319,7 @@ local function assertPrivateUnlocked(address, communityUuid)
   local isOwner = address == community.owner
   local isAdmin = isCommunityAdmin(community, address)
   -- only private members(privateUnlockTime is not nil) can add task
-  assert(UserCommunities[address][communityUuid].privateUnlockTime or isOwner or isAdmin, 'You are not in the private area.')
+  assert(UserCommunities[address][communityUuid].privateUnlockTime or isOwner or isAdmin, 'You are not in the private quest space.')
 end
 
 Actions = {
@@ -577,7 +577,7 @@ Actions = {
       local haveQuestions = QuestionsByCommunityUuid[uuid] and #QuestionsByCommunityUuid[uuid] > 0
       if community.isPrivateApplicable and not haveQuestions then
         -- add one default question
-        QuestionsByCommunityUuid[uuid] = { 'Why do you want to join this private area?' }
+        QuestionsByCommunityUuid[uuid] = { 'Why do you want to join this private quest space?' }
       end
     end,
 
@@ -617,7 +617,7 @@ Actions = {
 
       -- if applicant is already in the private area, return
       if UserCommunities[address][uuid].privateUnlockTime then
-        return u.replyError(msg, 'You are already in the private area.')
+        return u.replyError(msg, 'You are already in the private quest space.')
       end
 
       -- if applicant has already submitted answers, return
@@ -754,7 +754,8 @@ Actions = {
     GetPrivateAreaConfig = function(msg)
       local uuid = msg.Tags.CommunityUuid
       local copy = u.deepCopy(PrivateAreaConfig[uuid] or {
-        pagesAreaTitle = 'Private Area',
+        communityUuid = uuid,
+        pagesAreaTitle = 'Private Quest Space',
         pageUuids = {},
         boardUuids = {}
       })
@@ -796,23 +797,14 @@ Actions = {
       assertIsOwnerOrAdmin(msg.From, uuid)
 
       PrivateAreaConfig[uuid] = PrivateAreaConfig[uuid] or {
-        pagesAreaTitle = 'Private Area',
+        communityUuid = uuid,
+        pagesAreaTitle = 'Private Quest Space',
         pageUuids = {},
         boardUuids = {}
       }
 
       ---@type PrivateAreaConfig
-      local configCopy
-      if not PrivateAreaConfig[uuid] then
-        configCopy = {
-          communityUuid = uuid,
-          pagesAreaTitle = 'Private Area',
-          pageUuids = {},
-          boardUuids = {}
-        }
-      else
-        configCopy = u.deepCopy(PrivateAreaConfig[uuid])
-      end
+      local configCopy = u.deepCopy(PrivateAreaConfig[uuid])
 
       if update.pagesAreaTitle then
         configCopy.pagesAreaTitle = update.pagesAreaTitle
@@ -851,7 +843,8 @@ Actions = {
       assertIsOwnerOrAdmin(msg.From, uuid)
 
       PrivateAreaConfig[uuid] = PrivateAreaConfig[uuid] or {
-        pagesAreaTitle = 'Private Area',
+        communityUuid = uuid,
+        pagesAreaTitle = 'Private Quest Space',
         pageUuids = {},
         boardUuids = {}
       }
@@ -963,7 +956,7 @@ Actions = {
 
       local config = PrivateAreaConfig[uuid]
       if not config then
-        return u.replyError(msg, 'Private area config not found.')
+        return u.replyError(msg, 'Private quest space config not found.')
       end
 
       local taskUuid = u.createUuid()
@@ -1180,7 +1173,7 @@ Actions = {
       -- Add page to PrivateAreaConfig
       PrivateAreaConfig[communityUuid] = PrivateAreaConfig[communityUuid] or {
         communityUuid = communityUuid,
-        pagesAreaTitle = 'Private Area',
+        pagesAreaTitle = 'Private Quest Space',
         pageUuids = {},
         boardUuids = {}
       }
