@@ -27,8 +27,8 @@ const { data: config, isLoading, isError, error } = usePrivateAreaConfigQuery(pr
 })
 watch(isError, (newVal) => {
   if (newVal) {
-    console.error('Failed to load private area data. ' + error.value?.message)
-    showError('Failed to load private area data.')
+    console.error('Failed to load private quest space data. ' + error.value?.message)
+    showError('Failed to load private quest space data.')
   }
 })
 watch(config, (newVal) => {
@@ -53,7 +53,7 @@ const addBoard = async () => {
 const { mutateAsync: updatePrivateAreaConfig, isPending: isUpdatingConfig } = usePrivateAreaConfigByCommunityMutation({
   uuid: props.uuid,
   onErrorCb: () => {
-    showError('Failed to update private area title.')
+    showError('Failed to update private quest space title.')
   }
 })
 
@@ -66,8 +66,8 @@ const updatePrivateAreaTitle = async (newTitle: string) => {
       pagesAreaTitle: newTitle
     })
   } catch (error) {
-    showError('Failed to update private area title.')
-    console.error('Failed to update private area title:', error)
+    showError('Failed to update private quest space title.')
+    console.error('Failed to update private quest space title:', error)
   }
 }
 

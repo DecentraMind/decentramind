@@ -152,7 +152,7 @@ DecentraMind 是一个构建在 AO（一个支持分布式计算的超并行计�
   - 查看邀请使用统计
 
 
-### 4. 非公开协作区（Private Area）
+### 4. 非公开协作区（Private Quest Space）
 
 #### 协作区管理
 - **成员管理**
