@@ -31,7 +31,7 @@ DecentraMind is a decentralized platform built on AO, a hyper parallel computer 
 - **Community Administration**
   - Update community settings and information
   - Manage community admins
-  - Configure private area access questions
+  - Configure Private Quest Space access questions
   - Mute/unmute community members
 
 #### Community Membership
@@ -41,8 +41,8 @@ DecentraMind is a decentralized platform built on AO, a hyper parallel computer 
   - Track member join timestamps
   - Exit community functionality (except for owners)
 
-- **Private Area Access**
-  - Set up screening questions for private area access
+- **Private Quest Space Access**
+  - Set up screening questions for Private Quest Space access
   - Submit and review answers to access questions
   - Track application status
 
@@ -151,19 +151,19 @@ DecentraMind is a decentralized platform built on AO, a hyper parallel computer 
   - Track invite acceptance timestamps
   - View invite usage statistics
 
-### 4. Private Area
+### 4. Private Quest Space
 
-#### Area Management
+#### Private Quest Space Management
 - **Member Management**
-  - [ ] Members can apply to join private area
+  - [ ] Members can apply to join Private Quest Space
   - [ ] Admins can approve/reject applications
-  - [ ] Admins can remove members from private area
+  - [ ] Admins can remove members from Private Quest Space
   - [ ] Admins can view pending and current members
   - [ ] Admins can view membership history (actions, executing admin, member)
-  - [ ] Invite community members to private area
+  - [ ] Invite community members to Private Quest Space
   - [ ] Community members can view invitations
   - [ ] Community members can accept invitations
-- **Area Settings**
-  - [ ] Admins can set questions for private area applications
+- **Private Quest Space Settings**
+  - [ ] Admins can set questions for Private Quest Space applications
   - [ ] Editable collaboration areas (add, delete)
   - [ ] Editable navigation bar (add, delete)

@@ -231,29 +231,29 @@
   "View Transaction": "View Transaction",
   "private": {
     "applicable": {
-      "label": "Private Area Applicable",
+      "label": "Private Quest Space Applicable",
       "enable": "Enable",
       "disable": "Disable",
       "status": {
-        "enabled": "Builders can apply to join the private area currently.",
-        "disabled": "Builders can't apply to join the private area currently."
+        "enabled": "Builders can apply to join the private quest space currently.",
+        "disabled": "Builders can't apply to join the private quest space currently."
       }
     },
     "area": {
-      "title": "Private Area",
+      "title": "Private Quest Space",
       "noWorkArea": "No work area yet.",
-      "descriptionNotApplicable": "The private area can be viewed, but builders can't apply to join it.",
-      "descriptionApplicable": "The private area can be viewed and builders can apply to join it.",
-      "management": "Private Area Management",
-      "noQuestionsWarning": "Please add private area application questions",
+      "descriptionNotApplicable": "The private quest space can be viewed, but builders can't apply to join it.",
+      "descriptionApplicable": "The private quest space can be viewed and builders can apply to join it.",
+      "management": "Private Quest Space Management",
+      "noQuestionsWarning": "Please add private quest space application questions",
       "addQuestions": "Add Questions",
       "view": "View",
       "application": "Apply to Join",
-      "applicationTitle": "Private Area Application",
-      "applicationDescription": "Please answer all questions below to apply for private area access.",
+      "applicationTitle": "Private Quest Space Application",
+      "applicationDescription": "Please answer all questions below to apply for private quest space access.",
       "answerPlaceholder": "Enter your answer here...",
       "applicationSubmitted": "Your application has been submitted successfully, please wait for approval.",
-      "addWorkArea": "Add a work area",
+      "addWorkArea": "Add a work area"
     },
     "page": {
       "addPage": "Add a page",
@@ -326,8 +326,8 @@
       "remove": "Remove Question",
       "question": "Question",
       "saved": "Questions saved successfully",
-      "description": "Set questions for private area application. Members need to answer these questions to apply.",
-      "enableToSetQuestions": "Enable Private Area Application to set questions."
+      "description": "Set questions for private quest space application. Members need to answer these questions to apply.",
+      "enableToSetQuestions": "Enable Private Quest Space Application to set questions."
     }
   }
 }
