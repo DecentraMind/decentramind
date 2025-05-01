@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getCommunityUser } from '~/utils/community/community'
+import { getAllUsers, getCommunityUser } from '~/utils/community/community'
 import { useQueuedQuery } from '~/composables/useQueuedQuery'
 
 interface GrowthStats {
@@ -18,8 +18,6 @@ const props = withDefaults(
   },
 )
 
-const { getAllUsers } = $(communityStore())
-
 const { data: communityMembers, isLoading } = useQueuedQuery(
   ['community', 'communityUser', props.communityId],
   async () => {
@@ -31,6 +29,7 @@ const { data: communityMembers, isLoading } = useQueuedQuery(
       return Object.values(allUsers).map(user => ({
         ...user,
         joinTime: user.createdAt || 1730476100000,
+        inviterAddress: ''
       }))
     }
   }

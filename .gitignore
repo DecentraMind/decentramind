@@ -30,3 +30,5 @@ logs
 AO/aos
 *.code-workspace
 submissionStateMachine.ts
+.vscode/*
+!.vscode/*.shared.json
