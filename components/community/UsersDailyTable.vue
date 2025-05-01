@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getCommunityUser } from '~/utils/community/community'
+import { getAllUsers, getCommunityUser } from '~/utils/community/community'
 import { useQueuedQuery } from '~/composables/useQueuedQuery'
 
 interface GrowthStats {
@@ -17,8 +17,6 @@ const props = withDefaults(
     communityId: undefined,
   },
 )
-
-const { getAllUsers } = $(communityStore())
 
 const { data: communityMembers, isLoading } = useQueuedQuery(
   ['community', 'communityUser', props.communityId],

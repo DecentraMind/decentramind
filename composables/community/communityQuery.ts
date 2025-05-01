@@ -1,6 +1,6 @@
 import { useMutation, type UseQueryOptions } from '@tanstack/vue-query'
 import type { Community, JoinedCommunity, PrivateAreaConfig, PrivateTask } from '~/types'
-import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, exit, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant, deletePage, getJoinedCommunities, getCommunity } from '~/utils/community/community'
+import { addBoard, addPage, addPrivateTask, deleteProposal, getApplications, getCommunities, getCommunityUser, getLogs, getPage, getPrivateAreaConfig, getPrivateTask, getPrivateUnlockMembers, getQuestions, join, exit, saveProposal, updateBoardTitle, updatePage, updatePrivateAreaConfig, updatePrivateTaskStatus, updateSettleTx, getPrivateTasksByInitiator, getPrivateTasksByParticipant, deletePage, getJoinedCommunities, getCommunity, getAllUsers } from '~/utils/community/community'
 import { createQueryComposable } from '~/utils/query.client'
 import { createUuid } from '~/utils/string'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -309,6 +309,8 @@ export const useUpdateSettleTxMutation = ({ communityUuid }: { communityUuid: st
     }
   })
 }
+
+export const useGetAllUsersQuery = createQueryComposable(['community', 'allUsers'], () => getAllUsers())
 
 export const useGetCommunityUserQuery = createQueryComposable(['community', 'communityUser'], getCommunityUser)
 

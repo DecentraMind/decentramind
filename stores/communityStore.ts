@@ -2,7 +2,6 @@ import {
   createDataItemSigner,
   message,
   spawn,
-  dryrunResultParsed,
   messageResult,
   messageResultParsed
 } from '~/utils/ao'
@@ -240,19 +239,6 @@ export const communityStore = defineStore('communityStore', () => {
     return updateItemInArray(params)
   }
 
-  const getAllUsers = async () => {
-    return await dryrunResultParsed<Record<string, {
-      address: string
-      name: string
-      avatar: string
-      createdAt?: number
-      canCreateCommunity?: boolean
-    }>>({
-      process: aoCommunityProcessID,
-      tags: [{ name: 'Action', value: 'GetAllUsers' }]
-    })
-  }
-
   const createCommunityInviteCode  = async (communityUuid: string) => {
     const code = await messageResult<string>({
       process: aoCommunityProcessID,
@@ -402,7 +388,6 @@ export const communityStore = defineStore('communityStore', () => {
     createCommunityInviteCode,
     joinCommunity,
     updateUser,
-    getAllUsers,
     getCommunityUser,
     setCurrentCommunityUserMap,
     currentCommunityUserMap,

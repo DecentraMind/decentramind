@@ -342,6 +342,19 @@ export async function addPrivateTask(task: PrivateTask, wallet?: Wallet) {
   })
 }
 
+export const getAllUsers = async () => {
+  return await dryrunResultParsed<Record<string, {
+    address: string
+    name: string
+    avatar: string
+    createdAt?: number
+    canCreateCommunity?: boolean
+  }>>({
+    process: communityProcessID,
+    tags: [{ name: 'Action', value: 'GetAllUsers' }]
+  })
+}
+
 export async function getUserByAddress(address: string) {
   return await dryrunResultParsed<UserInfo>({
     process: communityProcessID,

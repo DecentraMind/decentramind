@@ -3,6 +3,7 @@ import type { UserInfoWithAddress } from '~/types'
 import { enableCommunityCreation } from '~/utils/community/community'
 import { notificationStore } from '~/stores/notificationStore'
 import { communityStore } from '~/stores/communityStore'
+import { useGetAllUsersQuery } from '~/composables/community/communityQuery'
 // Interface for the form state
 interface EnableCommunityFormState {
   selectedUser: UserInfoWithAddress | undefined
@@ -16,27 +17,24 @@ const formState = reactive<EnableCommunityFormState>({
 })
 
 const isSaving = ref(false)
+const { data: users, isError } = useGetAllUsersQuery([])
 const allUsers = ref<UserInfoWithAddress[]>([])
 
-// Fetch all users on component mount
-onMounted(async () => {
-  try {
-    const { getAllUsers } = communityStore()
-    const users = await getAllUsers()
-    
-    // Map users to include the needed properties
-    allUsers.value = Object.entries(users).map(([address, userInfo]) => ({
-      ...userInfo,
-      address,
-      name: userInfo.name || address,
-      muted: false // Add the muted property
-    }))
-  } catch (error) {
-    console.error('Error fetching users:', error)
-    // Display error notification
-    const { showError } = notificationStore()
+watch(isError, (newIsError) => {
+  if (newIsError) {
     showError('Failed to load users')
   }
+})
+
+watch(users, (newUsers) => {
+  if (!newUsers) return
+  // Map users to include the needed properties
+  allUsers.value = Object.entries(newUsers).map(([address, userInfo]) => ({
+    ...userInfo,
+    address,
+    name: userInfo.name || address,
+    muted: false // Add the muted property
+  }))
 })
 
 // Search function for the select menu
