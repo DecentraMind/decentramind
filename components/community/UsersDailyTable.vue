@@ -29,6 +29,7 @@ const { data: communityMembers, isLoading } = useQueuedQuery(
       return Object.values(allUsers).map(user => ({
         ...user,
         joinTime: user.createdAt || 1730476100000,
+        inviterAddress: ''
       }))
     }
   }
