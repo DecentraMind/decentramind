@@ -2,8 +2,9 @@
 import type { UserInfoWithAddress } from '~/types'
 import { enableCommunityCreation } from '~/utils/community/community'
 import { notificationStore } from '~/stores/notificationStore'
-import { communityStore } from '~/stores/communityStore'
 import { useGetAllUsersQuery } from '~/composables/community/communityQuery'
+import Loading from '~/components/Loading.vue'
+
 // Interface for the form state
 interface EnableCommunityFormState {
   selectedUser: UserInfoWithAddress | undefined
@@ -17,7 +18,11 @@ const formState = reactive<EnableCommunityFormState>({
 })
 
 const isSaving = ref(false)
-const { data: users, isError } = useGetAllUsersQuery([])
+const { data: users, isError, isLoading } = useGetAllUsersQuery([], {
+  enabled: true,
+  refetchOnWindowFocus: true,
+  staleTime: 0,
+})
 const allUsers = ref<UserInfoWithAddress[]>([])
 
 watch(isError, (newIsError) => {
@@ -87,7 +92,8 @@ async function submit() {
         <div class="space-y-6">
           <p class="text-gray-600">{{ $t('community.admin.enableCreationDescription') }}</p>
           
-          <UForm :state="formState" @submit="submit">
+          <Loading v-if="isLoading" />
+          <UForm v-else :state="formState" @submit="submit">
             <UFormGroup :label="$t('community.admin.selectUser')">
               <USelectMenu
                 v-model="formState.selectedUser"
