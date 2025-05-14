@@ -173,10 +173,10 @@ export const spaceUrlSchema = z.object({
       } catch {
         return false
       }
-    }, { message: 'Must be a valid URL like https://x.com/i/spaces/xxxxxxxxx' })
+    }, { message: 'Must be a valid URL like https://x.com/i/spaces/1xxxxxxxxxxxx' })
     .refine((value) => {
       return SPACE_URL_REGEXP.test(value)
-    }, { message: 'The URL must be a valid space URL like https://x.com/i/spaces/xxxxxxxxx' })
+    }, { message: 'The URL must be a valid space URL like https://x.com/i/spaces/1xxxxxxxxxxxx' })
 })
 
 export type SpaceUrlSchema = z.infer<typeof spaceUrlSchema>

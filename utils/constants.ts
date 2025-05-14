@@ -275,7 +275,7 @@ export type PageSymbol = (typeof communityRightPages)[keyof typeof communityRigh
 
 export const ARWEAVE_ID_REGEXP = /^[a-zA-Z0-9-_]{43}$/
 
-export const SPACE_URL_REGEXP = /(?:x|twitter)\.com\/i\/spaces\/([a-zA-Z0-9]{13})\/?/
+export const SPACE_URL_REGEXP = /^(?:https?:\/\/)?(?:x|twitter)\.com\/i\/spaces\/([a-zA-Z0-9]{13})\/?(?:peek\/?)?$/
 export const TWEET_URL_REGEXP = /^(?:https?:\/\/)?(?:twitter|x)\.com\/.+\/status\/(\d+)/
 
 export const maxCommunityLogoDimension = {
