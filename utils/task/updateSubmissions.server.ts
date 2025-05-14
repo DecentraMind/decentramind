@@ -171,7 +171,7 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
         console.warn(`Error validating submission ${submission.id} task ${task.processID}:`, error)
         const validateError = error instanceof Error ? error.message
           : (typeof error === 'string' ? error : 'Unknown error.' )
-        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == 'invalid' || submission.validateStatus == undefined) {
+        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == undefined) {
           await updateInvalidSubmission({
             submissionId: submission.id,
             taskPid: task.processID,
@@ -189,15 +189,17 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
       }
 
     } catch (error) {
-      await delay(200)
-      const validateError = error instanceof Error ? error.message : 'Unknown error'
-      await updateInvalidSubmission({
-        submissionId: submission.id,
-        taskPid: task.processID,
-        wallet,
-        validateStatus: 'validation_error',
-        validateError
-      })
+      if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == undefined) {
+        await delay(200)
+        const validateError = error instanceof Error ? error.message : 'Unknown error'
+        await updateInvalidSubmission({
+          submissionId: submission.id,
+          taskPid: task.processID,
+          wallet,
+          validateStatus: 'validation_error',
+          validateError
+        })
+      }
     }
     
     // add 1 second delay after each submission processing to prevent AO calculation unit overload
@@ -264,10 +266,17 @@ export const saveSpaceTaskSubmitInfo = async function ({
   // e.g. https://pbs.twimg.com/profile_images/1881670048193945600/H-FWznAE_normal.jpg
   const userAvatar = host.profile_image_url.replace(/_(normal|bigger|mini)(\.[^.]+)$/, '$2')
   
-  const ssim = userAvatar
-    ? await compareImages(arUrl(communityLogo, gateways.everland), userAvatar)
-    : 0
-  // console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
+  // TODO if error happens during image comparison, use previous brandEffect
+  let ssim = 0
+  try {
+    ssim = userAvatar
+      ? await compareImages(arUrl(communityLogo, gateways.everland), userAvatar)
+      : 0
+    // console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
+  } catch (error) {
+    console.error('Failed to compare space host avatar with community logo:', error)
+    throw new Error('Failed to compare space host avatar with community logo')
+  }
   
   // 品牌效应
   const brandEffect = ssim && ssim >= minSSIM ? 10 : 0
