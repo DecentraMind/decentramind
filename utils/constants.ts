@@ -56,7 +56,7 @@ export const tokens: Record<string, Token> = {
     denomination: 12,
     logo: 'FcaExQs5fN4KAeYhxgnfHK4Fp9U6Rh62xsBHhxg2AnU'
   },
-  'SYNBO_EARLY_BIRD': {
+  SYNBO_EARLY_BIRD: {
     ticker: 'SYNBO_EARLY_BIRD',
     label: 'SYNBO_EARLY_BIRD',
     processID: 'Glr6TWiPaMOtErIKHYrsmhurWCXWjqEK6Id9nuolQHg',

@@ -265,7 +265,7 @@ export const saveSpaceTaskSubmitInfo = async function ({
   const userAvatar = host.profile_image_url.replace(/_(normal|bigger|mini)(\.[^.]+)$/, '$2')
   
   const ssim = userAvatar
-    ? await compareImages(arUrl(communityLogo, gateways.ario), userAvatar)
+    ? await compareImages(arUrl(communityLogo, gateways.everland), userAvatar)
     : 0
   // console.log({ ssim, communityLogo: arUrl(communityInfo.logo, gateways.ario), twitterUserAvatar: userAvatar})
   
