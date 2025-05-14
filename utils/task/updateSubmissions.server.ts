@@ -171,7 +171,7 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
         console.warn(`Error validating submission ${submission.id} task ${task.processID}:`, error)
         const validateError = error instanceof Error ? error.message
           : (typeof error === 'string' ? error : 'Unknown error.' )
-        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == 'invalid' || submission.validateStatus == undefined) {
+        if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == undefined) {
           await updateInvalidSubmission({
             submissionId: submission.id,
             taskPid: task.processID,
@@ -189,15 +189,17 @@ export const updateSubmissions = async <T extends ValidatedSpacesInfo | Validate
       }
 
     } catch (error) {
-      await delay(200)
-      const validateError = error instanceof Error ? error.message : 'Unknown error'
-      await updateInvalidSubmission({
-        submissionId: submission.id,
-        taskPid: task.processID,
-        wallet,
-        validateStatus: 'validation_error',
-        validateError
-      })
+      if (submission.validateStatus == 'waiting_for_validation' || submission.validateStatus == 'validation_error' || submission.validateStatus == undefined) {
+        await delay(200)
+        const validateError = error instanceof Error ? error.message : 'Unknown error'
+        await updateInvalidSubmission({
+          submissionId: submission.id,
+          taskPid: task.processID,
+          wallet,
+          validateStatus: 'validation_error',
+          validateError
+        })
+      }
     }
     
     // add 1 second delay after each submission processing to prevent AO calculation unit overload
