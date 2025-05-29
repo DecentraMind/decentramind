@@ -1,13 +1,13 @@
 import type { VouchData } from '~/types'
 import { uniq } from 'lodash-es'
-import { messageResult } from '~/utils/ao'
+import { dryrunResultParsed } from '~/utils/ao'
 import { VALID_VOUCHERS } from '~/utils/processID'
 
 export const getVouchData = async (address: string, method: string = 'X'): Promise<string[]> => {
   if (!address) {
     throw new Error('No address specified.')
   }
-  const data = await messageResult<string>({
+  const vouchData = await dryrunResultParsed<VouchData>({
     process: VOUCH_PROCESS_ID,
     tags: [
       { name: 'Action', value: 'Get-Vouches' },
@@ -15,8 +15,6 @@ export const getVouchData = async (address: string, method: string = 'X'): Promi
     ],
     signer: createDataItemSigner(window.arweaveWallet),
   })
-
-  const vouchData = JSON.parse(data) as VouchData
 
   console.log(`vouch data for ${address}:`, vouchData)
   if (vouchData['Vouches-For'] !== address) {
