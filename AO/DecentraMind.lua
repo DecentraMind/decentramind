@@ -1,4 +1,4 @@
-Variant = '1.0.102'
+Variant = '1.0.103'
 Name = 'DecentraMind-' .. Variant
 
 local json = require("json")
@@ -280,6 +280,7 @@ local function registerUser(address, createdAt, avatar, name)
       avatar = avatar or DefaultUserAvatar,
       name = name or string.sub(address, -4),
       createdAt = createdAt,
+      -- TODO remove this field
       canCreateCommunity = false
     }
   end
@@ -332,7 +333,6 @@ Actions = {
       if not Users[address] then
         return u.replyError(msg, 'User not found. Please login first.')
       end
-      assert(Users[address].canCreateCommunity, 'You are not allowed to create community.')
 
       local uuid = u.createUuid()
 
@@ -1695,6 +1695,7 @@ Actions = {
               avatar = DefaultUserAvatar,
               name = string.sub(address, -4),
               createdAt = msg.Timestamp,
+              -- TODO remove this field
               canCreateCommunity = false
             }
           end
@@ -1747,6 +1748,7 @@ Actions = {
         return u.replyError(msg, 'User not found.')
       end
 
+      -- TODO remove this field
       Users[address].canCreateCommunity = true
     end,
   },

@@ -15,7 +15,7 @@ import { getJoinedCommunities } from '~/utils/community/community'
 
 const router = useRouter()
 
-const selectModal = $ref(0)
+const selectModal = $ref<0 | 1 | 2>(0)
 
 const { checkIsActiveWallet, addSwitchListener } = $(aoStore())
 let { address } = $(aoStore())
@@ -273,23 +273,16 @@ const afterLogin = async () => {
     </div>
 
     <UModal v-model="isCreateModalOpen" :ui="{ width: 'px-2 py-4 sm:px-3 sm:py-6 w-fit sm:max-w-[90%]' }">
-      <div v-if="!userInfo?.canCreateCommunity" class="flex-center text-center whitespace-pre-line text-xl text-gray-500">
-        <div class="flex-col-center gap-y-4 p-4">
-          <p class="text-base leading-loose">Being cooked!<br>Please contact with us through the group.<br><a href="https://t.me/+n18CxBJlGMg0Y2U5" target="_blank" class="text-primary">https://t.me/+n18CxBJlGMg0Y2U5</a></p>
-        </div>
+      <div v-if="selectModal === 0" class="flex justify-between gap-8 p-4">
+        <UButton color="white" @click="selectModal=1">Create Community</UButton>
+        <UButton color="white" @click="selectModal=2">Create Token</UButton>
       </div>
-      <template v-else>
-        <div v-if="selectModal === 0" class="flex justify-between gap-8 p-4">
-          <UButton color="white" @click="selectModal=1">Create Community</UButton>
-          <UButton color="white" @click="selectModal=2">Create Token</UButton>
-        </div>
-        <CommunitySettingForm
-          v-if="selectModal === 1"
-          @saved="refetchJoinedCommunities()"
-          @close-modal="isCreateModalOpen = false"
-        />
-        <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />
-      </template>
+      <CommunitySettingForm
+        v-if="selectModal === 1"
+        @saved="refetchJoinedCommunities()"
+        @close-modal="isCreateModalOpen = false"
+      />
+      <TokenCreate v-if="selectModal === 2" @close-modal="selectModal = 0; isCreateModalOpen = false" />
     </UModal>
     
     <LoginModal @login="afterLogin" />

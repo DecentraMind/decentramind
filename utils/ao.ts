@@ -41,6 +41,13 @@ export function checkResult(res: DryrunOutput | ResultOutput) {
     throw new Error('No result')
   }
   if (res.Error) {
+    if (res.Error.split('\n')[0].startsWith('\x1B[31mError\x1B')) {
+      const errorMessage = res.Error.split('\n').pop()?.trim().replace(
+        /^.*\[string "[a-zA-Z0-9_.-]*"\]:[0-9]*: /g,
+        ''
+      )
+      throw new Error(errorMessage || 'Unknown error')
+    }
     throw new Error(res.Error)
   }
 
@@ -78,6 +85,7 @@ export async function messageResult<T>(messageParams: MessageInput) {
   try {
     const messageId = await message(messageParams)
     const res = await result({ process: messageParams.process, message: messageId })
+    checkResult(res)
     return extractResult<T>(res)
   } catch (error) {
     // console.error('Failed to messageResult:', error)

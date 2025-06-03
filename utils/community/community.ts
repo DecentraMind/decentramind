@@ -348,6 +348,7 @@ export const getAllUsers = async () => {
     name: string
     avatar: string
     createdAt?: number
+    /** @deprecated */
     canCreateCommunity?: boolean
   }>>({
     process: communityProcessID,

@@ -312,6 +312,7 @@ export type UserInfo = {
   name: string
   avatar: string
   createdAt?: number
+  /** @deprecated */
   canCreateCommunity?: boolean
 }
 
