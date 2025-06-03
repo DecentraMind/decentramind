@@ -269,6 +269,7 @@ export const saveSpaceTaskSubmitInfo = async function ({
   // TODO if error happens during image comparison, use previous brandEffect
   let ssim = 0
   try {
+    // TODO add retry here
     ssim = userAvatar
       ? await compareImages(arUrl(communityLogo, gateways.everland), userAvatar)
       : 0

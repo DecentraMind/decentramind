@@ -95,3 +95,6 @@ DecetraMind-test aos-2.0.0> .load AO/DecentraMind.lua
 
 ### Contributin
 See [Contributin](./docs/CONTRIBUTION.md)
+
+### TODOs
+-[ ] remove all canCreateCommunity related code

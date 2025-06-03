@@ -10,6 +10,7 @@ import { getCommunity, getUserByAddress } from '~/utils/community/community'
 const useUserInfoBase = () => {
   const { address } = $(aoStore())
   const { currentUuid } = $(communityStore())
+  // TODO fix bug: userInfo is null after default layout hot reload
   const userInfo = ref<UserInfo>()
   const queryClient = useQueryClient()
 
