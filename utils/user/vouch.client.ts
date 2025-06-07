@@ -3,7 +3,7 @@ import { uniq } from 'lodash-es'
 import { dryrunResultParsed } from '~/utils/ao'
 import { VALID_VOUCHERS } from '~/utils/processID'
 
-export const getVouchData = async (address: string, method: string = 'X'): Promise<string[]> => {
+export const getVouchData = async ({address, method = 'X'}: {address: string, method?: string}): Promise<string[]> => {
   if (!address) {
     throw new Error('No address specified.')
   }
