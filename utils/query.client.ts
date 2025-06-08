@@ -35,7 +35,7 @@ export function createQueryComposable<TArgs, TResult>(
 }
 
 /**
- * Create a queued fetcher function that can be called with parameters at runtime
+ * Create a queued fetcher function that always fetches fresh data (bypasses cache)
  * @param baseQueryKey base query key
  * @param queryFn the async function to execute
  * @returns a composable that returns a fetcher function
@@ -54,6 +54,9 @@ export function createQueuedFetcher<TParams, TResult>(
         : String(params)
       
       const queryKey = [...unref(baseQueryKey), serializedParams] as const
+      
+      // Invalidate the query to ensure fresh fetch
+      await queryClient.invalidateQueries({ queryKey })
       
       return await queryClient.fetchQuery({
         queryKey,

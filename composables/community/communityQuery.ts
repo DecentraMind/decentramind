@@ -27,6 +27,8 @@ export const useJoinedCommunitiesQuery = function<TSelect = JoinedCommunity[]>(o
   )
 }
 
+export const useJoinedCommunitiesFetcher = createQueuedFetcher(['community', 'joinedCommunities'], getJoinedCommunities)
+
 export const useCommunityQuery = createQueryComposable(
   ['community', 'community'],
   (uuid: string) => {
@@ -34,6 +36,7 @@ export const useCommunityQuery = createQueryComposable(
     return getCommunity(uuid, address)
   }
 )
+export const useCommunityFetcher = createQueuedFetcher(['community', 'community'], getCommunity)
 
 // TODO: remove this
 export const useCommunityFromCommunitiesQuery = (
@@ -313,6 +316,7 @@ export const useUpdateSettleTxMutation = ({ communityUuid }: { communityUuid: st
 export const useGetAllUsersQuery = createQueryComposable(['community', 'allUsers'], () => getAllUsers())
 
 export const useGetCommunityUserQuery = createQueryComposable(['community', 'communityUser'], getCommunityUser)
+export const useGetCommunityUserFetcher = createQueuedFetcher(['community', 'communityUser'], getCommunityUser)
 
 export const useGetPageQuery = createQueryComposable(['community', 'page'], getPage)
 

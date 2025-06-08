@@ -43,7 +43,7 @@ const login = async () => {
     address = await window.arweaveWallet.getActiveAddress()
     console.log('update address after login', address)
 
-    refetchUserInfo()
+    await refetchUserInfo()
     isLoginSuccess = true
     console.log('show login success', isLoginSuccess)
 

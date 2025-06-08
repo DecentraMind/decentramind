@@ -1,7 +1,7 @@
 import { createQueryComposable, createQueuedFetcher } from '~/utils/query.client'
 import { checkInbox, getChatroomInboxCount, getMutedUsers } from '~/utils/community/chatroom'
 
-export const useInboxCountQuery = createQueryComposable(
+export const useInboxCountQuery = createQueuedFetcher(
   ['chatroom', 'inboxCount'],
   getChatroomInboxCount
 )

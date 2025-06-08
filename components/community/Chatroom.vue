@@ -4,9 +4,8 @@ import { shortString, defaultUserAvatar } from '~/utils'
 import ChatArea from '../inbox/ChatArea.vue'
 import { notificationStore } from '~/stores/notificationStore'
 import { communityStore } from '~/stores/communityStore'
-import { useGetCommunityUserQuery } from '~/composables/community/communityQuery'
+import { useGetCommunityUserFetcher, useGetCommunityUserQuery } from '~/composables/community/communityQuery'
 import Loading from '../Loading.vue'
-import { useQueryClient } from '@tanstack/vue-query'
 
 const props = defineProps<{
   community: Community
@@ -42,7 +41,7 @@ onMounted(async () => {
   setCurrentCommunityUuid(community.uuid)
 })
 
-const queryClient = useQueryClient()
+const fetchCommunityUser = useGetCommunityUserFetcher()
 const muteOrUnmute = async(user: UserInfoWithAddress) => {
   if (!user) return
 
@@ -60,10 +59,8 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
 
     showSuccess(`You have ${action} ` + user.name || shortString(user.address))
 
-    // invalidate community user query
-    queryClient.invalidateQueries({ queryKey: ['community', 'communityUser', community.uuid] })
     // refetch community user query
-    queryClient.refetchQueries({ queryKey: ['community', 'communityUser', community.uuid] })
+    await fetchCommunityUser(community.uuid)
   } catch (e) {
     showError('Failed to mute.', e as Error)
   }

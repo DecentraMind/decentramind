@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { arUrl, defaultCommunityLogo, defaultUserAvatar, exploreLogo } from '~/utils/arAssets'
-import { cn, delay } from '~/utils/util'
+import { cn } from '~/utils/util'
 import CommunitySettingForm from '~/components/community/CommunitySettingForm.vue'
 import LoginModal from '~/components/users/LoginModal.vue'
 import VouchModal from '~/components/users/VouchModal.vue'
-import { useJoinedCommunitiesQuery } from '~/composables/community/communityQuery'
+import { useJoinedCommunitiesFetcher, useJoinedCommunitiesQuery } from '~/composables/community/communityQuery'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { useUserInfo } from '~/composables/useUserInfo'
 import TopNav from '~/components/TopNav.vue'
-import { useQueryClient } from '@tanstack/vue-query'
 import type { JoinedCommunity } from '~/types'
-import { getJoinedCommunities } from '~/utils/community/community'
 
 const router = useRouter()
 
@@ -40,14 +38,10 @@ watch(() => data.value, (newData) => {
   }
 }, { immediate: true })
 
+const fetchJoinedCommunities = useJoinedCommunitiesFetcher()
 
-const queryClient = useQueryClient()
 const refetchJoinedCommunities = async () => {
-  const newData = await queryClient.fetchQuery({
-    queryKey: ['community', 'joinedCommunities', address],
-    queryFn: () => getJoinedCommunities(address),
-    staleTime: 0
-  })
+  const newData = await fetchJoinedCommunities(address)
   joinedCommunities = newData || []
   console.log('new joinedCommunities', joinedCommunities.length)
 }
@@ -85,7 +79,6 @@ onMounted(async () => {
 const refetch = async () => {
   try {
     await refetchJoinedCommunities()
-    await delay(1000)
     await refetchUserInfo()
   } catch (error) {
     console.error('Error refetching data:', error)
