@@ -25,6 +25,7 @@ import { notificationStore } from '~/stores/notificationStore'
 import { breadcrumbStore, type IBreadcrumbLink } from '~/stores/breadcrumbStore'
 import { useGetInvitesByInviterQuery, useGetTaskQuery } from '~/composables/tasks/taskQuery'
 import { useCommunitiesQuery } from '~/composables/community/communityQuery'
+import { useQueryClient } from '@tanstack/vue-query'
 
 
 const router = useRouter()
@@ -50,7 +51,10 @@ let { isLoginModalOpen, isVouchModalOpen, redirectUrlAfterLogin } = $(aoStore())
 const route = useRoute()
 const taskPid = $computed(() => route.params.taskId) as string
 
-const { data: task, isSuccess: isTaskLoaded, isLoading: isTaskLoading, error: taskError, refetch: refetchTask } = useGetTaskQuery({taskPid, address})
+const queryClient = useQueryClient()
+queryClient.invalidateQueries({ queryKey: ['task', taskPid, address] })
+const { data: task, isSuccess: isTaskLoaded, isLoading: isTaskLoading, refetch: refetchTask } = useGetTaskQuery({taskPid, address})
+
 watch(isTaskLoaded, async () => {
   if (task.value) {
     setCurrentCommunityUuid(task.value.communityUuid)
@@ -72,11 +76,6 @@ const { data: communities, isLoading: isCommunityInfoLoading } = useCommunitiesQ
 const communityInfo = computed(() => {
   if (!communities.value || !task.value?.communityUuid) return undefined
   return communities.value.find(community => community.uuid === task.value?.communityUuid)
-})
-
-// 添加监听以诊断 communityInfo 何时发生变化
-watchEffect(() => {
-  console.log('communityInfo watchEffect:', communityInfo.value)
 })
 
 const isJoinedCommunity = $computed(() => {
