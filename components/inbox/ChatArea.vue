@@ -7,7 +7,7 @@ import { aoStore } from '~/stores/aoStore'
 import { notificationStore } from '~/stores/notificationStore'
 import { delay } from '~/utils/util'
 import { useMutedUsersQuery } from '~/composables/community/chatroomQuery'
-import { useQueryClient } from '@tanstack/vue-query'
+import { useGetCommunityUserFetcher } from '~/composables/community/communityQuery'
 
 const { chat: chatID, communityUuid } = $defineProps<{
   chat: string
@@ -70,31 +70,34 @@ const isTextareaDisabled = computed(() => {
   )
 })
 
-const queryClient = useQueryClient()
+const fetchCommunityUser = useGetCommunityUserFetcher()
 const submitMessage = async () => {
-  await refetchMutedUsers()
-  
-  if (mutedUsers.value && mutedUsers.value.includes(address)) {
-    showError('You are muted in this chatroom.')
-    // invalidate community user query
-    await queryClient.invalidateQueries({ queryKey: ['community', 'communityUser', communityUuid] })
-    // refetch community user query
-    await queryClient.refetchQueries({ queryKey: ['community', 'communityUser', communityUuid] })
-    msg = ''
-    return
-  }
   if (isSubmitting || !mailCache) {
     console.log('cannot submit', {isLoading: isSubmitting, mailCache})
     return
   }
   isSubmitting = true
 
+  await refetchMutedUsers()
+  
+  if (mutedUsers.value && mutedUsers.value.includes(address)) {
+    showError('You are muted in this chatroom.')
+    isSubmitting = false
+    
+    // refetch community user query
+    await fetchCommunityUser(communityUuid)
+    msg = ''
+    return
+  }
+
   if (!mailCache[chatID]) {
     mailCache[chatID] = {}
   }
+
+  const pendingIndexCount = 999999//getLatestIndexCount(chatID) + 1
   // show pending status
-  mailCache[chatID][999999] = {
-    id: 999999,
+  mailCache[chatID][pendingIndexCount] = {
+    id: pendingIndexCount,
     isPending: true,
     Timestamp: Date.now(),
     From: address,

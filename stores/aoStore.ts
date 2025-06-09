@@ -5,7 +5,6 @@ import { DM_PROCESS_ID } from '~/utils/processID'
 import Arweave from 'arweave'
 import type { Tag } from 'arweave/node/lib/transaction'
 import type { AoTag } from '~/types'
-import { getVouchData } from '~/utils/user/vouch.client'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { communityStore } from './communityStore'
 import { notificationStore } from './notificationStore'
@@ -14,6 +13,7 @@ const aoCommunityProcessID = DM_PROCESS_ID
 
 import type { PermissionType } from 'arconnect'
 import { get } from 'lodash-es'
+import { useVouchDataQuery } from '~/composables/user/userQuery'
 
 
 const permissions: PermissionType[] = [
@@ -189,7 +189,7 @@ export const aoStore = defineStore('aoStore', () => {
     }
   }
 
-
+  const fetchVouchData = useVouchDataQuery()
   /**
    * update vouch data of current active address
    * @returns twitterVouchedIDs string[] vouched twitter handles for this address
@@ -200,7 +200,7 @@ export const aoStore = defineStore('aoStore', () => {
     if (!activeAddress) {
       throw new Error('No address specified.')
     }
-    twitterVouchedIDs = await getVouchData(activeAddress, 'X')
+    twitterVouchedIDs = await fetchVouchData({ address: activeAddress, method: 'X' })
 
     if (twitterVouchedIDs.length === 0) {
       console.log('No valid Identifiers found in Vouchers.')

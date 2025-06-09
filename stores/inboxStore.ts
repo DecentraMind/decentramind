@@ -1,10 +1,8 @@
-import { createDataItemSigner, message, dryrun } from '~/utils/ao'
+import { createDataItemSigner, message } from '~/utils/ao'
 import type { InboxState, MailCache } from '~/types'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { get, keyBy, without, max, range, difference, chunk } from 'lodash-es'
-import { useQueryClient } from '@tanstack/vue-query'
-import { getChatroomInboxCount } from '~/utils/community/chatroom'
-import { delay } from '~/utils/util'
+import { without, max, range, difference, chunk } from 'lodash-es'
+import { useCheckInboxQuery, useInboxCountQuery } from '~/composables/community/chatroomQuery'
 
 export const inboxStore = defineStore('inboxStore', () => {
   const mailCache = $ref<Record<
@@ -16,6 +14,7 @@ export const inboxStore = defineStore('inboxStore', () => {
   >>({})
   let isInboxLoading = $ref(false)
 
+  const fetchInboxMessage = useCheckInboxQuery()
   /** Map of inbox states, indexed by processId */
   const state = $(lsItemRef<Record<string, InboxState>>('inboxStore',
     {
@@ -77,37 +76,20 @@ export const inboxStore = defineStore('inboxStore', () => {
     return rz
   }
 
-  const getDryrunData = (result: Awaited<ReturnType<typeof dryrun>>, key: string) => {
-    return get(
-      keyBy(
-        get(result, 'Messages[0].Tags'), 'name'
-      ),
-      key
-    )
+  const fetchInboxCount = useInboxCountQuery({
+    retry: false,
+  })
+
+  const updateInboxCount = async (process: string) => {
+    const data = Number(await fetchInboxCount(process))
+
+    console.log('fetchInboxCount', data)
+    state[process].inboxCount = data
+    return data
   }
 
-  const queryClient = useQueryClient()
-
-  /**
-   * Get the inbox count for a chat room.
-   * @param process The process ID of the chat room to get the inbox count for.
-   * @param refetch Whether to force a re-fetch of the inbox count.
-   * @returns The inbox count for the chat room.
-   */
-  const getInboxCount = async (process: string, refetch = false) => {
-    if (state[process].inboxCount && !refetch) {
-      return state[process].inboxCount
-    }
-
-    const data = await queryClient.fetchQuery({
-      queryKey: ['chatroom', 'inboxCount', process],
-      queryFn: () => getChatroomInboxCount(process),
-      staleTime: 0,
-    })
-
-    console.log('getInboxCount', Number(data))
-    state[process].inboxCount = Number(data)
-    return data
+  function getLatestIndexCount(process: string) {
+    return state[process].inboxCount || 0
   }
 
   /**
@@ -122,12 +104,7 @@ export const inboxStore = defineStore('inboxStore', () => {
       mailCache[process] = {}
     }
 
-    await delay(100)
-    const inboxCount = await queryClient.fetchQuery({
-      queryKey: ['chatroom', 'inboxCount', process],
-      queryFn: () => getChatroomInboxCount(process),
-      staleTime: 0,
-    })
+    const inboxCount = state[process].inboxCount
     const cachedIndex = without(
       Object.keys(mailCache[process])
         .map(item => parseInt(item)),
@@ -135,7 +112,7 @@ export const inboxStore = defineStore('inboxStore', () => {
     )
     
     const start = isNewer ? (max(cachedIndex) || 1) : 1
-    const allIndex = range(start, parseInt(inboxCount) + 1)
+    const allIndex = range(start, (inboxCount || 0) + 1)
     const waitForReadIndex = difference(allIndex, cachedIndex).reverse()
     if (waitForReadIndex.length === 0) {
       return
@@ -144,21 +121,13 @@ export const inboxStore = defineStore('inboxStore', () => {
     isInboxLoading = true
     const waitForReadIndexChunk = chunk(waitForReadIndex, limit)
 
+    // TODO get messages in batch instead of one by one
     for (const index of waitForReadIndexChunk[0]) {
       if (mailCache[process][index]) {
         continue
       }
 
-      // Add delay between each request
-      await delay(100)
-      const rz = await dryrun({
-        process,
-        tags: [
-          { name: 'Action', value: 'CheckInbox' },
-          { name: 'Index', value: String(index) },
-        ],
-      })
-      const message = getDryrunData(rz, 'MessageDetails.value')
+      const message = await fetchInboxMessage({ process, index })
       if (message['App-Process'] && message['Authority']) {
         // ignore spawn message that create the chat room process
         continue
@@ -167,7 +136,6 @@ export const inboxStore = defineStore('inboxStore', () => {
         ...message,
         index,
       }
-
     }
     if (mailCache[process][999999]) {
       delete mailCache[process][999999]
@@ -176,7 +144,7 @@ export const inboxStore = defineStore('inboxStore', () => {
   }
 
 
-  return $$({ state, stateArr, mailCache, isInboxLoading, add, remove, sendMessage, getInboxCount, loadInboxList })
+  return $$({ state, stateArr, mailCache, isInboxLoading, add, remove, sendMessage, updateInboxCount, getLatestIndexCount, loadInboxList })
 })
 
 if (import.meta.hot)

@@ -18,7 +18,7 @@ const { pid } = $defineProps<{
   pid: string, // process id
 }>()
 
-const { state, mailCache, getInboxCount, loadInboxList } = $(inboxStore())
+const { state, mailCache, loadInboxList, updateInboxCount } = $(inboxStore())
 const { currentCommunityUserMap: userMap } = $(communityStore())
 
 const { address } = $(aoStore())
@@ -47,13 +47,12 @@ const groupedMessages = $computed(() => {
 let interval: ReturnType<typeof setInterval>
 onMounted(async () => {
   interval = setInterval(async () => {
-    console.log('check chatroom new message')
     const oldCount = state[pid].inboxCount
-    await delay(100)
-    const newCount = Number(await getInboxCount(pid, true))
+    const newCount = await updateInboxCount(pid)
     if (oldCount && oldCount < newCount) {
-      await delay(100)
+      console.log('load new message')
       await loadInboxList(pid)
+      if (mailCache[pid][newCount].From === address) return
       notifySound.play()
     }
   }, runtimeConfig.public.chatroomFetchInterval || 5000)

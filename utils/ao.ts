@@ -1,5 +1,5 @@
 import { connect, createDataItemSigner } from '@permaweb/aoconnect'
-import { get } from 'lodash-es'
+import { get, keyBy } from 'lodash-es'
 import { retry } from '~/utils/util'
 
 const { result, results, message, spawn, monitor, unmonitor, dryrun: originalDryrun } = connect({
@@ -153,4 +153,13 @@ export function extractResultTags<T extends Record<string, string>>(res: DryrunO
 export async function dryrunResultTags<T extends Record<string, string>>(messageParams: DryrunInput): Promise<T> {
   const result = await dryrun(messageParams)
   return extractResultTags<T>(result)
+}
+
+export function getDryrunData(result: Awaited<ReturnType<typeof dryrun>>, key: string) {
+  return get(
+    keyBy(
+      get(result, 'Messages[0].Tags'), 'name'
+    ),
+    key
+  )
 }

@@ -24,3 +24,20 @@ export const getMutedUsers = async (communityUuid: string) => {
     ]
   })
 }
+
+/**
+ * Get message details from inbox
+ * @param process chatroom process id
+ * @param index index of the message
+ * @returns message details
+ */
+export const checkInbox = async ({ process, index }: { process: string, index: number }) => {
+  const result = await dryrun({
+    process,
+    tags: [
+      { name: 'Action', value: 'CheckInbox' },
+      { name: 'Index', value: String(index) },
+    ],
+  })
+  return getDryrunData(result, 'MessageDetails.value')
+}

@@ -40,7 +40,7 @@ export async function retry<T>(args: {
       }
       triedTimes++
 
-      await sleep(interval)
+      await delay(interval)
     }
   }
 }

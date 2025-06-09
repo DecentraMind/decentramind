@@ -2,17 +2,17 @@ import { readonly } from 'vue'
 import { createSharedComposable, computedAsync } from '@vueuse/core'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
-import { useUserInfoQuery } from '~/composables/user/userQuery'
-import { useQueryClient } from '@tanstack/vue-query'
-import type { Community, UserInfo } from '~/types'
-import { getCommunity, getUserByAddress } from '~/utils/community/community'
+import { useCommunityFetcher } from '~/composables/community/communityQuery'
+import { useUserInfoFetcher, useUserInfoQuery } from '~/composables/user/userQuery'
+import type { UserInfo } from '~/types'
 
 const useUserInfoBase = () => {
   const { address } = $(aoStore())
   const { currentUuid } = $(communityStore())
   // TODO fix bug: userInfo is null after default layout hot reload
   const userInfo = ref<UserInfo>()
-  const queryClient = useQueryClient()
+  const fetchUserInfo = useUserInfoFetcher()
+  const fetchCommunity = useCommunityFetcher()
 
   // 使用计算属性来确保地址变化时查询会重新执行
   const currentAddress = computed(() => address)
@@ -35,10 +35,7 @@ const useUserInfoBase = () => {
 
   // TODO move this to communityStore
   const currentCommunity = computedAsync(async () => {
-    const community = await queryClient.fetchQuery<Community | null>({
-      queryKey: ['community', 'community', currentUuid],
-      queryFn: async () => currentUuid ? await getCommunity(currentUuid) : null
-    })
+    const community = currentUuid ? await fetchCommunity(currentUuid) : null
     // console.log('useUserInfo: currentCommunity', community)
     return community
   })
@@ -63,12 +60,7 @@ const useUserInfoBase = () => {
   })
 
   const refetchUserInfo = async () => {
-    // 使用 queryClient 直接获取最新数据
-    const data = await queryClient.fetchQuery({
-      queryKey: ['user', 'getUserByAddress', currentAddress.value],
-      queryFn: () => getUserByAddress(currentAddress.value),
-      staleTime: 0
-    })
+    const data = await fetchUserInfo(currentAddress.value)
     userInfo.value = data
   }
 

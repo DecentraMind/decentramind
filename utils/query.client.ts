@@ -1,5 +1,6 @@
-import { type UseQueryOptions } from '@tanstack/vue-query'
+import { type UseQueryOptions, useQueryClient } from '@tanstack/vue-query'
 import { useQueuedQuery } from '~/composables/useQueuedQuery'
+import { useRequestQueue } from '~/plugins/vue-query'
 import { unref } from 'vue'
 
 /**
@@ -30,5 +31,48 @@ export function createQueryComposable<TArgs, TResult>(
         ...options
       }
     )
+  }
+}
+
+/**
+ * Create a queued fetcher function that always fetches fresh data (bypasses cache)
+ * @param baseQueryKey base query key
+ * @param queryFn the async function to execute
+ * @returns a composable that returns a fetcher function
+ */
+export function createQueuedFetcher<TParams, TResult>(
+  baseQueryKey: string[],
+  queryFn: (_params: TParams) => Promise<TResult>
+) {
+  return function<TData = TResult>(options: Partial<UseQueryOptions<TData, Error>> = {}) {
+    const queryClient = useQueryClient()
+    const requestQueue = useRequestQueue()
+    
+    const fetcher = async (params: TParams) => {
+      const serializedParams = params instanceof Object 
+        ? params
+        : String(params)
+      
+      const queryKey = [...unref(baseQueryKey), serializedParams] as const
+      
+      // Invalidate the query to ensure fresh fetch
+      await queryClient.invalidateQueries({ queryKey })
+      
+      return await queryClient.fetchQuery({
+        queryKey,
+        queryFn: async () => {
+          return await requestQueue.add(
+            async () => {
+              const result = await queryFn(params)
+              return result as TData
+            },
+            queryKey
+          )
+        },
+        ...options
+      })
+    }
+
+    return fetcher
   }
 }
