@@ -9,7 +9,6 @@ import { useCommunityQuery } from '~/composables/community/communityQuery'
 import { aoStore } from '~/stores/aoStore'
 import { communityStore } from '~/stores/communityStore'
 import { notificationStore } from '~/stores/notificationStore'
-import { inboxStore } from '~/stores/inboxStore'
 import { breadcrumbStore } from '~/stores/breadcrumbStore'
 
 definePageMeta({
@@ -18,7 +17,6 @@ definePageMeta({
 
 const { t } = useI18n()
 const { setCurrentCommunityUuid } = $(communityStore())
-const { add: inboxAdd } = $(inboxStore())
 const { address } = $(aoStore())
 const { showError } = $(notificationStore())
 const { setBreadcrumbs } = $(breadcrumbStore())
@@ -28,19 +26,11 @@ const router = useRouter()
 
 const uuid = $computed(() => route.params.uuid) as string
 
-const { data: community, isSuccess, isError, error, isLoading } = useCommunityQuery(uuid, {
+const { data: community, isError, error, isLoading } = useCommunityQuery(uuid, {
   staleTime: 0,
   refetchOnMount: 'always',
   refetchOnWindowFocus: 'always',
   refetchOnReconnect: 'always',
-})
-watch(isSuccess, async (value) => {
-  if (value) {
-    console.log('get communityInfo:', community.value?.name, community.value, uuid)
-    if (community.value?.communitychatid) {
-      await inboxAdd(community.value.name, community.value.communitychatid)
-    }
-  }
 })
 watch(isError, (value) => {
   if (value) {

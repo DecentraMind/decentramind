@@ -75,17 +75,17 @@ const muteOrUnmute = async(user: UserInfoWithAddress) => {
         <ChatArea :chat="community.communitychatid" :community-uuid="community.uuid" />
         <UDivider orientation="vertical" />
       </div>
-      <div v-if="community.isJoined" class="hidden sm:block bg-gray-50">
+      <div v-if="community.isJoined" class="hidden sm:flex sm:flex-col bg-gray-50 h-[calc(100vh-var(--header-height))]">
         <UDashboardNavbar title="Users" :badge="users.length">
           <template #title>
             <span class="text-2xl mr-2">Users</span>
           </template>
         </UDashboardNavbar>
 
-        <div v-if="isLoadingUserMap" class="flex-center h-full">
+        <div v-if="isLoadingUserMap" class="flex-1 flex-center h-full">
           <Loading />
         </div>
-        <div v-else-if="community" class="py-4 px-2 max-h-[calc(100vh-var(--header-height))] overflow-y-auto">
+        <div v-else-if="community" class="flex-1 py-4 px-2 h-full overflow-y-auto">
           <div
             v-for="user in users"
             :key="user.address"
