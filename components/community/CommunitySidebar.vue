@@ -87,7 +87,9 @@ const communityNameWidth = $computed(() => community ? getTextRenderWidth(commun
 const inviteCode = $computed(async () => {
   if (!community) return ''
   if (community.inviteCode) return community.inviteCode
-  return await createCommunityInviteCode(community.uuid)
+  return ''
+  // TODO if community invite code is reenabled, uncomment the following line
+  // return await createCommunityInviteCode(community.uuid)
 })
 
 const inviteUrl = $computed(() => {
