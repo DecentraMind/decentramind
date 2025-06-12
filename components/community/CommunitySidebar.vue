@@ -84,13 +84,10 @@ watch(
 )
 const communityNameWidth = $computed(() => community ? getTextRenderWidth(community.name, 30) : 0)
 
-const inviteCode = $computed(() => {
+const inviteCode = $computed(async () => {
   if (!community) return ''
   if (community.inviteCode) return community.inviteCode
-  createCommunityInviteCode(community.uuid).then((code) => {
-    community.inviteCode = code
-  })
-  return ''
+  return await createCommunityInviteCode(community.uuid)
 })
 
 const inviteUrl = $computed(() => {
