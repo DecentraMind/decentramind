@@ -16,25 +16,7 @@ export const inboxStore = defineStore('inboxStore', () => {
 
   const fetchInboxMessage = useCheckInboxQuery()
   /** Map of inbox states, indexed by processId */
-  const state = $(lsItemRef<Record<string, InboxState>>('inboxStore',
-    {
-      // 'CvgIA17jnhmuh3VtYozqlFy4sLKPVJV1c4eVZOY97to': {
-      //   name: 'HelloRWA',
-      //   latestMsgTime: new Date(),
-      //   createdAt: new Date()
-      // },
-      // 'Fv5lQPftoQ4VGhLGc-ZV0EteHaYSjsvaQQJoYxxwE40': {
-      //   name: 'AO Arena DAO Chat',
-      //   latestMsgTime: new Date(),
-      //   createdAt: new Date()
-      // },
-      // 'U1HFLMW0ZykPip03efMNpUpWcDlzkdxXwtoKZrOzhEA': {
-      //   name: 'HelloRWA',
-      //   latestMsgTime: new Date(),
-      //   createdAt: new Date()
-      // },
-    }
-  ))
+  const state = $(lsItemRef<Record<string, InboxState|undefined>>('inboxStore', {}))
 
   /** Array form of inbox states */
   const stateArr = $computed(() => {
@@ -46,24 +28,17 @@ export const inboxStore = defineStore('inboxStore', () => {
     })
   })
 
-  const add = async (name: string, id: string) => {
-    if (state[id]) {
-      return {
-        err: 'alreadyExist',
-        msg: 'Already Exist'
-      }
+  const initProcessState = (name: string, processId: string) => {
+    if (state[processId]) {
+      return state[processId]
     }
 
-    state[id] = {
+    state[processId] = {
       name,
       latestMsgTime: new Date().getTime(),
       createdAt: new Date().getTime()
     }
-    return true
-  }
-
-  const remove = async (id: string) => {
-    delete state[id]
+    return state[processId]
   }
 
   const sendMessage = async (process: string, data: string) => {
@@ -83,13 +58,19 @@ export const inboxStore = defineStore('inboxStore', () => {
   const updateInboxCount = async (process: string) => {
     const data = Number(await fetchInboxCount(process))
 
+    if (!state[process]) {
+      initProcessState(process, process)
+    }
     console.log('fetchInboxCount', data)
-    state[process].inboxCount = data
+    state[process]!.inboxCount = data
     return data
   }
 
-  function getLatestIndexCount(process: string) {
-    return state[process].inboxCount || 0
+  async function getLatestIndexCount(process: string) {
+    if (!state[process]) {
+      return await updateInboxCount(process)
+    }
+    return state[process]?.inboxCount || 0
   }
 
   /**
@@ -100,11 +81,12 @@ export const inboxStore = defineStore('inboxStore', () => {
    * @returns 
    */
   const loadInboxList = async (process: string, limit = 10, isNewer = true) => {
+    isInboxLoading = true
     if (!mailCache[process]) {
       mailCache[process] = {}
     }
 
-    const inboxCount = state[process].inboxCount
+    const inboxCount = await getLatestIndexCount(process)
     const cachedIndex = without(
       Object.keys(mailCache[process])
         .map(item => parseInt(item)),
@@ -115,10 +97,10 @@ export const inboxStore = defineStore('inboxStore', () => {
     const allIndex = range(start, (inboxCount || 0) + 1)
     const waitForReadIndex = difference(allIndex, cachedIndex).reverse()
     if (waitForReadIndex.length === 0) {
+      isInboxLoading = false
       return
     }
 
-    isInboxLoading = true
     const waitForReadIndexChunk = chunk(waitForReadIndex, limit)
 
     // TODO get messages in batch instead of one by one
@@ -144,7 +126,7 @@ export const inboxStore = defineStore('inboxStore', () => {
   }
 
 
-  return $$({ state, stateArr, mailCache, isInboxLoading, add, remove, sendMessage, updateInboxCount, getLatestIndexCount, loadInboxList })
+  return $$({ state, stateArr, mailCache, isInboxLoading, sendMessage, updateInboxCount, getLatestIndexCount, loadInboxList })
 })
 
 if (import.meta.hot)

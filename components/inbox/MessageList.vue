@@ -18,7 +18,7 @@ const { pid } = $defineProps<{
   pid: string, // process id
 }>()
 
-const { state, mailCache, loadInboxList, updateInboxCount } = $(inboxStore())
+const { mailCache, loadInboxList, updateInboxCount, getLatestIndexCount } = $(inboxStore())
 const { currentCommunityUserMap: userMap } = $(communityStore())
 
 const { address } = $(aoStore())
@@ -47,7 +47,7 @@ const groupedMessages = $computed(() => {
 let interval: ReturnType<typeof setInterval>
 onMounted(async () => {
   interval = setInterval(async () => {
-    const oldCount = state[pid].inboxCount
+    const oldCount = await getLatestIndexCount(pid)
     const newCount = await updateInboxCount(pid)
     if (oldCount && oldCount < newCount) {
       console.log('load new message')
