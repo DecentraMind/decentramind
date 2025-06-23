@@ -144,6 +144,7 @@ onMounted(async () => {
       <MountedTeleport to="#top-right-button" :disabled="!targetExists">
         <AddTaskDropdown
           v-if="community && isAdminOrOwner && !isLoading"
+          container-class="!translate-y-14 !translate-x-[-16px]"
           @click-create-task="(type: Task['type']) => { createTaskType = type; isCreateTaskModalOpen = true }"
         />
       </MountedTeleport>

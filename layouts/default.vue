@@ -261,7 +261,7 @@ const afterLogin = async () => {
     </UDashboardPage>
 
     <div v-else class="relative h-screen w-[calc(100vw-48px)] sm:w-[calc(100vw-64px)]">
-      <TopNav class="sticky top-0 z-10" />
+      <TopNav />
       <slot />
     </div>
 

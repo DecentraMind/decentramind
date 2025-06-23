@@ -5,8 +5,10 @@ import { notificationStore } from '~/stores/notificationStore'
 const { showMessage } = $(notificationStore())
 withDefaults(defineProps<{
   noResponsive?: boolean
+  containerClass?: string
 }>(), {
-  noResponsive: false
+  noResponsive: false,
+  containerClass: ''
 })
 
 function alertNotReady() {
@@ -60,7 +62,7 @@ const taskTypes = [
   <UDropdown
     :items="taskTypes"
     :popper="{ placement: 'bottom-end' }"
-    :ui="{ wrapper: 'h-8', container: '!translate-y-14 !translate-x-[-16px]' }"
+    :ui="{ wrapper: 'h-8', container: containerClass }"
   >
     <template v-if="noResponsive">
       <UButton
