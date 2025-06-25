@@ -10,11 +10,11 @@ export default defineNuxtConfig({
       processID: process.env.VITE_PUBLIC_PROCESS_ID
     },
   },
-  // router: {
-  //   options: {
-  //     hashMode: true
-  //   }
-  // },
+  router: {
+    options: {
+      hashMode: true
+    }
+  },
   icon: {
     serverBundle: false,
     clientBundle: {

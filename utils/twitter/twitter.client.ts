@@ -1,11 +1,12 @@
 import { useFetch } from '@vueuse/core'
 import type { TwitterSpacesInfo, TwitterTweetInfo, ValidatedSpacesInfo, ValidatedTweetInfo } from '~/types'
 import { getSpaceIds, getTweetIds } from './twitter'
+import { API_URL_BASE } from '~/utils/constants'
 
 export async function fetchSpacesInfo(urls: string[]): Promise<ValidatedSpacesInfo> {
   const ids = getSpaceIds(urls)
   const { data, error } = await useFetch(
-    '/api/getTwitterSpaces?' + new URLSearchParams({ ids: ids.join(',') }),
+    API_URL_BASE + '/api/getTwitterSpaces?' + new URLSearchParams({ ids: ids.join(',') }),
   ).json<TwitterSpacesInfo>()
   const spaceInfo = unref(data)
 
@@ -27,7 +28,7 @@ export async function fetchSpacesInfo(urls: string[]): Promise<ValidatedSpacesIn
 export async function fetchTweetInfo(urls: string[]): Promise<ValidatedTweetInfo> {
   const ids = getTweetIds(urls)
   const { data, error } = await useFetch(
-    '/api/getTwitterTweets?' + new URLSearchParams({ ids: ids.join(',') }),
+    API_URL_BASE + '/api/getTwitterTweets?' + new URLSearchParams({ ids: ids.join(',') }),
   ).json<TwitterTweetInfo>()
   const tweetInfo = unref(data)
 
