@@ -435,7 +435,7 @@ const onClickCopyInviteCode = async () => {
   try {
     if (!task) return
     await navigator.clipboard.writeText(
-      location.origin + '/i/' + task.value!.inviteCode!,
+      location.origin + '/#/i/' + task.value!.inviteCode!,
     )
     showSuccess('Copied!')
   } catch (_) {
@@ -446,7 +446,7 @@ const onClickCopyInviteCode = async () => {
 const isInviteModalOpen = $ref(false)
 const inviteUrl = $computed(() => {
   return typeof window !== 'undefined'
-    ? `${window.location.origin}/i/${task.value?.inviteCode}`
+    ? `${window.location.origin}/#/i/${task.value?.inviteCode}`
     : ''
 })
 

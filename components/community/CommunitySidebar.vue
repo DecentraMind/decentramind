@@ -93,7 +93,7 @@ const inviteCode = $computed(async () => {
 })
 
 const inviteUrl = $computed(() => {
-  return typeof window !== 'undefined' ? `${window.location.origin}/i/${inviteCode}` : ''
+  return typeof window !== 'undefined' ? `${window.location.origin}/#/i/${inviteCode}` : ''
 })
 
 // Create a computed property to handle the two-way binding

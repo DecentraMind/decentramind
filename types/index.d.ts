@@ -403,11 +403,11 @@ type TwitterEntities = {
     end: number
     // the transformed t.co url like "https://t.co/bre7olKIvN"
     url: string
-    // real full url like "https://decentramind.club/i/ix6pkPV6"
+    // real full url like "https://x.com/i/ix6pkPV6"
     expanded_url: string
-    // display url like "decentramind.club/i/ix6pkPV6"
+    // display url like "x.com/i/ix6pkPV6"
     display_url: string
-    // unwound url like "https://decentramind.club/i/ix6pkPV6"
+    // unwound url like "https://x.com/i/ix6pkPV6"
     unwound_url?: string
     /** media key for image */
     media_key?: string
