@@ -98,10 +98,11 @@ pnpm run deploy
 - `server/` - Server API endpoints and periodic tasks
 - `stores/` - Pinia stores
 - `utils/` - Utility functions
-- `lang/` - i18n language files
+- `public/lang/` - i18n language files
 
-### Contributin
-See [Contributin](./docs/CONTRIBUTION.md)
+### Contribution
+See [Contribution](./docs/CONTRIBUTION.md)
 
 ### TODOs
+-[ ] update chatroom process to support batch message load
 -[ ] remove all canCreateCommunity related code
