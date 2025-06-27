@@ -1,3 +1,14 @@
+import fs from 'fs'
+import * as dotenv from 'dotenv'
+
+// Determine the environment file
+const customEnvFile = process.env.ENV_FILE ? `.env.${process.env.ENV_FILE}` : '.env'
+
+if (fs.existsSync(customEnvFile)) {
+  console.log(`Overriding environment variables with: ${customEnvFile}`)
+  dotenv.config({ path: customEnvFile, override: true })
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [process.env.NUXT_UI_PRO_PATH || '@nuxt/ui-pro'],
@@ -10,11 +21,14 @@ export default defineNuxtConfig({
       processID: process.env.VITE_PUBLIC_PROCESS_ID
     },
   },
-  // router: {
-  //   options: {
-  //     hashMode: true
-  //   }
-  // },
+  router: {
+    options: {
+      hashMode: true
+    }
+  },
+  app: {
+    baseURL: './'
+  },
   icon: {
     serverBundle: false,
     clientBundle: {
@@ -79,8 +93,8 @@ export default defineNuxtConfig({
         file: 'zh_CN.json',
       },
     ],
-    lazy: true,
-    langDir: 'lang/',
+    // lazy: true,
+    langDir: './public/lang/',
     defaultLocale: 'en',
   },
 

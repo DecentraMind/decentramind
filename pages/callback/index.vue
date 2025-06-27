@@ -24,6 +24,8 @@ definePageMeta({
 
 import {onMounted} from 'vue'
 import {useRouter} from 'vue-router'
+import { useFetch } from '@vueuse/core'
+import { API_URL_BASE } from '~/utils/constants'
 
 const toast = useToast()
 const {userInfo, getUser, updateUser} = $(useUserInfo())
@@ -71,14 +73,14 @@ const test = async () => {
   try {
     console.log('start get user id')
     let query = computed(() => ({code: resCode}))
-    const {data} = await useFetch('/api/getAccessToken', {query})
+    const {data} = await useFetch(API_URL_BASE + '/api/getAccessToken', {query})
     console.log('getToken data = ' + JSON.stringify(data._rawValue))
     const accessToken = data._rawValue.access_token
     console.log('accessToken = ' + accessToken)
     // const finalAccessToken = `Bearer ${accessToken}`
     // console.log('finalAccessToken = ' + finalAccessToken)
     query = computed(() => ({accessToken: accessToken}))
-    const res = await useFetch('/api/getTwitterUserId', {query})
+    const res = await useFetch(API_URL_BASE + '/api/getTwitterUserId', {query})
     const response = res.data._rawValue
     console.log('res = ' + JSON.stringify(response))
     console.log('userId = ' + response.data.id)

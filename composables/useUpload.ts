@@ -1,7 +1,7 @@
 import { unref, readonly } from 'vue'
 import { useFetch } from '@vueuse/core'
 import type { UploadResponse } from '~/types'
-import { allowedImageType as imageTypes, type UploadPath } from '~/utils/constants'
+import { allowedImageType as imageTypes, type UploadPath, API_URL_BASE } from '~/utils/constants'
 
 export function useUpload() {
   // eslint-disable-next-line prefer-const
@@ -52,7 +52,7 @@ export function useUpload() {
       formData.append('pathName', pathName)
       formData.append('file', file)
 
-      const { data, error } = await useFetch<UploadResponse>('/api/upload', {
+      const { data, error } = await useFetch<UploadResponse>(API_URL_BASE + '/api/upload', {
         method: 'PUT',
         body: formData,
       }).json()

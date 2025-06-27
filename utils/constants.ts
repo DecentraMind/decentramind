@@ -304,6 +304,7 @@ export const maxFetchSpaceIds = 100
 export const maxFetchTweetIds = 100
 
 export const VOUCH_SITE_URL = 'https://vouch.zeabur.app'
+export const API_URL_BASE = 'https://decentramind.club'
 
 export const VALID_SUBMISSION_STATUS = ['validated', 'revalidated'] as SubmissionValidateStatus[]
 

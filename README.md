@@ -80,6 +80,13 @@ bash> aos DecentraMind-test --wallet your-wallet.json
 DecetraMind-test aos-2.0.0> .load AO/DecentraMind.lua
 ```
 
+### Deploy front-end to Arweave
+Place a wallet.json(Arweave wallet file) at the root of project, install arkb(`pnpm install -g arkb`) if not installed
+```bash
+pnpm run generate-prod
+pnpm run deploy
+```
+
 ## Development
 
 ### Project Structure
