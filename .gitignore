@@ -32,3 +32,4 @@ AO/aos
 submissionStateMachine.ts
 .vscode/*
 !.vscode/*.shared.json
+wallet.json

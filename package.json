@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
+    "generate-prod": "NODE_ENV=production && cross-env ENV_FILE=production nuxt generate",
+    "deploy": "arkb deploy .output/public --wallet ./wallet.json",
     "dev": "nuxt dev --host -p 3007",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
