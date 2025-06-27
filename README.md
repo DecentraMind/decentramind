@@ -98,7 +98,7 @@ pnpm run deploy
 - `server/` - Server API endpoints and periodic tasks
 - `stores/` - Pinia stores
 - `utils/` - Utility functions
-- `lang/` - i18n language files
+- `public/lang/` - i18n language files
 
 ### Contribution
 See [Contribution](./docs/CONTRIBUTION.md)
